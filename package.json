@@ -14,7 +14,8 @@
   "scripts": {
     "test": "jest",
     "build": "tsc",
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "lint": "tslint --test"
   },
   "repository": {
     "type": "git",

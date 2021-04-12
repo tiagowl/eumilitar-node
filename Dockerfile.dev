@@ -6,4 +6,4 @@ RUN yarn install && \
     useradd api -ms /bin/bash && \
     chown -R api:api .
 USER api
-CMD [ "yarn", "dev" ]
+CMD [ "yarn", "run", "dev" ]
