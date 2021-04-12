@@ -1,0 +1,28 @@
+version: "3.7"
+
+services:
+    api:
+        build:
+            context: .
+            dockerfile: Dockerfile.dev
+        restart: on-failure
+        ports:
+            - 80:22000
+        depends_on:
+            - db
+        environment:
+            PORT: 22000
+            DB: nice_marmot
+            DB_USER: user
+            DB_PASS: password
+            DB_HOST: db
+            DB_PORT: 5432
+
+    db:
+        image: mariadb
+        restart: on-failure
+        environment:
+            MYSQL_PASSWORD: password
+            MYSQL_USER: user
+            MYSQL_DATABASE: nice_marmot
+            MYSQL_ROOT_PASSWORD: passwd
