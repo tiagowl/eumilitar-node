@@ -6,6 +6,8 @@ services:
             context: .
             dockerfile: Dockerfile.dev
         restart: on-failure
+        volumes:
+            - ./:/usr/share/api:z
         ports:
             - 80:22000
         depends_on:
