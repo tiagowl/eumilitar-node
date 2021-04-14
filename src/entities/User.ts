@@ -3,12 +3,12 @@ export type AccountStatus = 'active' | 'inactive' | 'pending'
 
 export interface UserInterface {
     readonly id: number;
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
     email: string;
     status: AccountStatus;
-    readonly creation_date: Date;
-    readonly last_modified: Date;
+    readonly creationDate: Date;
+    readonly lastModified: Date;
 }
 
 export interface UserData extends UserInterface {
@@ -16,46 +16,46 @@ export interface UserData extends UserInterface {
 }
 
 export interface UserUpdateData {
-    first_name?: string;
-    last_name?: string;
+    firstName?: string;
+    lastName?: string;
     email?: string;
     status?: AccountStatus;
 }
 
 export default class User implements UserInterface {
     #id: number;
-    #first_name: string;
-    #last_name: string;
+    #firstName: string;
+    #lastName: string;
     #email: string;
     #password: string;
     #status: AccountStatus;
-    #creation_date: Date;
-    #last_modified: Date;
+    #creationDate: Date;
+    #lastModified: Date;
 
     constructor(data: UserData) {
         this.#id = data.id;
-        this.#first_name = data.first_name;
-        this.#last_name = data.last_name;
+        this.#firstName = data.firstName;
+        this.#lastName = data.lastName;
         this.#email = data.email;
         this.#password = data.password;
         this.#status = data.status;
-        this.#creation_date = data.creation_date;
-        this.#last_modified = data.last_modified;
+        this.#creationDate = data.creationDate;
+        this.#lastModified = data.lastModified;
     }
 
     get id() { return this.#id }
 
     set fist_name(value: string) {
-        this.#first_name = value;
+        this.#firstName = value;
         this.updateDate()
     }
-    get first_name() { return this.#first_name }
+    get firstName() { return this.#firstName }
 
-    set last_name(value: string) {
-        this.#last_name = value;
+    set lastName(value: string) {
+        this.#lastName = value;
         this.updateDate()
     }
-    get last_name() { return this.#last_name }
+    get lastName() { return this.#lastName }
 
     set email(value: string) {
         this.#email = value;
@@ -71,22 +71,27 @@ export default class User implements UserInterface {
     }
     get status() { return this.#status }
 
-    get creation_date() { return this.#creation_date }
+    get creationDate() { return this.#creationDate }
 
-    get last_modified() { return this.#last_modified }
+    get lastModified() { return this.#lastModified }
 
     public checkPassword(password: string) {
         return this.#password === password;
     }
 
     public update(data: UserUpdateData) {
-        Object.assign(this, data);
-        this.updateDate();
+        if(data) {
+            this.#email = data.email || this.#email;
+            this.#firstName = data.firstName || this.#firstName;
+            this.#lastName = data.lastName || this.#lastName;
+            this.#status = data.status || this.#status;
+            this.updateDate();
+        }
         return this;
     }
 
     private updateDate(){
-        this.#last_modified = new Date();
+        this.#lastModified = new Date();
     }
 
 }
