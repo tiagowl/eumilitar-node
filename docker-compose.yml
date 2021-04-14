@@ -5,6 +5,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.dev
+        container_name: eu_militar_api
         restart: on-failure
         volumes:
             - ./:/usr/share/api:z
@@ -23,8 +24,24 @@ services:
     db:
         image: mariadb
         restart: on-failure
+        container_name: eu_militar_database
+        volumes: 
+            - ./database:/var/lib/mysql:z
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user
             MYSQL_DATABASE: nice_marmot
             MYSQL_ROOT_PASSWORD: passwd
+
+    phpmyadmin:
+        image: phpmyadmin
+        restart: on-failure
+        container_name: eu_militar_phpmyadmin
+        ports:
+            - 8080:80
+        environment:
+            MYSQL_PASSWORD: password
+            MYSQL_USER: user
+            MYSQL_DATABASE: nice_marmot
+            MYSQL_ROOT_PASSWORD: passwd
+            PMA_HOST: db
