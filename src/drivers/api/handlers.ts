@@ -2,7 +2,7 @@ import { Knex } from "knex";
 
 
 function handler(driver: Knex) {
-    return function () {
+    return function (request: Request, response: Response) {
 
     }
 }
