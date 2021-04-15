@@ -1,4 +1,5 @@
 import User from '../src/entities/User'
+import bcrypt from 'bcrypt';
 
 test('Testes na entidade User', () => {
     const password = 'l23jlk234';
@@ -13,7 +14,7 @@ test('Testes na entidade User', () => {
         creationDate: now,
         lastModified: now,
     })
-    expect(user.checkPassword(password)).toBeTruthy()
+    expect(user.checkPassword(password, bcrypt.compare)).toBeTruthy()
     user.update({
         firstName: 'Denis',
         lastName: 'Antonio',

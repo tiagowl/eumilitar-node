@@ -75,11 +75,11 @@ export default class User implements UserInterface {
 
     get lastModified() { return this.#lastModified }
 
-    public checkPassword(password: string) {
-        return this.#password === password;
+    public async checkPassword(password: string, checker: (password: string, hash: string) => Promise<boolean>) {
+        return await checker(password, this.#password);
     }
 
-    public update(data: UserUpdateData) {
+    public async update(data: UserUpdateData) {
         if(data) {
             this.#email = data.email || this.#email;
             this.#firstName = data.firstName || this.#firstName;
@@ -90,7 +90,7 @@ export default class User implements UserInterface {
         return this;
     }
 
-    private updateDate(){
+    private async updateDate(){
         this.#lastModified = new Date();
     }
 
