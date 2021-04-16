@@ -1,5 +1,5 @@
-import UserUseCase from '../src/cases/UserUseCase';
-import { Repository } from '../src/cases/interfaces';
+import UserUseCase, { UserFilter } from '../src/cases/UserUseCase';
+import { RepositoryInterface } from '../src/cases/interfaces';
 import User from '../src/entities/User';
 import bcrypt from 'bcrypt';
 
@@ -7,7 +7,7 @@ describe('Testes nos casos de uso da entidade User', () => {
     it('Autenticação', () => {
         const userEmail = 'teste@gmail.com'
         const userPassword = 'password'
-        const repository: Repository<User> = {
+        const repository: RepositoryInterface<User, UserFilter> = {
             get: async () => (new User({
                 id: 5,
                 email: userEmail,
@@ -16,6 +16,7 @@ describe('Testes nos casos de uso da entidade User', () => {
                 password: bcrypt.hashSync(userPassword, 10),
                 creationDate: new Date(),
                 lastModified: new Date(),
+                permission: 'admin',
                 status: 'active',
             }))
         }
