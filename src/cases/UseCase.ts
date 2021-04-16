@@ -1,9 +1,11 @@
-import { Repository } from "./interfaces";
+import { RepositoryInterface } from "./interfaces";
 
-export default class UseCase<Entity> {
-    protected readonly repository: Repository<Entity>;
 
-    constructor(repository: Repository<Entity>) {
+
+export default class UseCase<Entity, Filter> {
+    protected readonly repository: RepositoryInterface<Entity, Filter>;
+
+    constructor(repository: RepositoryInterface<Entity, Filter>) {
         this.repository = repository;
     }
 
