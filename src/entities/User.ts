@@ -1,5 +1,6 @@
 
 export type AccountStatus = 'active' | 'inactive' | 'pending'
+export type AccountPermission = 'admin' | 'esa' | 'espcex';
 
 export interface UserInterface {
     readonly id: number;
@@ -7,6 +8,7 @@ export interface UserInterface {
     lastName: string;
     email: string;
     status: AccountStatus;
+    permission: AccountPermission;
     readonly creationDate: Date;
     readonly lastModified: Date;
 }
@@ -20,6 +22,7 @@ export interface UserUpdateData {
     lastName?: string;
     email?: string;
     status?: AccountStatus;
+    permission?: AccountPermission;
 }
 
 export default class User implements UserInterface {
@@ -31,6 +34,7 @@ export default class User implements UserInterface {
     #status: AccountStatus;
     #creationDate: Date;
     #lastModified: Date;
+    #permission: AccountPermission;
 
     constructor(data: UserData) {
         this.#id = data.id;
@@ -41,6 +45,7 @@ export default class User implements UserInterface {
         this.#status = data.status;
         this.#creationDate = data.creationDate;
         this.#lastModified = data.lastModified;
+        this.#permission = data.permission;
     }
 
     get id() { return this.#id }
@@ -75,6 +80,12 @@ export default class User implements UserInterface {
 
     get lastModified() { return this.#lastModified }
 
+    set permission(value: AccountPermission) {
+        this.#permission = value;
+        this.updateDate()
+    }
+    get permission() { return this.#permission }
+
     public async checkPassword(password: string, checker: (password: string, hash: string) => Promise<boolean>) {
         return await checker(password, this.#password);
     }
@@ -85,6 +96,7 @@ export default class User implements UserInterface {
             this.#firstName = data.firstName || this.#firstName;
             this.#lastName = data.lastName || this.#lastName;
             this.#status = data.status || this.#status;
+            this.#permission = data.permission || this.#permission;
             this.updateDate();
         }
         return this;
