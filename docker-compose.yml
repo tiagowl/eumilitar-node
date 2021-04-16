@@ -15,11 +15,11 @@ services:
             - db
         environment:
             PORT: 22000
-            DB: nice_marmot
+            DB_NAME: nice_marmot
             DB_USER: user
             DB_PASS: password
             DB_HOST: db
-            DB_PORT: 5432
+            DB_PORT: 3306
 
     db:
         image: mariadb

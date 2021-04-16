@@ -1,5 +1,5 @@
 
 
-export interface Repository<Entity> {
-    get: (filter: any) => Promise<Entity | null | undefined>;
+export interface RepositoryInterface<Entity, Filter> {
+    get: (filter: Filter) => Promise<Entity | null | undefined>;
 }
