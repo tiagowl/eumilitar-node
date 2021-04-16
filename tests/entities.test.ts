@@ -13,6 +13,7 @@ test('Testes na entidade User', () => {
         status: 'active',
         creationDate: now,
         lastModified: now,
+        permission: 'admin',
     })
     expect(user.checkPassword(password, bcrypt.compare)).toBeTruthy()
     user.update({
