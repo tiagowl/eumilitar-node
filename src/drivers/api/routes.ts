@@ -3,7 +3,7 @@ import * as handlers from './handlers';
 
 const routes: Route[] = [
     {
-        path: '/token/',
+        path: '/tokens/',
         handlers: [
             { handler: handlers.token, method: 'post' }
         ]

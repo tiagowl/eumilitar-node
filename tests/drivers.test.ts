@@ -21,7 +21,7 @@ describe('Teste na api', () => {
             email: user.email,
             password: user.passwd,
         }
-        const response = await api.post('/token/')
+        const response = await api.post('/tokens/')
             .send(credentials)
             .set('User-Agent', faker.internet.userAgent());
         expect(response.status).toBe(201);
