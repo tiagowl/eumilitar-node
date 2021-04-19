@@ -5,12 +5,16 @@
 ### Authentication
     POST /tokens/ 
 #### Receive:
+Type: `application/json`  
+
     {
         "email": string,
         "password": string 
     }
-#### Response:
+
+#### Response:  
+Type: `application/json`  
+
     {
         "token": string
     }
-
