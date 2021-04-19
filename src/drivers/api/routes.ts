@@ -1,9 +1,12 @@
 import { Route } from "./interfaces";
+import * as handlers from './handlers';
 
 const routes: Route[] = [
     {
-        path: '/',
-        handlers: []
+        path: '/token/',
+        handlers: [
+            { handler: handlers.token, method: 'post' }
+        ]
     }
 ]
 
