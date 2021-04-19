@@ -9,5 +9,5 @@
         "tests",
         "node_modules"
     ],
-    "exec": "ts-node ./src/index.ts"
+    "exec": "yarn lint && ts-node ./src/index.ts"
 }

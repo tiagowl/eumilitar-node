@@ -9,8 +9,4 @@ export default class UseCase<Entity, Filter> {
         this.repository = repository;
     }
 
-    public findAll() {
-
-    }
-
 }

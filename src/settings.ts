@@ -11,7 +11,8 @@ const settings = Object.freeze({
     server: {
         port: Number(process.env.PORT) || 22000,
         host: process.env.HOST || '0.0.0.0'
-    }
+    },
+    authCookie: 'token'
 })
 
 export default settings;

@@ -1,4 +1,4 @@
-import knex, { Knex } from "knex";
+import { Knex } from "knex";
 import { RepositoryInterface } from '../../cases/interfaces'
 import { UserFilter } from "../../cases/UserUseCase";
 import User, { AccountPermission, AccountStatus, UserData } from "../../entities/User";
@@ -81,9 +81,9 @@ export default class UserRepository implements RepositoryInterface<User, UserFil
     }
 
     private async toDb(filter: UserFilter) {
-        const params = Object.entries(filter);
+        const args = Object.entries(filter);
         const parsedParams: UserModelFilter = {}
-        return params.reduce((params, param: [string, any]) => {
+        return args.reduce((params, param: [string, any]) => {
             const entityField = param[0]
             const value = param[1]
             const field = this.fieldsMap.find(item => item.entity[0] === entityField)

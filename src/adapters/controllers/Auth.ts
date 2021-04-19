@@ -1,7 +1,6 @@
 import { Knex } from 'knex';
 import * as yup from 'yup';
-import { RepositoryInterface } from '../../cases/interfaces';
-import UserUseCase, { UserFilter } from '../../cases/UserUseCase';
+import UserUseCase from '../../cases/UserUseCase';
 import User from '../../entities/User';
 import UserRepository from '../models/User';
 import Controller from './Controller';
@@ -55,11 +54,11 @@ export default class AuthController extends Controller<AuthInterface> {
             if (!!auth.email && !!auth.password) {
                 const token = await this.generateToken()
                 if (!!useCase.user) this.saveToken(useCase.user, token, userAgent)
-                return { token: token }
+                return { token }
             }
             const errors: AuthResponse = {}
-            if (!auth.email) errors['email'] = 'Email inválido';
-            if (!auth.password) errors['password'] = 'Senha inválida';
+            if (!auth.email) errors.email = 'Email inválido';
+            if (!auth.password) errors.password = 'Senha inválida';
             return errors;
         } catch (error) {
             return error

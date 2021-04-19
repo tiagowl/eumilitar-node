@@ -1,7 +1,6 @@
 import settings from './settings';
 import { connect, Application } from './drivers';
 
-
 function main() {
     const { port, host } = settings.server;
     const database = connect(settings.database);
