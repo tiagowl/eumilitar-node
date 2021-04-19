@@ -37,23 +37,24 @@ export default class AuthController extends Controller<AuthInterface> {
         return `${head}.${body}`;
     }
 
-    private async saveToken(user: User, token: string) {
+    private async saveToken(user: User, token: string, userAgent?: string) {
         const service = TokenService(this.driver);
         return service.insert({
             session_id: token,
             login_time: new Date(),
             user_id: user.id,
+            user_agent: userAgent,
         })
     }
 
-    public async auth(): Promise<AuthResponse> {
+    public async auth(userAgent?: string): Promise<AuthResponse> {
         try {
             await this.validate();
             const useCase = new UserUseCase(this.repository);
             const auth = await useCase.authenticate(this.data.email, this.data.password)
             if (!!auth.email && !!auth.password) {
                 const token = await this.generateToken()
-                if (!!useCase.user) this.saveToken(useCase.user, token)
+                if (!!useCase.user) this.saveToken(useCase.user, token, userAgent)
                 return { token: token }
             }
             const errors: AuthResponse = {}
