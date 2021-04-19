@@ -47,6 +47,19 @@ interface UserModel {
     date_modified: Date;
 }
 
+
+interface UserModelFilter {
+    user_id?: number;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    passwd?: string;
+    status?: number;
+    permission?: number;
+    date_created?: Date;
+    date_modified?: Date;
+}
+
 export const UserService = (driver: Knex) => driver<UserModel>('users')
 
 export default class UserRepository implements RepositoryInterface<User, UserFilter> {
@@ -67,36 +80,46 @@ export default class UserRepository implements RepositoryInterface<User, UserFil
         this.service = UserService(driver);
     }
 
-    private async filter(filter: UserFilter) {
+    private async toDb(filter: UserFilter) {
         const params = Object.entries(filter);
-        return params.reduce((driver, param: [string, any]) => {
+        const parsedParams: UserModelFilter = {}
+        return params.reduce((params, param: [string, any]) => {
             const entityField = param[0]
             const value = param[1]
             const field = this.fieldsMap.find(item => item.entity[0] === entityField)
             if (field) {
-                const dbField = field.entity[0]
+                const dbField = field.db[0]
                 const dbValue = field.db[1](value)
-                return driver.where(dbField, dbValue)
+                params[dbField] = dbValue
+                return params;
             }
-            return driver;
-        }, this.service)
+            return params;
+        }, parsedParams)
+    }
+
+    private async filter(filter: UserFilter): Promise<Knex.QueryBuilder> {
+        const filtered = this.service.where(await this.toDb(filter)).select('*')
+        return filtered
     }
 
     public async get(filter: UserFilter) {
-        const filtered = await this.filter(filter)
-        const user: UserModel = await filtered.first();
-        if(!user) return undefined;
-        return new User({
-            id: user.user_id,
-            firstName: user.first_name,
-            lastName: user.last_name,
-            email: user.email,
-            password: user.passwd,
-            status: parseStatus(user.status),
-            permission: parsePermission(user.permission),
-            creationDate: user.date_created,
-            lastModified: user.date_modified
-        });
+        const filtered: any = this.filter(filter)
+        return new Promise<User>((accept, reject) => {
+            filtered.then((user: UserModel[]) => {
+                if (!user[0]) reject(undefined);
+                accept(new User({
+                    id: user[0].user_id,
+                    firstName: user[0].first_name,
+                    lastName: user[0].last_name,
+                    email: user[0].email,
+                    password: user[0].passwd,
+                    status: parseStatus(user[0].status),
+                    permission: parsePermission(user[0].permission),
+                    creationDate: user[0].date_created,
+                    lastModified: user[0].date_modified
+                }));
+            });
+        })
     }
 
 }

@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import yup, { ValidationError } from 'yup';
+import * as yup from 'yup';
 import { RepositoryInterface } from '../../cases/interfaces';
 import UserUseCase, { UserFilter } from '../../cases/UserUseCase';
 import User from '../../entities/User';
@@ -13,13 +13,19 @@ export interface AuthInterface {
     password: string;
 }
 
+export type AuthResponse = {
+    token?: string,
+    email?: string,
+    password?: string,
+}
+
 export default class AuthController extends Controller<AuthInterface> {
-    private repository: RepositoryInterface<User, UserFilter>;
+    private repository: UserRepository;
 
     constructor(data: AuthInterface, driver: Knex) {
         const schema = yup.object().shape({
-            email: yup.string().email('Informe um email válido').required('O campo email é obrigatório'),
-            password: yup.string().required('O campo senha é obrigatório')
+            email: yup.string().email().required(),
+            password: yup.string().required()
         })
         super(data, schema, driver);
         this.repository = new UserRepository(driver);
@@ -27,37 +33,35 @@ export default class AuthController extends Controller<AuthInterface> {
 
     private async generateToken() {
         const head = Math.random().toString(32).substr(2);
-        const body = crypto.randomBytes(128).toString('utf-8');
-        return `${head}.${body}`
+        const body = crypto.randomBytes(128).toString('base64');
+        return `${head}.${body}`;
     }
 
     private async saveToken(user: User, token: string) {
         const service = TokenService(this.driver);
         return service.insert({
-            token,
-            creation_date: new Date(),
+            session_id: token,
+            login_time: new Date(),
             user_id: user.id,
-        }).returning('*')
+        })
     }
 
-    public async auth() {
+    public async auth(): Promise<AuthResponse> {
         try {
             await this.validate();
-            const useCase = new UserUseCase(this.repository)
+            const useCase = new UserUseCase(this.repository);
             const auth = await useCase.authenticate(this.data.email, this.data.password)
-            if(!!auth.email && !!auth.password) {
+            if (!!auth.email && !!auth.password) {
                 const token = await this.generateToken()
-                if(!!useCase.user) this.saveToken(useCase.user, token)
+                if (!!useCase.user) this.saveToken(useCase.user, token)
                 return { token: token }
             }
-            const errors = {}
-            if(!auth.email) Object.defineProperty(errors, 'email', 'Email inválido');
-            if(!auth.password) Object.defineProperty(errors, 'password', 'Senha inválida');
+            const errors: AuthResponse = {}
+            if (!auth.email) errors['email'] = 'Email inválido';
+            if (!auth.password) errors['password'] = 'Senha inválida';
             return errors;
         } catch (error) {
-            return {
-                errors: error.errors
-            }
+            return error
         }
     }
 }
