@@ -117,3 +117,6 @@ dist
 
 database/
 .vscode/
+.vercel
+migrations/*.js
+./*.js

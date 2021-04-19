@@ -5,8 +5,10 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.vercel
-        container_name: eu_militar_api
+        container_name: eu_militar_api_vercel
+        command: vercel dev --token $VERCEL_TOKEN
         restart: on-failure
+        env_file: .env
         volumes:
             - ./:/usr/share/api:z
         ports:
@@ -24,9 +26,9 @@ services:
     db:
         image: mariadb
         restart: on-failure
-        container_name: eu_militar_database
+        container_name: eu_militar_database_vercel
         volumes: 
-            - ./database:/var/lib/mysql:z
+            - ~/.data/eu-militar/mysql:/var/lib/mysql:z
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user
@@ -36,7 +38,7 @@ services:
     phpmyadmin:
         image: phpmyadmin
         restart: on-failure
-        container_name: eu_militar_phpmyadmin
+        container_name: eu_militar_phpmyadmin_vercel
         ports:
             - 8080:80
         environment:

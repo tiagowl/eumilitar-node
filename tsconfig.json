@@ -62,6 +62,8 @@
   "exclude": [
     "./tests/",
     "./node_modules/",
-    "jest.config.ts"
+    "jest.config.ts",
+    "knexfile.ts",
+    "migrations/*",
   ]
 }
