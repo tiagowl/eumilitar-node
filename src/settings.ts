@@ -12,7 +12,13 @@ const settings = Object.freeze({
         port: Number(process.env.PORT) || 22000,
         host: process.env.HOST || '0.0.0.0'
     },
-    authCookie: 'token'
+    authCookie: 'token',
+    helmet: {
+    },
+    logging: { format: 'common', options: {} },
+    cors: {
+        origin: process.env.CORS,
+    }
 })
 
 export default settings;

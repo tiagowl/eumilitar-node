@@ -20,6 +20,7 @@ services:
             DB_PASS: password
             DB_HOST: db
             DB_PORT: 3306
+            CORS: '*'
 
     db:
         image: mariadb
