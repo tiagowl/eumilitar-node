@@ -2,15 +2,10 @@ version: "3.7"
 
 services:
     api:
-        build:
-            context: .
-            dockerfile: Dockerfile.vercel
-        container_name: eu_militar_api_vercel
-        command: vercel dev --token $VERCEL_TOKEN
+        build: .
+        container_name: eu_militar_api_prod
+        command: yarn start
         restart: on-failure
-        env_file: .env
-        volumes:
-            - ./:/usr/share/api:z
         ports:
             - 80:22000
         depends_on:
@@ -26,7 +21,7 @@ services:
     db:
         image: mariadb
         restart: on-failure
-        container_name: eu_militar_database_vercel
+        container_name: eu_militar_database_prod
         volumes: 
             - ~/.data/eu-militar/mysql:/var/lib/mysql:z
         environment:
@@ -38,7 +33,7 @@ services:
     phpmyadmin:
         image: phpmyadmin
         restart: on-failure
-        container_name: eu_militar_phpmyadmin_vercel
+        container_name: eu_militar_phpmyadmin_prod
         ports:
             - 8080:80
         environment:

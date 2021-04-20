@@ -37,7 +37,9 @@ export default class Application {
     }
 
     public serve(port: number, host: string) {
-        this._server.listen({ port, host })
+        this._server.listen({ port, host }, () => {
+            console.info(`RUNNING AT http://${host}:${port}/`)
+        })
     }
 
 }

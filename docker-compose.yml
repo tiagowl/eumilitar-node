@@ -4,7 +4,7 @@ services:
     api:
         build:
             context: .
-            dockerfile: Dockerfile.vercel
+            dockerfile: Dockerfile.dev
         container_name: eu_militar_api
         restart: on-failure
         volumes:
@@ -26,7 +26,7 @@ services:
         restart: on-failure
         container_name: eu_militar_database
         volumes: 
-            - ./database:/var/lib/mysql:z
+            - ~/.data/eu-militar/mysql:/var/lib/mysql:z
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user
