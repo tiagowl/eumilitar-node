@@ -26,8 +26,6 @@ services:
         image: mariadb
         restart: on-failure
         container_name: eu_militar_database
-        volumes: 
-            - ~/.data/eu-militar/mysql:/var/lib/mysql:z
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user
