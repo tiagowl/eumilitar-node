@@ -14,8 +14,7 @@ export interface AuthInterface {
 
 export type AuthResponse = {
     token?: string,
-    email?: string,
-    password?: string,
+    errors?: string[]
 }
 
 export default class AuthController extends Controller<AuthInterface> {
@@ -23,8 +22,8 @@ export default class AuthController extends Controller<AuthInterface> {
 
     constructor(data: AuthInterface, driver: Knex) {
         const schema = yup.object().shape({
-            email: yup.string().email().required(),
-            password: yup.string().required()
+            email: yup.string().email('Informe um email válido').required('O campo "email" é obrigatório'),
+            password: yup.string().required('O campo "senha" é obrigatório')
         })
         super(data, schema, driver);
         this.repository = new UserRepository(driver);
@@ -47,21 +46,21 @@ export default class AuthController extends Controller<AuthInterface> {
     }
 
     public async auth(userAgent?: string): Promise<AuthResponse> {
-        try {
-            await this.validate();
+        const { isValid, errors, data } = await this.validate();
+        if (isValid && !!data) {
             const useCase = new UserUseCase(this.repository);
-            const auth = await useCase.authenticate(this.data.email, this.data.password)
+            const auth = await useCase.authenticate(data.email, data.password)
             if (!!auth.email && !!auth.password) {
                 const token = await this.generateToken()
                 if (!!useCase.user) this.saveToken(useCase.user, token, userAgent)
                 return { token }
             }
-            const errors: AuthResponse = {}
-            if (!auth.email) errors.email = 'Email inválido';
-            if (!auth.password) errors.password = 'Senha inválida';
-            return errors;
-        } catch (error) {
-            return error
+            const response: AuthResponse = { errors: [] }
+            if (!auth.email) response.errors?.push('Email inválido');
+            if (!auth.password) response.errors?.push('Senha inválida');
+            return response;
+        } else {
+            return { errors }
         }
     }
 }

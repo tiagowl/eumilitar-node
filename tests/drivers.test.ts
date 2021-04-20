@@ -28,6 +28,30 @@ describe('Teste na api', () => {
         expect(response.body.token).not.toBeNull()
         done()
     })
+    it('Teste login falho', async (done) => {
+        const wrongCredentials = {
+            email: 'lsjflas@faldfjl.comdd',
+            password: 'flasjdfljslfj'
+        }
+        const response = await api.post('/tokens/')
+            .send(wrongCredentials)
+            .set('User-Agent', faker.internet.userAgent())
+        expect(response.status).toBe(400)
+        expect(response.body.errors.length).toBe(2)
+        done()
+    })
+    it('Senha errada', async done => {
+        const wrongPassword = {
+            email: user.email,
+            password: '454',
+        }
+        const response = await api.post('/tokens/')
+            .send(wrongPassword)
+            .set('User-Agent', faker.internet.userAgent())
+        expect(response.status).toBe(400)
+        expect(response.body.errors.length).toBe(1)
+        done()
+    })
     afterAll(async (done) => {
         deleteUser(user, service)
         await driver.destroy()

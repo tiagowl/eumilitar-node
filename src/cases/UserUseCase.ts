@@ -18,11 +18,18 @@ export default class UserUseCase extends UseCase<User, UserFilter> {
     #user: User | undefined | null;
 
     public async authenticate(email: string, password: string) {
-        const user = await this.repository.get({ email });
-        this.#user = user;
-        return {
-            email: !!user,
-            password: !!user && await user.checkPassword(password, bcrypt.compare)
+        try {
+            const user = await this.repository.get({ email });
+            this.#user = user;
+            return {
+                email: !!user,
+                password: !!user && await user.checkPassword(password, bcrypt.compare)
+            }
+        } catch (error) {
+            return {
+                email: false,
+                password: false,
+            }            
         }
     }
 

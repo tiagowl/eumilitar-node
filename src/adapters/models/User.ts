@@ -106,8 +106,8 @@ export default class UserRepository implements RepositoryInterface<User, UserFil
         const filtered: any = this.filter(filter)
         return new Promise<User>((accept, reject) => {
             filtered.then((user: UserModel[]) => {
-                if (!user[0]) reject(undefined);
-                accept(new User({
+                if (!user[0]) return reject(new Error('User not found'));
+                return accept(new User({
                     id: user[0].user_id,
                     firstName: user[0].first_name,
                     lastName: user[0].last_name,
