@@ -8,11 +8,11 @@ import cookieParser from 'cookie-parser';
 import cookieSession from 'cookie-session';
 
 const middlewares: RequestHandler[] = [
+    cors(settings.cors),
     express.json(),
     cookieParser(),
     cookieSession(settings.session),
     helmet(settings.helmet),
-    cors(settings.cors),
     morgan(settings.logging.format, settings.logging.options),
 ];
 

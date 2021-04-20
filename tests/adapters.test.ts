@@ -28,7 +28,7 @@ describe('Testes na autenticação', () => {
     afterAll((done) => {
         deleteUser(user, service)
             .finally(done)
-    }) 
+    })
 })
 
 

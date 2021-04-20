@@ -46,7 +46,7 @@
     "test": "jest",
     "build": "tsc && knex migrate:latest",
     "dev": "nodemon",
-    "lint": "tslint -c tslint.json 'src/**/*.ts'"
+    "lint": "tslint -c tslint.json 'src/**/*.ts' 'tests/**/*.ts'"
   },
   "repository": {
     "type": "git",

@@ -1,6 +1,9 @@
 {
     "watch": [
-        "src"
+        "src",
+        "./*.json",
+        "./*.ts",
+        "tests"
     ],
     "ext": "ts,json",
     "ignore": [

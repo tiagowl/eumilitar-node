@@ -22,7 +22,7 @@ export default class AuthController extends Controller<AuthInterface> {
 
     constructor(data: AuthInterface, driver: Knex) {
         const schema = yup.object().shape({
-            email: yup.string().email('Informe um email válido').required('O campo "email" é obrigatório'),
+            email: yup.string().required('O campo "email" é obrigatório').email('Informe um email válido'),
             password: yup.string().required('O campo "senha" é obrigatório')
         })
         super(data, schema, driver);
@@ -55,10 +55,8 @@ export default class AuthController extends Controller<AuthInterface> {
                 if (!!useCase.user) this.saveToken(useCase.user, token, userAgent)
                 return { token }
             }
-            const response: AuthResponse = { errors: [] }
-            if (!auth.email) response.errors?.push('Email inválido');
-            if (!auth.password) response.errors?.push('Senha inválida');
-            return response;
+            if (!auth.email) return { errors: ['Email inválido'] };
+            else return { errors: ['Senha inválida'] };
         } else {
             return { errors }
         }

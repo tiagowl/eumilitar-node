@@ -29,13 +29,15 @@ describe('Teste na api', () => {
     it('Teste login falho', async (done) => {
         const wrongCredentials = {
             email: 'lsjflas@faldfjl.comdd',
-            password: 'flasjdfljslfj',
+            password: user.passwd,
         }
         const response = await api.post('/tokens/')
             .send(wrongCredentials)
             .set('User-Agent', faker.internet.userAgent())
         expect(response.status).toBe(400)
-        expect(response.body.errors.length).toBe(2)
+        expect(response.body.token).toBeUndefined()
+        expect(response.body.errors.length).toBe(1)
+        expect(response.body.errors).toEqual(['Email inválido'])
         done()
     })
     it('Senha errada', async done => {
@@ -48,6 +50,22 @@ describe('Teste na api', () => {
             .set('User-Agent', faker.internet.userAgent())
         expect(response.status).toBe(400)
         expect(response.body.errors.length).toBe(1)
+        expect(response.body.token).toBeUndefined()
+        expect(response.body.errors).toEqual(['Senha inválida'])
+        done()
+    })
+    it('Email errado', async (done) => {
+        const wrongPassword = {
+            email: 'fdd',
+            password: '454',
+        }
+        const response = await api.post('/tokens/')
+            .send(wrongPassword)
+            .set('User-Agent', faker.internet.userAgent())
+        expect(response.status).toBe(400)
+        expect(response.body.errors.length).toBe(1)
+        expect(response.body.token).toBeUndefined()
+        expect(response.body.errors).toEqual(['Informe um email válido'])
         done()
     })
     afterAll(async (done) => {

@@ -9,11 +9,11 @@ test('Testes na entidade User', () => {
         firstName: 'John',
         lastName: 'Doe',
         email: 'teste@gmail.com',
-        password: password,
         status: 'active',
         creationDate: now,
         lastModified: now,
         permission: 'admin',
+        password,
     })
     expect(user.checkPassword(password, bcrypt.compare)).toBeTruthy()
     user.update({

@@ -38,6 +38,7 @@ export default class Application {
 
     public serve(port: number, host: string) {
         this._server.listen({ port, host }, () => {
+            // tslint:disable-next-line
             console.info(`RUNNING AT http://${host}:${port}/`)
         })
     }
