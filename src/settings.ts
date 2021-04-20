@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 const settings = Object.freeze({
     database: {
         client: 'mysql',
@@ -12,12 +14,23 @@ const settings = Object.freeze({
         port: Number(process.env.PORT) || 22000,
         host: process.env.HOST || '0.0.0.0'
     },
-    authCookie: 'token',
+    authCookie: {
+        name: '___grasbudic',
+        config: {
+            domain: process.env.DOMAIN || undefined,
+        }
+    },
     helmet: {
     },
     logging: { format: 'common', options: {} },
     cors: {
         origin: process.env.CORS,
+    },
+    csrf: {
+        cookie: true,
+    },
+    session: {
+        keys: process.env.KEYS?.split(' ') || new Array(2).fill(5).map(() => Math.random().toString(32).substr(2) )
     }
 })
 

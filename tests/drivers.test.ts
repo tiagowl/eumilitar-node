@@ -1,4 +1,3 @@
-import knex from 'knex';
 import faker from 'faker';
 import supertest from 'supertest';
 import { UserService } from '../src/adapters/models/User';
@@ -13,8 +12,7 @@ describe('Teste na api', () => {
     const user = userFactory();
     const service = UserService(driver);
     beforeAll(async (done) => {
-        await saveUser(user, service);
-        done()
+        saveUser(user, service).finally(done)
     })
     it('Teste no login', async (done) => {
         const credentials = {
@@ -31,7 +29,7 @@ describe('Teste na api', () => {
     it('Teste login falho', async (done) => {
         const wrongCredentials = {
             email: 'lsjflas@faldfjl.comdd',
-            password: 'flasjdfljslfj'
+            password: 'flasjdfljslfj',
         }
         const response = await api.post('/tokens/')
             .send(wrongCredentials)
@@ -53,7 +51,7 @@ describe('Teste na api', () => {
         done()
     })
     afterAll(async (done) => {
-        deleteUser(user, service)
+        await deleteUser(user, service)
         await driver.destroy()
         done()
     })

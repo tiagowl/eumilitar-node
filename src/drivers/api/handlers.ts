@@ -8,7 +8,6 @@ export function token(driver: Knex): RequestHandler<any, AuthResponse, AuthInter
         const controller = new AuthController(req.body, driver);
         const response = await controller.auth(req.get('User-Agent'));
         res.status(!!response?.token ? 201 : 400)
-        if(response.token) res.cookie(settings.authCookie, response.token);
         res.json(response);
         res.end();
     }

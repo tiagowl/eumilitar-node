@@ -29,7 +29,7 @@ export default class UserUseCase extends UseCase<User, UserFilter> {
             return {
                 email: false,
                 password: false,
-            }            
+            }
         }
     }
 
