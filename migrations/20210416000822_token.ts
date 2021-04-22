@@ -5,7 +5,7 @@ export async function up(knex: Knex): Promise<void> {
     const existsUsers = await knex.schema.hasTable('users');
     const existsLoginSessions = await knex.schema.hasTable('login_sessions')
     if (existsUsers && existsLoginSessions) return;
-    const createUsers = knex.schema
+    const createUsers = existsUsers? knex.schema :  knex.schema
         .createTable('users', (table) => {
             table.increments('user_id').primary().unsigned()
             table.string('first_name', 50).notNullable()
@@ -20,7 +20,7 @@ export async function up(knex: Knex): Promise<void> {
         })
     if (existsLoginSessions) return createUsers;
     const createLoginSessions = createUsers
-        .createTableIfNotExists('login_sessions', (table) => {
+        .createTable('login_sessions', (table) => {
             table.string('session_id', 255).primary()
             table.integer('user_id', 11).unsigned().references('user_id').inTable('users').onDelete('CASCADE')
             table.timestamp('login_time').notNullable().defaultTo(knex.fn.now())

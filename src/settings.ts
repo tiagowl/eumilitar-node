@@ -1,5 +1,3 @@
-import crypto from 'crypto';
-
 const settings = Object.freeze({
     database: {
         client: 'mysql',
@@ -13,12 +11,6 @@ const settings = Object.freeze({
     server: {
         port: Number(process.env.PORT) || 22000,
         host: process.env.HOST || '0.0.0.0'
-    },
-    authCookie: {
-        name: '___grasbudic',
-        config: {
-            domain: process.env.DOMAIN || undefined,
-        }
     },
     helmet: {
     },

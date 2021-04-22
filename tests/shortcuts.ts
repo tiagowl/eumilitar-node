@@ -1,7 +1,7 @@
 import faker from 'faker';
 import knex, { Knex } from 'knex';
-import settings from '../src/settings';
 import bcrypt from 'bcrypt';
+import settings from '../src/settings';
 
 export const userFactory = () => ({
     email: faker.internet.email(),
@@ -15,16 +15,12 @@ export const userFactory = () => ({
 })
 
 
-export const dbSetting = {
+export const dbSetting: Knex.Config = {
     client: 'sqlite3',
     connection: {
         filename: ':memory:'
     },
-    seeds: {
-        directory: '~/tests/file'
-    },
     useNullAsDefault: true,
-    debug: true,
     pool: {
         min: 1,
         max: 10,
@@ -32,7 +28,11 @@ export const dbSetting = {
     }
 }
 
-export const driverFactory = () => knex(settings.database)
+export const driverFactory = () => {
+    const driver = knex(dbSetting);
+    driver.migrate.latest();
+    return driver;
+}
 
 export async function hashPassword(password: string) {
     const salt = await bcrypt.genSalt(10);

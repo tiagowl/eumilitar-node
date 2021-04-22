@@ -8,6 +8,10 @@ const driver = driverFactory();
 const app = new Application(driver);
 const api = supertest(app.server);
 
+beforeAll(async (done) => {
+    driver.migrate.latest().finally(done)
+})
+
 describe('Teste na api', () => {
     const user = userFactory();
     const service = UserService(driver);
@@ -70,7 +74,8 @@ describe('Teste na api', () => {
     })
     afterAll(async (done) => {
         await deleteUser(user, service)
-        await driver.destroy()
         done()
     })
 })
+
+afterAll((done) => driver.destroy().finally(done))
