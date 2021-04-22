@@ -6,6 +6,7 @@ import UserRepository from '../models/User';
 import Controller from './Controller';
 import crypto from 'crypto';
 import { TokenService } from '../models/Token';
+import { ValidationError } from 'yup';
 
 export interface AuthInterface {
     email: string;
@@ -14,7 +15,7 @@ export interface AuthInterface {
 
 export type AuthResponse = {
     token?: string,
-    errors?: string[]
+    errors?: [keyof AuthInterface, string][]
 }
 
 export default class AuthController extends Controller<AuthInterface> {
@@ -42,23 +43,24 @@ export default class AuthController extends Controller<AuthInterface> {
             login_time: new Date(),
             user_id: user.id,
             user_agent: userAgent,
-        })
+        });
     }
 
     public async auth(userAgent?: string): Promise<AuthResponse> {
-        const { isValid, errors, data } = await this.validate();
-        if (isValid && !!data) {
+        const { data, error} = await this.validate()
+            .then(data => ({ data, error: undefined }))
+            .catch(error => ({ data: undefined, error }));
+        if(!!data) {
             const useCase = new UserUseCase(this.repository);
-            const auth = await useCase.authenticate(data.email, data.password)
+            const auth = await useCase.authenticate(data.email, data.password);
             if (!!auth.email && !!auth.password) {
-                const token = await this.generateToken()
-                if (!!useCase.user) this.saveToken(useCase.user, token, userAgent)
-                return { token }
+                const token = await this.generateToken();
+                if (!!useCase.user) this.saveToken(useCase.user, token, userAgent);
+                return { token };
             }
-            if (!auth.email) return { errors: ['Email inválido'] };
-            else return { errors: ['Senha inválida'] };
-        } else {
-            return { errors }
+            if (!auth.email) throw { errors: [['email', 'Email inválido']] };
+            else throw { errors: [['password', 'Senha inválida']] };
         }
+        return { errors: [[error.type, error.message]] }
     }
 }

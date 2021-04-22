@@ -41,7 +41,7 @@ describe('Teste na api', () => {
         expect(response.status).toBe(400)
         expect(response.body.token).toBeUndefined()
         expect(response.body.errors.length).toBe(1)
-        expect(response.body.errors).toEqual(['Email inválido'])
+        expect(response.body.errors).toEqual([['email', 'Email inválido']])
         done()
     })
     it('Senha errada', async done => {
@@ -55,7 +55,7 @@ describe('Teste na api', () => {
         expect(response.status).toBe(400)
         expect(response.body.errors.length).toBe(1)
         expect(response.body.token).toBeUndefined()
-        expect(response.body.errors).toEqual(['Senha inválida'])
+        expect(response.body.errors).toEqual([['password', 'Senha inválida']])
         done()
     })
     it('Email errado', async (done) => {
@@ -69,7 +69,7 @@ describe('Teste na api', () => {
         expect(response.status).toBe(400)
         expect(response.body.errors.length).toBe(1)
         expect(response.body.token).toBeUndefined()
-        expect(response.body.errors).toEqual(['Informe um email válido'])
+        expect(response.body.errors).toEqual([['email', 'Informe um email válido']])
         done()
     })
     afterAll(async (done) => {
