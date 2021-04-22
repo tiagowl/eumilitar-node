@@ -48,8 +48,8 @@ export default class AuthController extends Controller<AuthInterface> {
 
     public async auth(userAgent?: string): Promise<AuthResponse> {
         const { data, error} = await this.validate()
-            .then(data => ({ data, error: undefined }))
-            .catch(error => ({ data: undefined, error }));
+            .then(validated => ({ data: validated, error: undefined }))
+            .catch(errors => ({ data: undefined, error: errors }));
         if(!!data) {
             const useCase = new UserUseCase(this.repository);
             const auth = await useCase.authenticate(data.email, data.password);
