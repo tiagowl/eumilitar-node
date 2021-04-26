@@ -14,8 +14,8 @@ beforeAll(async (done) => {
 
 describe('Teste na api', () => {
     const user = userFactory();
-    const service = UserService(driver);
     beforeAll(async (done) => {
+        const service = UserService(driver);
         saveUser(user, service).finally(done)
     })
     it('Teste no login', async (done) => {
@@ -73,6 +73,7 @@ describe('Teste na api', () => {
         done()
     })
     afterAll(async (done) => {
+        const service = UserService(driver);
         await deleteUser(user, service)
         done()
     })

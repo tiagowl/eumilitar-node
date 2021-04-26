@@ -2,6 +2,8 @@ import faker from 'faker';
 import knex, { Knex } from 'knex';
 import bcrypt from 'bcrypt';
 import settings from '../src/settings';
+import nodemailer from 'nodemailer';
+import Mail from 'nodemailer/lib/mailer';
 
 export const userFactory = () => ({
     email: faker.internet.email(),
@@ -29,7 +31,7 @@ export const dbSetting: Knex.Config = {
 }
 
 export const driverFactory = () => {
-    const driver = knex(dbSetting);
+    const driver = knex(settings.database);
     driver.migrate.latest();
     return driver;
 }
@@ -46,6 +48,22 @@ export async function saveUser(user: any, service: Knex.QueryBuilder) {
 
 export async function deleteUser(user: any, service: Knex.QueryBuilder) {
     service
-        .where('email', user.email)
-        .del().delete()
+        .where(user)
+        .del();
+}
+
+export async function smtpFactory(): Promise<Mail> {
+    return new Promise((accept, reject) => {
+        nodemailer.createTestAccount((err, account) => {
+            if (account) {
+                accept(nodemailer.createTransport({
+                    ...account.smtp,
+                    auth: {
+                        user: account.user,
+                        pass: account.pass,
+                    }
+                }))
+            } else reject(err);
+        })
+    })
 }
