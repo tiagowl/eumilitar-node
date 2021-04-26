@@ -44,7 +44,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
 
     private async writeMessage() {
         return `
-            Acesse o link para criar uma nova senha de senha 
+            Acesse o link para criar uma nova senha de senha
             ${this.config.url}${this.token}
         `
     }
@@ -85,15 +85,15 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
         })
     }
 
-    private async saveToken(user_id: number) {
+    private async saveToken(userId: number) {
         if (this.token) {
             const token: PasswordRecoveryInsert = {
                 token: this.token,
                 expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
                 selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
-                user_id,
+                user_id: userId,
             }
-            return this.service.insert(token)
+            return this.service.insert(token);
         }
         throw { message: "Token inválido" }
     }
@@ -108,7 +108,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
                 return this.sendConfirmationEmail(user.email)
                     .then(async () => ({ message: "Email enviado! Verifique sua caixa de entrada." }))
                     .catch(async () => {
-                        throw { message: 'Falha ao enviar o email! Tente novamente' }
+                        throw { message: 'Falha ao enviar o email! Tente novamente ou entre em contato com o suporte.' }
                     });
             } catch {
                 throw { message: 'Usuário não encontrado' }

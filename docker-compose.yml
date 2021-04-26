@@ -9,6 +9,7 @@ services:
         restart: on-failure
         volumes:
             - ./:/usr/share/api:z
+        env_file: .env
         ports:
             - 80:22000
         depends_on:
