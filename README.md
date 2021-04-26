@@ -16,7 +16,7 @@ Type: `application/json`
 ```
 
 #### Response:  
-- Type: `application/json`  
+Type: `application/json`  
 - Status: 201
     ```
     {
@@ -27,5 +27,33 @@ Type: `application/json`
     ```
     {
         "errors": [<Field: string>, <Message: string>][]
+    }
+    ```
+
+### Password Recovery  
+Send a password recovery email to user  
+
+    POST /password-recoveries/
+
+#### Receive:
+Type: `application/json`  
+```
+{
+    "email": string
+}
+```  
+
+#### Response:
+Type: `application/json`
+- Status: 201
+    ```
+    {
+        "message": string
+    }
+    ```
+- Status: 400
+    ```
+    {
+        "message": string
     }
     ```
