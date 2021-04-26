@@ -7,6 +7,12 @@ const routes: Route[] = [
         handlers: [
             { handler: handlers.token, method: 'post' }
         ]
+    },
+    {
+        path: '/password-recoveries/',
+        handlers: [
+            { handler: handlers.passwordRecoveries, method: 'post' }
+        ]
     }
 ]
 
