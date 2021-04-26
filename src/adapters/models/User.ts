@@ -60,10 +60,10 @@ interface UserModelFilter {
     date_modified?: Date;
 }
 
-export const UserService = (driver: Knex) => driver<UserModel>('users')
+export const UserService = (driver: Knex) => driver<UserModelFilter, UserModel>('users')
 
 export default class UserRepository implements RepositoryInterface<User, UserFilter> {
-    protected service: Knex.QueryBuilder<UserModel>;
+    protected service: Knex.QueryBuilder<UserModelFilter, UserModel>;
     protected fieldsMap: FieldsMap = [
         { entity: ['id', Number], db: ['user_id', Number] },
         { entity: ['firstName', String], db: ['first_name', String] },
