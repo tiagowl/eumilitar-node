@@ -18,14 +18,15 @@ export type AuthResponse = {
     errors?: [keyof AuthInterface, string][]
 }
 
+export const schema = yup.object().shape({
+    email: yup.string().required('O campo "email" é obrigatório').email('Informe um email válido'),
+    password: yup.string().required('O campo "senha" é obrigatório')
+})
+
 export default class AuthController extends Controller<AuthInterface> {
     private repository: UserRepository;
 
     constructor(data: AuthInterface, driver: Knex) {
-        const schema = yup.object().shape({
-            email: yup.string().required('O campo "email" é obrigatório').email('Informe um email válido'),
-            password: yup.string().required('O campo "senha" é obrigatório')
-        })
         super(data, schema, driver);
         this.repository = new UserRepository(driver);
     }
@@ -47,9 +48,7 @@ export default class AuthController extends Controller<AuthInterface> {
     }
 
     public async auth(userAgent?: string): Promise<AuthResponse> {
-        const { data, error} = await this.validate()
-            .then(validated => ({ data: validated, error: undefined }))
-            .catch(errors => ({ data: undefined, error: errors }));
+        const { data, error} = await this.validate();
         if(!!data) {
             const useCase = new UserUseCase(this.repository);
             const auth = await useCase.authenticate(data.email, data.password);
@@ -61,6 +60,6 @@ export default class AuthController extends Controller<AuthInterface> {
             if (!auth.email) throw { errors: [['email', 'Email inválido']] };
             else throw { errors: [['password', 'Senha inválida']] };
         }
-        return { errors: [[error.type, error.message]] }
+        throw { errors: [[error?.type, error?.message]] }
     }
 }
