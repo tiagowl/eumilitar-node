@@ -12,14 +12,10 @@ const settings = Object.freeze({
         port: Number(process.env.PORT) || 22000,
         host: process.env.HOST || '0.0.0.0'
     },
-    helmet: {
-    },
+    helmet: {},
     logging: { format: 'common', options: {} },
     cors: {
         origin: process.env.CORS,
-    },
-    csrf: {
-        cookie: true,
     },
     session: {
         keys: process.env.KEYS?.split(' ') || new Array(2).fill(5).map(() => Math.random().toString(32).substr(2))
@@ -32,6 +28,10 @@ const settings = Object.freeze({
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
+    },
+    messageConfig: {
+        sender: process.env.EMAIL_SENDER || "",
+        url: process.env.PASSWORD_RECOVERY_URL || "",
     }
 })
 
