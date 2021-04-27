@@ -49,7 +49,7 @@
   },
   "scripts": {
     "start": "node dist/index.js",
-    "test": "jest",
+    "test": "yarn lint && jest",
     "build": "tsc && knex migrate:latest",
     "dev": "nodemon",
     "lint": "tslint -c tslint.json 'src/**/*.ts' 'tests/**/*.ts'"
