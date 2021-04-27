@@ -2,23 +2,26 @@ import faker from 'faker';
 import supertest from 'supertest';
 import { UserService } from '../src/adapters/models/User';
 import Application from '../src/drivers/api';
-import { deleteUser, driverFactory, saveUser, userFactory } from './shortcuts';
+import { deleteUser, driverFactory, saveUser, smtpFactory, userFactory } from './shortcuts';
 
 const driver = driverFactory();
-const app = new Application(driver);
-const api = supertest(app.server);
 
 beforeAll(async (done) => {
-    driver.migrate.latest().finally(done)
+    await driver.migrate.latest()
+    done()
 })
 
 describe('Teste na api', () => {
+
     const user = userFactory();
     beforeAll(async (done) => {
         const service = UserService(driver);
         saveUser(user, service).finally(done)
     })
     it('Teste no login', async (done) => {
+        const smtp = await smtpFactory()
+        const app = new Application(driver, smtp);
+        const api = supertest(app.server);
         const credentials = {
             email: user.email,
             password: user.passwd,
@@ -31,6 +34,9 @@ describe('Teste na api', () => {
         done()
     })
     it('Teste login falho', async (done) => {
+        const smtp = await smtpFactory()
+        const app = new Application(driver, smtp);
+        const api = supertest(app.server);
         const wrongCredentials = {
             email: 'lsjflas@faldfjl.comdd',
             password: user.passwd,
@@ -45,6 +51,9 @@ describe('Teste na api', () => {
         done()
     })
     it('Senha errada', async done => {
+        const smtp = await smtpFactory()
+        const app = new Application(driver, smtp);
+        const api = supertest(app.server);
         const wrongPassword = {
             email: user.email,
             password: '454',
@@ -59,6 +68,9 @@ describe('Teste na api', () => {
         done()
     })
     it('Email errado', async (done) => {
+        const smtp = await smtpFactory()
+        const app = new Application(driver, smtp);
+        const api = supertest(app.server);
         const wrongPassword = {
             email: 'fdd',
             password: '454',
@@ -71,6 +83,17 @@ describe('Teste na api', () => {
         expect(response.body.token).toBeUndefined()
         expect(response.body.errors).toEqual([['email', 'Informe um email válido']])
         done()
+    })
+    it('Recuperação de senha', async (done) => {
+        const smtp = await smtpFactory()
+        const app = new Application(driver, smtp);
+        const api = supertest(app.server);
+        const credentials = { email: user.email };
+        const response = await api.post('/password-recoveries/')
+            .send(credentials)
+        expect(response.body).toEqual({ message: "Email enviado! Verifique sua caixa de entrada." });
+        expect(response.status).toBe(201);
+        done();
     })
     afterAll(async (done) => {
         const service = UserService(driver);

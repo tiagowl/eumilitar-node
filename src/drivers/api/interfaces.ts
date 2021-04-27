@@ -1,9 +1,15 @@
 import { Knex } from "knex";
 import { RequestHandler } from 'express';
+import Mail from "nodemailer/lib/mailer";
 
 export type Method = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
-export type Handler = (driver: Knex) => RequestHandler;
+export type HandlerProps = {
+    driver: Knex;
+    smtp: Mail;
+}
+
+export type Handler = (props: HandlerProps) => RequestHandler;
 
 export interface HTTPHandler {
     method: Method;

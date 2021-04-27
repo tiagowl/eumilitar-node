@@ -52,17 +52,19 @@ export async function deleteUser(user: any, service: Knex.QueryBuilder) {
         .del();
 }
 
+
 export async function smtpFactory(): Promise<Mail> {
     return new Promise((accept, reject) => {
         nodemailer.createTestAccount((err, account) => {
             if (account) {
-                accept(nodemailer.createTransport({
+                const transporter = nodemailer.createTransport({
                     ...account.smtp,
                     auth: {
                         user: account.user,
                         pass: account.pass,
                     }
-                }))
+                })
+                accept(transporter)
             } else reject(err);
         })
     })

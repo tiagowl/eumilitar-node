@@ -9,7 +9,8 @@ import { PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveri
 const driver = driverFactory()
 
 beforeAll(async (done) => {
-    driver.migrate.latest().finally(done)
+    await driver.migrate.latest();
+    done();
 })
 
 
