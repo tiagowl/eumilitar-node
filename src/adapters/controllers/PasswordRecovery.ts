@@ -5,7 +5,7 @@ import * as yup from 'yup';
 import UserRepository from "../models/User";
 import crypto from 'crypto';
 import { PasswordRecoveryInsert, PasswordRecoveryModel, PasswordRecoveryService } from '../models/PasswordRecoveries';
-
+import PasswordRecoveryRender from '../views/PasswordRecovery';
 export interface PasswordRecoveryInterface {
     email: string;
 }
@@ -42,46 +42,30 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
         return crypto.randomBytes(64).toString('base64').substring(0, 64);
     }
 
-    private async writeMessage() {
-        return `
-            Acesse o link para criar uma nova senha de senha
-            ${this.config.url}${this.token}
-        `
-    }
-
-    private async renderMessage() {
+    private async writeMessage(username: string) {
         const link = `${this.config.url}${this.token}`;
         return `
-            <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-            <html xmlns="http://www.w3.org/1999/xhtml">
-                <head>
-                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-                    <title>Recuperação de senha</title>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-                </head>
-                <body style="margin: 0; padding: 0;">
-                    <table border="0" cellpadding="1" cellspacing="1" width="100%">
-                        <tr>
-                            <td>Clique no link para criar uma nova senha</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <a href="${link}">${link}</a>
-                            </td>
-                        </tr>
-                    </table>
-                </body>
-            </html>
+            Olá, ${username}!\n
+            Aqui está o link para você cadastrar sua nova senha. Acesse no link abaixo para prosseguir.
+            ${link} \n
+            Caso você não tenha feito esta solicitação, basta ignorar este e-mail.\n
+            Atenciosamente,
+            Equipe de Suporte Eu Militar
         `
     }
 
-    private async sendConfirmationEmail(email: string) {
+    private async renderMessage(username: string) {
+        const link = `${this.config.url}${this.token}`;
+        return PasswordRecoveryRender({ link, username })
+    }
+
+    private async sendConfirmationEmail(email: string, username: string) {
         return this.smtp.sendMail({
             from: this.config.sender,
             to: email,
             subject: 'Recuperação de senha',
-            text: await this.writeMessage(),
-            html: await this.renderMessage(),
+            text: await this.writeMessage(username),
+            html: await this.renderMessage(username),
         })
     }
 
@@ -105,7 +89,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
                 const user = await this.repository.get(data);
                 this.token = await this.generateConfirmationToken();
                 await this.saveToken(user.id);
-                return this.sendConfirmationEmail(user.email)
+                return this.sendConfirmationEmail(user.email, user.fullName)
                     .then(async () => ({ message: "Email enviado! Verifique sua caixa de entrada." }))
                     .catch(async () => {
                         throw { message: 'Falha ao enviar o email! Tente novamente ou entre em contato com o suporte.' }

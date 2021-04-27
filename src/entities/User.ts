@@ -62,6 +62,8 @@ export default class User implements UserInterface {
     }
     get lastName() { return this.#lastName }
 
+    get fullName() { return [this.#firstName, this.#lastName].join(' ') }
+
     set email(value: string) {
         this.#email = value;
         this.updateDate();
