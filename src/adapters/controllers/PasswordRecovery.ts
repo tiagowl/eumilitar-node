@@ -6,6 +6,8 @@ import UserRepository from "../models/User";
 import crypto from 'crypto';
 import { PasswordRecoveryInsert, PasswordRecoveryModel, PasswordRecoveryService } from '../models/PasswordRecoveries';
 import PasswordRecoveryRender from '../views/PasswordRecovery';
+import querystring from 'querystring';
+
 export interface PasswordRecoveryInterface {
     email: string;
 }
@@ -42,8 +44,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
         return crypto.randomBytes(64).toString('base64').substring(0, 64);
     }
 
-    private async writeMessage(username: string) {
-        const link = `${this.config.url}${this.token}`;
+    private async writeMessage(username: string, link: string) {
         return `
             Olá, ${username}!\n
             Aqui está o link para você cadastrar sua nova senha. Acesse no link abaixo para prosseguir.
@@ -54,18 +55,19 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
         `
     }
 
-    private async renderMessage(username: string) {
-        const link = `${this.config.url}${this.token}`;
-        return PasswordRecoveryRender({ link, username })
+    private async renderMessage(username: string, link: string) {
+        return await PasswordRecoveryRender({ link, username })
     }
 
     private async sendConfirmationEmail(email: string, username: string) {
+        const token = encodeURIComponent(this.token || "")
+        const link = `${this.config.url}${token}`;
         return this.smtp.sendMail({
             from: this.config.sender,
             to: email,
             subject: 'Recuperação de senha',
-            text: await this.writeMessage(username),
-            html: await this.renderMessage(username),
+            text: await this.writeMessage(username, link),
+            html: await this.renderMessage(username, link),
         })
     }
 
