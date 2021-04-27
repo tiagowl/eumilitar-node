@@ -4,6 +4,8 @@ import bcrypt from 'bcrypt';
 import settings from '../src/settings';
 import nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
+import crypto from 'crypto';
+import { PasswordRecoveryInsert, PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
 
 export const userFactory = () => ({
     email: faker.internet.email(),
@@ -68,4 +70,19 @@ export async function smtpFactory(): Promise<Mail> {
             } else reject(err);
         })
     })
+}
+
+export async function generateConfirmationToken() {
+    return crypto.randomBytes(64).toString('base64').substring(0, 64);
+}
+
+export async function saveConfirmationToken(token: string, userId: number, driver: Knex, expiration?: Date){
+    const data: PasswordRecoveryInsert = {
+        token: token,
+        expires: expiration || new Date(Date.now() + 24 * 60 * 60 * 1000),
+        selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
+        user_id: userId,
+    }
+    const service = PasswordRecoveryService(driver);
+    return service.insert(data);
 }

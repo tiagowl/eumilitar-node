@@ -1,8 +1,8 @@
 import AuthController from '../src/adapters/controllers/Auth';
 import { UserService } from '../src/adapters/models/User';
 import { TokenService } from '../src/adapters/models/Token';
-import { deleteUser, driverFactory, saveUser, smtpFactory, userFactory } from './shortcuts';
-import PasswordRecoveryController from '../src/adapters/controllers/PasswordRecovery';
+import { deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
+import PasswordRecoveryController, { CheckPasswordToken } from '../src/adapters/controllers/PasswordRecovery';
 import settings from '../src/settings';
 import { PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
 
@@ -72,6 +72,58 @@ describe('Testes na autenticação', () => {
             expect(error).toEqual({ message: "Email inválido" });
         }
         done()
+    })
+    test('Verificar token de mudança de senha', async (done) => {
+        const token = await generateConfirmationToken();
+        const service = UserService(driver);
+        const userData = await service.where('email', user.email).first();
+        saveConfirmationToken(token, userData?.user_id || 0, driver);
+        const controller = new CheckPasswordToken({ token }, driver);
+        const { isValid } = await controller.check();
+        expect(isValid).toBeTruthy()
+        done();
+    })
+    test('Verificar token expirado de mudança de senha', async (done) => {
+        const token = await generateConfirmationToken();
+        const service = UserService(driver);
+        const userData = await service.where('email', user.email).first();
+        saveConfirmationToken(token, userData?.user_id || 0, driver, new Date());
+        const controller = new CheckPasswordToken({ token }, driver);
+        const { isValid } = await controller.check();
+        expect(isValid).toBeFalsy()
+        done();
+    })
+    test('Verificar token expirado de mudança de senha', async (done) => {
+        const token = await generateConfirmationToken();
+        const service = UserService(driver);
+        const userData = await service.where('email', user.email).first();
+        saveConfirmationToken(token, userData?.user_id || 0, driver, new Date(0));
+        const controller = new CheckPasswordToken({ token }, driver);
+        const { isValid } = await controller.check();
+        expect(isValid).toBeFalsy()
+        done();
+    })
+    test('Verificar token inválido de mudança de senha', async (done) => {
+        const token = await generateConfirmationToken();
+        const invalidToken = await generateConfirmationToken()
+        const service = UserService(driver);
+        const userData = await service.where('email', user.email).first();
+        saveConfirmationToken(token, userData?.user_id || 0, driver);
+        const controller = new CheckPasswordToken({ token: invalidToken }, driver);
+        const { isValid } = await controller.check();
+        expect(isValid).toBeFalsy()
+        done();
+    })
+    test('Verificar token inválido de mudança de senha', async (done) => {
+        const token = await generateConfirmationToken();
+        const invalidToken = await (await generateConfirmationToken()).slice(0, 15)
+        const service = UserService(driver);
+        const userData = await service.where('email', user.email).first();
+        saveConfirmationToken(token, userData?.user_id || 0, driver);
+        const controller = new CheckPasswordToken({ token: invalidToken }, driver);
+        const { isValid } = await controller.check();
+        expect(isValid).toBeFalsy()
+        done();
     })
     afterAll((done) => {
         const service = UserService(driver);
