@@ -9,7 +9,7 @@
     "ignore": [
         "src/**/*.spec.ts",
         "src/**/*.test.ts",
-        "tests",
+        "tests/*",
         "node_modules"
     ],
     "exec": "yarn lint && ts-node ./src/index.ts"

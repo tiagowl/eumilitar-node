@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
-import { Knex } from "knex";
 import AuthController, { AuthInterface, AuthResponse } from "../../adapters/controllers/Auth";
+import CheckPasswordToken, { CheckPasswordInterface, CheckedTokenInterface } from "../../adapters/controllers/CheckPasswordToken";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
 import settings from '../../settings';
 import { HandlerProps } from "./interfaces";
@@ -29,6 +29,21 @@ export function passwordRecoveries({ driver, smtp }: HandlerProps): RequestHandl
             res.status(201).json(response);
         } catch (error) {
             res.status(400).json(error);
+        } finally {
+            res.end();
+        }
+    }
+}
+
+
+export function checkChangePasswordToken({ driver }: HandlerProps): RequestHandler<any, CheckedTokenInterface, CheckedTokenInterface> {
+    return async (req, res) => {
+        try {
+            const controller = new CheckPasswordToken(req.params, driver);
+            const response = await controller.check();
+            res.status(200).json(response);
+        } catch (error) {
+            res.status(500).json({ isValid: false });
         } finally {
             res.end();
         }

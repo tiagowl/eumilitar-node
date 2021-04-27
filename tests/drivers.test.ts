@@ -2,7 +2,7 @@ import faker from 'faker';
 import supertest from 'supertest';
 import { UserService } from '../src/adapters/models/User';
 import Application from '../src/drivers/api';
-import { deleteUser, driverFactory, saveUser, smtpFactory, userFactory } from './shortcuts';
+import { deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
 
 const driver = driverFactory();
 
@@ -93,6 +93,19 @@ describe('Teste na api', () => {
             .send(credentials)
         expect(response.body).toEqual({ message: "Email enviado! Verifique sua caixa de entrada." });
         expect(response.status).toBe(201);
+        done();
+    })
+    test('Verificar token de mudança de senha', async (done) => {
+        const smtp = await smtpFactory()
+        const app = new Application(driver, smtp);
+        const api = supertest(app.server);
+        const token = await generateConfirmationToken();
+        const service = UserService(driver);
+        const userData = await service.where('email', user.email).first();
+        saveConfirmationToken(token, userData?.user_id || 0, driver);
+        const response = await api.get(`/password-recoveries/${encodeURIComponent(token)}/`);
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ isValid: true });
         done();
     })
     afterAll(async (done) => {

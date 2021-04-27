@@ -2,9 +2,10 @@ import AuthController from '../src/adapters/controllers/Auth';
 import { UserService } from '../src/adapters/models/User';
 import { TokenService } from '../src/adapters/models/Token';
 import { deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
-import PasswordRecoveryController, { CheckPasswordToken } from '../src/adapters/controllers/PasswordRecovery';
+import PasswordRecoveryController from '../src/adapters/controllers/PasswordRecovery';
 import settings from '../src/settings';
 import { PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
+import CheckPasswordToken from '../src/adapters/controllers/CheckPasswordToken';
 
 const driver = driverFactory()
 
@@ -21,6 +22,11 @@ describe('Testes na autenticação', () => {
         const service = UserService(driver);
         await saveUser(user, service)
         done();
+    })
+    afterAll((done) => {
+        const service = UserService(driver);
+        deleteUser(user, service)
+            .finally(done)
     })
     test('Login correto', async (done) => {
         const credentials = {
@@ -124,11 +130,6 @@ describe('Testes na autenticação', () => {
         const { isValid } = await controller.check();
         expect(isValid).toBeFalsy()
         done();
-    })
-    afterAll((done) => {
-        const service = UserService(driver);
-        deleteUser(user, service)
-            .finally(done)
     })
 })
 

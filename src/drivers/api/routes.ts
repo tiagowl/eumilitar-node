@@ -13,6 +13,12 @@ const routes: Route[] = [
         handlers: [
             { handler: handlers.passwordRecoveries, method: 'post' }
         ]
+    },
+    {
+        path: '/password-recoveries/:token/',
+        handlers: [
+            { handler: handlers.checkChangePasswordToken, method: 'get' }
+        ]
     }
 ]
 

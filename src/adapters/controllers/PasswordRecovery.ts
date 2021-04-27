@@ -104,31 +104,3 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
 
 }
 
-interface CheckPasswordInterface {
-    token: string;
-}
-
-export class CheckPasswordToken extends Controller<CheckPasswordInterface> {
-    private service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
-
-    constructor(data: CheckPasswordInterface, driver: Knex) {
-        const schema = yup.object().shape({
-            token: yup.string().required('O token é obrigatório').length(64, "Token inválido")
-        });
-        super(data, schema, driver);
-        this.service = PasswordRecoveryService(driver);
-    }
-
-    private async getTokenInfo(token: string) {
-        return await this.service.where('token', token).first();
-    }
-
-    public async check() {
-        const validated = await this.isValid();
-        const info = await this.getTokenInfo(this.data.token);
-        const expired = new Date(info?.expires || 0) <= new Date();
-        const isValid = validated && !expired && !!info;
-        return { isValid };
-    }
-
-}

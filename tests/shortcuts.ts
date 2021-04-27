@@ -78,7 +78,7 @@ export async function generateConfirmationToken() {
 
 export async function saveConfirmationToken(token: string, userId: number, driver: Knex, expiration?: Date){
     const data: PasswordRecoveryInsert = {
-        token: token,
+        token,
         expires: expiration || new Date(Date.now() + 24 * 60 * 60 * 1000),
         selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
         user_id: userId,
