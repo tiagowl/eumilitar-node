@@ -43,9 +43,13 @@ export default class UserUseCase extends UseCase<User, UserFilter> {
     public async updatePassword(id: number, password: string) {
         this.#user = await this.repository.get({ id });
         if(!!this.#user) {
-            this.#user.password = await this.hashPassword(password);
+            const hash = await this.hashPassword(password);
+            this.#user.password = hash;
             const filtered = await this.repository.filter({ id });
-            const amount = await filtered.update(this.#user);
+            const amount = await filtered.update({
+                password: hash,
+                lastModified: this.#user.lastModified
+            });
             if(amount > 1) throw new Error('Mais de um usuário afetado');
             return !!amount;
         }

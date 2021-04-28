@@ -32,6 +32,7 @@ const settings = Object.freeze({
     messageConfig: {
         sender: process.env.EMAIL_SENDER || "",
         url: process.env.PASSWORD_RECOVERY_URL || "",
+        expirationTime: Number(process.env.EXPIRATION_TIME || 4)
     }
 })
 

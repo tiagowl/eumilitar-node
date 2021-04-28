@@ -12,11 +12,16 @@ export interface ChangePasswordInterface {
 }
 
 export const schema = yup.object({
-    password: yup.string().required('É preciso criar uma senha nova')
-    .min(8, "A senha deve conter pelo menos 8 caracteres").max(16, "A senha deve conter no máximo 16 caracteres"),
-    confirmPassword: yup.string().required('É preciso confirmar a senha').min(8).max(16)
-        .oneOf([yup.ref('password'), null], "As senhas não coincidem"),
-    token: yup.string().required('O token é obrigatório').length(64, 'Token inválido')
+    password: yup.string()
+        .required('É preciso criar uma senha nova')
+        .min(8, "A senha deve conter pelo menos 8 caracteres")
+        .max(16, "A senha deve conter no máximo 16 caracteres"),
+    confirmPassword: yup.string()
+        .required('É preciso confirmar sua senha')
+        .oneOf([yup.ref('password')], "As senhas não coincidem"),
+    token: yup.string()
+        .required('O token é obrigatório')
+        .length(64, 'Token inválido')
 })
 
 export default class ChangePasswordController extends Controller<ChangePasswordInterface> {
@@ -30,15 +35,19 @@ export default class ChangePasswordController extends Controller<ChangePasswordI
     private async validateToken(token: string) {
         const checker = new CheckPasswordToken({ token }, this.driver);
         const { isValid } = await checker.check();
-        if (!isValid || !checker.tokenData) throw { error: 'Token inválido' }
+        if (!isValid || !checker.tokenData) throw { message: 'Token inválido' }
         return checker.tokenData;
     }
 
     public async updatePassword() {
-        const data = await this.validate();
-        const tokenData = await this.validateToken(data.token);
-        const useCase = new UserUseCase(this.repository);
-        const updated = await useCase.updatePassword(tokenData.user_id, data.password);
-        return { updated }
+        try {
+            const data = await this.validate();
+            const tokenData = await this.validateToken(data.token);
+            const useCase = new UserUseCase(this.repository);
+            const updated = await useCase.updatePassword(tokenData.user_id, data.password);
+            return { updated }
+        } catch (error) {
+            throw { message: error.message }
+        }
     }
 }

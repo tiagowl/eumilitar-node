@@ -1,6 +1,12 @@
 import { Knex } from "knex";
 import { ObjectSchema, ValidationError } from "yup";
 
+
+export interface ResponseError {
+    message?: string;
+    errors?: [string, string][]
+}
+
 export default class Controller<Fields> {
     protected data: Fields;
     protected schema: ObjectSchema<any>;
@@ -24,9 +30,10 @@ export default class Controller<Fields> {
             recursive: true,
         })
             .catch(async (errors: ValidationError) => {
-                // tslint:disable-next-line
-                console.log(errors)
-                throw { errors: [errors.inner.map(error => ([error.path, error.message]))] };
+                throw {
+                    message: errors.message,
+                    errors: errors.inner.map(error => ([error.path, error.message])),
+                };
             });
     }
 

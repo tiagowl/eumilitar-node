@@ -23,6 +23,7 @@ export interface UserUpdateData {
     email?: string;
     status?: AccountStatus;
     permission?: AccountPermission;
+    password?: string;
 }
 
 export default class User implements UserInterface {
@@ -70,7 +71,10 @@ export default class User implements UserInterface {
     }
     get email() { return this.#email }
 
-    set password(value: string) { this.#password = value }
+    set password(value: string) {
+        this.#password = value;
+        this.updateDate();
+    }
 
     set status(value: AccountStatus) {
         this.#status = value;
@@ -99,6 +103,7 @@ export default class User implements UserInterface {
             this.#lastName = data.lastName || this.#lastName;
             this.#status = data.status || this.#status;
             this.#permission = data.permission || this.#permission;
+            this.#password = data.password || this.#password;
             this.updateDate();
         }
         return this;

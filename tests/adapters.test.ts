@@ -76,7 +76,10 @@ describe('Testes na autenticação', () => {
         try {
             await controller.recover();
         } catch (error) {
-            expect(error).toEqual({ message: "Email inválido" });
+            expect(error).toEqual({
+                message: "Email inválido",
+                errors: [["email", "Email inválido",]]
+            });
         }
         done()
     })
@@ -145,6 +148,7 @@ describe('Testes na autenticação', () => {
         }, driver);
         const updated = await controller.updatePassword();
         expect(updated).toEqual({ updated: true })
+        done();
     })
 })
 

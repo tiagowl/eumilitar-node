@@ -22,7 +22,7 @@ class UserRepository implements RepositoryInterface<User, UserFilter> {
     }
     async update(data: UserFilter) {
         this.usersList = this.usersList.map(item => {
-            Object.assign(item, data);
+            item.update(data);
             return item;
         })
         return this.usersList.length;

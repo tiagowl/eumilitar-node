@@ -3,11 +3,11 @@
 ## API Reference
 
 ### Authentication
-Create authorization token  
+Create authorization token.  
 
     POST /tokens/ 
 #### Receive:
-Type: `application/json`  
+Type: `application/json`;  
 ```
 {
     "email": string,
@@ -16,7 +16,7 @@ Type: `application/json`
 ```
 
 #### Response:  
-Type: `application/json`  
+Type: `application/json`;  
 - Status: 201
     ```
     {
@@ -26,17 +26,17 @@ Type: `application/json`
 - Status: 400
     ```
     {
-        "errors": [<Field: string>, <Message: string>][]
+        "errors": [<Field:string>, <Message:string>][]
     }
     ```
 
 ### Password Recovery  
-Send a password recovery email to user  
+Send a password recovery email to user.  
 
     POST /password-recoveries/
 
 #### Receive:
-Type: `application/json`  
+Type: `application/json`;  
 ```
 {
     "email": string
@@ -44,7 +44,7 @@ Type: `application/json`
 ```  
 
 #### Response:
-Type: `application/json`
+Type: `application/json`;  
 - Status: 201
     ```
     {
@@ -57,3 +57,18 @@ Type: `application/json`
         "message": string
     }
     ```
+
+### Check Password Recovery Token
+Verify if the password recovery token is valid.  
+
+    GET /password-recoveries/<Token:string>/
+
+#### Response:
+Type: `application/json`;  
+Status: 200;  
+```
+{
+    isValid: boolean
+}
+```  
+

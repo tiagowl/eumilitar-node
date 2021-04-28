@@ -72,8 +72,8 @@ export default class UserRepository implements RepositoryInterface<User, UserFil
         { entity: ['password', String], db: ['passwd', String] },
         { entity: ['status', parseStatus], db: ['status', parseStatusToDB] },
         { entity: ['permission', parsePermission], db: ['permission', parsePermissionToDB] },
-        { entity: ['creationDate', Date], db: ['date_created', String] },
-        { entity: ['lastModified', Date], db: ['date_modified', String] },
+        { entity: ['creationDate', (value) => new Date(value)], db: ['date_created', (value) => new Date(value)] },
+        { entity: ['lastModified', (value) => new Date(value)], db: ['date_modified', (value) => new Date(value)] },
     ]
 
     constructor(driver: Knex) {
@@ -106,15 +106,16 @@ export default class UserRepository implements RepositoryInterface<User, UserFil
         return this;
     }
 
-    public async update(data: UserFilter){
-        return this.service.update(await this.toDb(data));
+    public async update(data: UserFilter) {
+        const parsedData = await this.toDb(data);
+        return this.service.update(parsedData);
     }
 
     public async get(filter: UserFilter) {
         const filtered: any = this._filter(filter)
         return new Promise<User>((accept, reject) => {
             filtered.then((user: UserModel[]) => {
-                if (!user[0]) return reject(new Error('User not found'));
+                if (!user[0]) return reject({ message: 'Usuário não encontrado' });
                 return accept(new User({
                     id: user[0].user_id,
                     firstName: user[0].first_name,
