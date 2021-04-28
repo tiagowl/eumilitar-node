@@ -6,6 +6,7 @@ import PasswordRecoveryController from '../src/adapters/controllers/PasswordReco
 import settings from '../src/settings';
 import { PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
 import CheckPasswordToken from '../src/adapters/controllers/CheckPasswordToken';
+import ChangePasswordController from '../src/adapters/controllers/ChangePassword';
 
 const driver = driverFactory()
 
@@ -122,7 +123,7 @@ describe('Testes na autenticação', () => {
     })
     test('Verificar token inválido de mudança de senha', async (done) => {
         const token = await generateConfirmationToken();
-        const invalidToken = await (await generateConfirmationToken()).slice(0, 15)
+        const invalidToken = (await generateConfirmationToken()).slice(0, 15)
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
         saveConfirmationToken(token, userData?.user_id || 0, driver);
@@ -130,6 +131,20 @@ describe('Testes na autenticação', () => {
         const { isValid } = await controller.check();
         expect(isValid).toBeFalsy()
         done();
+    })
+    test('Mudar senha', async done => {
+        const token = await generateConfirmationToken();
+        const service = UserService(driver);
+        const userData = await service.where('email', user.email).first();
+        saveConfirmationToken(token, userData?.user_id || 0, driver);
+        const newPassword = 'newPassword'
+        const controller = new ChangePasswordController({
+            password: newPassword,
+            confirmPassword: newPassword,
+            token,
+        }, driver);
+        const updated = await controller.updatePassword();
+        expect(updated).toEqual({ updated: true })
     })
 })
 

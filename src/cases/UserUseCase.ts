@@ -40,4 +40,16 @@ export default class UserUseCase extends UseCase<User, UserFilter> {
         return bcrypt.hash(password, salt);
     }
 
+    public async updatePassword(id: number, password: string) {
+        this.#user = await this.repository.get({ id });
+        if(!!this.#user) {
+            this.#user.password = await this.hashPassword(password);
+            const filtered = await this.repository.filter({ id });
+            const amount = await filtered.update(this.#user);
+            if(amount > 1) throw new Error('Mais de um usuário afetado');
+            return !!amount;
+        }
+        return false;
+    }
+
 }

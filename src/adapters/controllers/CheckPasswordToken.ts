@@ -10,16 +10,20 @@ export interface CheckedTokenInterface {
     isValid: boolean;
 }
 
+export const schema = yup.object({
+    token: yup.string().required('O token é obrigatório').length(64, "Token inválido")
+});
+
 export default class CheckPasswordToken extends Controller<CheckPasswordInterface> {
     private service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
+    private _tokenData?: PasswordRecoveryModel;
 
     constructor(data: CheckPasswordInterface, driver: Knex) {
-        const schema = yup.object().shape({
-            token: yup.string().required('O token é obrigatório').length(64, "Token inválido")
-        });
         super(data, schema, driver);
         this.service = PasswordRecoveryService(driver);
     }
+
+    get tokenData() { return this._tokenData }
 
     private async getTokenInfo(token: string) {
         return await this.service.where('token', token).first();
@@ -30,6 +34,7 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
         const info = await this.getTokenInfo(this.data.token);
         const expired = new Date(info?.expires || 0) <= new Date();
         const isValid = validated && !expired && !!info;
+        if(isValid) this._tokenData = info;
         return { isValid };
     }
 

@@ -1,10 +1,6 @@
 import { Knex } from "knex";
 import { ObjectSchema, ValidationError } from "yup";
 
-type Validation<Data> = {
-    data: Data | undefined;
-    error: ValidationError | undefined;
-}
 export default class Controller<Fields> {
     protected data: Fields;
     protected schema: ObjectSchema<any>;
@@ -20,10 +16,18 @@ export default class Controller<Fields> {
         return this.schema.isValid(this.data);
     }
 
-    public async validate(): Promise<Validation<Fields>> {
-        return this.schema.validate(this.data)
-            .then(validated => ({ data: validated, error: undefined }))
-            .catch(errors => ({ data: undefined, error: errors }));
+    public async validate(): Promise<Fields> {
+        return this.schema.validate(this.data, {
+            strict: true,
+            abortEarly: false,
+            stripUnknown: false,
+            recursive: true,
+        })
+            .catch(async (errors: ValidationError) => {
+                // tslint:disable-next-line
+                console.log(errors)
+                throw { errors: [errors.inner.map(error => ([error.path, error.message]))] };
+            });
     }
 
 }

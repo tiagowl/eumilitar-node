@@ -35,7 +35,7 @@ type FieldsMap = {
     db: [keyof UserModel, Parser]
 }[]
 
-interface UserModel {
+export interface UserModel {
     user_id: number;
     first_name: string;
     last_name: string;
@@ -48,7 +48,7 @@ interface UserModel {
 }
 
 
-interface UserModelFilter {
+export interface UserModelFilter {
     user_id?: number;
     first_name?: string;
     last_name?: string;
@@ -63,8 +63,8 @@ interface UserModelFilter {
 export const UserService = (driver: Knex) => driver<UserModelFilter, UserModel>('users')
 
 export default class UserRepository implements RepositoryInterface<User, UserFilter> {
-    protected service: Knex.QueryBuilder<UserModelFilter, UserModel>;
-    protected fieldsMap: FieldsMap = [
+    private service: Knex.QueryBuilder<UserModelFilter, UserModel>;
+    private fieldsMap: FieldsMap = [
         { entity: ['id', Number], db: ['user_id', Number] },
         { entity: ['firstName', String], db: ['first_name', String] },
         { entity: ['lastName', String], db: ['last_name', String] },
@@ -97,13 +97,21 @@ export default class UserRepository implements RepositoryInterface<User, UserFil
         }, parsedParams)
     }
 
-    private async filter(filter: UserFilter): Promise<Knex.QueryBuilder> {
-        const filtered = this.service.where(await this.toDb(filter)).select('*')
-        return filtered
+    private async _filter(filter: UserFilter): Promise<Knex.QueryBuilder> {
+        return this.service.where(await this.toDb(filter))
+    }
+
+    public async filter(filter: UserFilter) {
+        this._filter(filter);
+        return this;
+    }
+
+    public async update(data: UserFilter){
+        return this.service.update(await this.toDb(data));
     }
 
     public async get(filter: UserFilter) {
-        const filtered: any = this.filter(filter)
+        const filtered: any = this._filter(filter)
         return new Promise<User>((accept, reject) => {
             filtered.then((user: UserModel[]) => {
                 if (!user[0]) return reject(new Error('User not found'));

@@ -18,7 +18,7 @@ export type AuthResponse = {
     errors?: [keyof AuthInterface, string][]
 }
 
-export const schema = yup.object().shape({
+export const schema = yup.object({
     email: yup.string().required('O campo "email" é obrigatório').email('Informe um email válido'),
     password: yup.string().required('O campo "senha" é obrigatório')
 })
@@ -48,18 +48,15 @@ export default class AuthController extends Controller<AuthInterface> {
     }
 
     public async auth(userAgent?: string): Promise<AuthResponse> {
-        const { data, error} = await this.validate();
-        if(!!data) {
-            const useCase = new UserUseCase(this.repository);
-            const auth = await useCase.authenticate(data.email, data.password);
-            if (!!auth.email && !!auth.password) {
-                const token = await this.generateToken();
-                if (!!useCase.user) this.saveToken(useCase.user, token, userAgent);
-                return { token };
-            }
-            if (!auth.email) throw { errors: [['email', 'Email inválido']] };
-            else throw { errors: [['password', 'Senha inválida']] };
+        const data = await this.validate();
+        const useCase = new UserUseCase(this.repository);
+        const auth = await useCase.authenticate(data.email, data.password);
+        if (!!auth.email && !!auth.password) {
+            const token = await this.generateToken();
+            if (!!useCase.user) this.saveToken(useCase.user, token, userAgent);
+            return { token };
         }
-        throw { errors: [[error?.type, error?.message]] }
+        if (!auth.email) throw { errors: [['email', 'Email inválido']] };
+        else throw { errors: [['password', 'Senha inválida']] };
     }
 }

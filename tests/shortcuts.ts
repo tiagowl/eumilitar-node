@@ -6,6 +6,9 @@ import nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 import crypto from 'crypto';
 import { PasswordRecoveryInsert, PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
+import User, { UserData } from '../src/entities/User';
+
+export const now = new Date();
 
 export const userFactory = () => ({
     email: faker.internet.email(),
@@ -14,10 +17,25 @@ export const userFactory = () => ({
     last_name: faker.name.lastName(),
     status: 1,
     permission: 1,
-    date_created: new Date(),
-    date_modified: new Date()
+    date_created: now,
+    date_modified: now
 })
 
+export const userEntityFactory = (inject?: any): User => {
+    const data: UserData = {
+        id: Math.round(Math.random() * 2000),
+        firstName: faker.name.firstName(),
+        lastName: faker.name.lastName(),
+        email: faker.internet.email(),
+        status: 'active',
+        creationDate: now,
+        lastModified: now,
+        permission: 'admin',
+        password: hashPasswordSync(faker.internet.password()),
+    }
+    Object.assign(data, inject);
+    return new User(data)
+}
 
 export const dbSetting: Knex.Config = {
     client: 'sqlite3',
@@ -36,6 +54,11 @@ export const driverFactory = () => {
     const driver = knex(settings.database);
     driver.migrate.latest();
     return driver;
+}
+
+export function hashPasswordSync(password: string) {
+    const salt = bcrypt.genSaltSync(10);
+    return bcrypt.hashSync(password, salt);
 }
 
 export async function hashPassword(password: string) {
@@ -76,7 +99,7 @@ export async function generateConfirmationToken() {
     return crypto.randomBytes(64).toString('base64').substring(0, 64);
 }
 
-export async function saveConfirmationToken(token: string, userId: number, driver: Knex, expiration?: Date){
+export async function saveConfirmationToken(token: string, userId: number, driver: Knex, expiration?: Date) {
     const data: PasswordRecoveryInsert = {
         token,
         expires: expiration || new Date(Date.now() + 24 * 60 * 60 * 1000),
