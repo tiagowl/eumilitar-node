@@ -4,9 +4,10 @@ import ReactDOMServer from 'react-dom/server';
 export type Props = {
     link: string;
     username: string;
+    expirationTime: number;
 }
 
-function PasswordRecoveryMail({ username, link }: Props) {
+function PasswordRecoveryMail({ username, link, expirationTime }: Props) {
     return (
         <>
             <head>
@@ -20,12 +21,13 @@ function PasswordRecoveryMail({ username, link }: Props) {
                         <td>
                             <h2>Olá, {username}!</h2>
                             <p>Aqui está o link para você cadastrar sua nova senha. Clique no link abaixo para prosseguir.</p>
+                            <p>Ele será válido por apenas {expirationTime} hora{expirationTime >= 1 && "s"}.</p>
                         </td>
                     </tr>
                     <tr>
                         <td>
                             <h3>
-                                <a href={link}> Clique aqui para cadastrar sua nova senha</a>
+                                <a href={link}>Clique aqui para cadastrar sua nova senha</a>
                             </h3>
                             <p>Caso você não tenha feito esta solicitação, basta ignorar este e-mail.</p>
                         </td>
@@ -48,5 +50,5 @@ export default async function render(props: Props) {
         <html xmlns="http://www.w3.org/1999/xhtml">
         ${ReactDOMServer.renderToString(<PasswordRecoveryMail {...props} />)}
         </html>
-    `
+    `.replace(/\n|\t/g, '');
 }

@@ -14,6 +14,7 @@ export interface PasswordRecoveryInterface {
 export interface MessageConfigInterface {
     sender: string;
     url: string;
+    expirationTime: number;
 }
 
 
@@ -44,18 +45,23 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
     }
 
     private async writeMessage(username: string, link: string) {
+        const { expirationTime } = this.config;
         return `
             Olá, ${username}!\n
             Aqui está o link para você cadastrar sua nova senha. Acesse no link abaixo para prosseguir.
+            Ele será válido por apenas ${expirationTime} hora${expirationTime >= 1 && "s"}.\n
             ${link} \n
             Caso você não tenha feito esta solicitação, basta ignorar este e-mail.\n
             Atenciosamente,
-            Equipe de Suporte Eu Militar
+            Equipe de Suporte Eu Militar\n
         `
     }
 
     private async renderMessage(username: string, link: string) {
-        return await PasswordRecoveryRender({ link, username })
+        return await PasswordRecoveryRender({
+            link, username,
+            expirationTime: this.config.expirationTime
+        })
     }
 
     private async sendConfirmationEmail(email: string, username: string) {
@@ -74,7 +80,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
         if (this.token) {
             const token: PasswordRecoveryInsert = {
                 token: this.token,
-                expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                expires: new Date(Date.now() + this.config.expirationTime * 60 * 60 * 1000),
                 selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
                 user_id: userId,
             }
