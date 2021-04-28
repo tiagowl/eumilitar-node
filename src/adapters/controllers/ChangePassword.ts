@@ -12,7 +12,8 @@ export interface ChangePasswordInterface {
 }
 
 export const schema = yup.object({
-    password: yup.string().required('É preciso criar uma senha nova').min(8).max(16),
+    password: yup.string().required('É preciso criar uma senha nova')
+    .min(8, "A senha deve conter pelo menos 8 caracteres").max(16, "A senha deve conter no máximo 16 caracteres"),
     confirmPassword: yup.string().required('É preciso confirmar a senha').min(8).max(16)
         .oneOf([yup.ref('password'), null], "As senhas não coincidem"),
     token: yup.string().required('O token é obrigatório').length(64, 'Token inválido')
