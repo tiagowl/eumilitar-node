@@ -3,72 +3,117 @@
 ## API Reference
 
 ### Authentication
-Create authorization token.  
 
-    POST /tokens/ 
+Create authorization token.
+
+    POST /tokens/
+
 #### Receive:
-Type: `application/json`;  
+
+Type: `application/json`;
+
 ```
 {
     "email": string,
-    "password": string 
+    "password": string
 }
 ```
 
-#### Response:  
-Type: `application/json`;  
-- Status: 201
-    ```
-    {
-        "token": string
-    }
-    ```
-- Status: 400
-    ```
-    {
-        "errors": [<Field:string>, <Message:string>][]
-    }
-    ```
+#### Response:
 
-### Password Recovery  
-Send a password recovery email to user.  
+Type: `application/json`;
+
+- Status: 201
+  ```
+  {
+      "token": string
+  }
+  ```
+- Status: 400
+  ```
+  {
+      "errors": [<Field:string>, <Message:string>][]
+  }
+  ```
+
+### Password Recovery
+
+Send a password recovery email to user.
 
     POST /password-recoveries/
 
 #### Receive:
-Type: `application/json`;  
+
+Type: `application/json`;
+
 ```
 {
     "email": string
 }
-```  
+```
 
 #### Response:
-Type: `application/json`;  
+
+Type: `application/json`;
+
 - Status: 201
-    ```
-    {
-        "message": string
-    }
-    ```
+  ```
+  {
+      "message": string
+  }
+  ```
 - Status: 400
-    ```
-    {
-        "message": string
-    }
-    ```
+  ```
+  {
+      "message": string
+  }
+  ```
 
 ### Check Password Recovery Token
-Verify if the password recovery token is valid.  
+
+Verify if the password recovery token is valid.
 
     GET /password-recoveries/<Token:string>/
 
 #### Response:
-Type: `application/json`;  
-Status: 200;  
-```
-{
-    isValid: boolean
-}
-```  
 
+Type: `application/json`;
+
+- Status: 200;
+  ```
+  {
+      isValid: boolean
+  }
+  ```
+- Status: 500;
+  ```
+  {
+      isValid: boolean
+  }
+  ```
+
+### Update user password
+
+Recovery the user password
+
+    PUT /users/profile/password/
+
+#### Response
+
+Type: `application/json`;
+
+- Status: 200;
+
+  ```
+  {
+      "updated": boolean
+  }
+  ```
+
+- Status: 400;
+
+    ```
+    {
+        "updated": boolean
+    }
+    ```

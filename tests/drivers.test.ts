@@ -108,6 +108,60 @@ describe('Teste na api', () => {
         expect(response.body).toEqual({ isValid: true });
         done();
     })
+    test('Recuperar senha', async done => {
+        const smtp = await smtpFactory()
+        const app = new Application(driver, smtp);
+        const api = supertest(app.server);
+        const token = await generateConfirmationToken();
+        const service = UserService(driver);
+        const userData = await service.where('email', user.email).first();
+        saveConfirmationToken(token, userData?.user_id || 0, driver);
+        const credentials = {
+            token,
+            password: 'abda143501',
+            confirmPassword: 'abda143501',
+        }
+        const response = await api.put('/users/profile/password/')
+            .send(credentials);
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ updated: true });
+        done();
+    })
+    test('Recuperar senha com token inválido', async done => {
+        const smtp = await smtpFactory();
+        const app = new Application(driver, smtp);
+        const api = supertest(app.server);
+        const invalidToken = await generateConfirmationToken();
+        const credentials = {
+            token: invalidToken,
+            password: 'abda143501',
+            confirmPassword: 'abda143501',
+        }
+        const response = await api.put('/users/profile/password/')
+            .send(credentials);
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({ "message": "Token inválido" });
+        done();
+    })
+    test('Recuperar senha com token expirado', async done => {
+        const smtp = await smtpFactory()
+        const app = new Application(driver, smtp);
+        const api = supertest(app.server);
+        const token = await generateConfirmationToken();
+        const service = UserService(driver);
+        const userData = await service.where('email', user.email).first();
+        saveConfirmationToken(token, userData?.user_id || 0, driver, new Date());
+        const credentials = {
+            token,
+            password: 'abda143501',
+            confirmPassword: 'abda143501',
+        }
+        const response = await api.put('/users/profile/password/')
+            .send(credentials);
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({ "message": "Token inválido" });
+        done();
+    })
     afterAll(async (done) => {
         const service = UserService(driver);
         await deleteUser(user, service)

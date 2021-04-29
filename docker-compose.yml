@@ -10,6 +10,7 @@ services:
         volumes:
             - ./:/usr/share/api:z
         env_file: .env
+        user: root
         ports:
             - 80:22000
         depends_on:

@@ -19,6 +19,12 @@ const routes: Route[] = [
         handlers: [
             { handler: handlers.checkChangePasswordToken, method: 'get' }
         ]
+    },
+    {
+        path: '/users/profile/password/',
+        handlers: [
+            { handler: handlers.changePassword, method: 'put' }
+        ]
     }
 ]
 

@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import AuthController, { AuthInterface, AuthResponse } from "../../adapters/controllers/Auth";
+import ChangePasswordController, { ChangePasswordInterface, ChangePasswordResponse } from "../../adapters/controllers/ChangePassword";
 import CheckPasswordToken, { CheckPasswordInterface, CheckedTokenInterface } from "../../adapters/controllers/CheckPasswordToken";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
 import settings from '../../settings';
@@ -36,14 +37,28 @@ export function passwordRecoveries({ driver, smtp }: HandlerProps): RequestHandl
 }
 
 
-export function checkChangePasswordToken({ driver }: HandlerProps): RequestHandler<any, CheckedTokenInterface, CheckedTokenInterface> {
+export function checkChangePasswordToken({ driver }: HandlerProps): RequestHandler<any, CheckedTokenInterface, CheckPasswordInterface> {
     return async (req, res) => {
         try {
             const controller = new CheckPasswordToken(req.params, driver);
             const response = await controller.check();
             res.status(200).json(response);
         } catch (error) {
-            res.status(500).json({ isValid: false });
+            res.status(500).json(error);
+        } finally {
+            res.end();
+        }
+    }
+}
+
+export function changePassword({ driver }: HandlerProps): RequestHandler<any, ChangePasswordResponse, ChangePasswordInterface> {
+    return async (req, res) => {
+        try {
+            const controller = new ChangePasswordController(req.body, driver);
+            const response = await controller.updatePassword();
+            res.status(200).json(response);
+        } catch (error) {
+            res.status(400).json(error)
         } finally {
             res.end();
         }

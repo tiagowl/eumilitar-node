@@ -11,6 +11,10 @@ export interface ChangePasswordInterface {
     token: string;
 }
 
+export interface ChangePasswordResponse {
+    updated: boolean;
+}
+
 export const schema = yup.object({
     password: yup.string()
         .required('É preciso criar uma senha nova')

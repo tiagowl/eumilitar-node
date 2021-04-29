@@ -12,5 +12,5 @@
         "tests/*",
         "node_modules"
     ],
-    "exec": "yarn lint && ts-node ./src/index.ts"
+    "exec": "yarn lint && tsc && node ./dist/index.js"
 }

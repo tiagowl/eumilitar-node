@@ -30,12 +30,16 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
     }
 
     public async check(): Promise<CheckedTokenInterface> {
-        const validated = await this.isValid();
-        const info = await this.getTokenInfo(this.data.token);
-        const expired = new Date(info?.expires || 0) <= new Date();
-        const isValid = validated && !expired && !!info;
-        if(isValid) this._tokenData = info;
-        return { isValid };
+        try {
+            const validated = await this.isValid();
+            const info = await this.getTokenInfo(this.data.token);
+            const expired = new Date(info?.expires || 0) <= new Date();
+            const isValid = validated && !expired && !!info;
+            if (isValid) this._tokenData = info;
+            return { isValid };
+        } catch {
+            throw { isValid: false }
+        }
     }
 
 }
