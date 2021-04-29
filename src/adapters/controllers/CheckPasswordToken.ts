@@ -29,6 +29,11 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
         return await this.service.where('token', token).first();
     }
 
+    private async deleteToken(token: string) {
+        const service = PasswordRecoveryService(this.driver);
+        return await service.where('token', token).del()
+    }
+
     public async check(): Promise<CheckedTokenInterface> {
         try {
             const validated = await this.isValid();
@@ -36,6 +41,7 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
             const expired = new Date(info?.expires || 0) <= new Date();
             const isValid = validated && !expired && !!info;
             if (isValid) this._tokenData = info;
+            else this.deleteToken(this.data.token);
             return { isValid };
         } catch {
             throw { isValid: false }
