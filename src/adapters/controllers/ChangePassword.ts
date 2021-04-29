@@ -16,7 +16,7 @@ export interface ChangePasswordResponse {
     updated: boolean;
 }
 
-export const schema = yup.object({
+export const schema = yup.object().shape({
     password: yup.string()
         .required('É preciso criar uma senha nova')
         .min(8, "A senha deve conter pelo menos 8 caracteres")
@@ -50,15 +50,11 @@ export default class ChangePasswordController extends Controller<ChangePasswordI
     }
 
     public async updatePassword() {
-        try {
-            const data = await this.validate();
-            const tokenData = await this.validateToken(data.token);
-            const useCase = new UserUseCase(this.repository);
-            const updated = await useCase.updatePassword(tokenData.user_id, data.password);
-            await this.deleteToken(data.token);
-            return { updated }
-        } catch (error) {
-            throw { message: error.message }
-        }
+        const data = await this.validate();
+        const tokenData = await this.validateToken(data.token);
+        const useCase = new UserUseCase(this.repository);
+        const updated = await useCase.updatePassword(tokenData.user_id, data.password);
+        if(updated) await this.deleteToken(data.token);
+        return { updated }
     }
 }

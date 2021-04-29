@@ -23,6 +23,7 @@ services:
             DB_HOST: db
             DB_PORT: 3306
             CORS: '*'
+            EXPIRATION_TIME: 48
 
     db:
         image: mariadb
