@@ -21,7 +21,7 @@ function PasswordRecoveryMail({ username, link, expirationTime }: Props) {
                         <td>
                             <h2>Olá, {username}!</h2>
                             <p>Aqui está o link para você cadastrar sua nova senha. Clique no link abaixo para prosseguir.</p>
-                            <p>Ele será válido por apenas {expirationTime} hora{expirationTime >= 1 && "s"}.</p>
+                            <p>Ele será válido por apenas {expirationTime} hora{expirationTime > 1 && "s"}.</p>
                         </td>
                     </tr>
                     <tr>
