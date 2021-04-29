@@ -148,6 +148,9 @@ describe('Testes na autenticação', () => {
         }, driver);
         const updated = await controller.updatePassword();
         expect(updated).toEqual({ updated: true })
+        const checker = new CheckPasswordToken({ token }, driver);
+        const { isValid } = await checker.check();
+        expect(isValid).toBeFalsy()
         done();
     })
 })

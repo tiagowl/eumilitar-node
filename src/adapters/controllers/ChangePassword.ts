@@ -4,6 +4,7 @@ import * as yup from 'yup';
 import UserRepository from "../models/User";
 import CheckPasswordToken from "./CheckPasswordToken";
 import UserUseCase from "../../cases/UserUseCase";
+import { PasswordRecoveryService } from "../models/PasswordRecoveries";
 
 export interface ChangePasswordInterface {
     password: string;
@@ -43,12 +44,18 @@ export default class ChangePasswordController extends Controller<ChangePasswordI
         return checker.tokenData;
     }
 
+    private async deleteToken(token: string) {
+        const service = PasswordRecoveryService(this.driver);
+        return await service.where('token', token).del()
+    }
+
     public async updatePassword() {
         try {
             const data = await this.validate();
             const tokenData = await this.validateToken(data.token);
             const useCase = new UserUseCase(this.repository);
             const updated = await useCase.updatePassword(tokenData.user_id, data.password);
+            await this.deleteToken(data.token);
             return { updated }
         } catch (error) {
             throw { message: error.message }

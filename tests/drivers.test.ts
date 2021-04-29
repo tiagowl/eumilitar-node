@@ -125,6 +125,9 @@ describe('Teste na api', () => {
             .send(credentials);
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ updated: true });
+        const checkResponse = await api.get(`/password-recoveries/${encodeURIComponent(token)}/`);
+        expect(checkResponse.status).toBe(200)
+        expect(checkResponse.body).toEqual({ isValid: false });
         done();
     })
     test('Recuperar senha com token inválido', async done => {
