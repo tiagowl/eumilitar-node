@@ -7,6 +7,7 @@ import settings from '../src/settings';
 import { PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
 import CheckPasswordToken from '../src/adapters/controllers/CheckPasswordToken';
 import ChangePasswordController from '../src/adapters/controllers/ChangePassword';
+import CheckAuth from '../src/adapters/controllers/CheckAuth';
 
 const driver = driverFactory()
 
@@ -151,6 +152,19 @@ describe('Testes na autenticação', () => {
         const checker = new CheckPasswordToken({ token }, driver);
         const { isValid } = await checker.check();
         expect(isValid).toBeFalsy()
+        done();
+    })
+    test('Verificação do token de autenticação', async done => {
+        const credentials = {
+            email: user.email,
+            password: 'newPassword'
+        };
+        const auth = new AuthController(credentials, driver);
+        const token = (await auth.auth()).token || '';
+        const controller = new CheckAuth({ token }, driver);
+        const response = await controller.check();
+        expect(response.isAuthenticated).toBeTruthy();
+        expect(user.email).toEqual(response.user?.email)
         done();
     })
 })
