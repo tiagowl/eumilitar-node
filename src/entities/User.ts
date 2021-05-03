@@ -3,14 +3,14 @@ export type AccountStatus = 'active' | 'inactive' | 'pending'
 export type AccountPermission = 'admin' | 'esa' | 'espcex';
 
 export interface UserInterface {
-    readonly id: number;
+    id: number;
     firstName: string;
     lastName: string;
     email: string;
     status: AccountStatus;
     permission: AccountPermission;
-    readonly creationDate: Date;
-    readonly lastModified: Date;
+    creationDate: Date;
+    lastModified: Date;
 }
 
 export interface UserData extends UserInterface {

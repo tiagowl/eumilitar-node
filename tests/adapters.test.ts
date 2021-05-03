@@ -7,7 +7,8 @@ import settings from '../src/settings';
 import { PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
 import CheckPasswordToken from '../src/adapters/controllers/CheckPasswordToken';
 import ChangePasswordController from '../src/adapters/controllers/ChangePassword';
-import CheckAuth from '../src/adapters/controllers/CheckAuth';
+import CheckAuthController from '../src/adapters/controllers/CheckAuth';
+import crypto from 'crypto';
 
 const driver = driverFactory()
 
@@ -154,17 +155,27 @@ describe('Testes na autenticação', () => {
         expect(isValid).toBeFalsy()
         done();
     })
-    test('Verificação do token de autenticação', async done => {
+    test('Verificar autenticação', async (done) => {
         const credentials = {
             email: user.email,
             password: 'newPassword'
         };
         const auth = new AuthController(credentials, driver);
-        const token = (await auth.auth()).token || '';
-        const controller = new CheckAuth({ token }, driver);
+        const { token } = await auth.auth();
+        const controller = new CheckAuthController({ token: token || '' }, driver);
         const response = await controller.check();
-        expect(response.isAuthenticated).toBeTruthy();
-        expect(user.email).toEqual(response.user?.email)
+        expect(response.isValid).toBeTruthy();
+        expect(response.user).not.toBeNull();
+        expect(response.user).not.toBeUndefined();
+        expect(response.user?.email).toEqual(user.email);
+        done();
+    })
+    test('Verificar autenticação com token inválido', async (done) => {
+        const token = crypto.randomBytes(32).toString('base64');
+        const controller = new CheckAuthController({ token: token || '' }, driver);
+        const response = await controller.check();
+        expect(response.isValid).toBeFalsy();
+        expect(response.user).toBeUndefined();
         done();
     })
 })
