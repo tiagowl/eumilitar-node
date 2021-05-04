@@ -1,8 +1,9 @@
 import { Knex } from "knex";
 import Controller from "./Controller";
 import * as yup from 'yup';
-import User from "../../entities/User";
+import User, { UserInterface } from "../../entities/User";
 import UserRepository from "../models/User";
+import { UserView } from "../views/User";
 
 export interface CheckAuthInterface {
     token: string;
@@ -10,7 +11,7 @@ export interface CheckAuthInterface {
 
 export interface CheckAuthResponse {
     isValid: boolean;
-    user?: User;
+    user?: UserInterface;
 }
 
 const schema = yup.object().shape({
@@ -36,7 +37,7 @@ export default class CheckAuthController extends Controller<CheckAuthInterface> 
         try {
             const data = await this.validate();
             const user = await this.retrieveUser(data.token);
-            return { isValid: true, user }
+            return { isValid: true, user: await UserView(user) }
         } catch (error) {
             return { isValid: false }
         }

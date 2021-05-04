@@ -5,7 +5,7 @@ const routes: Route[] = [
     {
         path: '/tokens/',
         handlers: [
-            { handler: handlers.token, method: 'post' }
+            { handler: handlers.createToken, method: 'post' }
         ]
     },
     {
@@ -24,6 +24,12 @@ const routes: Route[] = [
         path: '/users/profile/password/',
         handlers: [
             { handler: handlers.changePassword, method: 'put' }
+        ]
+    },
+    {
+        path: '/users/profile/',
+        handlers: [
+            { handler: handlers.profile, method: 'get' }
         ]
     }
 ]
