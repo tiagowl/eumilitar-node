@@ -23,13 +23,13 @@ Type: `application/json`;
 
 Type: `application/json`;
 
-- Status: 201
+- Status: 201:
   ```
   {
       "token": string
   }
   ```
-- Status: 400
+- Status: 400:
   ```
   {
       "errors": [<Field:string>, <Message:string>][]
@@ -56,13 +56,13 @@ Type: `application/json`;
 
 Type: `application/json`;
 
-- Status: 201
+- Status: 201:
   ```
   {
       "message": string
   }
   ```
-- Status: 400
+- Status: 400:
   ```
   {
       "message": string
@@ -79,13 +79,13 @@ Verify if the password recovery token is valid.
 
 Type: `application/json`;
 
-- Status: 200;
+- Status: 200:
   ```
   {
       isValid: boolean
   }
   ```
-- Status: 500;
+- Status: 500:
   ```
   {
       isValid: boolean
@@ -102,7 +102,7 @@ Recovery the user password
 
 Type: `application/json`;
 
-- Status: 200;
+- Status: 200:
 
   ```
   {
@@ -110,10 +110,38 @@ Type: `application/json`;
   }
   ```
 
-- Status: 400;
+- Status: 400:
 
     ```
     {
         "updated": boolean
+    }
+    ```
+### User profile
+Get user information. Require authentication with Bearer token;
+
+    GET /users/profile/
+
+#### Response
+Type: `application/json`
+
+- Status: 200:
+    ```
+    {
+        "id": integer,
+        "email": string,
+        "firstName": string,
+        "lastName": string,
+        "status": string,
+        "permission": "admin" | "esa" | "espcex",
+        "creationDate": DateTime ISO 8601 UTC,
+        "lastModified": DateTime ISO 8601 UTC
+    }   
+    ```
+- Status 401:
+    ```
+    {
+        "message": string,
+        "status": integer
     }
     ```
