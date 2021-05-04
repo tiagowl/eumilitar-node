@@ -4,12 +4,12 @@ import Mail from "nodemailer/lib/mailer";
 
 export type Method = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
-export type HandlerProps = {
+export type Context = {
     driver: Knex;
     smtp: Mail;
 }
 
-export type Handler = (props: HandlerProps) => RequestHandler;
+export type Handler = (props: Context) => RequestHandler;
 
 export interface HTTPHandler {
     method: Method;

@@ -6,14 +6,23 @@ import settings from "../../settings";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import cookieSession from 'cookie-session';
+import CheckAuthController from "../../adapters/controllers/CheckAuth";
+import { Context } from "./interfaces";
 
-const middlewares: RequestHandler[] = [
-    cors(settings.cors),
-    express.json(),
-    cookieParser(),
-    cookieSession(settings.session),
-    helmet(settings.helmet),
-    morgan(settings.logging.format, settings.logging.options),
-];
 
-export default middlewares;
+function getMiddlewares(_context: Context) {
+
+    const middlewares: RequestHandler[] = [
+        cors(settings.cors),
+        express.json(),
+        cookieParser(),
+        cookieSession(settings.session),
+        helmet(settings.helmet),
+        morgan(settings.logging.format, settings.logging.options),
+    ];
+
+    return middlewares;
+}
+
+
+export default getMiddlewares;

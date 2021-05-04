@@ -3,6 +3,7 @@ import supertest from 'supertest';
 import { UserService } from '../src/adapters/models/User';
 import Application from '../src/drivers/api';
 import { deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
+import crypto from 'crypto';
 
 const driver = driverFactory();
 
@@ -11,12 +12,18 @@ beforeAll(async (done) => {
     done()
 })
 
-describe('Teste na api', () => {
+afterAll((done) => driver.destroy().finally(done))
 
+describe('Teste na api', () => {
     const user = userFactory();
     beforeAll(async (done) => {
         const service = UserService(driver);
         saveUser(user, service).finally(done)
+    })
+    afterAll(async (done) => {
+        const service = UserService(driver);
+        await deleteUser(user, service)
+        done()
     })
     it('Teste no login', async (done) => {
         const smtp = await smtpFactory()
@@ -165,11 +172,52 @@ describe('Teste na api', () => {
         expect(response.body).toEqual({ "message": "Token inválido" });
         done();
     })
-    afterAll(async (done) => {
-        const service = UserService(driver);
-        await deleteUser(user, service)
-        done()
+    test('Verificação do perfil do usuário', async done => {
+        const smtp = await smtpFactory()
+        const app = new Application(driver, smtp);
+        const api = supertest(app.server);
+        const credentials = {
+            email: user.email,
+            password: 'abda143501',
+        }
+        const auth = await api.post('/tokens/')
+            .send(credentials)
+            .set('User-Agent', faker.internet.userAgent());
+        const { token } = auth.body;
+        expect(token).not.toBeUndefined();
+        expect(token).not.toBeNull();
+        const header = `Bearer ${token}`
+        const response = await api.get('/users/profile/')
+            .set('Authorization', header);
+        expect(response.body.message).toBeUndefined();
+        expect(response.status).toBe(200);
+        expect(response.body.email).toEqual(user.email)
+        expect(response.body.password).toBeUndefined();
+        done();
+    })
+    test('Verificação do perfil do usuário não autenticado', async done => {
+        const smtp = await smtpFactory()
+        const app = new Application(driver, smtp);
+        const api = supertest(app.server);
+        const response = await api.get('/users/profile/')
+        expect(response.body.message).toEqual('Token não fornecido');
+        expect(response.status).toBe(401);
+        done();
+    })
+    test('Verificação do perfil do usuário com token inválido', async done => {
+        const smtp = await smtpFactory()
+        const app = new Application(driver, smtp);
+        const api = supertest(app.server);
+        const token = crypto.randomBytes(32).toString('base64');
+        expect(token).not.toBeUndefined();
+        expect(token).not.toBeNull();
+        const header = `Bearer ${token}`
+        const response = await api.get('/users/profile/')
+            .set('Authorization', header);
+        expect(response.body.message).toEqual('Não autorizado');
+        expect(response.status).toBe(401);
+        expect(response.body.email).toBeUndefined();
+        expect(response.body.password).toBeUndefined();
+        done();
     })
 })
-
-afterAll((done) => driver.destroy().finally(done))
