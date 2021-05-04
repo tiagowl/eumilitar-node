@@ -1,15 +1,15 @@
 
-export type Course = "esa" | "espcex"
+export type Course = "esa" | "espcex" 
 
 export interface EssayThemeInterface {
-    id: number;
+    id?: number;
     title: string;
     startDate: Date;
     endDate: Date;
     lastModified: Date;
     helpText: string;
     file: string;
-    courses: Course[];
+    courses: Set<Course>;
 }
 
 export interface EssayUpdate {
@@ -19,18 +19,18 @@ export interface EssayUpdate {
     lastModified?: Date;
     helpText?: string;
     file?: string;
-    courses?: Course[];
+    courses?: Set<Course>;
 }
 
 export default class EssayTheme implements EssayThemeInterface {
-    #id: number;
+    #id?: number;
     #title: string;
     #startDate: Date;
     #endDate: Date;
     #lastModified: Date;
     #helpText: string;
     #file: string;
-    #courses: Course[];
+    #courses: Set<Course>;
 
     constructor(data: EssayThemeInterface) {
         this.#id = data.id;
@@ -40,7 +40,7 @@ export default class EssayTheme implements EssayThemeInterface {
         this.#lastModified = data.lastModified;
         this.#helpText = data.helpText;
         this.#file = data.file;
-        this.#courses = data.courses;
+        this.#courses = new Set(data.courses);
     }
 
     get id() { return this.#id }
@@ -83,7 +83,7 @@ export default class EssayTheme implements EssayThemeInterface {
     }
 
     get courses() { return this.#courses }
-    set courses(value: Course[]) {
+    set courses(value: Set<Course>) {
         this.#courses = value;
         this.updateLastModified();
     }
@@ -104,7 +104,7 @@ export default class EssayTheme implements EssayThemeInterface {
     }
 
     public addCourse(value: Course) {
-        this.courses.push(value);
+        this.courses.add(value);
         this.updateLastModified();
     }
 }
