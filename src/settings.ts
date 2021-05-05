@@ -41,7 +41,6 @@ const settings = Object.freeze({
             "image/jpeg",
             "image/pjpeg",
             "image/png",
-            "image/gif",
         ],
         type: process.env.STORAGE_TYPE || 'local',
         maxSize: Number(process.env.MAX_SIZE_UPLOAD || 10) * 1024 * 1024,

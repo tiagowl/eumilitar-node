@@ -1,14 +1,12 @@
-import { RequestHandler, Request } from "express";
+import express, { RequestHandler, Request } from "express";
 import { Knex } from "knex";
 import AuthController, { AuthInterface, AuthResponse } from "../../adapters/controllers/Auth";
 import ChangePasswordController, { ChangePasswordInterface, ChangePasswordResponse } from "../../adapters/controllers/ChangePassword";
 import CheckAuthController from "../../adapters/controllers/CheckAuth";
 import CheckPasswordToken, { CheckPasswordInterface, CheckedTokenInterface } from "../../adapters/controllers/CheckPasswordToken";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
-import User, { UserInterface } from "../../entities/User";
-import settings from '../../settings';
+import { UserInterface } from "../../entities/User";
 import { Context } from "./interfaces";
-
 
 export async function checkAuth(req: Request, driver: Knex) {
     const auth = req.headers.authorization;
@@ -36,7 +34,7 @@ export function createToken({ driver }: Context): RequestHandler<any, AuthRespon
     }
 }
 
-export function passwordRecoveries({ driver, smtp }: Context): RequestHandler<any, PasswordRecoveryResponse, PasswordRecoveryInterface> {
+export function passwordRecoveries({ driver, smtp, settings }: Context): RequestHandler<any, PasswordRecoveryResponse, PasswordRecoveryInterface> {
     return async (req, res) => {
         try {
             const controller = new PasswordRecoveryController(req.body, driver, smtp, settings.messageConfig);
@@ -91,4 +89,13 @@ export function profile({ driver }: Context): RequestHandler<any, UserInterface,
             res.end();
         }
     }
+}
+
+
+export function createEssayTheme({ driver, storage }: Context): RequestHandler<any, any, any> {
+    const handler = express();
+    handler.use(storage.single('themeFile'), (req, res) => {
+        return
+    })
+    return handler;
 }
