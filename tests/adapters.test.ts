@@ -13,6 +13,8 @@ import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
 import EssayTheme, { Course } from '../src/entities/EssayTheme';
 import faker from 'faker';
+import EssayThemeController, { EssayThemeInput } from '../src/adapters/controllers/EssayTheme';
+import { Readable } from 'stream';
 
 const driver = driverFactory()
 
@@ -203,5 +205,32 @@ describe('Testes nos temas de redação', () => {
         expect(created.id).not.toBeUndefined();
         expect(created.id).not.toBeNull();
         done()
+    })
+    test('Teste na criação pelo controller', async done => {
+        const data: EssayThemeInput = {
+            title: 'Título',
+            endDate: new Date(Date.now() + 15 * 24 * 60 * 60),
+            startDate: new Date(),
+            helpText: faker.lorem.lines(3),
+            file: {
+                path: '/usr/share/data/theme.pdf',
+                buffer: Buffer.from(new ArrayBuffer(10), 0, 2),
+                size: 1,
+                fieldname: 'themeFile',
+                filename: faker.name.title(),
+                destination: '/usr/share/data/',
+                mimetype: 'application/pdf',
+                encoding: 'utf-8',
+                originalname: faker.name.title(),
+                stream: new Readable(),
+            },
+            courses: ['esa', 'espcex'] as Course[]
+        }
+        const controller = new EssayThemeController(data, driver);
+        const created = await controller.create();
+        expect(created.id).not.toBeNull();
+        expect(created.id).not.toBeUndefined();
+        expect(created.title).toEqual(data.title);
+        done();
     })
 })

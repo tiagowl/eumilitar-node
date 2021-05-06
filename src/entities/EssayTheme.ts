@@ -23,7 +23,7 @@ export interface EssayUpdate {
 }
 
 export default class EssayTheme implements EssayThemeInterface {
-    #id?: number;
+    readonly #id?: number;
     #title: string;
     #startDate: Date;
     #endDate: Date;
@@ -100,6 +100,11 @@ export default class EssayTheme implements EssayThemeInterface {
         this.#file = data.file || this.#file;
         this.#courses = data.courses || this.#courses;
         if (data.startDate) this.startDate = data.startDate;
+        this.updateLastModified();
+    }
+
+    public removeCourse(value: Course) {
+        this.courses.delete(value);
         this.updateLastModified();
     }
 

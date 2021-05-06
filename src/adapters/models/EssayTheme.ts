@@ -29,14 +29,15 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         return { ...data, courses: [...data.courses].join(', ') }
     }
 
-    private async parseFromDB(data: EssayThemeModel): Promise<EssayTheme> {
+    private async parseFromDB(data: EssayThemeModel): Promise<EssayThemeInterface> {
         const courses = new Set<Course>(data.courses.split(', ') as Course[]);
-        return new EssayTheme({ ...data, courses });
+        return { ...data, courses }
     }
 
-    public async get(filter: Partial<EssayThemeModel>){
+    public async get(filter: Partial<EssayThemeModel>) {
         const service = EssayThemeService(this.driver);
-        return await service.where(filter).first();
+        const theme = await service.where(filter).first();
+        return !!theme ? this.parseFromDB(theme) : undefined;
     }
 
     public async create(data: EssayThemeCreation) {
@@ -45,6 +46,6 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         const ids = await service.insert(parsed);
         const theme = await this.get({ id: ids[0] });
         if (!theme) throw new Error('Falha ao salvar tema');
-        return this.parseFromDB(theme);
+        return theme;
     }
 }

@@ -21,7 +21,7 @@ export interface EssayThemeCreation {
 }
 
 export interface EssayThemeRepositoryInterface {
-    create: (data: EssayThemeCreation) => Promise<EssayTheme>;
+    create: (data: EssayThemeCreation) => Promise<EssayThemeInterface>;
 }
 
 export default class EssayThemeCase {
@@ -32,6 +32,7 @@ export default class EssayThemeCase {
     }
 
     public async create(data: EssayThemeCreation) {
+        if (data.startDate >= data.endDate) throw new Error('A data de início deve ser anterior a data final')
         return this.repository.create(data);
     }
 
