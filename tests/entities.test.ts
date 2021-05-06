@@ -1,4 +1,3 @@
-import User from '../src/entities/User'
 import bcrypt from 'bcrypt';
 import { hashPasswordSync, now, userEntityFactory } from './shortcuts';
 import EssayTheme from '../src/entities/EssayTheme';
@@ -27,7 +26,7 @@ test('Testes na entidade EssayTheme', () => {
         startDate: now,
         endDate: now,
         lastModified: now,
-        courses: ['esa']
+        courses: new Set(['esa']),
     })
     expect(theme.id).toBe(1)
     expect(theme.title).toBe('Tema da redação')
