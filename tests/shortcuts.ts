@@ -7,6 +7,8 @@ import Mail from 'nodemailer/lib/mailer';
 import crypto from 'crypto';
 import { PasswordRecoveryInsert, PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
 import User, { UserData } from '../src/entities/User';
+import createStorage from '../src/drivers/storage';
+import Application from '../src/drivers/api';
 
 export const now = new Date();
 
@@ -108,4 +110,11 @@ export async function saveConfirmationToken(token: string, userId: number, drive
     }
     const service = PasswordRecoveryService(driver);
     return service.insert(data);
+}
+
+export async function appFactory() {
+    const smtp = await smtpFactory();
+    const driver = driverFactory();
+    const storage = createStorage(settings.storage)
+    return new Application({ smtp, driver, storage, settings })
 }
