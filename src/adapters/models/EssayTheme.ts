@@ -19,10 +19,10 @@ export interface EssayThemeInsertion {
 export const EssayThemeService = (driver: Knex) => driver<EssayThemeInsertion, EssayThemeModel>('essay_themes');
 
 export default class EssayThemeRepository implements EssayThemeRepositoryInterface {
-    private service: Knex.QueryBuilder<EssayThemeInsertion, EssayThemeModel>;
+    private driver: Knex;
 
-    constructor(service: Knex.QueryBuilder<EssayThemeInsertion, EssayThemeModel>) {
-        this.service = service;
+    constructor(driver: Knex) {
+        this.driver = driver;
     }
 
     private async parseToInsert(data: EssayThemeCreation): Promise<EssayThemeInsertion> {
@@ -34,9 +34,17 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         return new EssayTheme({ ...data, courses });
     }
 
+    public async get(filter: Partial<EssayThemeModel>){
+        const service = EssayThemeService(this.driver);
+        return await service.where(filter).first();
+    }
+
     public async create(data: EssayThemeCreation) {
         const parsed = await this.parseToInsert(data);
-        const theme = await this.service.insert(parsed).returning<EssayThemeModel>('*');
+        const service = EssayThemeService(this.driver);
+        const ids = await service.insert(parsed);
+        const theme = await this.get({ id: ids[0] });
+        if (!theme) throw new Error('Falha ao salvar tema');
         return this.parseFromDB(theme);
     }
 }
