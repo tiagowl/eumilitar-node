@@ -2,7 +2,7 @@ import faker from 'faker';
 import supertest from 'supertest';
 import { UserService } from '../src/adapters/models/User';
 import Application from '../src/drivers/api';
-import { deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
+import { appFactory, deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
 import crypto from 'crypto';
 
 const driver = driverFactory();
@@ -26,8 +26,7 @@ describe('Teste na api', () => {
         done()
     })
     it('Teste no login', async (done) => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const credentials = {
             email: user.email,
@@ -41,8 +40,7 @@ describe('Teste na api', () => {
         done()
     })
     it('Teste login falho', async (done) => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const wrongCredentials = {
             email: 'lsjflas@faldfjl.comdd',
@@ -58,8 +56,7 @@ describe('Teste na api', () => {
         done()
     })
     it('Senha errada', async done => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const wrongPassword = {
             email: user.email,
@@ -75,8 +72,7 @@ describe('Teste na api', () => {
         done()
     })
     it('Email errado', async (done) => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const wrongPassword = {
             email: 'fdd',
@@ -92,8 +88,7 @@ describe('Teste na api', () => {
         done()
     })
     it('Recuperação de senha', async (done) => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const credentials = { email: user.email };
         const response = await api.post('/password-recoveries/')
@@ -103,8 +98,7 @@ describe('Teste na api', () => {
         done();
     })
     test('Verificar token de mudança de senha', async (done) => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
         const service = UserService(driver);
@@ -116,8 +110,7 @@ describe('Teste na api', () => {
         done();
     })
     test('Recuperar senha', async done => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
         const service = UserService(driver);
@@ -138,8 +131,7 @@ describe('Teste na api', () => {
         done();
     })
     test('Recuperar senha com token inválido', async done => {
-        const smtp = await smtpFactory();
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const invalidToken = await generateConfirmationToken();
         const credentials = {
@@ -154,8 +146,7 @@ describe('Teste na api', () => {
         done();
     })
     test('Recuperar senha com token expirado', async done => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
         const service = UserService(driver);
@@ -173,8 +164,7 @@ describe('Teste na api', () => {
         done();
     })
     test('Verificação do perfil do usuário', async done => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const credentials = {
             email: user.email,
@@ -196,8 +186,7 @@ describe('Teste na api', () => {
         done();
     })
     test('Verificação do perfil do usuário não autenticado', async done => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const response = await api.get('/users/profile/')
         expect(response.body.message).toEqual('Token não fornecido');
@@ -205,8 +194,7 @@ describe('Teste na api', () => {
         done();
     })
     test('Verificação do perfil do usuário com token inválido', async done => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const token = crypto.randomBytes(32).toString('base64');
         expect(token).not.toBeUndefined();

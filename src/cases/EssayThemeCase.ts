@@ -1,5 +1,4 @@
 import EssayTheme, { Course, EssayThemeInterface } from "../entities/EssayTheme";
-import UseCase from "./UseCase";
 
 export interface EssayThemeFilter {
     id?: number;
@@ -17,14 +16,23 @@ export interface EssayThemeCreation {
     startDate: Date;
     endDate: Date;
     helpText: string;
-    file: File;
+    file: string;
     courses: Set<Course>;
 }
 
-export default class EssayThemeCase extends UseCase<EssayTheme, EssayThemeFilter> {
+export interface EssayThemeRepositoryInterface {
+    create: (data: EssayThemeCreation) => Promise<EssayTheme>;
+}
 
-    public create(data: EssayThemeCreation) {
+export default class EssayThemeCase {
+    private repository: EssayThemeRepositoryInterface;
 
+    constructor(repository: EssayThemeRepositoryInterface) {
+        this.repository = repository;
+    }
+
+    public async create(data: EssayThemeCreation) {
+        return this.repository.create(data);
     }
 
 }

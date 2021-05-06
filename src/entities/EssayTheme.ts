@@ -1,5 +1,5 @@
 
-export type Course = "esa" | "espcex" 
+export type Course = "esa" | "espcex";
 
 export interface EssayThemeInterface {
     id?: number;
@@ -99,7 +99,7 @@ export default class EssayTheme implements EssayThemeInterface {
         this.#helpText = data.helpText || this.#helpText;
         this.#file = data.file || this.#file;
         this.#courses = data.courses || this.#courses;
-        if(data.startDate) this.startDate = data.startDate;
+        if (data.startDate) this.startDate = data.startDate;
         this.updateLastModified();
     }
 
