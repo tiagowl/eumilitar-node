@@ -145,3 +145,49 @@ Type: `application/json`
         "status": integer
     }
     ```
+
+### Create Essay Themes
+Create a new essay theme. Require user authentication and admin permission.
+
+    POST /themes/
+
+#### Receive
+Type: `multipart/form-data`  
+
+    ```
+    "data": {
+        "title": string,
+        "startDate": DateTime ISO 8601 UTC,
+        "endDate": DateTime ISO 8601 UTC,
+        "helpText": string,
+        "courses": string[],
+    }: application/json
+
+    "themeFile": application/pdf
+    ```
+#### Response
+- Status: 201:
+    ```
+    {
+        "id": integer,
+        "title": string,
+        "startDate": DateTime ISO 8601 UTC,
+        "endDate": DateTime ISO 8601 UTC,
+        "helpText": string,
+        "courses": string[],
+        "lastModified": DateTime ISO 8601 UTC,
+        "file": string
+    }
+    ```
+- Status: 401:  
+    ```
+    {
+        "message": string
+    }
+    ```
+- Status: 400:
+    ```
+    {
+        "errors": [<Field:string>, <Message:string>][]
+    }
+    ```
