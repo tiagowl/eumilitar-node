@@ -8,11 +8,11 @@ import crypto from 'crypto';
 const driver = driverFactory();
 
 beforeAll(async (done) => {
-    await driver.migrate.latest()
+    await driver.migrate.latest().finally(done)
     done()
 })
 
-afterAll((done) => driver.destroy().finally(done))
+afterAll((done) => driver.destroy().finally(done) || done())
 
 describe('Teste na api', () => {
     const user = userFactory();
@@ -206,6 +206,38 @@ describe('Teste na api', () => {
         expect(response.status).toBe(401);
         expect(response.body.email).toBeUndefined();
         expect(response.body.password).toBeUndefined();
+        done();
+    })
+    test('Testes na criação de redações', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const credentials = {
+            email: user.email,
+            password: 'abda143501',
+        }
+        const auth = await api.post('/tokens/')
+            .send(credentials)
+            .set('User-Agent', faker.internet.userAgent());
+        const { token } = auth.body;
+        expect(token).not.toBeUndefined();
+        expect(token).not.toBeNull();
+        const header = `Bearer ${token}`;
+        const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
+        const theme = {
+            title: 'Título',
+            startDate: new Date(Date.now() + 2 * 25 * 60 * 60),
+            endDate: new Date(Date.now() + 15 * 25 * 60 * 60),
+            helpText: faker.lorem.paragraph(1),
+            courses: ['espcex'],
+        }
+        const response = await api.post('/themes/')
+            .set('Authorization', header)
+            .field('data', JSON.stringify(theme))
+            .attach('themeFile', buffer, { filename: 'field.pdf', contentType: 'application/pdf' })
+        expect(response.status, response.error.toString()).toEqual(201);
+        expect(response.body.title).toEqual('Título')
+        expect(response.body.id).not.toBeUndefined()
+        expect(response.body.id).not.toBeNull()
         done();
     })
 })

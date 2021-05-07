@@ -18,6 +18,7 @@ function createFileName(_: any, file: Express.Multer.File, cb: (error: Error | n
 }
 
 export default function createStorage(settings: any) {
+    const destination = settings.local.destination
     const storageTypes: StorageTypes = {
         s3: multerS3({
             s3: new aws.S3(),
@@ -28,13 +29,13 @@ export default function createStorage(settings: any) {
         }),
         local: multer.diskStorage({
             destination: (_req, _file, cb) => {
-                cb(null, path.resolve(__dirname, "..", "..", "tmp", "uploads"));
+                cb(null, destination);
             },
             filename: createFileName,
         }),
     }
     return multer({
-        dest: path.resolve(__dirname, "..", "..", "tmp", "uploads"),
+        dest: destination,
         storage: storageTypes[settings.type],
         limits: {
             fileSize: settings.maxSize,

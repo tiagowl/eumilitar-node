@@ -31,6 +31,12 @@ const routes: Route[] = [
         handlers: [
             { handler: handlers.profile, method: 'get' }
         ]
+    },
+    {
+        path: '/themes/',
+        handlers: [
+            { handler: handlers.createEssayTheme, method: 'post' }
+        ]
     }
 ]
 

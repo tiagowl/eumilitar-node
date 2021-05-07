@@ -1,10 +1,10 @@
 import bcrypt from 'bcrypt';
-import { hashPasswordSync, now, userEntityFactory } from './shortcuts';
+import { hashPassword, now, userEntityFactory } from './shortcuts';
 import EssayTheme from '../src/entities/EssayTheme';
 
-test('Testes na entidade User', () => {
+test('Testes na entidade User', async (done) => {
     const password = 'l23jlk234';
-    const user = userEntityFactory({ password: hashPasswordSync(password) });
+    const user = await userEntityFactory({ password: await hashPassword(password) });
     expect(user.checkPassword(password, bcrypt.compare)).toBeTruthy()
     user.update({
         firstName: 'Denis',
@@ -15,6 +15,7 @@ test('Testes na entidade User', () => {
     expect(user.lastName).toBe('Antonio');
     expect(user.email).toBe('email@gmail.com');
     expect(user.lastModified).not.toBe(now);
+    done();
 })
 
 test('Testes na entidade EssayTheme', () => {

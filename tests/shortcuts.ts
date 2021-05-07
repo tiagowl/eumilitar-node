@@ -23,7 +23,7 @@ export const userFactory = () => ({
     date_modified: now
 })
 
-export const userEntityFactory = (inject?: any): User => {
+export const userEntityFactory = async (inject?: any): Promise<User> => {
     const data: UserData = {
         id: Math.round(Math.random() * 2000),
         firstName: faker.name.firstName(),
@@ -33,7 +33,7 @@ export const userEntityFactory = (inject?: any): User => {
         creationDate: now,
         lastModified: now,
         permission: 'admin',
-        password: hashPasswordSync(faker.internet.password()),
+        password: await hashPassword(faker.internet.password()),
     }
     Object.assign(data, inject);
     return new User(data)
@@ -58,13 +58,8 @@ export const driverFactory = () => {
     return driver;
 }
 
-export function hashPasswordSync(password: string) {
-    const salt = bcrypt.genSaltSync(10);
-    return bcrypt.hashSync(password, salt);
-}
-
 export async function hashPassword(password: string) {
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(0);
     return bcrypt.hash(password, salt);
 }
 
@@ -78,7 +73,6 @@ export async function deleteUser(user: any, service: Knex.QueryBuilder) {
         .where(user)
         .del();
 }
-
 
 export async function smtpFactory(): Promise<Mail> {
     return new Promise((accept, reject) => {
