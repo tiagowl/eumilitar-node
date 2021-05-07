@@ -229,11 +229,13 @@ describe('Teste na api', () => {
             endDate: new Date(Date.now() + 15 * 25 * 60 * 60),
             helpText: faker.lorem.paragraph(1),
             courses: ['espcex'],
+            themeFile: buffer
         }
         const response = await api.post('/themes/')
             .set('Authorization', header)
             .field('data', JSON.stringify(theme))
             .attach('themeFile', buffer, { filename: 'field.pdf', contentType: 'application/pdf' })
+        console.log(JSON.stringify(response.body))
         expect(response.status, response.error.toString()).toEqual(201);
         expect(response.body.title).toEqual('Título')
         expect(response.body.id).not.toBeUndefined()

@@ -6,7 +6,7 @@ import { Knex } from "knex";
 import EssayThemeCase from "../../cases/EssayThemeCase";
 import EssayThemeRepository from '../models/EssayTheme';
 
-export const schema = yup.object().shape({
+export const schema = yup.object({
     title: yup.string().required('O título é obrigatório'),
     helpText: yup.string().default(''),
     file: yup.string(),
@@ -58,7 +58,6 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
         return this.useCase.create({
             ...data,
             courses: new Set(data.courses),
-            file: data.file,
         })
             .then(theme => {
                 return {
@@ -66,8 +65,8 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                     courses: [...theme.courses]
                 } as EssayThemeResponse
             })
-            .catch(error => {
-                throw { message: error.message || 'Erro ao salvar o tema' }
+            .catch(() => {
+                throw { message: 'Erro ao salvar o tema' }
             })
     }
 
