@@ -1,5 +1,4 @@
 import User, { AccountStatus } from "../entities/User";
-import UseCase from "./UseCase";
 import bcrypt from 'bcrypt';
 
 export interface UserFilter {
@@ -13,9 +12,20 @@ export interface UserFilter {
     lastModified?: Date;
 }
 
-export default class UserUseCase extends UseCase<User, UserFilter> {
+export interface UserRepositoryInterface {
+    get: (filter: UserFilter) => Promise<User | null | undefined>;
+    filter: (filter: UserFilter) => Promise<this>;
+    update: (data: UserFilter) => Promise<number>;
+}
+
+export default class UserUseCase {
     #saltRounds: number = 10;
     #user: User | undefined | null;
+    private repository: UserRepositoryInterface;
+
+    constructor(repository: UserRepositoryInterface){
+        this.repository = repository;
+    }
 
     public async authenticate(email: string, password: string) {
         try {
@@ -42,7 +52,7 @@ export default class UserUseCase extends UseCase<User, UserFilter> {
 
     public async updatePassword(id: number, password: string) {
         this.#user = await this.repository.get({ id });
-        if(!!this.#user) {
+        if (!!this.#user) {
             const hash = await this.hashPassword(password);
             this.#user.password = hash;
             const filtered = await this.repository.filter({ id });
@@ -50,7 +60,7 @@ export default class UserUseCase extends UseCase<User, UserFilter> {
                 password: hash,
                 lastModified: this.#user.lastModified
             });
-            if(amount > 1) throw new Error('Mais de um usuário afetado');
+            if (amount > 1) throw new Error('Mais de um usuário afetado');
             return !!amount;
         }
         return false;

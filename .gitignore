@@ -120,3 +120,4 @@ database/
 .vercel
 migrations/*.js
 ./*.js
+tmp/

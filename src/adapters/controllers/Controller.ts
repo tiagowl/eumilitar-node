@@ -29,6 +29,7 @@ export default class Controller<Fields> {
             stripUnknown: false,
             recursive: true,
         })
+            .then(data => this.schema.noUnknown().cast(data, { stripUnknown: true }))
             .catch(async (errors: ValidationError) => {
                 throw {
                     message: errors.message,

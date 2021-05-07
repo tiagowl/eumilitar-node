@@ -1,7 +1,6 @@
 import { Knex } from "knex";
-import { RepositoryInterface } from '../../cases/interfaces'
-import { UserFilter } from "../../cases/UserUseCase";
-import User, { AccountPermission, AccountStatus, UserData, UserInterface } from "../../entities/User";
+import { UserFilter, UserRepositoryInterface } from "../../cases/UserUseCase";
+import User, { AccountPermission, AccountStatus, UserData } from "../../entities/User";
 
 const statusMap: AccountStatus[] = ['inactive', 'active', 'pending']
 const permissionMap: [number, AccountPermission][] = [
@@ -62,7 +61,7 @@ export interface UserModelFilter {
 
 export const UserService = (driver: Knex) => driver<UserModelFilter, UserModel>('users')
 
-export default class UserRepository implements RepositoryInterface<User, UserFilter> {
+export default class UserRepository implements UserRepositoryInterface {
     private service: Knex.QueryBuilder<UserModelFilter, UserModel>;
     private fieldsMap: FieldsMap = [
         { entity: ['id', Number], db: ['user_id', Number] },
@@ -103,7 +102,7 @@ export default class UserRepository implements RepositoryInterface<User, UserFil
         const fields: [keyof UserModel, any][] = Object.entries(user) as [keyof UserModel, any][];
         const data: UserData = fields.reduce((previous, field) => {
             const entityField = this.fieldsMap.find(item => item.db[0] === field[0])?.entity
-            if(entityField){
+            if (entityField) {
                 const [name, parser] = entityField;
                 previous[name] = parser(field[1]) as never
             }
@@ -124,6 +123,11 @@ export default class UserRepository implements RepositoryInterface<User, UserFil
     public async update(data: UserFilter) {
         const parsedData = await this.toDb(data);
         return this.service.update(parsedData);
+    }
+
+    // @ts-ignore
+    public async create(data: any) {
+        throw new Error('Not implemented')
     }
 
     public async get(filter: UserFilter) {

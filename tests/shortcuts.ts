@@ -7,6 +7,8 @@ import Mail from 'nodemailer/lib/mailer';
 import crypto from 'crypto';
 import { PasswordRecoveryInsert, PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
 import User, { UserData } from '../src/entities/User';
+import createStorage from '../src/drivers/storage';
+import Application from '../src/drivers/api';
 
 export const now = new Date();
 
@@ -21,7 +23,7 @@ export const userFactory = () => ({
     date_modified: now
 })
 
-export const userEntityFactory = (inject?: any): User => {
+export const userEntityFactory = async (inject?: any): Promise<User> => {
     const data: UserData = {
         id: Math.round(Math.random() * 2000),
         firstName: faker.name.firstName(),
@@ -31,7 +33,7 @@ export const userEntityFactory = (inject?: any): User => {
         creationDate: now,
         lastModified: now,
         permission: 'admin',
-        password: hashPasswordSync(faker.internet.password()),
+        password: await hashPassword(faker.internet.password()),
     }
     Object.assign(data, inject);
     return new User(data)
@@ -56,13 +58,8 @@ export const driverFactory = () => {
     return driver;
 }
 
-export function hashPasswordSync(password: string) {
-    const salt = bcrypt.genSaltSync(10);
-    return bcrypt.hashSync(password, salt);
-}
-
 export async function hashPassword(password: string) {
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(0);
     return bcrypt.hash(password, salt);
 }
 
@@ -76,7 +73,6 @@ export async function deleteUser(user: any, service: Knex.QueryBuilder) {
         .where(user)
         .del();
 }
-
 
 export async function smtpFactory(): Promise<Mail> {
     return new Promise((accept, reject) => {
@@ -108,4 +104,11 @@ export async function saveConfirmationToken(token: string, userId: number, drive
     }
     const service = PasswordRecoveryService(driver);
     return service.insert(data);
+}
+
+export async function appFactory() {
+    const smtp = await smtpFactory();
+    const driver = driverFactory();
+    const storage = createStorage(settings.storage)
+    return new Application({ smtp, driver, storage, settings })
 }

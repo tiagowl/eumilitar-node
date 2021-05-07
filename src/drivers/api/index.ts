@@ -1,29 +1,20 @@
 import express, { Express, RequestHandler } from 'express';
-import { Knex } from 'knex';
 import routes from './routes';
 import { Context, Route } from './interfaces';
 import getMiddlewares from './middlewares';
-import Mail from 'nodemailer/lib/mailer';
 
 
 export default class Application {
-    private driver: Knex;
     private _server: Express;
     private routes: Route[];
     private middlewares: RequestHandler[];
-    private smtp: Mail;
-    private props: Context;
+    private context: Context;
 
-    constructor(driver: Knex, smtp: Mail) {
-        this.driver = driver;
+    constructor(context: Context) {
         this._server = express();
         this.routes = routes;
-        this.smtp = smtp;
-        this.props = {
-            driver: this.driver,
-            smtp: this.smtp,
-        }
-        this.middlewares = getMiddlewares(this.props);
+        this.context = context
+        this.middlewares = getMiddlewares(this.context);
         this.setUpMiddlewares()
         this.setUpRoutes()
     }
@@ -34,7 +25,7 @@ export default class Application {
         this.routes.forEach(route => {
             const { path } = route;
             route.handlers.forEach(({ handler, method }) => {
-                this._server[method](path, handler(this.props));
+                this._server[method](path, handler(this.context));
             })
         })
     }

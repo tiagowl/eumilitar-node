@@ -2,17 +2,17 @@ import faker from 'faker';
 import supertest from 'supertest';
 import { UserService } from '../src/adapters/models/User';
 import Application from '../src/drivers/api';
-import { deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
+import { appFactory, deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
 import crypto from 'crypto';
 
 const driver = driverFactory();
 
 beforeAll(async (done) => {
-    await driver.migrate.latest()
+    await driver.migrate.latest().finally(done)
     done()
 })
 
-afterAll((done) => driver.destroy().finally(done))
+afterAll((done) => driver.destroy().finally(done) || done())
 
 describe('Teste na api', () => {
     const user = userFactory();
@@ -26,8 +26,7 @@ describe('Teste na api', () => {
         done()
     })
     it('Teste no login', async (done) => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const credentials = {
             email: user.email,
@@ -41,8 +40,7 @@ describe('Teste na api', () => {
         done()
     })
     it('Teste login falho', async (done) => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const wrongCredentials = {
             email: 'lsjflas@faldfjl.comdd',
@@ -58,8 +56,7 @@ describe('Teste na api', () => {
         done()
     })
     it('Senha errada', async done => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const wrongPassword = {
             email: user.email,
@@ -75,8 +72,7 @@ describe('Teste na api', () => {
         done()
     })
     it('Email errado', async (done) => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const wrongPassword = {
             email: 'fdd',
@@ -92,8 +88,7 @@ describe('Teste na api', () => {
         done()
     })
     it('Recuperação de senha', async (done) => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const credentials = { email: user.email };
         const response = await api.post('/password-recoveries/')
@@ -103,8 +98,7 @@ describe('Teste na api', () => {
         done();
     })
     test('Verificar token de mudança de senha', async (done) => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
         const service = UserService(driver);
@@ -116,8 +110,7 @@ describe('Teste na api', () => {
         done();
     })
     test('Recuperar senha', async done => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
         const service = UserService(driver);
@@ -138,8 +131,7 @@ describe('Teste na api', () => {
         done();
     })
     test('Recuperar senha com token inválido', async done => {
-        const smtp = await smtpFactory();
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const invalidToken = await generateConfirmationToken();
         const credentials = {
@@ -154,8 +146,7 @@ describe('Teste na api', () => {
         done();
     })
     test('Recuperar senha com token expirado', async done => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
         const service = UserService(driver);
@@ -173,8 +164,7 @@ describe('Teste na api', () => {
         done();
     })
     test('Verificação do perfil do usuário', async done => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const credentials = {
             email: user.email,
@@ -196,8 +186,7 @@ describe('Teste na api', () => {
         done();
     })
     test('Verificação do perfil do usuário não autenticado', async done => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const response = await api.get('/users/profile/')
         expect(response.body.message).toEqual('Token não fornecido');
@@ -205,8 +194,7 @@ describe('Teste na api', () => {
         done();
     })
     test('Verificação do perfil do usuário com token inválido', async done => {
-        const smtp = await smtpFactory()
-        const app = new Application(driver, smtp);
+        const app = await appFactory();
         const api = supertest(app.server);
         const token = crypto.randomBytes(32).toString('base64');
         expect(token).not.toBeUndefined();
@@ -218,6 +206,40 @@ describe('Teste na api', () => {
         expect(response.status).toBe(401);
         expect(response.body.email).toBeUndefined();
         expect(response.body.password).toBeUndefined();
+        done();
+    })
+    test('Testes na criação de redações', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const credentials = {
+            email: user.email,
+            password: 'abda143501',
+        }
+        const auth = await api.post('/tokens/')
+            .send(credentials)
+            .set('User-Agent', faker.internet.userAgent());
+        const { token } = auth.body;
+        expect(token).not.toBeUndefined();
+        expect(token).not.toBeNull();
+        const header = `Bearer ${token}`;
+        const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
+        const theme = {
+            title: 'Título',
+            startDate: new Date(Date.now() + 2 * 25 * 60 * 60),
+            endDate: new Date(Date.now() + 15 * 25 * 60 * 60),
+            helpText: faker.lorem.paragraph(1),
+            courses: ['espcex'],
+            themeFile: buffer
+        }
+        const response = await api.post('/themes/')
+            .set('Authorization', header)
+            .field('data', JSON.stringify(theme))
+            .attach('themeFile', buffer, { filename: 'field.pdf', contentType: 'application/pdf' })
+        console.log(JSON.stringify(response.body))
+        expect(response.status, response.error.toString()).toEqual(201);
+        expect(response.body.title).toEqual('Título')
+        expect(response.body.id).not.toBeUndefined()
+        expect(response.body.id).not.toBeNull()
         done();
     })
 })

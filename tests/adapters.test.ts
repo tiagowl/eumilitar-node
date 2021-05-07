@@ -9,6 +9,12 @@ import CheckPasswordToken from '../src/adapters/controllers/CheckPasswordToken';
 import ChangePasswordController from '../src/adapters/controllers/ChangePassword';
 import CheckAuthController from '../src/adapters/controllers/CheckAuth';
 import crypto from 'crypto';
+import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
+import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
+import EssayTheme, { Course } from '../src/entities/EssayTheme';
+import faker from 'faker';
+import EssayThemeController, { EssayThemeInput } from '../src/adapters/controllers/EssayTheme';
+import { Readable } from 'stream';
 
 const driver = driverFactory()
 
@@ -17,6 +23,10 @@ beforeAll(async (done) => {
     done();
 })
 
+afterAll(async (done) => {
+    await driver.destroy()
+    done()
+})
 
 describe('Testes na autenticação', () => {
     const user = userFactory()
@@ -180,8 +190,47 @@ describe('Testes na autenticação', () => {
     })
 })
 
-
-afterAll(async (done) => {
-    await driver.destroy()
-    done()
+describe('Testes nos temas de redação', () => {
+    test('Teste no modelo', async done => {
+        const repository = new EssayThemeRepository(driver);
+        const data: EssayThemeCreation = {
+            title: 'Título',
+            endDate: new Date(Date.now() + 15 * 24 * 60 * 60),
+            startDate: new Date(),
+            helpText: faker.lorem.lines(3),
+            file: '/usr/share/data/theme.pdf',
+            courses: new Set(['esa', 'espcex'] as Course[])
+        }
+        const created = await repository.create(data);
+        expect(created.id).not.toBeUndefined();
+        expect(created.id).not.toBeNull();
+        done()
+    })
+    test('Teste na criação pelo controller', async done => {
+        const data: EssayThemeInput = {
+            title: 'Título',
+            endDate: new Date(Date.now() + 15 * 24 * 60 * 60),
+            startDate: new Date(),
+            helpText: faker.lorem.lines(3),
+            file: {
+                path: '/usr/share/data/theme.pdf',
+                buffer: Buffer.from(new ArrayBuffer(10), 0, 2),
+                size: 1,
+                fieldname: 'themeFile',
+                filename: faker.name.title(),
+                destination: '/usr/share/data/',
+                mimetype: 'application/pdf',
+                encoding: 'utf-8',
+                originalname: faker.name.title(),
+                stream: new Readable(),
+            },
+            courses: ['esa', 'espcex'] as Course[]
+        }
+        const controller = new EssayThemeController(data, driver);
+        const created = await controller.create();
+        expect(created.id).not.toBeNull();
+        expect(created.id).not.toBeUndefined();
+        expect(created.title).toEqual(data.title);
+        done();
+    })
 })

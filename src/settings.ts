@@ -1,3 +1,5 @@
+import path from 'path';
+
 const settings = Object.freeze({
     database: {
         client: 'mysql',
@@ -33,6 +35,18 @@ const settings = Object.freeze({
         sender: process.env.EMAIL_SENDER || "",
         url: process.env.PASSWORD_RECOVERY_URL || "",
         expirationTime: Number(process.env.EXPIRATION_TIME || 4)
+    },
+    storage: {
+        bucket: process.env.BUCKET_NAME || '',
+        permission: process.env.STORAGE_PERMISSION || "authenticated-read",
+        allowedMimes: [
+            "application/pdf"
+        ],
+        type: process.env.STORAGE_TYPE || 'local',
+        maxSize: Number(process.env.MAX_SIZE_UPLOAD || 10) * 1024 * 1024,
+        local: {
+            destination: path.resolve(__dirname, "..", "tmp", "uploads")
+        }
     }
 })
 
