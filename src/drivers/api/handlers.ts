@@ -22,12 +22,17 @@ export async function checkAuth(req: Request, driver: Knex) {
 
 export function isAdmin({ driver }: Context): RequestHandler {
     return async (req, res, next) => {
-        const user = await checkAuth(req, driver);
-        if (user.permission !== 'admin') {
-            res.status(401).json({ message: 'Não autorizado', status: 401 });
+        try {
+            const user = await checkAuth(req, driver);
+            if (user.permission !== 'admin') {
+                res.status(401).json({ message: 'Não autorizado', status: 401 });
+                res.end();
+            } else {
+                next();
+            }
+        } catch (error) {
+            res.status(error.status || 400).json(error);
             res.end();
-        } else {
-            next();
         }
     }
 }
