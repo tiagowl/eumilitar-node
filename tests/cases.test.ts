@@ -1,6 +1,6 @@
 import UserUseCase, { UserFilter, UserRepositoryInterface } from '../src/cases/UserUseCase';
 import { hashPassword, userEntityFactory } from './shortcuts';
-import EssayThemeCase, { EssayThemeCreation, EssayThemeRepositoryInterface } from '../src/cases/EssayThemeCase';
+import EssayThemeCase, { EssayThemeCreation, EssayThemeFilter, EssayThemeRepositoryInterface } from '../src/cases/EssayThemeCase';
 import EssayTheme, { Course, EssayThemeInterface } from '../src/entities/EssayTheme';
 import faker from 'faker';
 
@@ -42,6 +42,31 @@ class TestRepository implements EssayThemeRepositoryInterface, UserRepositoryInt
             ...theme,
             id: essayThemeDatabase.indexOf(theme),
         })
+    }
+    public async exists(filter: EssayThemeFilter) {
+        const operations = {
+            '=': (a: any, b: any) => a === b,
+            '<=': (a: any, b: any) => (a <= b),
+            '>=': (a: any, b: any) => (a >= b),
+            '>': (a: any, b: any) => (a > b),
+            '<': (a: any, b: any) => (a < b),
+        }
+        if ('reduce' in filter) {
+            return filter.reduce((state, item) => {
+                return !!this.database.find((data) => operations[item[1]](data[item[0]], item[2])) || state;
+            }, false)
+        }
+        return !!this.database.find((data) => {
+            const keys = Object.entries(filter);
+            // @ts-ignore
+            return keys.reduce((state, item) => {
+                return (data[item[0]] === item[1]) && state
+            }, true)
+        })
+    }
+
+    public async hasActiveTheme(){ 
+        return false;
     }
 }
 

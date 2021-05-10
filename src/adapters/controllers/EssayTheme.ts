@@ -65,8 +65,8 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                     courses: [...theme.courses]
                 } as EssayThemeResponse
             })
-            .catch(() => {
-                throw { message: 'Erro ao salvar o tema' }
+            .catch((error) => {
+                throw { message: error.message || 'Erro ao salvar o tema' }
             })
     }
 

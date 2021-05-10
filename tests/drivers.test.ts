@@ -4,6 +4,7 @@ import { UserService } from '../src/adapters/models/User';
 import Application from '../src/drivers/api';
 import { appFactory, deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
 import crypto from 'crypto';
+import { EssayThemeService } from '../src/adapters/models/EssayTheme';
 
 const driver = driverFactory();
 
@@ -18,11 +19,16 @@ describe('Teste na api', () => {
     const user = userFactory();
     beforeAll(async (done) => {
         const service = UserService(driver);
-        saveUser(user, service).finally(done)
+        await saveUser(user, service);
+        const themeService = EssayThemeService(driver);
+        await themeService.del().delete()
+        done()
     })
     afterAll(async (done) => {
         const service = UserService(driver);
-        await deleteUser(user, service)
+        await deleteUser(user, service);
+        const themeService = EssayThemeService(driver);
+        await themeService.del().delete()
         done()
     })
     it('Teste no login', async (done) => {
@@ -225,8 +231,8 @@ describe('Teste na api', () => {
         const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
         const theme = {
             title: 'Título',
-            startDate: new Date(Date.now() + 2 * 25 * 60 * 60),
-            endDate: new Date(Date.now() + 15 * 25 * 60 * 60),
+            startDate: new Date(Date.now() - 15 * 25 * 60 * 60),
+            endDate: new Date(Date.now() - 2 * 25 * 60 * 60),
             helpText: faker.lorem.paragraph(1),
             courses: ['espcex'],
             themeFile: buffer
@@ -235,7 +241,6 @@ describe('Teste na api', () => {
             .set('Authorization', header)
             .field('data', JSON.stringify(theme))
             .attach('themeFile', buffer, { filename: 'field.pdf', contentType: 'application/pdf' })
-        console.log(JSON.stringify(response.body))
         expect(response.status, response.error.toString()).toEqual(201);
         expect(response.body.title).toEqual('Título')
         expect(response.body.id).not.toBeUndefined()

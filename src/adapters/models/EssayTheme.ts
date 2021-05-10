@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import { EssayThemeCreation, EssayThemeRepositoryInterface } from "../../cases/EssayThemeCase";
+import { EssayThemeCreation, EssayThemeFilter, EssayThemeRepositoryInterface } from "../../cases/EssayThemeCase";
 import EssayTheme, { Course, EssayThemeInterface } from "../../entities/EssayTheme";
 
 export interface EssayThemeModel extends EssayThemeInsertion {
@@ -34,6 +34,16 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         return { ...data, courses }
     }
 
+    public async exists(filter: EssayThemeFilter) {
+        const service = EssayThemeService(this.driver);
+        if ('reduce' in filter) {
+            return filter.reduce((query, item) => {
+                return query.where(...item)
+            }, service).then(data => !!data)
+        }
+        return service.where(filter).first().then(data => !!data)
+    }
+
     public async get(filter: Partial<EssayThemeModel>) {
         const service = EssayThemeService(this.driver);
         const theme = await service.where(filter).first();
@@ -47,5 +57,12 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         const theme = await this.get({ id: ids[0] });
         if (!theme) throw new Error('Falha ao salvar tema');
         return theme;
+    }
+
+    public async hasActiveTheme() {
+        const service = EssayThemeService(this.driver);
+        return service.where('endDate', '>=', new Date())
+            .andWhere('startDate', '<=', new Date())
+            .first().then(data => !!data)
     }
 }

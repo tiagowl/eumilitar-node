@@ -34,12 +34,16 @@ describe('Testes na autenticação', () => {
     beforeAll(async (done) => {
         const service = UserService(driver);
         await saveUser(user, service)
+        const themeService = EssayThemeService(driver);
+        await themeService.delete().del()
         done();
     })
-    afterAll((done) => {
+    afterAll(async (done) => {
         const service = UserService(driver);
-        deleteUser(user, service)
-            .finally(done)
+        await deleteUser(user, service)
+        const themeService = EssayThemeService(driver);
+        await themeService.del().delete();
+        done()
     })
     test('Login correto', async (done) => {
         const credentials = {
@@ -195,8 +199,8 @@ describe('Testes nos temas de redação', () => {
         const repository = new EssayThemeRepository(driver);
         const data: EssayThemeCreation = {
             title: 'Título',
-            endDate: new Date(Date.now() + 15 * 24 * 60 * 60),
-            startDate: new Date(),
+            endDate: new Date(Date.now() - 150 * 24 * 60 * 60),
+            startDate: new Date(Date.now() - 160 * 24 * 60 * 60),
             helpText: faker.lorem.lines(3),
             file: '/usr/share/data/theme.pdf',
             courses: new Set(['esa', 'espcex'] as Course[])
@@ -209,8 +213,8 @@ describe('Testes nos temas de redação', () => {
     test('Teste na criação pelo controller', async done => {
         const data: EssayThemeInput = {
             title: 'Título',
-            endDate: new Date(Date.now() + 15 * 24 * 60 * 60),
-            startDate: new Date(),
+            endDate: new Date(Date.now() - 50 * 24 * 60 * 60),
+            startDate: new Date(Date.now() - 70 * 24 * 60 * 60),
             helpText: faker.lorem.lines(3),
             file: {
                 path: '/usr/share/data/theme.pdf',
