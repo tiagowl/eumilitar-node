@@ -85,7 +85,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
 
     public async listAll(pagination?: EssayThemePagination): Promise<EssayThemeList> {
         try {
-            const page = await this.useCase.findAll(pagination?.page, pagination?.size, pagination?.order);
+            const page = await this.useCase.findAll(pagination?.page || 1, pagination?.size || 10, pagination?.order || 'id');
             return {
                 page: await Promise.all(page.map(async theme => ({
                     file: theme.file,
