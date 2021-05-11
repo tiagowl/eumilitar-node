@@ -16,6 +16,8 @@ export interface EssayThemeInsertion {
     courses: string;
 }
 
+const divider = ', '
+
 export const EssayThemeService = (driver: Knex) => driver<EssayThemeInsertion, EssayThemeModel>('essay_themes');
 
 export default class EssayThemeRepository implements EssayThemeRepositoryInterface {
@@ -26,11 +28,11 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
     }
 
     private async parseToInsert(data: EssayThemeCreation): Promise<EssayThemeInsertion> {
-        return { ...data, courses: [...data.courses].join(', ') }
+        return { ...data, courses: [...data.courses].join(divider) }
     }
 
     private async parseFromDB(data: EssayThemeModel): Promise<EssayThemeInterface> {
-        const courses = new Set<Course>(data.courses.split(', ') as Course[]);
+        const courses = new Set<Course>(data.courses.split(divider) as Course[]);
         return { ...data, courses }
     }
 
@@ -59,10 +61,21 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         return theme;
     }
 
-    public async hasActiveTheme() {
+    public async hasActiveTheme(theme: EssayThemeCreation) {
         const service = EssayThemeService(this.driver);
-        return service.where('endDate', '>=', new Date())
-            .andWhere('startDate', '<=', new Date())
-            .first().then(data => !!data)
+        const qr = service.orWhere(function () {
+            return this.where('startDate', '<=', theme.startDate)
+                .where('endDate', '>', theme.startDate)
+        })
+            .orWhere(function () {
+                return this.where('startDate', '<=', theme.endDate)
+                    .where('endDate', '>', theme.startDate)
+            })
+            .where(function () {
+                [...theme.courses].reduce((previous, value) => {
+                    return previous.orWhere('courses', 'like', `%${value}%`)
+                }, this)
+            })
+        return qr.first().then(data => !!data);
     }
 }

@@ -25,7 +25,7 @@ export interface EssayThemeCreation {
 export interface EssayThemeRepositoryInterface {
     create: (data: EssayThemeCreation) => Promise<EssayThemeInterface>;
     exists: (filter: EssayThemeFilter) => Promise<boolean> | ((filter: EssayThemeFilter) => Promise<boolean>);
-    hasActiveTheme: () => Promise<boolean>;
+    hasActiveTheme: (data: EssayThemeCreation) => Promise<boolean>;
 }
 
 export default class EssayThemeCase {
@@ -37,7 +37,7 @@ export default class EssayThemeCase {
 
     public async create(data: EssayThemeCreation) {
         if (data.startDate >= data.endDate) throw new Error('A data de início deve ser anterior a data final');
-        const hasActive = await this.repository.hasActiveTheme();
+        const hasActive = await this.repository.hasActiveTheme(data);
         if (hasActive) throw new Error('Já existe um tema ativo');
         return this.repository.create(data);
     }
