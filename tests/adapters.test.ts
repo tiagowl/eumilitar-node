@@ -266,8 +266,13 @@ describe('Testes nos temas de redação', () => {
         await controller.create(data);
         await controller.create({ ...data, startDate: new Date(Date.now() + 690 * 24 * 60 * 60), endDate: new Date(Date.now() + 700 * 24 * 60 * 60) });
         const themes = await controller.listAll(pagination);
-        expect(themes.length).toBe(2);
-        expect(themes).toBeInstanceOf(Array);
+        expect(themes.count).toBe(themes.page.length);
+        expect(themes.count).toBe(2);
+        expect(themes.page).toBeInstanceOf(Array);
+        await Promise.all(themes.page.map(async theme => {
+            expect(theme.id, JSON.stringify(theme)).not.toBeUndefined();
+            expect(theme.active, JSON.stringify(theme)).not.toBeUndefined();
+        }))
         done()
     })
 })

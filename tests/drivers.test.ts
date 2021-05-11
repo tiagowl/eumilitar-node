@@ -15,7 +15,7 @@ beforeAll(async (done) => {
 
 afterAll((done) => driver.destroy().finally(done) || done())
 
-describe('Teste na api', () => {
+describe('Teste na api do usuário', () => {
     const user = userFactory();
     beforeAll(async (done) => {
         const service = UserService(driver);
@@ -214,12 +214,30 @@ describe('Teste na api', () => {
         expect(response.body.password).toBeUndefined();
         done();
     })
-    test('Testes na criação de redações', async done => {
+})
+
+describe('Testes nos temas', () => {
+    const user = userFactory();
+    beforeAll(async (done) => {
+        const service = UserService(driver);
+        await saveUser(user, service);
+        const themeService = EssayThemeService(driver);
+        await themeService.del().delete()
+        done()
+    })
+    afterAll(async (done) => {
+        const service = UserService(driver);
+        await deleteUser(user, service);
+        const themeService = EssayThemeService(driver);
+        await themeService.del().delete()
+        done()
+    })
+    test('Testes na criação de temas', async done => {
         const app = await appFactory();
         const api = supertest(app.server);
         const credentials = {
             email: user.email,
-            password: 'abda143501',
+            password: user.passwd,
         }
         const auth = await api.post('/tokens/')
             .send(credentials)
@@ -246,5 +264,26 @@ describe('Teste na api', () => {
         expect(response.body.id).not.toBeUndefined()
         expect(response.body.id).not.toBeNull()
         done();
+    })
+    test('Testes na listagem de temas', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const credentials = {
+            email: user.email,
+            password: user.passwd,
+        }
+        const auth = await api.post('/tokens/')
+            .send(credentials)
+            .set('User-Agent', faker.internet.userAgent());
+        const { token } = auth.body;
+        expect(token).not.toBeUndefined();
+        expect(token).not.toBeNull();
+        const header = `Bearer ${token}`;
+        const response = await api.get('/themes/')
+            .set('Authorization', header);
+        expect(response.body?.page).not.toBeUndefined()
+        expect(response.body?.count).not.toBeUndefined()
+        expect(response.body?.count).toBe(response.body?.page?.length)
+        done()
     })
 })

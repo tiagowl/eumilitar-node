@@ -10,6 +10,17 @@ import { Course } from "../../entities/EssayTheme";
 import { UserInterface } from "../../entities/User";
 import { Context } from "./interfaces";
 
+
+interface EssayThemeRequest {
+    title: string;
+    startDate: Date;
+    endDate: Date;
+    helpText: string;
+    courses: Course[];
+}
+
+
+
 export async function checkAuth(req: Request, driver: Knex) {
     const auth = req.headers.authorization;
     if (!auth) throw { message: 'Token não fornecido', status: 401 };
@@ -110,14 +121,6 @@ export function profile({ driver }: Context): RequestHandler<any, UserInterface,
     }
 }
 
-interface EssayThemeRequest {
-    title: string;
-    startDate: Date;
-    endDate: Date;
-    helpText: string;
-    courses: Course[];
-}
-
 export function createEssayTheme(context: Context): RequestHandler<any, EssayThemeRequest, any> {
     const { driver, storage } = context;
     return express().use(isAdmin(context), storage.single('themeFile'),
@@ -139,4 +142,19 @@ export function createEssayTheme(context: Context): RequestHandler<any, EssayThe
             }
         }
     )
+}
+
+export function listEssayThemes(context: Context): RequestHandler {
+    const { driver } = context;
+    return express().use(isAdmin(context), async (req, res) => {
+        try {
+            const controller = new EssayThemeController(driver);
+            const themes = await controller.listAll(req.query);
+            res.status(200).json(themes);
+        } catch (error) {
+            res.status(500).json(error);
+        } finally {
+            res.end();
+        }
+    })
 }

@@ -6,21 +6,6 @@ import { Knex } from "knex";
 import EssayThemeCase from "../../cases/EssayThemeCase";
 import EssayThemeRepository, { EssayThemeModel } from '../models/EssayTheme';
 
-export const schema = yup.object({
-    title: yup.string().required('O título é obrigatório'),
-    helpText: yup.string().default(''),
-    file: yup.string(),
-    courses: yup.array(
-        yup.string().matches(/^(esa|espcex)$/),
-    ),
-    startDate: yup.date().required().max(
-        yup.ref('endDate'), 'A data de início deve ser anterior a data final'
-    ),
-    endDate: yup.date().required().min(
-        yup.ref('startDate'), 'A data de início deve ser anterior a data final'
-    ),
-})
-
 interface EssayThemeBaseInterface {
     title: string;
     startDate: Date;
@@ -35,8 +20,9 @@ export interface EssayThemeInput extends EssayThemeBaseInterface {
 
 export interface EssayThemeResponse extends EssayThemeBaseInterface {
     file: string;
-    id: number;
+    id?: number;
     lastModified: Date;
+    active: boolean;
 }
 
 export interface EssayThemeData extends EssayThemeBaseInterface {
@@ -48,6 +34,27 @@ export interface EssayThemePagination {
     size?: number;
     order?: keyof EssayThemeModel;
 }
+
+export interface EssayThemeList {
+    next?: number;
+    count: number;
+    page: EssayThemeResponse[]
+}
+
+export const schema = yup.object({
+    title: yup.string().required('O título é obrigatório'),
+    helpText: yup.string().default(''),
+    file: yup.string(),
+    courses: yup.array(
+        yup.string().matches(/^(esa|espcex)$/),
+    ),
+    startDate: yup.date().required().max(
+        yup.ref('endDate'), 'A data de início deve ser anterior a data final'
+    ),
+    endDate: yup.date().required().min(
+        yup.ref('startDate'), 'A data de início deve ser anterior a data final'
+    ),
+})
 
 export default class EssayThemeController extends Controller<EssayThemeData> {
     private repository: EssayThemeRepository;
@@ -76,8 +83,26 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
             })
     }
 
-    public async listAll(pagination?: EssayThemePagination) {
-        return this.useCase.findAll(pagination?.page, pagination?.size, pagination?.order)
+    public async listAll(pagination?: EssayThemePagination): Promise<EssayThemeList> {
+        try {
+            const page = await this.useCase.findAll(pagination?.page, pagination?.size, pagination?.order);
+            return {
+                page: await Promise.all(page.map(async theme => ({
+                    file: theme.file,
+                    id: theme.id,
+                    lastModified: theme.lastModified,
+                    active: theme.active,
+                    title: theme.title,
+                    startDate: theme.startDate,
+                    endDate: theme.endDate,
+                    helpText: theme.helpText,
+                    courses: [...theme.courses]
+                }))),
+                count: page.length,
+            } as EssayThemeList
+        } catch (error) {
+            throw { message: 'Erro ao consultar temas' }
+        }
     }
 
 }
