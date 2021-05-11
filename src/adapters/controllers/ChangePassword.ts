@@ -32,14 +32,14 @@ export const schema = yup.object().shape({
 export default class ChangePasswordController extends Controller<ChangePasswordInterface> {
     private repository: UserRepository;
 
-    constructor(data: ChangePasswordInterface, driver: Knex) {
-        super(data, schema, driver);
+    constructor(driver: Knex) {
+        super(schema, driver);
         this.repository = new UserRepository(driver);
     }
 
     private async validateToken(token: string) {
-        const checker = new CheckPasswordToken({ token }, this.driver);
-        const { isValid } = await checker.check();
+        const checker = new CheckPasswordToken(this.driver);
+        const { isValid } = await checker.check({ token });
         if (!isValid || !checker.tokenData) throw { message: 'Token inválido' }
         return checker.tokenData;
     }
@@ -49,12 +49,12 @@ export default class ChangePasswordController extends Controller<ChangePasswordI
         return await service.where('token', token).del()
     }
 
-    public async updatePassword() {
-        const data = await this.validate();
+    public async updatePassword(rawData: ChangePasswordInterface) {
+        const data = await this.validate(rawData);
         const tokenData = await this.validateToken(data.token);
         const useCase = new UserUseCase(this.repository);
         const updated = await useCase.updatePassword(tokenData.user_id, data.password);
-        if(updated) await this.deleteToken(data.token);
+        if (updated) await this.deleteToken(data.token);
         return { updated }
     }
 }

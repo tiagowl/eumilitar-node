@@ -19,8 +19,8 @@ const schema = yup.object().shape({
 })
 
 export default class CheckAuthController extends Controller<CheckAuthInterface> {
-    constructor(data: CheckAuthInterface, driver: Knex) {
-        super(data, schema, driver);
+    constructor(driver: Knex) {
+        super(schema, driver);
     }
 
     private async retrieveUser(token: string): Promise<User> {
@@ -33,9 +33,9 @@ export default class CheckAuthController extends Controller<CheckAuthInterface> 
         return repository.toEntity(user);
     }
 
-    public async check(): Promise<CheckAuthResponse> {
+    public async check(rawData: CheckAuthInterface): Promise<CheckAuthResponse> {
         try {
-            const data = await this.validate();
+            const data = await this.validate(rawData);
             const user = await this.retrieveUser(data.token);
             return { isValid: true, user: await UserView(user) }
         } catch (error) {

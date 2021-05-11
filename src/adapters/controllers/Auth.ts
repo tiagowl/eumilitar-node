@@ -26,8 +26,8 @@ export const schema = yup.object({
 export default class AuthController extends Controller<AuthInterface> {
     private repository: UserRepository;
 
-    constructor(data: AuthInterface, driver: Knex) {
-        super(data, schema, driver);
+    constructor(driver: Knex) {
+        super(schema, driver);
         this.repository = new UserRepository(driver);
     }
 
@@ -47,8 +47,8 @@ export default class AuthController extends Controller<AuthInterface> {
         });
     }
 
-    public async auth(userAgent?: string): Promise<AuthResponse> {
-        const data = await this.validate();
+    public async auth(rawData: AuthInterface, userAgent?: string): Promise<AuthResponse> {
+        const data = await this.validate(rawData);
         const useCase = new UserUseCase(this.repository);
         const auth = await useCase.authenticate(data.email, data.password);
         if (!!auth.email && !!auth.password) {

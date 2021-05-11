@@ -43,18 +43,23 @@ interface EssayThemeData extends EssayThemeBaseInterface {
     file: string;
 }
 
+interface EssayThemePagination {
+    page: number;
+    size: number;
+}
+
 export default class EssayThemeController extends Controller<EssayThemeData> {
     private repository: EssayThemeRepository;
     private useCase: EssayThemeCase;
 
-    constructor(data: EssayThemeInput, driver: Knex) {
-        super({ ...data, file: data.file.path }, schema, driver);
+    constructor(driver: Knex) {
+        super(schema, driver);
         this.repository = new EssayThemeRepository(driver);
         this.useCase = new EssayThemeCase(this.repository);
     }
 
-    public async create(): Promise<EssayThemeResponse> {
-        const data = await this.validate();
+    public async create(rawData: EssayThemeInput,): Promise<EssayThemeResponse> {
+        const data = await this.validate({ ...rawData, file: rawData.file.path });
         return this.useCase.create({
             ...data,
             courses: new Set(data.courses),

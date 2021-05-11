@@ -8,22 +8,20 @@ export interface ResponseError {
 }
 
 export default class Controller<Fields> {
-    protected data: Fields;
     protected schema: ObjectSchema<any>;
     protected driver: Knex;
 
-    constructor(data: Fields, schema: ObjectSchema<any>, driver: Knex) {
-        this.data = data;
+    constructor(schema: ObjectSchema<any>, driver: Knex) {
         this.schema = schema;
         this.driver = driver;
     }
 
-    public async isValid() {
-        return this.schema.isValid(this.data);
+    public async isValid(data: Fields) {
+        return this.schema.isValid(data);
     }
 
-    public async validate(): Promise<Fields> {
-        return this.schema.validate(this.data, {
+    public async validate(rawData: Fields): Promise<Fields> {
+        return this.schema.validate(rawData, {
             strict: true,
             abortEarly: false,
             stripUnknown: false,

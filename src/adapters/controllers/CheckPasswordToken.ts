@@ -18,8 +18,8 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
     private service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
     private _tokenData?: PasswordRecoveryModel;
 
-    constructor(data: CheckPasswordInterface, driver: Knex) {
-        super(data, schema, driver);
+    constructor(driver: Knex) {
+        super(schema, driver);
         this.service = PasswordRecoveryService(driver);
     }
 
@@ -34,14 +34,14 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
         return await service.where('token', token).del()
     }
 
-    public async check(): Promise<CheckedTokenInterface> {
+    public async check(data: CheckPasswordInterface,): Promise<CheckedTokenInterface> {
         try {
-            const validated = await this.isValid();
-            const info = await this.getTokenInfo(this.data.token);
+            const validated = await this.isValid(data);
+            const info = await this.getTokenInfo(data.token);
             const expired = new Date(info?.expires || 0) <= new Date();
             const isValid = validated && !expired && !!info;
             if (isValid) this._tokenData = info;
-            else this.deleteToken(this.data.token);
+            else this.deleteToken(data.token);
             return { isValid };
         } catch {
             throw { isValid: false }

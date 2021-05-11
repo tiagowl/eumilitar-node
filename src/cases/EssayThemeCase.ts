@@ -26,6 +26,7 @@ export interface EssayThemeRepositoryInterface {
     create: (data: EssayThemeCreation) => Promise<EssayThemeInterface>;
     exists: (filter: EssayThemeFilter) => Promise<boolean> | ((filter: EssayThemeFilter) => Promise<boolean>);
     hasActiveTheme: (data: EssayThemeCreation) => Promise<boolean>;
+    findAll: (page?: number) => Promise<EssayTheme[]>;
 }
 
 export default class EssayThemeCase {
@@ -40,6 +41,10 @@ export default class EssayThemeCase {
         const hasActive = await this.repository.hasActiveTheme(data);
         if (hasActive) throw new Error(`Já existe um tema ativo neste período.`);
         return this.repository.create(data);
+    }
+
+    public async findAll(page?: number): Promise<EssayTheme[]> {
+        return this.repository.findAll(page);
     }
 
 }
