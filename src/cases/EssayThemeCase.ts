@@ -26,7 +26,7 @@ export interface EssayThemeRepositoryInterface {
     create: (data: EssayThemeCreation) => Promise<EssayThemeInterface>;
     exists: (filter: EssayThemeFilter) => Promise<boolean> | ((filter: EssayThemeFilter) => Promise<boolean>);
     hasActiveTheme: (data: EssayThemeCreation) => Promise<boolean>;
-    findAll: (page?: number) => Promise<EssayTheme[]>;
+    findAll: (page?: number, pageSize?: number, ordering?: keyof EssayThemeInterface) => Promise<EssayTheme[]>;
 }
 
 export default class EssayThemeCase {
@@ -43,8 +43,8 @@ export default class EssayThemeCase {
         return this.repository.create(data);
     }
 
-    public async findAll(page?: number): Promise<EssayTheme[]> {
-        return this.repository.findAll(page);
+    public async findAll(page?: number, pageSize?: number, ordering?: keyof EssayThemeInterface): Promise<EssayTheme[]> {
+        return this.repository.findAll(page, pageSize, ordering);
     }
 
 }

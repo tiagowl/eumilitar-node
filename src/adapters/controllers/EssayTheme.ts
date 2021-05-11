@@ -4,7 +4,7 @@ import * as yup from 'yup';
 import { Course } from '../../entities/EssayTheme';
 import { Knex } from "knex";
 import EssayThemeCase from "../../cases/EssayThemeCase";
-import EssayThemeRepository from '../models/EssayTheme';
+import EssayThemeRepository, { EssayThemeModel } from '../models/EssayTheme';
 
 export const schema = yup.object({
     title: yup.string().required('O título é obrigatório'),
@@ -39,13 +39,14 @@ export interface EssayThemeResponse extends EssayThemeBaseInterface {
     lastModified: Date;
 }
 
-interface EssayThemeData extends EssayThemeBaseInterface {
+export interface EssayThemeData extends EssayThemeBaseInterface {
     file: string;
 }
 
-interface EssayThemePagination {
-    page: number;
-    size: number;
+export interface EssayThemePagination {
+    page?: number;
+    size?: number;
+    order?: keyof EssayThemeModel;
 }
 
 export default class EssayThemeController extends Controller<EssayThemeData> {
@@ -73,6 +74,10 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
             .catch((error) => {
                 throw { message: error.message || 'Erro ao salvar o tema' }
             })
+    }
+
+    public async listAll(pagination?: EssayThemePagination) {
+        return this.useCase.findAll(pagination?.page, pagination?.size, pagination?.order)
     }
 
 }

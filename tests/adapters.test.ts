@@ -13,7 +13,7 @@ import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
 import EssayTheme, { Course } from '../src/entities/EssayTheme';
 import faker from 'faker';
-import EssayThemeController, { EssayThemeInput } from '../src/adapters/controllers/EssayTheme';
+import EssayThemeController, { EssayThemeInput, EssayThemePagination } from '../src/adapters/controllers/EssayTheme';
 import { Readable } from 'stream';
 
 const driver = driverFactory()
@@ -236,5 +236,38 @@ describe('Testes nos temas de redação', () => {
         expect(created.id).not.toBeUndefined();
         expect(created.title).toEqual(data.title);
         done();
+    })
+    test('Lista todos os temas', async done => {
+        const pagination: EssayThemePagination = {
+            page: 1,
+            size: 2,
+            order: 'id',
+        }
+        const data: EssayThemeInput = {
+            title: 'Título',
+            endDate: new Date(Date.now() + 370 * 24 * 60 * 60),
+            startDate: new Date(Date.now() + 350 * 24 * 60 * 60),
+            helpText: faker.lorem.lines(3),
+            file: {
+                path: '/usr/share/data/theme.pdf',
+                buffer: Buffer.from(new ArrayBuffer(10), 0, 2),
+                size: 1,
+                fieldname: 'themeFile',
+                filename: faker.name.title(),
+                destination: '/usr/share/data/',
+                mimetype: 'application/pdf',
+                encoding: 'utf-8',
+                originalname: faker.name.title(),
+                stream: new Readable(),
+            },
+            courses: ['esa', 'espcex'] as Course[]
+        }
+        const controller = new EssayThemeController(driver);
+        await controller.create(data);
+        await controller.create({ ...data, startDate: new Date(Date.now() + 690 * 24 * 60 * 60), endDate: new Date(Date.now() + 700 * 24 * 60 * 60) });
+        const themes = await controller.listAll(pagination);
+        expect(themes.length).toBe(2);
+        expect(themes).toBeInstanceOf(Array);
+        done()
     })
 })
