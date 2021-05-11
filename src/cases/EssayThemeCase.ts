@@ -38,7 +38,7 @@ export default class EssayThemeCase {
     public async create(data: EssayThemeCreation) {
         if (data.startDate >= data.endDate) throw new Error('A data de início deve ser anterior a data final');
         const hasActive = await this.repository.hasActiveTheme(data);
-        if (hasActive) throw new Error('Já existe um tema ativo');
+        if (hasActive) throw new Error(`Já existe um tema ativo neste período.`);
         return this.repository.create(data);
     }
 
