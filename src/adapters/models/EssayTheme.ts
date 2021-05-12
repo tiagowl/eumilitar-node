@@ -81,7 +81,7 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
 
     public async findAll(page: number = 1, pageSize: number = 10, ordering: keyof EssayThemeModel = 'id') {
         const service = EssayThemeService(this.driver)
-        const themes = await service.orderBy(ordering).offset((page - 1) * pageSize).limit(pageSize).select<EssayThemeModel[]>('*');
+        const themes = await service.orderBy(ordering, 'desc').offset((page - 1) * pageSize).limit(pageSize).select<EssayThemeModel[]>('*');
         return Promise.all(themes.map(async theme => new EssayTheme(await this.parseFromDB(theme))))
     }
 }
