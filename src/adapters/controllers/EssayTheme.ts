@@ -56,11 +56,7 @@ export const schema = yup.object({
     ),
 })
 
-const paginationSchema = yup.object({
-    page: yup.number(),
-    size: yup.number(),
-    order: yup.mixed().test(async value => value in ['id', 'title', 'courses', 'startDate', 'endDate', 'lastModified'])
-}).noUnknown();
+const filterFields = ['id', 'title', 'courses', 'startDate', 'endDate', 'lastModified']
 
 export default class EssayThemeController extends Controller<EssayThemeData> {
     private repository: EssayThemeRepository;
@@ -91,8 +87,12 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
 
     public async listAll(pagination?: EssayThemePagination): Promise<EssayThemeList> {
         try {
-            const validatedPagination = await paginationSchema.isValid(pagination) ? paginationSchema.cast(pagination, { assert: false }) : undefined
-            const page = await this.useCase.findAll(validatedPagination?.page || 1, validatedPagination?.size || 10, validatedPagination?.order || 'id');
+            const validatedPagination = {
+                page: Number(pagination?.page || 1),
+                size: Number(pagination?.size || 10),
+                order: !!pagination?.order ? pagination?.order in filterFields ? pagination?.order : 'id' : 'id'
+            }
+            const page = await this.useCase.findAll(validatedPagination.page, validatedPagination?.size || 10, validatedPagination.order);
             return {
                 page: await Promise.all(page.map(async theme => ({
                     file: theme.file,
