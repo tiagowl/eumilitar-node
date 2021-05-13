@@ -63,15 +63,19 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
 
     public async hasActiveTheme(theme: EssayThemeCreation) {
         const service = EssayThemeService(this.driver);
-        const qr = service.orWhere(function () {
-            return this.where('startDate', '<=', theme.startDate)
-                .where('endDate', '>', theme.startDate)
-        })
-            .orWhere(function () {
-                return this.where('startDate', '<=', theme.endDate)
-                    .where('endDate', '>', theme.startDate)
+        const qr = service
+            .andWhere(function () {
+                this
+                    .orWhere(function () {
+                        return this.where('startDate', '<=', theme.startDate)
+                            .where('endDate', '>', theme.startDate)
+                    })
+                    .orWhere(function () {
+                        return this.where('startDate', '>', theme.startDate)
+                            .where('startDate', '<', theme.endDate)
+                    })
             })
-            .where(function () {
+            .andWhere(function () {
                 [...theme.courses].reduce((previous, value) => {
                     return previous.orWhere('courses', 'like', `%${value}%`)
                 }, this)
