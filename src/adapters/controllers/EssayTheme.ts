@@ -36,7 +36,7 @@ export interface EssayThemePagination {
 }
 
 export interface EssayThemeList {
-    next?: number;
+    pages: number;
     count: number;
     page: EssayThemeResponse[]
 }
@@ -93,6 +93,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                 order: !!pagination?.order ? pagination?.order in filterFields ? pagination?.order : 'startDate' : 'startDate'
             }
             const page = await this.useCase.findAll(validatedPagination.page, validatedPagination?.size || 10, validatedPagination.order);
+            const amount = await this.useCase.count();
             return {
                 page: await Promise.all(page.map(async theme => ({
                     file: theme.file,
@@ -106,6 +107,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                     courses: [...theme.courses]
                 }))),
                 count: page.length,
+                pages: Math.ceil(amount / validatedPagination.size),
             } as EssayThemeList
         } catch (error) {
             throw { message: 'Erro ao consultar temas' }

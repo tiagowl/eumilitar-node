@@ -12,5 +12,5 @@
         "tests/*",
         "node_modules"
     ],
-    "exec": "yarn lint && tsc --incremental && mkdir -p tmp/uploads && node ./dist/index.js"
+    "exec": "yarn lint && tsc --incremental && node ./dist/index.js || exit 1"
 }

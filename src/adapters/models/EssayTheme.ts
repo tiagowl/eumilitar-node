@@ -83,7 +83,13 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         return qr.first().then(data => !!data);
     }
 
-    public async findAll(page?: number, pageSize? : number, ordering?: keyof EssayThemeModel) {
+    public async count() {
+        const service = EssayThemeService(this.driver);
+        const amount = await service.count<Record<string, { count: number }>>('id as count');
+        return amount[0].count
+    }
+
+    public async findAll(page?: number, pageSize?: number, ordering?: keyof EssayThemeModel) {
         const service = EssayThemeService(this.driver)
         const themes = await service.orderBy(ordering || 'id', 'desc').offset(((page || 1) - 1) * (pageSize || 10)).limit((pageSize || 10)).select<EssayThemeModel[]>('*');
         return Promise.all(themes.map(async theme => new EssayTheme(await this.parseFromDB(theme))))
