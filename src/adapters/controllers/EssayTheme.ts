@@ -90,7 +90,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
             const validatedPagination = {
                 page: Number(pagination?.page || 1),
                 size: Number(pagination?.size || 10),
-                order: !!pagination?.order ? pagination?.order in filterFields ? pagination?.order : 'id' : 'id'
+                order: !!pagination?.order ? pagination?.order in filterFields ? pagination?.order : 'startDate' : 'startDate'
             }
             const page = await this.useCase.findAll(validatedPagination.page, validatedPagination?.size || 10, validatedPagination.order);
             return {

@@ -52,7 +52,10 @@ export default class EssayTheme implements EssayThemeInterface {
         this.updateLastModified();
     }
 
-    get active() { return this.#endDate <= new Date() }
+    get active() {
+        const now = new Date();
+        return now > this.#startDate && now < this.#endDate
+    }
 
     get startDate() { return this.#startDate }
     set startDate(value: Date) {
