@@ -309,8 +309,8 @@ describe('Testes nos temas', () => {
         const selected = themes.body.page[0];
         const theme = {
             title: faker.name.title(),
-            startDate: new Date(Date.now() - 15 * 25 * 60 * 60),
-            endDate: new Date(Date.now() - 3 * 25 * 60 * 60),
+            startDate: new Date(Date.now() - 1500 * 25 * 60 * 60),
+            endDate: new Date(Date.now() - 1496 * 25 * 60 * 60),
             helpText: faker.lorem.paragraph(1),
             courses: ['espcex', 'esa'],
         }

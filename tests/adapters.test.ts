@@ -275,4 +275,32 @@ describe('Testes nos temas de redação', () => {
         }))
         done()
     })
+    test('Atualização dos temas', async done => {
+        const data: EssayThemeInput = {
+            title: faker.name.title(),
+            endDate: new Date(Date.now() + 3700 * 24 * 60 * 60),
+            startDate: new Date(Date.now() + 3500 * 24 * 60 * 60),
+            helpText: faker.lorem.lines(3),
+            file: {
+                path: '/usr/share/data/theme.pdf',
+                buffer: Buffer.from(new ArrayBuffer(10), 0, 2),
+                size: 1,
+                fieldname: 'themeFile',
+                filename: faker.name.title(),
+                destination: '/usr/share/data/',
+                mimetype: 'application/pdf',
+                encoding: 'utf-8',
+                originalname: faker.name.title(),
+                stream: new Readable(),
+            },
+            courses: ['esa'] as Course[],
+        }
+        const controller = new EssayThemeController(driver);
+        const all = await controller.listAll();
+        const selected = all.page[0]
+        const updated = controller.update(selected.id, data);
+        expect(data.title).toEqual(updated.title);
+        expect(data.endDate).toEqual(updated.endDate);
+        expect(data.courses).toEqual(updated.courses);
+    })
 })
