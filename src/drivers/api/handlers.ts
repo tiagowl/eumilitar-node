@@ -161,12 +161,14 @@ export function listEssayThemes(context: Context): RequestHandler {
 
 export function updateEssayThemes(context: Context): RequestHandler<{ id: number }, EssayThemeRequest, EssayThemeResponse> {
     const { driver, storage } = context;
-    return express().use(isAdmin(context), storage.single('themeFile'),
-        async (req, res) => {
+    const handler = express().use(isAdmin(context), storage.single('themeFile'))
+    return async (_req, _res, next) => {
+        const id = _req.params.id;
+        handler.use(async (req, res) => {
             try {
-                const data = JSON.parse(req.body.data)
-                const controller = new EssayThemeController(driver)
-                const response = await controller.update(Number(req.params.id), {
+                const data = JSON.parse(req.body.data);
+                const controller = new EssayThemeController(driver);
+                const response = await controller.update(Number(id), {
                     ...data,
                     startDate: new Date(data.startDate),
                     endDate: new Date(data.endDate),
@@ -178,6 +180,8 @@ export function updateEssayThemes(context: Context): RequestHandler<{ id: number
             } finally {
                 res.end();
             }
-        }
-    )
+
+        })
+        handler(_req as express.Request<any>, _res, next)
+    }
 }
