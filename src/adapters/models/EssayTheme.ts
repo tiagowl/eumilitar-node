@@ -46,7 +46,7 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         return service.where(filter).first().then(data => !!data)
     }
 
-    public async get(filter: Partial<EssayThemeModel>) {
+    public async get(filter: EssayThemeFilter) {
         const service = EssayThemeService(this.driver);
         const theme = await service.where(filter).first();
         return !!theme ? this.parseFromDB(theme) : undefined;

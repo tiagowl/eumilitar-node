@@ -43,6 +43,19 @@ export default class EssayTheme implements EssayThemeInterface {
         this.#courses = new Set(data.courses);
     }
 
+    get data() {
+        return {
+            id: this.#id,
+            title: this.#title,
+            startDate: this.#startDate,
+            endDate: this.#endDate,
+            lastModified: this.#lastModified,
+            helpText: this.#helpText,
+            file: this.#file,
+            courses: this.#courses,
+        }
+    }
+
     get id() { return this.#id }
 
     get title() { return this.#title }

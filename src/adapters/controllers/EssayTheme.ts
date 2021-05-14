@@ -68,7 +68,21 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
         this.useCase = new EssayThemeCase(this.repository);
     }
 
-    public async create(rawData: EssayThemeInput,): Promise<EssayThemeResponse> {
+    private async parseEntity(theme: EssayTheme): Promise<EssayThemeResponse> {
+        return {
+            file: theme.file,
+            id: theme.id,
+            lastModified: theme.lastModified,
+            active: theme.active,
+            title: theme.title,
+            startDate: theme.startDate,
+            endDate: theme.endDate,
+            helpText: theme.helpText,
+            courses: [...theme.courses]
+        }
+    }
+
+    public async create(rawData: EssayThemeInput): Promise<EssayThemeResponse> {
         const data = await this.validate({ ...rawData, file: rawData.file.path });
         return this.useCase.create({
             ...data,
@@ -95,22 +109,25 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
             const page = await this.useCase.findAll(validatedPagination.page, validatedPagination?.size || 10, validatedPagination.order);
             const amount = await this.useCase.count();
             return {
-                page: await Promise.all(page.map(async theme => ({
-                    file: theme.file,
-                    id: theme.id,
-                    lastModified: theme.lastModified,
-                    active: theme.active,
-                    title: theme.title,
-                    startDate: theme.startDate,
-                    endDate: theme.endDate,
-                    helpText: theme.helpText,
-                    courses: [...theme.courses]
-                }))),
+                page: await Promise.all(page.map(async theme => (await this.parseEntity(theme)))),
                 count: page.length,
                 pages: Math.ceil(amount / validatedPagination.size),
             } as EssayThemeList
         } catch (error) {
             throw { message: 'Erro ao consultar temas' }
+        }
+    }
+
+    public async update(id: number, rawData: EssayThemeInput) {
+        try {
+            const data = await this.validate({ ...rawData, file: rawData.file.path });
+            const theme = await this.useCase.update(id, {
+                ...data,
+                courses: new Set(data.courses),
+            })
+            return this.parseEntity(theme);
+        } catch (error) {
+            throw { message: error.message || 'Erro ao atualizar tema' }
         }
     }
 
