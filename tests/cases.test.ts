@@ -155,4 +155,23 @@ describe('Testes nos temas da redação', () => {
         expect(count).toEqual(essayThemeDatabase.length);
         done();
     })
+    test('Atualiza o tema', async done => {
+        const data = {
+            title: faker.name.title(),
+            endDate: new Date(Date.now() + 505 * 24 * 60 * 60),
+            startDate: new Date(Date.now() + 500 * 24 * 60 * 60),
+            helpText: faker.lorem.lines(3),
+            file: '/usr/share/data/theme.pdf',
+            courses: new Set(['esa'] as Course[])
+        }
+        const repository = new TestRepository(essayThemeDatabase);
+        const useCase = new EssayThemeCase(repository);
+        const all = await useCase.findAll();
+        const selected = all[0];
+        const updated = await useCase.update(selected.id, data);
+        expect(updated.id).toEqual(selected.id);
+        expect(updated.title).toEqual(data.title);
+        expect(updated.endDate).toEqual(data.endDate);
+        done();
+    })
 })
