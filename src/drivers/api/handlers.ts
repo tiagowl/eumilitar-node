@@ -4,7 +4,7 @@ import AuthController, { AuthInterface, AuthResponse } from "../../adapters/cont
 import ChangePasswordController, { ChangePasswordInterface, ChangePasswordResponse } from "../../adapters/controllers/ChangePassword";
 import CheckAuthController from "../../adapters/controllers/CheckAuth";
 import CheckPasswordToken, { CheckPasswordInterface, CheckedTokenInterface } from "../../adapters/controllers/CheckPasswordToken";
-import EssayThemeController from "../../adapters/controllers/EssayTheme";
+import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
 import { Course } from "../../entities/EssayTheme";
 import { UserInterface } from "../../entities/User";
@@ -157,4 +157,27 @@ export function listEssayThemes(context: Context): RequestHandler {
             res.end();
         }
     })
+}
+
+export function updateEssayThemes(context: Context): RequestHandler<{ id: number }, EssayThemeRequest, EssayThemeResponse> {
+    const { driver, storage } = context;
+    return express().use(isAdmin(context), storage.single('themeFile'),
+        async (req, res) => {
+            try {
+                const data = JSON.parse(req.body.data)
+                const controller = new EssayThemeController(driver)
+                const response = await controller.update(Number(req.params.id), {
+                    ...data,
+                    startDate: new Date(data.startDate),
+                    endDate: new Date(data.endDate),
+                    file: req.file
+                });
+                res.status(200).json(response);
+            } catch (error) {
+                res.status(error.status || 400).send(error);
+            } finally {
+                res.end();
+            }
+        }
+    )
 }

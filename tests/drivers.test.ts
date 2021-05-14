@@ -318,7 +318,7 @@ describe('Testes nos temas', () => {
             .set('Authorization', header)
             .field('data', JSON.stringify(theme))
             .attach('themeFile', buffer, { filename: 'field.pdf', contentType: 'application/pdf' })
-        expect(response.status, response.error.toString()).toEqual(201);
+        expect(response.status, response.error.toString()).toEqual(200);
         expect(response.body.title).toEqual(theme.title)
         expect(response.body.title).not.toEqual(selected.title)
         expect(response.body.id).not.toBeUndefined()

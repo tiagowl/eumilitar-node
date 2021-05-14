@@ -12,7 +12,7 @@ export type Context = {
     settings: any;
 }
 
-export type Handler = (props: Context) => RequestHandler;
+export type Handler = (props: Context) => RequestHandler<any, any, any>;
 
 export interface HTTPHandler {
     method: Method;

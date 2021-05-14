@@ -104,8 +104,8 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         const updated = await service.where('id', id).update(parsedData);
         if (updated === 0) throw new Error('Falha ao atualizar tema');
         if (updated > 1) throw new Error(`${updated} temas foram modificados!`);
-        const theme = await service.first();
+        const theme = await this.get({ id });
         if (!theme) throw new Error('Falha ao recuperar tema');
-        return new EssayTheme(await this.parseFromDB(theme))
+        return new EssayTheme(theme);
     }
 }

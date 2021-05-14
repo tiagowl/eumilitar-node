@@ -297,10 +297,16 @@ describe('Testes nos temas de redação', () => {
         }
         const controller = new EssayThemeController(driver);
         const all = await controller.listAll();
+        expect(all.pages).not.toBeLessThan(1);
+        expect(all.page).toBeInstanceOf(Array);
+        expect(all.page.length).not.toBeLessThan(1)
         const selected = all.page[0]
-        const updated = controller.update(selected.id, data);
+        expect(selected.id).not.toBeUndefined();
+        const updated = await controller.update(selected.id || 0, data);
         expect(data.title).toEqual(updated.title);
+        data.endDate.setMilliseconds(0);
         expect(data.endDate).toEqual(updated.endDate);
         expect(data.courses).toEqual(updated.courses);
+        done();
     })
 })
