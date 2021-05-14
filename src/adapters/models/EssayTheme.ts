@@ -61,7 +61,7 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         return theme;
     }
 
-    public async hasActiveTheme(theme: EssayThemeCreation) {
+    public async hasActiveTheme(theme: EssayThemeCreation, idToIgnore?: number) {
         const service = EssayThemeService(this.driver);
         const qr = service
             .andWhere(function () {
@@ -80,6 +80,9 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
                     return previous.orWhere('courses', 'like', `%${value}%`)
                 }, this)
             })
+        if (idToIgnore) {
+            qr.andWhereNot('id', idToIgnore);
+        }
         return qr.first().then(data => !!data);
     }
 
@@ -93,5 +96,16 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         const service = EssayThemeService(this.driver)
         const themes = await service.orderBy(ordering || 'id', 'desc').offset(((page || 1) - 1) * (pageSize || 10)).limit((pageSize || 10)).select<EssayThemeModel[]>('*');
         return Promise.all(themes.map(async theme => new EssayTheme(await this.parseFromDB(theme))))
+    }
+
+    public async update(id: number, data: EssayThemeCreation) {
+        const parsedData = await this.parseToInsert(data)
+        const service = EssayThemeService(this.driver);
+        const updated = await service.where('id', id).update(parsedData);
+        if (updated === 0) throw new Error('Falha ao atualizar tema');
+        if (updated > 1) throw new Error(`${updated} temas foram modificados!`);
+        const theme = await service.first();
+        if (!theme) throw new Error('Falha ao recuperar tema');
+        return new EssayTheme(await this.parseFromDB(theme))
     }
 }

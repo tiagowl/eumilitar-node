@@ -25,9 +25,10 @@ export interface EssayThemeCreation {
 export interface EssayThemeRepositoryInterface {
     create: (data: EssayThemeCreation) => Promise<EssayThemeInterface>;
     exists: (filter: EssayThemeFilter) => Promise<boolean> | ((filter: EssayThemeFilter) => Promise<boolean>);
-    hasActiveTheme: (data: EssayThemeCreation) => Promise<boolean>;
+    hasActiveTheme: (data: EssayThemeCreation, notCheckId?: number) => Promise<boolean>;
     findAll: (page?: number, pageSize?: number, ordering?: keyof EssayThemeInterface) => Promise<EssayTheme[]>;
     count: () => Promise<number>;
+    update: (id: number, data: EssayThemeCreation) => Promise<EssayTheme>;
 }
 
 export default class EssayThemeCase {
@@ -50,6 +51,13 @@ export default class EssayThemeCase {
 
     public async count() {
         return this.repository.count();
+    }
+
+    public async update(id: number, data: EssayThemeCreation) {
+        if (data.startDate >= data.endDate) throw new Error('A data de início deve ser anterior a data final');
+        const hasActive = await this.repository.hasActiveTheme(data, id);
+        if (hasActive) throw new Error(`Já existe um tema ativo neste período.`);
+        return this.repository.update(id, data);
     }
 
 }

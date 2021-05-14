@@ -17,7 +17,7 @@ const essayThemeDatabase = new Array(5).fill(0).map((_, index) => new EssayTheme
     id: index,
 }));
 
-class TestRepository implements EssayThemeRepositoryInterface, UserRepositoryInterface {
+class UserTestRepository implements UserRepositoryInterface {
     database: any[]
     constructor(database: any[]) {
         this.database = [...database]
@@ -40,6 +40,14 @@ class TestRepository implements EssayThemeRepositoryInterface, UserRepositoryInt
             return item;
         })
         return this.database.length;
+    }
+}
+
+// tslint:disable-next-line
+class EssayThemeTestRepository implements EssayThemeRepositoryInterface {
+    database: any[]
+    constructor(database: any[]) {
+        this.database = [...database]
     }
     public async create(data: EssayThemeCreation) {
         const theme: EssayThemeInterface = {
@@ -88,35 +96,47 @@ class TestRepository implements EssayThemeRepositoryInterface, UserRepositoryInt
     public async count() {
         return this.database.length;
     }
+
+    public async update(id: number, data: EssayThemeCreation) {
+        let theme: EssayTheme;
+        this.database = this.database.map(item => {
+            if (item.id === id) {
+                item.update(data);
+                theme = item;
+            }
+            return item;
+        })
+        return theme;
+    }
 }
 
 describe('Testes nos casos de uso da entidade User', () => {
     it('Autenticação', async (done) => {
-        const repository = new TestRepository(await userDatabase);
+        const repository = new UserTestRepository(await userDatabase);
         const user = await repository.get({ status: 'active' })
-        const useCase = new UserUseCase(new TestRepository(await userDatabase));
+        const useCase = new UserUseCase(new UserTestRepository(await userDatabase));
         const auth = await useCase.authenticate(user?.email || "", defaultPassword)
         expect(auth).toEqual({ email: true, password: true })
         done()
     })
     it('Senha errada', async (done) => {
-        const repository = new TestRepository(await userDatabase);
+        const repository = new UserTestRepository(await userDatabase);
         const user = await repository.get({ status: 'active' })
-        const useCase = new UserUseCase(new TestRepository(await userDatabase));
+        const useCase = new UserUseCase(new UserTestRepository(await userDatabase));
         const auth = await useCase.authenticate(user?.email || "", 'wrongPass')
         expect(auth).toEqual({ email: true, password: false })
         done()
     })
     it('Email errado', async (done) => {
-        const useCase = new UserUseCase(new TestRepository(await userDatabase));
+        const useCase = new UserUseCase(new UserTestRepository(await userDatabase));
         const auth = await useCase.authenticate("wrong__@mail.com", defaultPassword)
         expect(auth).toEqual({ email: false, password: false })
         done()
     })
     test('Atualização da senha', async (done) => {
-        const repository = new TestRepository(await userDatabase);
+        const repository = new UserTestRepository(await userDatabase);
         const user = await repository.get({ status: 'active' });
-        const usedRepo = new TestRepository(await userDatabase);
+        const usedRepo = new UserTestRepository(await userDatabase);
         const useCase = new UserUseCase(usedRepo);
         const changed = await useCase.updatePassword(user?.id || 0, 'newPass');
         expect(changed).toBeTruthy();
@@ -130,7 +150,7 @@ describe('Testes nos casos de uso da entidade User', () => {
 
 describe('Testes nos temas da redação', () => {
     test('Teste na criação de temas de redação', async done => {
-        const repository = new TestRepository(essayThemeDatabase);
+        const repository = new EssayThemeTestRepository(essayThemeDatabase);
         const useCase = new EssayThemeCase(repository);
         const data = {
             title: 'Título',
@@ -147,7 +167,7 @@ describe('Testes nos temas da redação', () => {
         done()
     })
     test('Lista todos', async done => {
-        const repository = new TestRepository(essayThemeDatabase);
+        const repository = new EssayThemeTestRepository(essayThemeDatabase);
         const useCase = new EssayThemeCase(repository);
         const all = await useCase.findAll();
         expect(all).toEqual(essayThemeDatabase);
@@ -164,7 +184,7 @@ describe('Testes nos temas da redação', () => {
             file: '/usr/share/data/theme.pdf',
             courses: new Set(['esa'] as Course[])
         }
-        const repository = new TestRepository(essayThemeDatabase);
+        const repository = new EssayThemeTestRepository(essayThemeDatabase);
         const useCase = new EssayThemeCase(repository);
         const all = await useCase.findAll();
         const selected = all[0];
