@@ -1,6 +1,6 @@
 import faker from 'faker';
 import supertest from 'supertest';
-import { UserService } from '../src/adapters/models/User';
+import { UserModel, UserService } from '../src/adapters/models/User';
 import Application from '../src/drivers/api';
 import { appFactory, deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
 import crypto from 'crypto';
@@ -14,6 +14,18 @@ beforeAll(async (done) => {
 })
 
 afterAll((done) => driver.destroy().finally(done) || done())
+
+async function authenticate(user: UserModel, api: supertest.SuperTest<supertest.Test>) {
+    const credentials = {
+        email: user.email,
+        password: user.passwd,
+    }
+    const auth = await api.post('/tokens/')
+        .send(credentials)
+        .set('User-Agent', faker.internet.userAgent());
+    const { token } = auth.body;
+    return token;
+}
 
 describe('Teste na api do usuário', () => {
     const user = userFactory();
@@ -217,7 +229,7 @@ describe('Teste na api do usuário', () => {
 })
 
 describe('Testes nos temas', () => {
-    const user = userFactory();
+    const user: UserModel = userFactory();
     beforeAll(async (done) => {
         const service = UserService(driver);
         await saveUser(user, service);
@@ -285,5 +297,33 @@ describe('Testes nos temas', () => {
         expect(response.body?.count).not.toBeUndefined()
         expect(response.body?.count).toBe(response.body?.page?.length)
         done()
+    })
+    test('Atualização de temas', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
+        const themes = await api.get('/themes/')
+            .set('Authorization', header)
+        const selected = themes.body.page[0];
+        const theme = {
+            title: faker.name.title(),
+            startDate: new Date(Date.now() - 15 * 25 * 60 * 60),
+            endDate: new Date(Date.now() - 3 * 25 * 60 * 60),
+            helpText: faker.lorem.paragraph(1),
+            courses: ['espcex', 'esa'],
+        }
+        const response = await api.put(`/themes/${selected.id}/`)
+            .set('Authorization', header)
+            .field('data', JSON.stringify(theme))
+            .attach('themeFile', buffer, { filename: 'field.pdf', contentType: 'application/pdf' })
+        expect(response.status, response.error.toString()).toEqual(201);
+        expect(response.body.title).toEqual(theme.title)
+        expect(response.body.title).not.toEqual(selected.title)
+        expect(response.body.id).not.toBeUndefined()
+        expect(response.body.id).not.toBeNull()
+        expect(response.body.id).toEqual(selected.id)
+        done();
     })
 })

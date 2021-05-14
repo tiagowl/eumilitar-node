@@ -20,7 +20,8 @@ export const userFactory = () => ({
     status: 1,
     permission: 1,
     date_created: now,
-    date_modified: now
+    date_modified: now,
+    user_id: faker.unique(faker.datatype.number),
 })
 
 export const userEntityFactory = async (inject?: any): Promise<User> => {
