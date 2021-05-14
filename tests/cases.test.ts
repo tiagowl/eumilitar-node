@@ -6,7 +6,16 @@ import faker from 'faker';
 
 const defaultPassword = 'pass1235'
 const userDatabase = Promise.all(new Array(5).fill(0).map(async () => await userEntityFactory({ password: await hashPassword(defaultPassword) })));
-const essayThemeDatabase = new Array();
+const essayThemeDatabase = new Array(5).fill(0).map((_, index) => new EssayTheme({
+    title: 'Título',
+    endDate: new Date(Date.now() + 15 * 24 * 60 * 60),
+    startDate: new Date(),
+    helpText: faker.lorem.lines(3),
+    file: '/usr/share/data/theme.pdf',
+    courses: new Set(['esa'] as Course[]),
+    lastModified: new Date(),
+    id: index,
+}));
 
 class TestRepository implements EssayThemeRepositoryInterface, UserRepositoryInterface {
     database: any[]
@@ -37,10 +46,10 @@ class TestRepository implements EssayThemeRepositoryInterface, UserRepositoryInt
             ...data,
             lastModified: new Date(),
         }
-        essayThemeDatabase.push(theme);
+        this.database.push(theme);
         return new EssayTheme({
             ...theme,
-            id: essayThemeDatabase.indexOf(theme),
+            id: this.database.indexOf(theme),
         })
     }
     public async exists(filter: EssayThemeFilter) {
@@ -65,8 +74,19 @@ class TestRepository implements EssayThemeRepositoryInterface, UserRepositoryInt
         })
     }
 
-    public async hasActiveTheme(){ 
+    public async hasActiveTheme() {
         return false;
+    }
+
+    public async findAll(page?: number, pageSize?: number, ordering?: keyof EssayTheme) {
+        const start = ((page || 1) - 1) * (pageSize || 10);
+        const end = pageSize || 10;
+        const order = ordering || 'id'
+        return [...this.database].slice(start, end).sort((a, b) => a[order] > b[order] ? 1 : a[order] < b[order] ? -1 : 0)
+    }
+
+    public async count() {
+        return this.database.length;
     }
 }
 
@@ -125,5 +145,14 @@ describe('Testes nos temas da redação', () => {
         expect(created.id).not.toBeNull();
         expect(created).toEqual(expect.objectContaining(data))
         done()
+    })
+    test('Lista todos', async done => {
+        const repository = new TestRepository(essayThemeDatabase);
+        const useCase = new EssayThemeCase(repository);
+        const all = await useCase.findAll();
+        expect(all).toEqual(essayThemeDatabase);
+        const count = await useCase.count();
+        expect(count).toEqual(essayThemeDatabase.length);
+        done();
     })
 })

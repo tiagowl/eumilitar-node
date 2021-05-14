@@ -244,7 +244,7 @@ describe('Testes nos temas de redação', () => {
             order: 'id',
         }
         const data: EssayThemeInput = {
-            title: 'Título',
+            title: faker.name.title(),
             endDate: new Date(Date.now() + 370 * 24 * 60 * 60),
             startDate: new Date(Date.now() + 350 * 24 * 60 * 60),
             helpText: faker.lorem.lines(3),
@@ -260,11 +260,11 @@ describe('Testes nos temas de redação', () => {
                 originalname: faker.name.title(),
                 stream: new Readable(),
             },
-            courses: ['esa', 'espcex'] as Course[]
+            courses: ['esa', 'espcex'] as Course[],
         }
         const controller = new EssayThemeController(driver);
         await controller.create(data);
-        await controller.create({ ...data, startDate: new Date(Date.now() + 690 * 24 * 60 * 60), endDate: new Date(Date.now() + 700 * 24 * 60 * 60) });
+        await controller.create({ ...data, startDate: new Date(Date.now() + 790 * 24 * 60 * 60), endDate: new Date(Date.now() + 800 * 24 * 60 * 60) });
         const themes = await controller.listAll(pagination);
         expect(themes.count).toBe(themes.page.length);
         expect(themes.count).toBe(2);
