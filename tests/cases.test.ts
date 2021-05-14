@@ -82,8 +82,14 @@ class EssayThemeTestRepository implements EssayThemeRepositoryInterface {
         })
     }
 
-    public async hasActiveTheme() {
-        return false;
+    public async hasActiveTheme(data: EssayThemeCreation, idToIgnore?: number) {
+        const database = !!idToIgnore ? this.database.filter(item => item.id != idToIgnore) : this.database
+        return !!database.find((item: EssayTheme) => {
+            return (
+                (item.startDate <= data.startDate && item.endDate > data.endDate) ||
+                (item.startDate > data.startDate && item.startDate < data.endDate)
+            ) && !![...data.courses].find(dataTheme => dataTheme in [...item.courses])
+        })
     }
 
     public async findAll(page?: number, pageSize?: number, ordering?: keyof EssayTheme) {
@@ -98,7 +104,9 @@ class EssayThemeTestRepository implements EssayThemeRepositoryInterface {
     }
 
     public async update(id: number, data: EssayThemeCreation) {
+        // @ts-ignore
         let theme: EssayTheme;
+        // @ts-ignore
         this.database = this.database.map(item => {
             if (item.id === id) {
                 item.update(data);
@@ -106,7 +114,17 @@ class EssayThemeTestRepository implements EssayThemeRepositoryInterface {
             }
             return item;
         })
+        // @ts-ignore
         return theme;
+    }
+
+    public async get(filter: EssayThemeFilter) {
+        return this.database.find(item => {
+            return Object.entries(filter)
+                .reduce((valid, field) => {
+                    return valid && (item[field[0]] === field[1])
+                }, true as boolean)
+        })
     }
 }
 
@@ -186,10 +204,8 @@ describe('Testes nos temas da redação', () => {
         }
         const repository = new EssayThemeTestRepository(essayThemeDatabase);
         const useCase = new EssayThemeCase(repository);
-        const all = await useCase.findAll();
-        const selected = all[0];
-        const updated = await useCase.update(selected.id, data);
-        expect(updated.id).toEqual(selected.id);
+        const updated = await useCase.update(0, data);
+        expect(updated.id).toEqual(0);
         expect(updated.title).toEqual(data.title);
         expect(updated.endDate).toEqual(data.endDate);
         done();
