@@ -18,6 +18,10 @@ export interface EssayThemeInput extends EssayThemeBaseInterface {
     file: Express.Multer.File;
 }
 
+export interface EssayThemeUpdating extends EssayThemeBaseInterface {
+    file?: Express.Multer.File;
+}
+
 export interface EssayThemeResponse extends EssayThemeBaseInterface {
     file: string;
     id?: number;
@@ -38,13 +42,12 @@ export interface EssayThemePagination {
 export interface EssayThemeList {
     pages: number;
     count: number;
-    page: EssayThemeResponse[]
+    page: EssayThemeResponse[];
 }
 
-export const schema = yup.object({
+const baseSchema = {
     title: yup.string().required('O título é obrigatório'),
     helpText: yup.string().default(''),
-    file: yup.string(),
     courses: yup.array(
         yup.string().matches(/^(esa|espcex)$/),
     ),
@@ -54,6 +57,16 @@ export const schema = yup.object({
     endDate: yup.date().required().min(
         yup.ref('startDate'), 'A data de início deve ser anterior a data final'
     ),
+}
+
+export const updatingSchema = yup.object({
+    ...baseSchema,
+    file: yup.string().notRequired(),
+})
+
+export const schema = yup.object({
+    ...baseSchema,
+    file: yup.string().required('O arquivo do tema é obrigatório'),
 })
 
 const filterFields = ['id', 'title', 'courses', 'startDate', 'endDate', 'lastModified']
@@ -118,9 +131,10 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
         }
     }
 
-    public async update(id: number, rawData: EssayThemeInput) {
+    public async update(id: number, rawData: EssayThemeUpdating) {
         try {
-            const data = await this.validate({ ...rawData, file: rawData.file.path });
+            this.schema = updatingSchema;
+            const data = await this.validate({ ...rawData, file: rawData.file?.path || '' });
             const theme = await this.useCase.update(id, {
                 ...data,
                 courses: new Set(data.courses),

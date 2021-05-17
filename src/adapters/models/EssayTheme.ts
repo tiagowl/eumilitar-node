@@ -80,7 +80,7 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
                     return previous.orWhere('courses', 'like', `%${value}%`)
                 }, this)
             })
-        if (idToIgnore) {
+        if (idToIgnore !== undefined) {
             qr.andWhereNot('id', idToIgnore);
         }
         return qr.first().then(data => !!data);

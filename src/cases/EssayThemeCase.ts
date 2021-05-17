@@ -61,7 +61,7 @@ export default class EssayThemeCase {
         const hasActive = await this.repository.hasActiveTheme(data, id);
         if (hasActive) throw new Error(`Já existe um tema ativo neste período.`);
         const theme = new EssayTheme(themeData);
-        theme.update(data);
+        theme.update({ ...data, file: !!data.file ? data.file : themeData.file });
         return this.repository.update(id, theme.data);
     }
 
