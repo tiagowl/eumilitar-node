@@ -28,6 +28,7 @@ test('Testes na entidade EssayTheme', () => {
         endDate: now,
         lastModified: now,
         courses: new Set(['esa']),
+        deactivated: false,
     })
     expect(theme.id).toBe(1)
     expect(theme.title).toBe('Tema da redação')

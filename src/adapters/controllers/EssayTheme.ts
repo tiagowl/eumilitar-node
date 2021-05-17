@@ -11,6 +11,7 @@ interface EssayThemeBaseInterface {
     startDate: Date;
     endDate: Date;
     helpText: string;
+    deactivated: boolean;
     courses: Course[];
 }
 
@@ -91,7 +92,8 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
             startDate: theme.startDate,
             endDate: theme.endDate,
             helpText: theme.helpText,
-            courses: [...theme.courses]
+            courses: [...theme.courses],
+            deactivated: theme.deactivated,
         }
     }
 

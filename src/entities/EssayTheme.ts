@@ -1,4 +1,3 @@
-
 export type Course = "esa" | "espcex";
 
 export interface EssayThemeInterface {
@@ -10,6 +9,7 @@ export interface EssayThemeInterface {
     helpText: string;
     file: string;
     courses: Set<Course>;
+    deactivated: boolean;
 }
 
 export interface EssayUpdate {
@@ -20,6 +20,7 @@ export interface EssayUpdate {
     helpText?: string;
     file?: string;
     courses?: Set<Course>;
+    deactivated?: boolean;
 }
 
 export default class EssayTheme implements EssayThemeInterface {
@@ -31,6 +32,7 @@ export default class EssayTheme implements EssayThemeInterface {
     #helpText: string;
     #file: string;
     #courses: Set<Course>;
+    #deactivated: boolean;
 
     constructor(data: EssayThemeInterface) {
         this.#id = data.id;
@@ -41,6 +43,7 @@ export default class EssayTheme implements EssayThemeInterface {
         this.#helpText = data.helpText;
         this.#file = data.file;
         this.#courses = new Set(data.courses);
+        this.#deactivated = data.deactivated;
     }
 
     get data() {
@@ -53,6 +56,8 @@ export default class EssayTheme implements EssayThemeInterface {
             helpText: this.#helpText,
             file: this.#file,
             courses: this.#courses,
+            active: this.active,
+            deactivated: this.#deactivated,
         }
     }
 
@@ -67,7 +72,7 @@ export default class EssayTheme implements EssayThemeInterface {
 
     get active() {
         const now = new Date();
-        return now > this.#startDate && now < this.#endDate
+        return (now > this.#startDate && now < this.#endDate) || this.#deactivated;
     }
 
     get startDate() { return this.#startDate }
@@ -104,6 +109,12 @@ export default class EssayTheme implements EssayThemeInterface {
         this.updateLastModified();
     }
 
+    get deactivated() { return this.#deactivated }
+    set deactivated(value: boolean) {
+        this.#deactivated = value;
+        this.updateLastModified();
+    }
+
     private updateLastModified() {
         this.#lastModified = new Date();
     }
@@ -115,16 +126,17 @@ export default class EssayTheme implements EssayThemeInterface {
         this.#helpText = data.helpText || this.#helpText;
         this.#file = data.file || this.#file;
         this.#courses = data.courses || this.#courses;
-        if (data.startDate) this.startDate = data.startDate;
+        this.#deactivated = data.deactivated || this.#deactivated;
+        this.#startDate = data.startDate || this.#startDate;
         this.updateLastModified();
     }
 
-    public removeCourse(value: Course) {
+    public async removeCourse(value: Course) {
         this.courses.delete(value);
         this.updateLastModified();
     }
 
-    public addCourse(value: Course) {
+    public async addCourse(value: Course) {
         this.courses.add(value);
         this.updateLastModified();
     }

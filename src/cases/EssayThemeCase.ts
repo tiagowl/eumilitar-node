@@ -13,7 +13,7 @@ export type EssayThemeFilter = {
     courses?: Set<Course>;
 } | [keyof EssayTheme, Operator, any][]
 
-export interface EssayThemeCreation {
+export interface EssayThemeData {
     title: string;
     startDate: Date;
     endDate: Date;
@@ -22,10 +22,14 @@ export interface EssayThemeCreation {
     courses: Set<Course>;
 }
 
+export interface EssayThemeCreation extends EssayThemeData {
+    deactivated: boolean;
+}
+
 export interface EssayThemeRepositoryInterface {
     create: (data: EssayThemeCreation) => Promise<EssayThemeInterface>;
     exists: (filter: EssayThemeFilter) => Promise<boolean> | ((filter: EssayThemeFilter) => Promise<boolean>);
-    hasActiveTheme: (data: EssayThemeCreation, notCheckId?: number) => Promise<boolean>;
+    hasActiveTheme: (data: EssayThemeData, notCheckId?: number) => Promise<boolean>;
     findAll: (page?: number, pageSize?: number, ordering?: keyof EssayThemeInterface) => Promise<EssayTheme[]>;
     count: () => Promise<number>;
     update: (id: number, data: EssayThemeCreation) => Promise<EssayTheme>;
@@ -39,11 +43,11 @@ export default class EssayThemeCase {
         this.repository = repository;
     }
 
-    public async create(data: EssayThemeCreation) {
+    public async create(data: EssayThemeData) {
         if (data.startDate >= data.endDate) throw new Error('A data de início deve ser anterior a data final');
         const hasActive = await this.repository.hasActiveTheme(data);
         if (hasActive) throw new Error(`Já existe um tema ativo neste período.`);
-        return this.repository.create(data);
+        return this.repository.create({ ...data, deactivated: false });
     }
 
     public async findAll(page?: number, pageSize?: number, ordering?: keyof EssayThemeInterface): Promise<EssayTheme[]> {
@@ -54,7 +58,7 @@ export default class EssayThemeCase {
         return this.repository.count();
     }
 
-    public async update(id: number, data: EssayThemeCreation) {
+    public async update(id: number, data: EssayThemeData) {
         const themeData = await this.repository.get({ id });
         if (!themeData) throw new Error('Tema não encontrado');
         if (data.startDate >= data.endDate) throw new Error('A data de início deve ser anterior a data final');

@@ -203,7 +203,8 @@ describe('Testes nos temas de redação', () => {
             startDate: new Date(Date.now() - 160 * 24 * 60 * 60),
             helpText: faker.lorem.lines(3),
             file: '/usr/share/data/theme.pdf',
-            courses: new Set(['esa', 'espcex'] as Course[])
+            courses: new Set(['esa', 'espcex'] as Course[]),
+            deactivated: false,
         }
         const created = await repository.create(data);
         expect(created.id).not.toBeUndefined();
@@ -216,6 +217,7 @@ describe('Testes nos temas de redação', () => {
             endDate: new Date(Date.now() - 50 * 24 * 60 * 60),
             startDate: new Date(Date.now() - 70 * 24 * 60 * 60),
             helpText: faker.lorem.lines(3),
+            deactivated: false,
             file: {
                 path: '/usr/share/data/theme.pdf',
                 buffer: Buffer.from(new ArrayBuffer(10), 0, 2),
@@ -248,6 +250,7 @@ describe('Testes nos temas de redação', () => {
             endDate: new Date(Date.now() + 370 * 24 * 60 * 60),
             startDate: new Date(Date.now() + 350 * 24 * 60 * 60),
             helpText: faker.lorem.lines(3),
+            deactivated: false,
             file: {
                 path: '/usr/share/data/theme.pdf',
                 buffer: Buffer.from(new ArrayBuffer(10), 0, 2),
@@ -281,6 +284,7 @@ describe('Testes nos temas de redação', () => {
             endDate: new Date(Date.now() + 3700 * 24 * 60 * 60),
             startDate: new Date(Date.now() + 3500 * 24 * 60 * 60),
             helpText: faker.lorem.lines(3),
+            deactivated: false,
             file: {
                 path: '/usr/share/data/theme.pdf',
                 buffer: Buffer.from(new ArrayBuffer(10), 0, 2),

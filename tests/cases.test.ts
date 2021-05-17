@@ -1,6 +1,6 @@
 import UserUseCase, { UserFilter, UserRepositoryInterface } from '../src/cases/UserUseCase';
 import { hashPassword, userEntityFactory } from './shortcuts';
-import EssayThemeCase, { EssayThemeCreation, EssayThemeFilter, EssayThemeRepositoryInterface } from '../src/cases/EssayThemeCase';
+import EssayThemeCase, { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeRepositoryInterface } from '../src/cases/EssayThemeCase';
 import EssayTheme, { Course, EssayThemeInterface } from '../src/entities/EssayTheme';
 import faker from 'faker';
 
@@ -15,6 +15,7 @@ const essayThemeDatabase = new Array(5).fill(0).map((_, index) => new EssayTheme
     courses: new Set(['esa'] as Course[]),
     lastModified: new Date(),
     id: index,
+    deactivated: false,
 }));
 
 class UserTestRepository implements UserRepositoryInterface {
@@ -82,8 +83,8 @@ class EssayThemeTestRepository implements EssayThemeRepositoryInterface {
         })
     }
 
-    public async hasActiveTheme(data: EssayThemeCreation, idToIgnore?: number) {
-        const database = !!idToIgnore ? this.database.filter(item => item.id != idToIgnore) : this.database
+    public async hasActiveTheme(data: EssayThemeData, idToIgnore?: number) {
+        const database = !!idToIgnore ? this.database.filter(item => item.id !== idToIgnore) : this.database
         return !!database.find((item: EssayTheme) => {
             return (
                 (item.startDate <= data.startDate && item.endDate > data.endDate) ||
@@ -200,7 +201,7 @@ describe('Testes nos temas da redação', () => {
             startDate: new Date(Date.now() + 500 * 24 * 60 * 60),
             helpText: faker.lorem.lines(3),
             file: '/usr/share/data/theme.pdf',
-            courses: new Set(['esa'] as Course[])
+            courses: new Set(['esa'] as Course[]),
         }
         const repository = new EssayThemeTestRepository(essayThemeDatabase);
         const useCase = new EssayThemeCase(repository);
