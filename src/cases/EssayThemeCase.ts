@@ -69,4 +69,12 @@ export default class EssayThemeCase {
         return this.repository.update(id, theme.data);
     }
 
+    public async deactivate(id: number) {
+        const themeData = await this.repository.get({ id });
+        if (!themeData) throw new Error('Tema não encontrado');
+        const theme = new EssayTheme(themeData);
+        theme.deactivated = true;
+        return this.repository.update(id, theme.data);
+    }
+
 }
