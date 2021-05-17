@@ -326,4 +326,18 @@ describe('Testes nos temas', () => {
         expect(response.body.id).toEqual(selected.id)
         done();
     })
+    test('Desativação do tema', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const themes = await api.get('/themes/')
+            .set('Authorization', header)
+        const selected = themes.body.page[0];
+        const response = await api.delete(`/themes/${selected.id}/`)
+            .set('Authorization', header)
+        expect(response.status).toBe(204)
+        expect(response.body).toBeUndefined();
+        done();
+    })
 })
