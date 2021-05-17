@@ -8,7 +8,9 @@ const settings = Object.freeze({
             user: process.env.DB_USER,
             password: process.env.DB_PASS,
             database: process.env.DB_NAME
-        }
+        },
+        pool: { min: 0, max: 5 },
+        acquireConnectionTimeout: 10000
     },
     server: {
         port: Number(process.env.PORT) || 22000,

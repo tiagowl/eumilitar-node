@@ -56,7 +56,6 @@ export default class EssayTheme implements EssayThemeInterface {
             helpText: this.#helpText,
             file: this.#file,
             courses: this.#courses,
-            active: this.active,
             deactivated: this.#deactivated,
         }
     }

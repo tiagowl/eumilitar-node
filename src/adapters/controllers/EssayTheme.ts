@@ -147,4 +147,13 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
         }
     }
 
+    public async deactivate(id: number) {
+        try {
+            const theme = await this.useCase.deactivate(id);
+            return this.parseEntity(theme);
+        } catch (error) {
+            throw { message: error.message || 'Erro ao desativar tema' };
+        }
+    }
+
 }

@@ -121,7 +121,7 @@ export function profile({ driver }: Context): RequestHandler<any, UserInterface,
     }
 }
 
-export function createEssayTheme(context: Context): RequestHandler<any, EssayThemeRequest, any> {
+export function createEssayTheme(context: Context): RequestHandler<any, any, EssayThemeRequest> {
     const { driver, storage } = context;
     return express().use(isAdmin(context), storage.single('themeFile'),
         async (req, res) => {
@@ -159,7 +159,7 @@ export function listEssayThemes(context: Context): RequestHandler {
     })
 }
 
-export function updateEssayThemes(context: Context): RequestHandler<any, EssayThemeRequest, EssayThemeResponse> {
+export function updateEssayThemes(context: Context): RequestHandler<any, EssayThemeResponse, EssayThemeRequest> {
     const { driver, storage } = context;
     const handler = express.Router({ mergeParams: true }).use(isAdmin(context), storage.single('themeFile'))
     handler.use(async (req, res) => {
@@ -181,4 +181,19 @@ export function updateEssayThemes(context: Context): RequestHandler<any, EssayTh
         }
     })
     return handler;
+}
+
+export function deactivateEssayTheme(context: Context): RequestHandler<{ id: number }, EssayThemeResponse, undefined> {
+    const { driver } = context;
+    return async (req, res) => {
+        try {
+            const controller = new EssayThemeController(driver);
+            const theme = await controller.deactivate(Number(req.params.id));
+            res.status(200).json(theme);
+        } catch (error) {
+            res.status(error.status || 400).json(error);
+        } finally {
+            res.end();
+        }
+    }
 }

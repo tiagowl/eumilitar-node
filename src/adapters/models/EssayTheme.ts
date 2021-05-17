@@ -79,11 +79,10 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
             const service = EssayThemeService(this.driver);
             const qr = (typeof idToIgnore === 'number' ? service.andWhereNot('id', idToIgnore) : service)
                 .andWhere(function () {
-                    this
-                        .orWhere(function () {
-                            return this.where('startDate', '<=', theme.startDate)
-                                .where('endDate', '>', theme.startDate)
-                        })
+                    this.orWhere(function () {
+                        return this.where('startDate', '<=', theme.startDate)
+                            .where('endDate', '>', theme.startDate)
+                    })
                         .orWhere(function () {
                             return this.where('startDate', '>', theme.startDate)
                                 .where('startDate', '<', theme.endDate)

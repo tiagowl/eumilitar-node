@@ -336,8 +336,8 @@ describe('Testes nos temas', () => {
         const selected = themes.body.page[0];
         const response = await api.delete(`/themes/${selected.id}/`)
             .set('Authorization', header)
-        expect(response.status).toBe(204)
-        expect(response.body).toBeUndefined();
+        expect(response.status, response.body?.message).toBe(200)
+        expect(response.body.deactivated).toBeTruthy();
         done();
     })
 })
