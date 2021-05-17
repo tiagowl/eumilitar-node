@@ -36,13 +36,13 @@ const routes: Route[] = [
         path: '/themes/',
         handlers: [
             { handler: handlers.createEssayTheme, method: 'post' },
-            { handler: handlers.listEssayThemes, method: 'get' }
+            { handler: handlers.listEssayThemes, method: 'get' },
         ]
     },
     {
         path: '/themes/:id/',
         handlers: [
-            { handler: handlers.updateEssayThemes, method: 'put' }
+            { handler: handlers.updateEssayThemes, method: 'put' },
         ]
     }
 ]

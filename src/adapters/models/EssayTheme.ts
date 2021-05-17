@@ -63,7 +63,7 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
 
     public async hasActiveTheme(theme: EssayThemeCreation, idToIgnore?: number) {
         const service = EssayThemeService(this.driver);
-        const qr = service
+        const qr = (typeof idToIgnore === 'number' ? service.andWhereNot('id', idToIgnore) : service)
             .andWhere(function () {
                 this
                     .orWhere(function () {
@@ -80,9 +80,6 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
                     return previous.orWhere('courses', 'like', `%${value}%`)
                 }, this)
             })
-        if (idToIgnore !== undefined) {
-            qr.andWhereNot('id', idToIgnore);
-        }
         return qr.first().then(data => !!data);
     }
 

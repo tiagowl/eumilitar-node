@@ -159,29 +159,26 @@ export function listEssayThemes(context: Context): RequestHandler {
     })
 }
 
-export function updateEssayThemes(context: Context): RequestHandler<{ id: number }, EssayThemeRequest, EssayThemeResponse> {
+export function updateEssayThemes(context: Context): RequestHandler<any, EssayThemeRequest, EssayThemeResponse> {
     const { driver, storage } = context;
-    const handler = express().use(isAdmin(context), storage.single('themeFile'))
-    return async (_req, _res, next) => {
-        const id = _req.params.id;
-        handler.use(async (req, res) => {
-            try {
-                const data = JSON.parse(req.body.data);
-                const controller = new EssayThemeController(driver);
-                const response = await controller.update(Number(id), {
-                    ...data,
-                    startDate: new Date(data.startDate),
-                    endDate: new Date(data.endDate),
-                    file: req.file
-                });
-                res.status(200).json(response);
-            } catch (error) {
-                res.status(error.status || 400).send(error);
-            } finally {
-                res.end();
-            }
-
-        })
-        handler(_req as express.Request<any>, _res, next)
-    }
+    const handler = express.Router({ mergeParams: true }).use(isAdmin(context), storage.single('themeFile'))
+    handler.use(async (req, res) => {
+        const id = req.params.id;
+        try {
+            const data = JSON.parse(req.body.data);
+            const controller = new EssayThemeController(driver);
+            const response = await controller.update(Number(id), {
+                ...data,
+                startDate: new Date(data.startDate),
+                endDate: new Date(data.endDate),
+                file: req.file
+            });
+            res.status(200).json(response);
+        } catch (error) {
+            res.status(error.status || 400).send(error);
+        } finally {
+            res.end();
+        }
+    })
+    return handler;
 }
