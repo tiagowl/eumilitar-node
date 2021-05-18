@@ -19,8 +19,6 @@ interface EssayThemeRequest {
     courses: Course[];
 }
 
-
-
 export async function checkAuth(req: Request, driver: Knex) {
     const auth = req.headers.authorization;
     if (!auth) throw { message: 'Token não fornecido', status: 401 };
@@ -161,7 +159,7 @@ export function listEssayThemes(context: Context): RequestHandler {
 
 export function updateEssayThemes(context: Context): RequestHandler<any, EssayThemeResponse, EssayThemeRequest> {
     const { driver, storage } = context;
-    const handler = express.Router({ mergeParams: true }).use(isAdmin(context), storage.single('themeFile'))
+    const handler = express.Router({ mergeParams: true }).use(isAdmin(context), storage.single('themeFile'));
     handler.use(async (req, res) => {
         const id = req.params.id;
         try {
@@ -183,9 +181,10 @@ export function updateEssayThemes(context: Context): RequestHandler<any, EssayTh
     return handler;
 }
 
-export function deactivateEssayTheme(context: Context): RequestHandler<{ id: number }, EssayThemeResponse, undefined> {
+export function deactivateEssayTheme(context: Context): RequestHandler<any, EssayThemeResponse, undefined> {
     const { driver } = context;
-    return async (req, res) => {
+    const handler = express.Router({ mergeParams: true }).use(isAdmin(context));
+    handler.use(async (req, res) => {
         try {
             const controller = new EssayThemeController(driver);
             const theme = await controller.deactivate(Number(req.params.id));
@@ -195,5 +194,6 @@ export function deactivateEssayTheme(context: Context): RequestHandler<{ id: num
         } finally {
             res.end();
         }
-    }
+    })
+    return handler;
 }

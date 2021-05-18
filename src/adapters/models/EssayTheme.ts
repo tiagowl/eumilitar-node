@@ -110,10 +110,24 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         }
     }
 
-    public async findAll(page?: number, pageSize?: number, ordering?: keyof EssayThemeModel) {
+    public async findAll(page?: number, pageSize?: number, ordering?: keyof EssayThemeModel, active?: boolean) {
         try {
-            const service = EssayThemeService(this.driver)
-            const themes = await service.orderBy(ordering || 'id', 'desc').offset(((page || 1) - 1) * (pageSize || 10)).limit((pageSize || 10)).select<EssayThemeModel[]>('*');
+            const service = EssayThemeService(this.driver);
+            const now = new Date();
+            const query = active === true ?
+                service.where(function () {
+                    return this.where('startDate', '<=', now)
+                        .where('endDate', '>', now);
+                })
+                : active === false ?
+                    service.where(function () {
+                        return this.orWhere('startDate', '>', now)
+                            .orWhere('endDate', '<', now);
+                    }) : service;
+            const themes = await query.orderBy(ordering || 'id', 'desc')
+                .offset(((page || 1) - 1) * (pageSize || 10))
+                .limit((pageSize || 10))
+                .select<EssayThemeModel[]>('*');
             return Promise.all(themes.map(async theme => new EssayTheme(await this.parseFromDB(theme))));
         } catch {
             throw new Error('Falha ao consultar o banco de dados');

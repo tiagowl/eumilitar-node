@@ -38,6 +38,7 @@ export interface EssayThemePagination {
     page?: number;
     size?: number;
     order?: keyof EssayThemeModel;
+    active?: boolean;
 }
 
 export interface EssayThemeList {
@@ -121,7 +122,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                 size: Number(pagination?.size || 10),
                 order: !!pagination?.order ? pagination?.order in filterFields ? pagination?.order : 'startDate' : 'startDate'
             }
-            const page = await this.useCase.findAll(validatedPagination.page, validatedPagination?.size || 10, validatedPagination.order);
+            const page = await this.useCase.findAll(validatedPagination.page, validatedPagination?.size || 10, validatedPagination.order, pagination?.active);
             const amount = await this.useCase.count();
             return {
                 page: await Promise.all(page.map(async theme => (await this.parseEntity(theme)))),
@@ -129,7 +130,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                 pages: Math.ceil(amount / validatedPagination.size),
             } as EssayThemeList
         } catch (error) {
-            throw { message: 'Erro ao consultar temas' }
+            throw { message: 'Erro ao consultar temas' };
         }
     }
 
