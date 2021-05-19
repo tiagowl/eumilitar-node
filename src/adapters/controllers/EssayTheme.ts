@@ -1,4 +1,4 @@
-import EssayTheme from "../../entities/EssayTheme";
+import EssayTheme, { EssayThemeInterface } from "../../entities/EssayTheme";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import { Course } from '../../entities/EssayTheme';
@@ -35,10 +35,10 @@ export interface EssayThemeData extends EssayThemeBaseInterface {
 }
 
 export interface EssayThemePagination {
-    page?: number;
-    size?: number;
+    page?: string;
+    size?: string;
     order?: keyof EssayThemeModel;
-    active?: boolean;
+    active?: 'true' | 'false';
 }
 
 export interface EssayThemeList {
@@ -71,7 +71,24 @@ export const schema = yup.object({
     file: yup.string().required('O arquivo do tema é obrigatório'),
 })
 
+const toNumber = (data: string) => !!data ? Number(data) : undefined
+
 const filterFields = ['id', 'title', 'courses', 'startDate', 'endDate', 'lastModified']
+
+export const querySchema = yup.object({
+    page: yup.number()
+        .transform(toNumber)
+        .default(1),
+    size: yup.number()
+        .transform(toNumber)
+        .default(10),
+    order: yup.string()
+        .oneOf(filterFields)
+        .default('id'),
+    active: yup.mixed<boolean>()
+        .transform(data => data === '1' ? true : data === '0' ? false : undefined)
+        .default(undefined)
+}).noUnknown()
 
 export default class EssayThemeController extends Controller<EssayThemeData> {
     private repository: EssayThemeRepository;
@@ -117,17 +134,13 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
 
     public async listAll(pagination?: EssayThemePagination): Promise<EssayThemeList> {
         try {
-            const validatedPagination = {
-                page: Number(pagination?.page || 1),
-                size: Number(pagination?.size || 10),
-                order: !!pagination?.order ? pagination?.order in filterFields ? pagination?.order : 'startDate' : 'startDate'
-            }
-            const page = await this.useCase.findAll(validatedPagination.page, validatedPagination?.size || 10, validatedPagination.order, pagination?.active);
+            const data = await querySchema.validate(pagination).catch(() => querySchema.cast(undefined));
+            const page = await this.useCase.findAll(data.page, data?.size || 10, data.order as keyof EssayThemeInterface, data.active);
             const amount = await this.useCase.count();
             return {
                 page: await Promise.all(page.map(async theme => (await this.parseEntity(theme)))),
                 count: page.length,
-                pages: Math.ceil(amount / validatedPagination.size),
+                pages: Math.ceil(amount / data.size),
             } as EssayThemeList
         } catch (error) {
             throw { message: 'Erro ao consultar temas' };

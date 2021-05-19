@@ -340,4 +340,17 @@ describe('Testes nos temas', () => {
         expect(response.body.deactivated).toBeTruthy();
         done();
     })
+    test('Listagem de temas ativos', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const themes = await api.get('/themes/?active=1')
+            .set('Authorization', header);
+        expect(themes.body.page).toBeInstanceOf(Array);
+        themes.body.page.forEach((theme: any) => {
+            expect(theme.active, JSON.stringify(theme)).toBeTruthy();
+        })
+        done()
+    })
 })

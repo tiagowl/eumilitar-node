@@ -241,8 +241,8 @@ describe('Testes nos temas de redação', () => {
     })
     test('Lista todos os temas', async done => {
         const pagination: EssayThemePagination = {
-            page: 1,
-            size: 2,
+            page: '1',
+            size: '2',
             order: 'id',
         }
         const data: EssayThemeInput = {

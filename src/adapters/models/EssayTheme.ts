@@ -34,7 +34,7 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
 
     private async parseFromDB(data: EssayThemeModel): Promise<EssayThemeInterface> {
         const courses = new Set<Course>(data.courses.split(divider) as Course[]);
-        return { ...data, courses }
+        return { ...data, courses, deactivated: !!data.deactivated }
     }
 
     public async exists(filter: EssayThemeFilter) {
@@ -116,13 +116,15 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
             const now = new Date();
             const query = active === true ?
                 service.where(function () {
-                    return this.where('startDate', '<=', now)
-                        .where('endDate', '>', now);
+                    return this.andWhere('startDate', '<=', now)
+                        .andWhere('endDate', '>', now)
+                        .andWhere('deactivated', false)
                 })
                 : active === false ?
                     service.where(function () {
                         return this.orWhere('startDate', '>', now)
-                            .orWhere('endDate', '<', now);
+                            .orWhere('endDate', '<', now)
+                            .orWhere('deactivated', true)
                     }) : service;
             const themes = await query.orderBy(ordering || 'id', 'desc')
                 .offset(((page || 1) - 1) * (pageSize || 10))
