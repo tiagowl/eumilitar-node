@@ -10,6 +10,7 @@ export interface EssayCreationData {
 
 export interface EssayInsertionData extends EssayCreationData {
     theme: number;
+    sendDate: Date;
 }
 
 export interface EssayRepositoryInterface {
@@ -41,7 +42,7 @@ export default class EssayCase {
             { ...baseFilter, status: 'revised' },
         ]))
         if (!canSend) throw new Error(`Já foi enviada uma redação do curso "${beautyCourse[data.course]}" para o tema vigente`);
-        const created = await this.repository.create({ ...data, theme: theme.id });
+        const created = await this.repository.create({ ...data, theme: theme.id, sendDate: new Date() });
         return new Essay(created);
     }
 

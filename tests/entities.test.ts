@@ -51,6 +51,7 @@ test('Entidade da redação', () => {
         theme: 5,
         lastModified: new Date(),
         status: 'pending',
+        sendDate: new Date(),
     })
     expect(essay.id).toBe(20);
     expect(() => {

@@ -11,16 +11,18 @@ export interface EssayInterface {
     theme: number;
     lastModified: Date;
     status: Status;
+    sendDate: Date;
 }
 
 export default class Essay {
-    #id: number;
+    readonly #id: number;
     #file: string;
     #student: number;
     #course: Course;
     #theme: number;
     #lastModified: Date;
     #status: Status;
+    readonly #sendDate: Date;
 
     constructor(data: EssayInterface) {
         this.#id = data.id;
@@ -30,6 +32,7 @@ export default class Essay {
         this.#theme = data.theme;
         this.#lastModified = data.lastModified;
         this.#status = data.status;
+        this.#sendDate = data.sendDate;
     }
 
     get id() { return this.#id }
@@ -65,6 +68,8 @@ export default class Essay {
         this.#status = value;
         this.updateLastModified();
     }
+
+    get sendDate() { return this.#sendDate }
 
     private updateLastModified() { this.#lastModified = new Date(); }
 

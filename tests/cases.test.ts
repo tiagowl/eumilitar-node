@@ -5,7 +5,6 @@ import EssayTheme, { Course, EssayThemeInterface } from '../src/entities/EssayTh
 import faker from 'faker';
 import EssayCase, { EssayCreationData, EssayInsertionData, EssayRepositoryInterface } from '../src/cases/EssayCase';
 import Essay, { EssayInterface } from '../src/entities/Essay';
-import { EssayThemeInsertion } from '../src/adapters/models/EssayTheme';
 
 const defaultPassword = 'pass1235'
 const userDatabase = Promise.all(new Array(5).fill(0).map(async () => await userEntityFactory({ password: await hashPassword(defaultPassword) })));
@@ -28,6 +27,7 @@ const essayDatabase = new Array(5).fill(0).map((_, index) => new Essay({
     student: faker.datatype.number(),
     theme: faker.datatype.number(),
     status: 'pending',
+    sendDate: faker.date.past(),
 }));
 
 class UserTestRepository implements UserRepositoryInterface {
