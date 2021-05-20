@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { hashPassword, now, userEntityFactory } from './shortcuts';
 import EssayTheme from '../src/entities/EssayTheme';
+import Essay from '../src/entities/Essay';
 
 test('Testes na entidade User', async (done) => {
     const password = 'l23jlk234';
@@ -39,4 +40,20 @@ test('Testes na entidade EssayTheme', () => {
     })
     expect(theme.title).toEqual('Novo título')
     expect(theme.lastModified).not.toEqual(now)
+})
+
+test('Entidade da redação', () => {
+    const essay = new Essay({
+        id: 20,
+        file: '/path/to.pdf',
+        student: 4,
+        course: 'esa',
+        theme: 5,
+        lastModified: new Date(),
+    })
+    expect(essay.id).toBe(20);
+    expect(() => {
+        // @ts-ignore
+        essay.id = 5
+    }).toThrowError()
 })

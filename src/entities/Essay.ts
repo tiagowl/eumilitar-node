@@ -1,29 +1,33 @@
-import User from './User';
-import Theme, { Course } from './EssayTheme';
+import { Course } from './EssayTheme';
 
 
 export interface EssayInterface {
+    id: number;
     file: string;
-    student: User;
+    student: number;
     course: Course;
-    theme: Theme;
+    theme: number;
     lastModified: Date;
 }
 
 export default class Essay {
+    #id: number;
     #file: string;
-    #student: User;
+    #student: number;
     #course: Course;
-    #theme: Theme;
+    #theme: number;
     #lastModified: Date;
 
     constructor(data: EssayInterface) {
+        this.#id = data.id;
         this.#course = data.course;
         this.#file = data.file;
         this.#student = data.student;
         this.#theme = data.theme;
         this.#lastModified = data.lastModified;
     }
+
+    get id() { return this.#id }
 
     get file() { return this.#file }
     set file(value: string) {
@@ -32,7 +36,7 @@ export default class Essay {
     }
 
     get student() { return this.#student }
-    set student(value: User) {
+    set student(value: number) {
         this.#student = value;
         this.updateLastModified();
     }
@@ -44,7 +48,7 @@ export default class Essay {
     }
 
     get theme() { return this.#theme }
-    set theme(value: Theme) {
+    set theme(value: number) {
         this.#theme = value;
         this.updateLastModified();
     }
