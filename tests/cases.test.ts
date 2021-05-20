@@ -1,7 +1,7 @@
 import UserUseCase, { UserFilter, UserRepositoryInterface } from '../src/cases/UserUseCase';
 import { hashPassword, userEntityFactory } from './shortcuts';
 import EssayThemeCase, { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeRepositoryInterface } from '../src/cases/EssayThemeCase';
-import EssayTheme, { Course, EssayThemeInterface } from '../src/entities/EssayTheme';
+import EssayTheme, { Course } from '../src/entities/EssayTheme';
 import faker from 'faker';
 import EssayCase, { EssayCreationData, EssayInsertionData, EssayRepositoryInterface } from '../src/cases/EssayCase';
 import Essay, { EssayInterface } from '../src/entities/Essay';

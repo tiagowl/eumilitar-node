@@ -1,7 +1,7 @@
 import { Course } from './EssayTheme';
 
 
-type Status = "invalid" | "pending" | "revised";
+export type Status = "invalid" | "pending" | "revised";
 
 export interface EssayInterface {
     id: number;
