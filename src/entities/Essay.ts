@@ -1,6 +1,8 @@
 import { Course } from './EssayTheme';
 
 
+type Status = "invalid" | "pending" | "revised";
+
 export interface EssayInterface {
     id: number;
     file: string;
@@ -8,6 +10,7 @@ export interface EssayInterface {
     course: Course;
     theme: number;
     lastModified: Date;
+    status: Status;
 }
 
 export default class Essay {
@@ -17,6 +20,7 @@ export default class Essay {
     #course: Course;
     #theme: number;
     #lastModified: Date;
+    #status: Status;
 
     constructor(data: EssayInterface) {
         this.#id = data.id;
@@ -25,6 +29,7 @@ export default class Essay {
         this.#student = data.student;
         this.#theme = data.theme;
         this.#lastModified = data.lastModified;
+        this.#status = data.status;
     }
 
     get id() { return this.#id }
@@ -54,6 +59,12 @@ export default class Essay {
     }
 
     get lastModified() { return this.#lastModified }
+
+    get status() { return this.#status }
+    set status(value: Status) {
+        this.#status = value;
+        this.updateLastModified();
+    }
 
     private updateLastModified() { this.#lastModified = new Date(); }
 

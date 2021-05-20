@@ -49,3 +49,28 @@ services:
             MYSQL_DATABASE: nice_marmot
             MYSQL_ROOT_PASSWORD: passwd
             PMA_HOST: db
+    
+    old_phpmyadmin:
+        image: phpmyadmin
+        restart: on-failure
+        depends_on:
+            - db
+        ports:
+            - 8081:80
+        environment:
+            MYSQL_PASSWORD: password
+            MYSQL_USER: user
+            MYSQL_DATABASE: nice_marmot
+            MYSQL_ROOT_PASSWORD: passwd
+            PMA_HOST: old_db
+
+    old_db:
+        image: mariadb
+        restart: on-failure
+        volumes:
+            - ~/.data/eu-militar:/var/lib/mysql
+        environment:
+            MYSQL_PASSWORD: password
+            MYSQL_USER: user
+            MYSQL_DATABASE: nice_marmot
+            MYSQL_ROOT_PASSWORD: passwd

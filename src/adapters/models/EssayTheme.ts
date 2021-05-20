@@ -37,6 +37,22 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         return { ...data, courses, deactivated: !!data.deactivated }
     }
 
+    private filterByActive(service: Knex.QueryBuilder, active?: boolean): Knex.QueryBuilder {
+        const now = new Date();
+        return active === true ?
+            service.where(function () {
+                return this.andWhere('startDate', '<=', now)
+                    .andWhere('endDate', '>', now)
+                    .andWhere('deactivated', false)
+            })
+            : active === false ?
+                service.where(function () {
+                    return this.orWhere('startDate', '>', now)
+                        .orWhere('endDate', '<', now)
+                        .orWhere('deactivated', true)
+                }) : service;
+    }
+
     public async exists(filter: EssayThemeFilter) {
         try {
             const service = EssayThemeService(this.driver);
@@ -51,9 +67,9 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         }
     }
 
-    public async get(filter: EssayThemeFilter) {
+    public async get(filter: EssayThemeFilter, active?: boolean) {
         try {
-            const service = EssayThemeService(this.driver);
+            const service = this.filterByActive(EssayThemeService(this.driver), active);
             const theme = await service.where(filter).first();
             return !!theme ? this.parseFromDB(theme) : undefined;
         } catch {
@@ -113,19 +129,7 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
     public async findAll(page?: number, pageSize?: number, ordering?: keyof EssayThemeModel, active?: boolean) {
         try {
             const service = EssayThemeService(this.driver);
-            const now = new Date();
-            const query = active === true ?
-                service.where(function () {
-                    return this.andWhere('startDate', '<=', now)
-                        .andWhere('endDate', '>', now)
-                        .andWhere('deactivated', false)
-                })
-                : active === false ?
-                    service.where(function () {
-                        return this.orWhere('startDate', '>', now)
-                            .orWhere('endDate', '<', now)
-                            .orWhere('deactivated', true)
-                    }) : service;
+            const query = this.filterByActive(service, active);
             const themes = await query.orderBy(ordering || 'id', 'desc')
                 .offset(((page || 1) - 1) * (pageSize || 10))
                 .limit((pageSize || 10))

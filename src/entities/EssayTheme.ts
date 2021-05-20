@@ -1,7 +1,7 @@
 export type Course = "esa" | "espcex";
 
 export interface EssayThemeInterface {
-    id?: number;
+    id: number;
     title: string;
     startDate: Date;
     endDate: Date;
@@ -24,7 +24,7 @@ export interface EssayUpdate {
 }
 
 export default class EssayTheme implements EssayThemeInterface {
-    readonly #id?: number;
+    readonly #id: number;
     #title: string;
     #startDate: Date;
     #endDate: Date;

@@ -33,7 +33,7 @@ export interface EssayThemeRepositoryInterface {
     findAll: (page?: number, pageSize?: number, ordering?: keyof EssayThemeInterface, active?: boolean) => Promise<EssayTheme[]>;
     count: () => Promise<number>;
     update: (id: number, data: EssayThemeCreation) => Promise<EssayTheme>;
-    get: (filter: EssayThemeFilter) => Promise<EssayThemeInterface | undefined>;
+    get: (filter: EssayThemeFilter, active?: boolean) => Promise<EssayThemeInterface | undefined>;
 }
 
 export default class EssayThemeCase {

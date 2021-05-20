@@ -50,6 +50,7 @@ test('Entidade da redação', () => {
         course: 'esa',
         theme: 5,
         lastModified: new Date(),
+        status: 'pending',
     })
     expect(essay.id).toBe(20);
     expect(() => {
