@@ -71,7 +71,7 @@ export default class EssayTheme implements EssayThemeInterface {
 
     get active() {
         const now = new Date();
-        return (now > this.#startDate && now < this.#endDate) && !this.#deactivated;
+        return (now >= this.#startDate && now < this.#endDate) && !this.#deactivated;
     }
 
     get startDate() { return this.#startDate }

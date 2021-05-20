@@ -3,19 +3,31 @@ import { hashPassword, userEntityFactory } from './shortcuts';
 import EssayThemeCase, { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeRepositoryInterface } from '../src/cases/EssayThemeCase';
 import EssayTheme, { Course, EssayThemeInterface } from '../src/entities/EssayTheme';
 import faker from 'faker';
+import EssayCase, { EssayCreationData, EssayInsertionData, EssayRepositoryInterface } from '../src/cases/EssayCase';
+import Essay, { EssayInterface } from '../src/entities/Essay';
+import { EssayThemeInsertion } from '../src/adapters/models/EssayTheme';
 
 const defaultPassword = 'pass1235'
 const userDatabase = Promise.all(new Array(5).fill(0).map(async () => await userEntityFactory({ password: await hashPassword(defaultPassword) })));
 const essayThemeDatabase = new Array(5).fill(0).map((_, index) => new EssayTheme({
     title: 'Título',
     endDate: new Date(Date.now() + 15 * 24 * 60 * 60),
-    startDate: new Date(),
+    startDate: new Date(Date.now() - 15 * 24 * 60 * 60),
     helpText: faker.lorem.lines(3),
     file: '/usr/share/data/theme.pdf',
-    courses: new Set(['esa'] as Course[]),
+    courses: new Set(['esa', 'espcex'] as Course[]),
     lastModified: new Date(),
     id: index,
     deactivated: false,
+}));
+const essayDatabase = new Array(5).fill(0).map((_, index) => new Essay({
+    file: '/usr/share/data/theme.pdf',
+    course: 'esa',
+    lastModified: new Date(),
+    id: index,
+    student: faker.datatype.number(),
+    theme: faker.datatype.number(),
+    status: 'pending',
 }));
 
 class UserTestRepository implements UserRepositoryInterface {
@@ -51,7 +63,7 @@ class EssayThemeTestRepository implements EssayThemeRepositoryInterface {
         this.database = [...database]
     }
     public async create(data: EssayThemeCreation) {
-        const theme: EssayThemeInterface = {
+        const theme = {
             ...data,
             lastModified: new Date(),
         }
@@ -126,6 +138,50 @@ class EssayThemeTestRepository implements EssayThemeRepositoryInterface {
                     return valid && (item[field[0]] === field[1])
                 }, true as boolean)
         })
+    }
+}
+
+// tslint:disable-next-line
+class EssayTestRepository implements EssayRepositoryInterface {
+    database: any[]
+    themes: EssayThemeRepositoryInterface;
+
+    constructor(database: any[]) {
+        this.database = [...database];
+        this.themes = new EssayThemeTestRepository(essayThemeDatabase);
+        const theme = new EssayTheme({
+            title: 'Título',
+            endDate: new Date(Date.now() + 15 * 24 * 60 * 60),
+            startDate: new Date(Date.now() - 15 * 24 * 60 * 60),
+            helpText: faker.lorem.lines(3),
+            file: '/usr/share/data/theme.pdf',
+            courses: new Set(['esa', 'espcex'] as Course[]),
+            lastModified: new Date(),
+            id: faker.datatype.number(),
+            deactivated: false,
+        })
+        this.themes.get = async (_: EssayThemeFilter) => theme;
+        expect(theme.active).toBeTruthy();
+    }
+
+    async create(data: EssayInsertionData) {
+        const essay: EssayInterface = new Essay({
+            ...data,
+            lastModified: new Date(),
+            id: this.database.length,
+            status: 'pending',
+        })
+        this.database.push(essay);
+        return essay;
+    }
+
+    async exists(filters: Partial<EssayInterface>[]) {
+        return !!this.database.find(item => filters.reduce((status, filter) => {
+            return status || Object.entries(filter)
+                .reduce((valid, field) => {
+                    return valid && (item[field[0]] === field[1])
+                }, true as boolean)
+        }, false as boolean))
     }
 }
 
@@ -209,6 +265,24 @@ describe('Testes nos temas da redação', () => {
         expect(updated.id).toEqual(0);
         expect(updated.title).toEqual(data.title);
         expect(updated.endDate).toEqual(data.endDate);
+        done();
+    })
+})
+
+describe('Redações', () => {
+    test('Criação', async done => {
+        const data: EssayCreationData = {
+            file: '/path/to/image.png',
+            course: 'esa',
+            student: 1,
+        }
+        const repository = new EssayTestRepository(essayDatabase);
+        const useCase = new EssayCase(repository);
+        const created = await useCase.create(data);
+        expect(created).not.toBeUndefined();
+        expect(created).not.toBeNull();
+        expect(created.id).not.toBeUndefined();
+        expect(created.id).not.toBeNull();
         done();
     })
 })
