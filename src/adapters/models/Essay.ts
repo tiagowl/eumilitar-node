@@ -43,7 +43,7 @@ const courseParser: Parser = data => {
 
 const fieldParserDB: FieldMapToDB = {
     id: ['essay_id', Number],
-    file: ['file_url', String],
+    file: ['file_path', String],
     student: ['user_id', Number],
     course: ['course_tag', courseParser],
     theme: ['theme', String],

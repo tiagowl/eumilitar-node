@@ -1,0 +1,66 @@
+import { Knex } from "knex";
+import Essay from "../../entities/Essay";
+import Controller from "./Controller";
+import * as yup from 'yup';
+import { EssayRepository } from "../models/Essay";
+import EssayCase from "../../cases/EssayCase";
+import User from '../../entities/User';
+import { Course } from "../../entities/EssayTheme";
+
+interface EssayInput {
+    file: Express.Multer.File;
+    student: User;
+    course: Course;
+}
+
+interface EssayData {
+    file: string;
+    student: number;
+    course: Course;
+}
+
+export interface EssayResponse {
+    course: Course;
+    file: string;
+}
+
+const schema = yup.object().shape({
+    file: yup.string().required('O arquivo é obrigatório'),
+    student: yup.number().required('É preciso informar o usuário'),
+    course: yup.string().required('É preciso informar o curso')
+        .oneOf(['esa', 'espcex'])
+})
+
+export default class EssayController extends Controller<EssayData> {
+    private repository: EssayRepository;
+    private useCase: EssayCase;
+
+    constructor(driver: Knex) {
+        super(schema, driver);
+        this.repository = new EssayRepository(driver);
+        this.useCase = new EssayCase(this.repository);
+    }
+
+
+    private async parseEntity(essay: Essay): Promise<EssayResponse> {
+        return {
+            course: essay.course,
+            file: essay.file
+        }
+    }
+
+    public async create(rawData: EssayInput) {
+        try {
+            const data = await this.validate({
+                ...rawData,
+                file: rawData.file.path,
+                student: rawData.student.id,
+            })
+            const created = await this.useCase.create(data);
+            return this.parseEntity(created);
+        } catch (error) {
+            throw { message: error.message || 'Falha ao salvar redação' }
+        }
+    }
+
+}
