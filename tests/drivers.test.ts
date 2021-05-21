@@ -4,7 +4,9 @@ import { UserModel, UserService } from '../src/adapters/models/User';
 import Application from '../src/drivers/api';
 import { appFactory, deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
 import crypto from 'crypto';
-import { EssayThemeService } from '../src/adapters/models/EssayTheme';
+import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
+import { Course } from '../src/entities/EssayTheme';
+import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
 
 const driver = driverFactory();
 
@@ -27,7 +29,7 @@ async function authenticate(user: UserModel, api: supertest.SuperTest<supertest.
     return token;
 }
 
-describe('Teste na api do usuário', () => {
+describe('#1 Teste na api do usuário', () => {
     const user = userFactory();
     beforeAll(async (done) => {
         const service = UserService(driver);
@@ -228,7 +230,7 @@ describe('Teste na api do usuário', () => {
     })
 })
 
-describe('Testes nos temas', () => {
+describe('#2 Testes nos temas', () => {
     const user: UserModel = userFactory();
     beforeAll(async (done) => {
         const service = UserService(driver);
@@ -352,5 +354,50 @@ describe('Testes nos temas', () => {
             expect(theme.active, JSON.stringify(theme)).toBeTruthy();
         })
         done()
+    })
+})
+
+describe('#3 Redações', () => {
+    const user: UserModel = userFactory();
+    beforeAll(async (done) => {
+        const themeService = EssayThemeService(driver);
+        await themeService.delete().del()
+        const repository = new EssayThemeRepository(driver);
+        const themeData: EssayThemeCreation = {
+            title: 'Título',
+            endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
+            startDate: new Date(Date.now() - 160 * 24 * 60 * 60 * 60),
+            helpText: faker.lorem.lines(3),
+            file: '/usr/share/data/theme.pdf',
+            courses: new Set(['esa', 'espcex'] as Course[]),
+            deactivated: false,
+        }
+        const theme = await repository.create(themeData);
+        expect(theme.id).not.toBeUndefined();
+        expect(theme.id).not.toBeNull();
+        const service = UserService(driver);
+        await saveUser(user, service);
+        done()
+    })
+    afterAll(async (done) => {
+        const service = UserService(driver);
+        await deleteUser(user, service);
+        const themeService = EssayThemeService(driver);
+        await themeService.del().delete()
+        done()
+    })
+    test('Criação', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
+        const { body, status, error } = await api.post('/essays/')
+            .set('Authorization', header)
+            .field('course', 'esa')
+            .attach('file', buffer, { filename: 'file.png', contentType: 'image/png' })
+        expect(body.id, JSON.stringify({ body, error })).not.toBeUndefined();
+        expect(status, JSON.stringify({ body, error })).toBe(201);
+        done();
     })
 })

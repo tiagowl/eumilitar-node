@@ -45,6 +45,12 @@ const routes: Route[] = [
             { handler: handlers.updateEssayThemes, method: 'put' },
             { handler: handlers.deactivateEssayTheme, method: 'delete' }
         ]
+    },
+    {
+        path: '/essays/',
+        handlers: [
+            { handler: handlers.createEssay, method: 'post' },
+        ]
     }
 ]
 

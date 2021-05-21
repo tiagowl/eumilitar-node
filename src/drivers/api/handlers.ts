@@ -4,12 +4,12 @@ import AuthController, { AuthInterface, AuthResponse } from "../../adapters/cont
 import ChangePasswordController, { ChangePasswordInterface, ChangePasswordResponse } from "../../adapters/controllers/ChangePassword";
 import CheckAuthController from "../../adapters/controllers/CheckAuth";
 import CheckPasswordToken, { CheckPasswordInterface, CheckedTokenInterface } from "../../adapters/controllers/CheckPasswordToken";
+import EssayController, { EssayInput, EssayResponse } from "../../adapters/controllers/Essay";
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
 import { Course } from "../../entities/EssayTheme";
-import { UserInterface } from "../../entities/User";
+import User, { UserInterface } from "../../entities/User";
 import { Context } from "./interfaces";
-
 
 interface EssayThemeRequest {
     title: string;
@@ -18,6 +18,7 @@ interface EssayThemeRequest {
     helpText: string;
     courses: Course[];
 }
+
 
 async function checkAuth(req: Request, driver: Knex) {
     const auth = req.headers.authorization;
@@ -37,6 +38,7 @@ function isAdmin({ driver }: Context): RequestHandler {
                 res.status(403).json({ message: 'Não autorizado', status: 403 });
                 res.end();
             } else {
+                req.user = user
                 next();
             }
         } catch (error) {
@@ -54,6 +56,7 @@ function isAuthenticated({ driver }: Context): RequestHandler {
                 res.status(401).json({ message: 'Não autorizado', status: 401 });
                 res.end();
             } else {
+                req.user = user;
                 next();
             }
         } catch (error) {
@@ -208,6 +211,27 @@ export function deactivateEssayTheme(context: Context): RequestHandler<any, Essa
             res.status(200).json(theme);
         } catch (error) {
             res.status(error.status || 400).json(error);
+        } finally {
+            res.end();
+        }
+    })
+    return handler;
+}
+
+
+export function createEssay(context: Context): RequestHandler<any, EssayResponse, EssayInput> {
+    const { driver, storage } = context;
+    const handler = express.Router({ mergeParams: true }).use(isAuthenticated(context), storage.single('file'));
+    handler.use(async (req, res) => {
+        try {
+            if (!req.user) throw { message: 'Não autenticado', status: 401 };
+            const controller = new EssayController(driver);
+            const response = await controller.create({
+                course: req.body.course, file: req.file, student: req.user.id
+            });
+            res.status(201).json(response);
+        } catch (error) {
+            res.status(error.status || 400).json(error)
         } finally {
             res.end();
         }
