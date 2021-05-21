@@ -125,11 +125,6 @@ export default class UserRepository implements UserRepositoryInterface {
         return this.service.update(parsedData);
     }
 
-    // @ts-ignore
-    public async create(data: any) {
-        throw new Error('Not implemented')
-    }
-
     public async get(filter: UserFilter) {
         const filtered: any = this._filter(filter)
         return new Promise<User>((accept, reject) => {

@@ -24,10 +24,33 @@ export interface EssayInsertion {
 
 export const EssayService = (driver: Knex) => driver<Partial<EssayModel>, EssayModel>('essays');
 
+type Parser = (data: any) => any;
+
+type FieldMapToDB = {
+    [P in keyof EssayInterface]: [keyof EssayModel, Parser];
+}
+
 const courseMap: [number, Course][] = [
     [2, 'esa'],
     [3, 'espcex'],
 ]
+
+const courseParser: Parser = data => {
+    const field = courseMap.find(item => item[1] === data);
+    if (!field) throw new Error('Curso inválido');
+    return field[0]
+}
+
+const fieldParserDB: FieldMapToDB = {
+    id: ['essay_id', Number],
+    file: ['file_url', String],
+    student: ['user_id', Number],
+    course: ['course_tag', courseParser],
+    theme: ['theme', String],
+    lastModified: ['last_modified', Date],
+    status: ['status', String],
+    sendDate: ['sent_date', Date],
+}
 
 export class EssayRepository implements EssayRepositoryInterface {
     private driver: Knex;
@@ -39,10 +62,12 @@ export class EssayRepository implements EssayRepositoryInterface {
     }
 
     private async parseToDB(data: Partial<EssayInterface>): Promise<EssayInsertion | Partial<EssayModel>> {
-        const entries = Object.entries(data);
-        return entries.reduce((obj, field) => {
+        const entries = Object.entries(data) as [keyof EssayInterface, any][];
+        return entries.reduce((obj, [key, value]) => {
+            const [name, parser] = fieldParserDB[key];
+            obj[name] = parser(value);
             return obj;
-        }, {} as EssayInsertion | Partial<EssayModel>)
+        }, {} as Partial<EssayModel>)
     }
 
     private async parseFromDB(data: EssayModel) {
@@ -70,11 +95,19 @@ export class EssayRepository implements EssayRepositoryInterface {
     public async create(data: EssayInsertionData) {
         const service = EssayService(this.driver);
         const parsed = await this.parseToDB(data);
-        const created = await service.insert(parsed);
+        const created = await service.insert({ ...parsed, local: false });
         const id = created[0];
         const check = await this.get({ id });
-        if(!check) throw new Error('Falha ao gravar no banco de dadodos');
+        if (!check) throw new Error('Falha ao gravar no banco de dadodos');
         return check;
+    }
+
+    public async exists(is: Partial<EssayInterface>[]) {
+        const service = EssayService(this.driver);
+        is.forEach((filter) => {
+            service.orWhere(filter);
+        })
+        return await service.first().then(data => !!data);
     }
 
 }
