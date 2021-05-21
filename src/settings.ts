@@ -42,7 +42,10 @@ const settings = Object.freeze({
         bucket: process.env.BUCKET_NAME || '',
         permission: process.env.STORAGE_PERMISSION || "authenticated-read",
         allowedMimes: [
-            "application/pdf"
+            "application/pdf",
+            "image/png",
+            "image/jpeg",
+            "image/gif",
         ],
         type: process.env.STORAGE_TYPE || 'local',
         maxSize: Number(process.env.MAX_SIZE_UPLOAD || 10) * 1024 * 1024,
