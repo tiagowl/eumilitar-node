@@ -11,10 +11,11 @@ import CheckAuthController from '../src/adapters/controllers/CheckAuth';
 import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
-import EssayTheme, { Course } from '../src/entities/EssayTheme';
+import { Course } from '../src/entities/EssayTheme';
 import faker from 'faker';
 import EssayThemeController, { EssayThemeInput, EssayThemePagination } from '../src/adapters/controllers/EssayTheme';
 import { Readable } from 'stream';
+import EssayController, { EssayInput } from '../src/adapters/controllers/Essay';
 
 const driver = driverFactory()
 
@@ -24,11 +25,11 @@ beforeAll(async (done) => {
 })
 
 afterAll(async (done) => {
-    await driver.destroy()
-    done()
+    await driver.destroy();
+    done();
 })
 
-describe('Testes na autenticação', () => {
+describe('#1 Testes na autenticação', () => {
     const user = userFactory()
     const passwordService = PasswordRecoveryService(driver);
     beforeAll(async (done) => {
@@ -194,7 +195,9 @@ describe('Testes na autenticação', () => {
     })
 })
 
-describe('Testes nos temas de redação', () => {
+
+
+describe('#2 Testes nos temas de redação', () => {
     test('Teste no modelo', async done => {
         const repository = new EssayThemeRepository(driver);
         const data: EssayThemeCreation = {
@@ -278,7 +281,7 @@ describe('Testes nos temas de redação', () => {
         }))
         done()
     })
-    test('Atualização dos temas', async done => {
+    test('#3 Atualização dos temas', async done => {
         const data: EssayThemeInput = {
             title: faker.name.title(),
             endDate: new Date(Date.now() + 3700 * 24 * 60 * 60),
@@ -313,4 +316,60 @@ describe('Testes nos temas de redação', () => {
         expect(data.courses).toEqual(updated.courses);
         done();
     })
+})
+
+
+
+describe('#4 Redações', () => {
+    const user = userFactory();
+    beforeAll(async (done) => {
+        const service = UserService(driver);
+        await saveUser(user, service)
+        done();
+    })
+    afterAll(async (done) => {
+        const service = UserService(driver);
+        await deleteUser(user, service);
+        done()
+    })
+    test('Criação de redações', async done => {
+        const themeService = EssayThemeService(driver);
+        await themeService.delete().del()
+        const repository = new EssayThemeRepository(driver);
+        const themeData: EssayThemeCreation = {
+            title: 'Título',
+            endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
+            startDate: new Date(Date.now() - 160 * 24 * 60 * 60 * 60),
+            helpText: faker.lorem.lines(3),
+            file: '/usr/share/data/theme.pdf',
+            courses: new Set(['esa', 'espcex'] as Course[]),
+            deactivated: false,
+        }
+        const theme = await repository.create(themeData);
+        expect(theme.id).not.toBeUndefined();
+        expect(theme.id).not.toBeNull();
+        const data: EssayInput = {
+            file: {
+                path: '/usr/share/data/theme.png',
+                buffer: Buffer.from(new ArrayBuffer(10), 0, 2),
+                size: 1,
+                fieldname: 'themeFile',
+                filename: faker.name.title(),
+                destination: '/usr/share/data/',
+                mimetype: 'application/pdf',
+                encoding: 'utf-8',
+                originalname: faker.name.title(),
+                stream: new Readable(),
+            },
+            student: user.user_id,
+            course: 'espcex',
+        }
+        const controller = new EssayController(driver);
+        const created = await controller.create(data);
+        expect(created.id, JSON.stringify(created)).not.toBeUndefined();
+        expect(created.id, JSON.stringify(created)).not.toBeNaN();
+        expect(created.course).toBe(data.course);
+        done();
+    })
+
 })

@@ -37,6 +37,18 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         return { ...data, courses, deactivated: !!data.deactivated }
     }
 
+    private filter(filter: EssayThemeFilter, service: Knex.QueryBuilder) {
+        const entries = Object.entries(filter);
+        return entries.reduce((query, [key, value]) => {
+            if (key === 'courses') return query.where(function () {
+                [...value].forEach(course => {
+                    this.orWhere(key, 'like', `%${course}%`)
+                })
+            })
+            return query.where(key, value);
+        }, service)
+    }
+
     private filterByActive(service: Knex.QueryBuilder, active?: boolean): Knex.QueryBuilder {
         const now = new Date();
         return active === true ?
@@ -61,7 +73,7 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
                     return query.where(...item)
                 }, service).then(data => !!data)
             }
-            return service.where(filter).first().then(data => !!data);
+            return this.filter(filter, service).first().then(data => !!data);
         } catch (error) {
             throw new Error('Falha ao consultar o banco de dados');
         }
@@ -70,9 +82,9 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
     public async get(filter: EssayThemeFilter, active?: boolean) {
         try {
             const service = this.filterByActive(EssayThemeService(this.driver), active);
-            const theme = await service.where(filter).first();
+            const theme = await this.filter(filter, service).first();
             return !!theme ? this.parseFromDB(theme) : undefined;
-        } catch {
+        } catch (error) {
             throw new Error('Falha ao consultar o banco de dados')
         }
     }

@@ -41,20 +41,11 @@ export const userEntityFactory = async (inject?: any): Promise<User> => {
 }
 
 export const dbSetting: Knex.Config = {
-    client: 'sqlite3',
-    connection: {
-        filename: ':memory:'
-    },
-    useNullAsDefault: true,
-    pool: {
-        min: 1,
-        max: 10,
-        idleTimeoutMillis: 360000 * 1000,
-    }
+    ...settings.database,
 }
 
 export const driverFactory = () => {
-    const driver = knex(settings.database);
+    const driver = knex(dbSetting);
     driver.migrate.latest();
     return driver;
 }

@@ -47,9 +47,9 @@ const fieldParserDB: FieldMapToDB = {
     student: ['user_id', Number],
     course: ['course_tag', courseParser],
     theme: ['theme', String],
-    lastModified: ['last_modified', Date],
+    lastModified: ['last_modified', value => new Date(value)],
     status: ['status', String],
-    sendDate: ['sent_date', Date],
+    sendDate: ['sent_date', value => new Date(value)],
 }
 
 export class EssayRepository implements EssayRepositoryInterface {
@@ -65,6 +65,11 @@ export class EssayRepository implements EssayRepositoryInterface {
         const entries = Object.entries(data) as [keyof EssayInterface, any][];
         return entries.reduce((obj, [key, value]) => {
             const [name, parser] = fieldParserDB[key];
+            if (key === 'file') {
+                const path = value.split('/');
+                obj.file_url = parser(value);
+                obj.file_name = path[path.lenth - 1]
+            }
             obj[name] = parser(value);
             return obj;
         }, {} as Partial<EssayModel>)
@@ -104,9 +109,9 @@ export class EssayRepository implements EssayRepositoryInterface {
 
     public async exists(is: Partial<EssayInterface>[]) {
         const service = EssayService(this.driver);
-        is.forEach((filter) => {
-            service.orWhere(filter);
-        })
+        await Promise.all(is.map(async (filter) => {
+            service.orWhere(await this.parseToDB(filter));
+        }))
         return await service.first().then(data => !!data);
     }
 

@@ -4,16 +4,15 @@ import Controller from "./Controller";
 import * as yup from 'yup';
 import { EssayRepository } from "../models/Essay";
 import EssayCase from "../../cases/EssayCase";
-import User from '../../entities/User';
 import { Course } from "../../entities/EssayTheme";
 
-interface EssayInput {
+export interface EssayInput {
     file: Express.Multer.File;
-    student: User;
+    student: number;
     course: Course;
 }
 
-interface EssayData {
+export interface EssayData {
     file: string;
     student: number;
     course: Course;
@@ -22,6 +21,7 @@ interface EssayData {
 export interface EssayResponse {
     course: Course;
     file: string;
+    id: number;
 }
 
 const schema = yup.object().shape({
@@ -41,11 +41,11 @@ export default class EssayController extends Controller<EssayData> {
         this.useCase = new EssayCase(this.repository);
     }
 
-
     private async parseEntity(essay: Essay): Promise<EssayResponse> {
         return {
             course: essay.course,
-            file: essay.file
+            file: essay.file,
+            id: essay.id,
         }
     }
 
@@ -54,7 +54,7 @@ export default class EssayController extends Controller<EssayData> {
             const data = await this.validate({
                 ...rawData,
                 file: rawData.file.path,
-                student: rawData.student.id,
+                student: rawData.student,
             })
             const created = await this.useCase.create(data);
             return this.parseEntity(created);
