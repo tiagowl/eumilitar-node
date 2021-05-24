@@ -77,4 +77,8 @@ export default class EssayThemeCase {
         return this.repository.update(id, theme.data);
     }
 
+    public async get(filter: EssayThemeFilter){
+        return this.repository.get(filter);
+    }
+
 }

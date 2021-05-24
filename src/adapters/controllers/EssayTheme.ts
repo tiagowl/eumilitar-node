@@ -170,4 +170,10 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
         }
     }
 
+    public async get(filter: Partial<EssayThemeResponse>) {
+        const theme = await this.useCase.get({ ...filter, courses: new Set(filter.courses) });
+        if(!theme) return undefined;
+        return this.parseEntity(new EssayTheme(theme));
+    }
+
 }
