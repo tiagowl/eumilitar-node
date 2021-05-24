@@ -371,5 +371,4 @@ describe('#4 Redações', () => {
         expect(created.course).toBe(data.course);
         done();
     })
-
 })

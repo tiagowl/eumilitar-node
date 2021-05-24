@@ -17,6 +17,7 @@ export interface EssayRepositoryInterface {
     create: (data: EssayInsertionData) => Promise<EssayInterface>;
     themes: EssayThemeRepositoryInterface;
     exists: (is: Partial<EssayInterface>[]) => Promise<boolean>;
+    filter: (filter: Partial<EssayInterface>) => Promise<EssayInterface[]>;
 }
 
 const beautyCourse = {
@@ -44,6 +45,11 @@ export default class EssayCase {
         if (!canSend) throw new Error(`Já foi enviada uma redação do curso "${beautyCourse[data.course]}" para o tema vigente`);
         const created = await this.repository.create({ ...data, theme: theme.id, sendDate: new Date() });
         return new Essay(created);
+    }
+
+    public async myEssays(userId: number) {
+        const essays = await this.repository.filter({ student: userId });
+        return Promise.all(essays.map(async essay => new Essay(essay)));
     }
 
 }

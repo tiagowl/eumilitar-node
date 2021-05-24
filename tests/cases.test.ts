@@ -24,7 +24,7 @@ const essayDatabase = new Array(5).fill(0).map((_, index) => new Essay({
     course: 'esa',
     lastModified: new Date(),
     id: index,
-    student: faker.datatype.number(),
+    student: 6,
     theme: faker.datatype.number(),
     status: 'pending',
     sendDate: faker.date.past(),
@@ -183,6 +183,15 @@ class EssayTestRepository implements EssayRepositoryInterface {
                 }, true as boolean)
         }, false as boolean))
     }
+
+    async filter(filter: Partial<EssayInterface>) {
+        return this.database.filter(essay => {
+            return Object.entries(filter)
+                .reduce((valid, field) => {
+                    return valid && (essay[field[0]] === field[1])
+                }, true as boolean)
+        })
+    }
 }
 
 describe('Testes nos casos de uso da entidade User', () => {
@@ -283,6 +292,15 @@ describe('Redações', () => {
         expect(created).not.toBeNull();
         expect(created.id).not.toBeUndefined();
         expect(created.id).not.toBeNull();
+        done();
+    })
+    test('Listagem', async done => {
+        const repository = new EssayTestRepository(essayDatabase);
+        const useCase = new EssayCase(repository);
+        const essays = await useCase.myEssays(6);
+        expect(essays.length).not.toBeLessThan(1);
+        const essay = essays[0];
+        expect(essay.id).not.toBeUndefined();
         done();
     })
 })
