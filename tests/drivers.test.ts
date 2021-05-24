@@ -228,6 +228,28 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.body.password).toBeUndefined();
         done();
     })
+    test('Logout', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const credentials = {
+            email: user.email,
+            password: 'abda143501',
+        }
+        const auth = await api.post('/tokens/')
+            .send(credentials)
+            .set('User-Agent', faker.internet.userAgent());
+        const { token } = auth.body;
+        expect(token).not.toBeUndefined();
+        expect(token).not.toBeNull();
+        const header = `Bearer ${token}`;
+        const response = await api.delete('/tokens/')
+            .set('Authorization', header);
+        expect(response.status).toEqual(204);
+        const notResponse = await api.delete('/tokens/')
+            .set('Authorization', header);
+        expect(notResponse.status).toEqual(401);
+        done();
+    })
 })
 
 describe('#2 Testes nos temas', () => {

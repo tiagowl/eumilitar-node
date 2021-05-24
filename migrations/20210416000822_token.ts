@@ -5,7 +5,7 @@ export async function up(knex: Knex): Promise<void> {
     const existsUsers = await knex.schema.hasTable('users');
     const existsLoginSessions = await knex.schema.hasTable('login_sessions')
     if (existsUsers && existsLoginSessions) return;
-    const createUsers = existsUsers? knex.schema :  knex.schema
+    const createUsers = existsUsers ? knex.schema : knex.schema
         .createTable('users', (table) => {
             table.increments('user_id').primary().unsigned()
             table.string('first_name', 50).notNullable()
@@ -29,7 +29,5 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 
-export async function down(knex: Knex): Promise<void> {
-
-}
+export async function down(knex: Knex): Promise<void> {}
 

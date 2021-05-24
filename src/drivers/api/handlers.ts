@@ -19,11 +19,14 @@ interface EssayThemeRequest {
     courses: Course[];
 }
 
+async function getToken(header: string | undefined) {
+    if (!header) throw { message: 'Token não fornecido', status: 401 };
+    return header.split(' ')[1];
+}
+
 
 async function checkAuth(req: Request, driver: Knex) {
-    const auth = req.headers.authorization;
-    if (!auth) throw { message: 'Token não fornecido', status: 401 };
-    const token = auth.split(' ')[1];
+    const token = await getToken(req.headers.authorization);
     const controller = new CheckAuthController(driver);
     const { user, isValid } = await controller.check({ token },);
     if (!isValid || !user) throw { message: 'Não autorizado', status: 401 }
@@ -78,6 +81,23 @@ export function createToken({ driver }: Context): RequestHandler<any, AuthRespon
             res.json(error)
         } finally {
             res.end()
+        }
+    }
+}
+
+export function logOut(context: Context): RequestHandler<any, void, void> {
+    const { driver } = context;
+    return async (req, res) => {
+        try {
+            await checkAuth(req, driver);
+            const controller = new AuthController(driver);
+            const token = await getToken(req.headers.authorization);
+            await controller.logOut(token);
+            res.status(204);
+        } catch (error) {
+            res.status(error.status || 400).json(error);
+        } finally {
+            res.end();
         }
     }
 }

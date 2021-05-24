@@ -5,7 +5,8 @@ const routes: Route[] = [
     {
         path: '/tokens/',
         handlers: [
-            { handler: handlers.createToken, method: 'post' }
+            { handler: handlers.createToken, method: 'post' },
+            { handler: handlers.logOut, method: 'delete' },
         ]
     },
     {

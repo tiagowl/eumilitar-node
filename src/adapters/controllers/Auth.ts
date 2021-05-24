@@ -59,4 +59,16 @@ export default class AuthController extends Controller<AuthInterface> {
         if (!auth.email) throw { errors: [['email', 'Email inválido']] };
         else throw { errors: [['password', 'Senha inválida']] };
     }
+
+    public async logOut(token: string) {
+        try {
+            const service = TokenService(this.driver);
+            const deleted = await service.where('session_id', token).del();
+            if (deleted === 0) throw { message: "Nenhum token encontrado", status: 400 }
+            if (deleted > 1) throw { message: "Mais de um registro afetado", status: 500 }
+        } catch (error) {
+            if (error.status) throw error;
+            throw { message: 'Erro ao deletar token', status: 500 }
+        }
+    }
 }
