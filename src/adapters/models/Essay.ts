@@ -22,7 +22,7 @@ export interface EssayInsertion {
     status: Status;
 }
 
-export const EssayService = (driver: Knex) => driver<Partial<EssayModel>, EssayModel>('essays');
+export const EssayService = (driver: Knex) => driver<Partial<EssayModel>, EssayModel[]>('essays');
 
 type Parser = (data: any) => any;
 
@@ -92,18 +92,23 @@ export class EssayRepository implements EssayRepositoryInterface {
     public async get(filter: Partial<EssayInterface>) {
         const service = EssayService(this.driver);
         const parsedFilter = await this.parseToDB(filter);
-        const essayData = await service.where(parsedFilter).first();
+        const essayData = await service.where(parsedFilter).first()
+            .catch(() => {
+                throw new Error('Erro ao consultar banco de dados')
+            });
         if (!essayData) return undefined;
         return this.parseFromDB(essayData);
     }
 
     public async create(data: EssayInsertionData) {
         const service = EssayService(this.driver);
+        const error = new Error('Falha ao gravar no banco de dadodos');
         const parsed = await this.parseToDB(data);
-        const created = await service.insert({ ...parsed, local: false });
+        const created = await service.insert({ ...parsed, local: false })
+            .catch(() => { throw error; });
         const id = created[0];
         const check = await this.get({ id });
-        if (!check) throw new Error('Falha ao gravar no banco de dadodos');
+        if (!check) throw error;
         return check;
     }
 
@@ -112,7 +117,20 @@ export class EssayRepository implements EssayRepositoryInterface {
         await Promise.all(is.map(async (filter) => {
             service.orWhere(await this.parseToDB(filter));
         }))
-        return await service.first().then(data => !!data);
+        return await service.first()
+            .then(data => !!data)
+            .catch(() => {
+                throw new Error('Erro ao consultar banco de dados')
+            });
+    }
+
+    public async filter(filter: Partial<EssayInterface>) {
+        const service = EssayService(this.driver);
+        const essaysData = await service.where(await this.parseToDB(filter))
+            .catch(() => {
+                throw new Error('Erro ao consultar banco de dados')
+            });
+        return Promise.all(essaysData.map(this.parseFromDB));
     }
 
 }

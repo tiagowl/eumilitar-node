@@ -17,7 +17,7 @@ export interface EssayRepositoryInterface {
     create: (data: EssayInsertionData) => Promise<EssayInterface>;
     themes: EssayThemeRepositoryInterface;
     exists: (is: Partial<EssayInterface>[]) => Promise<boolean>;
-    filter: (filter: Partial<EssayInterface>) => Promise<EssayInterface[]>;
+    filter: (filter: Partial<EssayInterface>) => Promise<Essay[]>;
 }
 
 const beautyCourse = {
@@ -48,8 +48,7 @@ export default class EssayCase {
     }
 
     public async myEssays(userId: number) {
-        const essays = await this.repository.filter({ student: userId });
-        return Promise.all(essays.map(async essay => new Essay(essay)));
+        return this.repository.filter({ student: userId });
     }
 
 }
