@@ -14,7 +14,7 @@ export const now = new Date();
 
 export const userFactory = () => ({
     email: faker.internet.email(),
-    passwd: faker.internet.password(),
+    passwd: 'abda143501',
     first_name: faker.name.firstName(),
     last_name: faker.name.lastName(),
     status: 1,

@@ -295,7 +295,7 @@ describe('#2 Testes nos temas', () => {
         const header = `Bearer ${token}`;
         const response = await api.get('/themes/')
             .set('Authorization', header);
-        expect(response.body?.page).not.toBeUndefined()
+        expect(response.body?.page, response.error.toString()).not.toBeUndefined()
         expect(response.body?.count).not.toBeUndefined()
         expect(response.body?.count).toBe(response.body?.page?.length)
         done()
@@ -312,8 +312,8 @@ describe('#2 Testes nos temas', () => {
         const theme = {
             title: faker.name.title(),
             startDate: new Date(Date.now() - 1500 * 25 * 60 * 60),
-            endDate: new Date(Date.now() - 1496 * 25 * 60 * 60),
-            helpText: faker.lorem.paragraph(1),
+            endDate: new Date(Date.now() - 1495 * 25 * 60 * 60),
+            helpText: faker.lorem.paragraph(5),
             courses: ['espcex', 'esa'],
         }
         const response = await api.put(`/themes/${selected.id}/`)

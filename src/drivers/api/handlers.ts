@@ -181,8 +181,8 @@ export function updateEssayThemes(context: Context): RequestHandler<any, EssayTh
     const { driver, storage } = context;
     const handler = express.Router({ mergeParams: true }).use(isAdmin(context), storage.single('themeFile'));
     handler.use(async (req, res) => {
-        const id = req.params.id;
         try {
+            const { id } = req.params;
             const data = JSON.parse(req.body.data);
             const controller = new EssayThemeController(driver);
             const response = await controller.update(Number(id), {
