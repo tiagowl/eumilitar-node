@@ -102,9 +102,9 @@ export class EssayRepository implements EssayRepositoryInterface {
 
     public async create(data: EssayInsertionData) {
         const service = EssayService(this.driver);
-        const error = new Error('Falha ao gravar no banco de dadodos');
+        const error = new Error('Falha ao gravar no banco de dados');
         const parsed = await this.parseToDB(data);
-        const created = await service.insert({ ...parsed, local: false })
+        const created = await service.insert({ ...parsed, local: false, status: 'pending' })
             .catch(() => { throw error; });
         const id = created[0];
         const check = await this.get({ id });

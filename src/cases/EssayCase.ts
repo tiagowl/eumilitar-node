@@ -1,4 +1,4 @@
-import Essay, { EssayInterface } from "../entities/Essay";
+import Essay, { EssayInterface, Status } from "../entities/Essay";
 import EssayTheme, { Course } from '../entities/EssayTheme';
 import { EssayThemeRepositoryInterface } from './EssayThemeCase';
 
@@ -11,6 +11,7 @@ export interface EssayCreationData {
 export interface EssayInsertionData extends EssayCreationData {
     theme: number;
     sendDate: Date;
+    status: Status;
 }
 
 export interface EssayRepositoryInterface {
@@ -38,12 +39,12 @@ export default class EssayCase {
         const theme = new EssayTheme(themeData);
         if (!theme.active) throw new Error('Tema inválido');
         const baseFilter = { theme: theme.id, student: data.student }
-        const canSend = !(await this.repository.exists([
+        const cantSend = (await this.repository.exists([
             { ...baseFilter, status: 'pending' },
             { ...baseFilter, status: 'revised' },
         ]))
-        if (!canSend) throw new Error(`Já foi enviada uma redação do curso "${beautyCourse[data.course]}" para o tema vigente`);
-        const created = await this.repository.create({ ...data, theme: theme.id, sendDate: new Date() });
+        if (cantSend) throw new Error(`Já foi enviada uma redação do curso "${beautyCourse[data.course]}" para o tema vigente`);
+        const created = await this.repository.create({ ...data, theme: theme.id, sendDate: new Date(), status: 'pending' });
         return new Essay(created);
     }
 
