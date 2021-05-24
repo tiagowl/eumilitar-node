@@ -422,4 +422,20 @@ describe('#3 Redações', () => {
         expect(status, JSON.stringify({ body, error })).toBe(201);
         done();
     })
+    test('Listagem', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const { body, status, error } = await api.get('/essays/')
+            .set('Authorization', header);
+        expect(body.length, JSON.stringify({ body, error })).not.toBeUndefined();
+        expect(status, JSON.stringify({ body, error })).toBe(200);
+        body.forEach((essay: any) => {
+            expect(essay.course).toBeDefined();
+            expect(essay.id).toBeDefined();
+            expect(essay.file).toBeDefined();
+        })
+        done();
+    })
 })

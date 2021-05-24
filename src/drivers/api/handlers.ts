@@ -258,3 +258,21 @@ export function createEssay(context: Context): RequestHandler<any, EssayResponse
     })
     return handler;
 }
+
+export function listEssays(context: Context): RequestHandler<any, EssayResponse[], void> {
+    const { driver } = context;
+    const handler = express.Router({ mergeParams: true }).use(isAuthenticated(context));
+    handler.use(async (req, res) => {
+        try {
+            if (!req.user) throw { message: 'Não autenticado', status: 401 };
+            const controller = new EssayController(driver);
+            const response = await controller.myEssays(req.user.id);
+            res.status(200).json(response);
+        } catch (error) {
+            res.status(error.status || 400).json(error)
+        } finally {
+            res.end();
+        }
+    })
+    return handler;
+}

@@ -64,8 +64,12 @@ export default class EssayController extends Controller<EssayData> {
     }
 
     public async myEssays(userId: number) {
-        const essays = await this.useCase.myEssays(userId);
-        return Promise.all(essays.map(this.parseEntity));
+        try {
+            const essays = await this.useCase.myEssays(userId);
+            return Promise.all(essays.map(this.parseEntity));
+        } catch (error) {
+            throw { message: error.message || 'Falha ao consultar redações', status: 500 }
+        }
     }
 
 }
