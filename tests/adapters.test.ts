@@ -378,4 +378,11 @@ describe('#4 Redações', () => {
         expect(essays.length).not.toBeLessThan(1);
         done();
     })
+    test('Listagem de todos', async (done) => {
+        const controller = new EssayController(driver);
+        const essays = await controller.allEssays({});
+        expect(essays).not.toBeUndefined();
+        expect(essays.length).not.toBeLessThan(1);
+        done();
+    })
 })

@@ -1,9 +1,9 @@
 import { Knex } from "knex";
-import Essay, { Status } from "../../entities/Essay";
+import Essay, { EssayInterface, Status } from "../../entities/Essay";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import { EssayRepository } from "../models/Essay";
-import EssayCase from "../../cases/EssayCase";
+import EssayCase, { EssayPagination } from "../../cases/EssayCase";
 import { Course } from "../../entities/EssayTheme";
 import EssayThemeController, { EssayThemeResponse } from "./EssayTheme";
 
@@ -27,6 +27,8 @@ export interface EssayResponse {
     status: Status;
     theme?: EssayThemeResponse;
 }
+
+export interface ListEssayParams extends Partial<EssayInterface>, EssayPagination { }
 
 const schema = yup.object().shape({
     file: yup.string().required('O arquivo é obrigatório'),
@@ -74,6 +76,16 @@ export default class EssayController extends Controller<EssayData> {
     public async myEssays(userId: number) {
         try {
             const essays = await this.useCase.myEssays(userId);
+            return Promise.all(essays.map(async essay => this.parseEntity(essay)));
+        } catch (error) {
+            throw { message: error.message || 'Falha ao consultar redações', status: 500 }
+        }
+    }
+
+    public async allEssays(params: ListEssayParams) {
+        try {
+            const { ordering, page, pageSize, ...filter } = params;
+            const essays = await this.useCase.allEssays(filter, { ordering, page, pageSize })
             return Promise.all(essays.map(async essay => this.parseEntity(essay)));
         } catch (error) {
             throw { message: error.message || 'Falha ao consultar redações', status: 500 }

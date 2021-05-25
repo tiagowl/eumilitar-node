@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import { EssayInsertionData, EssayRepositoryInterface } from "../../cases/EssayCase";
+import { EssayInsertionData, EssayPagination, EssayRepositoryInterface } from "../../cases/EssayCase";
 import { EssayThemeRepositoryInterface } from "../../cases/EssayThemeCase";
 import Essay, { EssayInterface, Status } from "../../entities/Essay";
 import { Course } from "../../entities/EssayTheme";
@@ -124,9 +124,13 @@ export class EssayRepository implements EssayRepositoryInterface {
             });
     }
 
-    public async filter(filter: Partial<EssayInterface>) {
+    public async filter(filter: Partial<EssayInterface>, pagination?: EssayPagination) {
+        const { pageSize = 10, page = 1, ordering = 'sendDate' } = pagination || {};
         const service = EssayService(this.driver);
         const essaysData = await service.where(await this.parseToDB(filter))
+            .orderBy(fieldParserDB[ordering][0], 'desc')
+            .offset(((page - 1) * (pageSize)))
+            .limit(pageSize)
             .catch(() => {
                 throw new Error('Erro ao consultar banco de dados')
             });
