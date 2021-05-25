@@ -191,7 +191,10 @@ class EssayTestRepository implements EssayRepositoryInterface {
         )
             .sort((a, b) => a[ordering] - b[ordering])
             .slice((page - 1) * pageSize, ((page - 1) * pageSize) + pageSize,)
+    }
 
+    async count(filter: Partial<EssayInterface>) {
+        return (await this.filter(filter)).length
     }
 }
 

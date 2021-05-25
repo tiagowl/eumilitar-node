@@ -127,14 +127,23 @@ export class EssayRepository implements EssayRepositoryInterface {
     public async filter(filter: Partial<EssayInterface>, pagination?: EssayPagination) {
         const { pageSize = 10, page = 1, ordering = 'sendDate' } = pagination || {};
         const service = EssayService(this.driver);
-        const essaysData = await service.where(await this.parseToDB(filter))
-            .orderBy(fieldParserDB[ordering][0], 'desc')
+        if (!!pagination) service
             .offset(((page - 1) * (pageSize)))
             .limit(pageSize)
+        const essaysData = await service.where(await this.parseToDB(filter))
+            .orderBy(fieldParserDB[ordering][0], 'desc')
             .catch(() => {
                 throw new Error('Erro ao consultar banco de dados')
             });
         return Promise.all(essaysData.map(this.parseFromDB));
+    }
+
+    public async count(filter: Partial<EssayInterface>) {
+        const service = EssayService(this.driver);
+        const amount = await service.where(await this.parseToDB(filter))
+            .count<Record<string, { count: number }>>('essay_id as count')
+            .catch(() => { throw new Error('Erro ao consultar banco de dados') });
+        return amount[0].count;
     }
 
 }

@@ -28,6 +28,12 @@ export interface EssayResponse {
     theme?: EssayThemeResponse;
 }
 
+export interface EssayListResponse {
+    pages: number;
+    count: number;
+    page: EssayResponse[];
+}
+
 export interface ListEssayParams extends Partial<EssayInterface>, EssayPagination { }
 
 const schema = yup.object().shape({
@@ -73,7 +79,7 @@ export default class EssayController extends Controller<EssayData> {
         }
     }
 
-    public async myEssays(userId: number) {
+    public async myEssays(userId: number): Promise<EssayResponse[]> {
         try {
             const essays = await this.useCase.myEssays(userId);
             return Promise.all(essays.map(async essay => this.parseEntity(essay)));
@@ -82,11 +88,17 @@ export default class EssayController extends Controller<EssayData> {
         }
     }
 
-    public async allEssays(params: ListEssayParams) {
+    public async allEssays(params: ListEssayParams): Promise<EssayListResponse> {
         try {
-            const { ordering, page, pageSize, ...filter } = params;
-            const essays = await this.useCase.allEssays(filter, { ordering, page, pageSize })
-            return Promise.all(essays.map(async essay => this.parseEntity(essay)));
+            const { ordering = 'sendDate', page = 1, pageSize = 10, ...filter } = params;
+            const essays = await this.useCase.allEssays(filter, { ordering, page, pageSize });
+            const count = await this.useCase.count(filter);
+            const data = await Promise.all(essays.map(async essay => this.parseEntity(essay)));
+            return {
+                pages: Math.ceil(count / pageSize),
+                page: data,
+                count,
+            }
         } catch (error) {
             throw { message: error.message || 'Falha ao consultar redações', status: 500 }
         }

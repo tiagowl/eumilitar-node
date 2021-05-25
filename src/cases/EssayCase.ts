@@ -19,6 +19,7 @@ export interface EssayRepositoryInterface {
     themes: EssayThemeRepositoryInterface;
     exists: (is: Partial<EssayInterface>[]) => Promise<boolean>;
     filter: (filter: Partial<EssayInterface>, pagination?: EssayPagination) => Promise<Essay[]>;
+    count: (filter: Partial<EssayInsertionData>) => Promise<number>;
 }
 
 export interface EssayPagination {
@@ -62,4 +63,7 @@ export default class EssayCase {
         return this.repository.filter(filter, pagination);
     }
 
+    public async count(filter: Partial<EssayInsertionData>) {
+        return this.repository.count(filter);
+    }
 }
