@@ -9,20 +9,25 @@ import { PasswordRecoveryInsert, PasswordRecoveryService } from '../src/adapters
 import User, { UserData } from '../src/entities/User';
 import createStorage from '../src/drivers/storage';
 import Application from '../src/drivers/api';
+import { UserModel } from '../src/adapters/models/User';
 
 export const now = new Date();
 
-export const userFactory = () => ({
-    email: faker.internet.email(),
-    passwd: 'abda143501',
-    first_name: faker.name.firstName(),
-    last_name: faker.name.lastName(),
-    status: 1,
-    permission: 1,
-    date_created: now,
-    date_modified: now,
-    user_id: faker.unique(faker.datatype.number),
-})
+export const userFactory = (inject?: Partial<UserModel>) => {
+    const data = {
+        email: faker.internet.email(),
+        passwd: 'abda143501',
+        first_name: faker.name.firstName(),
+        last_name: faker.name.lastName(),
+        status: 1,
+        permission: 1,
+        date_created: now,
+        date_modified: now,
+        user_id: faker.unique(faker.datatype.number),
+    }
+    Object.assign(data, inject);
+    return data;
+}
 
 export const userEntityFactory = async (inject?: any): Promise<User> => {
     const data: UserData = {

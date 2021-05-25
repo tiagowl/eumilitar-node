@@ -6,6 +6,9 @@ import { EssayRepository } from "../models/Essay";
 import EssayCase, { EssayPagination } from "../../cases/EssayCase";
 import { Course } from "../../entities/EssayTheme";
 import EssayThemeController, { EssayThemeResponse } from "./EssayTheme";
+import UserRepository from "../models/User";
+import UserUseCase from "../../cases/UserUseCase";
+import { AccountPermission } from "../../entities/User";
 
 export interface EssayInput {
     file: Express.Multer.File;
@@ -26,6 +29,11 @@ export interface EssayResponse {
     sendDate: Date;
     status: Status;
     theme?: EssayThemeResponse;
+    student: {
+        id: number;
+        name: string;
+        permission: AccountPermission;
+    }
 }
 
 export interface EssayListResponse {
@@ -53,6 +61,17 @@ export default class EssayController extends Controller<EssayData> {
         this.useCase = new EssayCase(this.repository);
     }
 
+    private async getStudent(id: number) {
+        const repository = new UserRepository(this.driver);
+        const userCase = new UserUseCase(repository);
+        const user = await userCase.get(id);
+        return {
+            id: user.id,
+            name: user.fullName,
+            permission: user.permission,
+        }
+    }
+
     private async parseEntity(essay: Essay): Promise<EssayResponse> {
         const themeController = new EssayThemeController(this.driver)
         return {
@@ -61,7 +80,8 @@ export default class EssayController extends Controller<EssayData> {
             id: essay.id,
             sendDate: essay.sendDate,
             status: essay.status,
-            theme: await themeController.get({ id: essay.theme })
+            theme: await themeController.get({ id: essay.theme }),
+            student: await this.getStudent(essay.student),
         }
     }
 

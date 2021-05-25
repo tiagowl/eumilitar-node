@@ -381,6 +381,7 @@ describe('#2 Testes nos temas', () => {
 
 describe('#3 Redações', () => {
     const user: UserModel = userFactory();
+    const student: UserModel = userFactory({ permission: 2 });
     beforeAll(async (done) => {
         const themeService = EssayThemeService(driver);
         await themeService.delete().del()
@@ -399,6 +400,7 @@ describe('#3 Redações', () => {
         expect(theme.id).not.toBeNull();
         const service = UserService(driver);
         await saveUser(user, service);
+        await saveUser(student, service);
         done()
     })
     afterAll(async (done) => {
@@ -425,13 +427,30 @@ describe('#3 Redações', () => {
     test('Listagem', async done => {
         const app = await appFactory();
         const api = supertest(app.server);
-        const token = await authenticate(user, api)
+        const token = await authenticate(student, api)
         const header = `Bearer ${token}`;
         const { body, status, error } = await api.get('/essays/')
             .set('Authorization', header);
         expect(body.length, JSON.stringify({ body, error })).not.toBeUndefined();
         expect(status, JSON.stringify({ body, error })).toBe(200);
         body.forEach((essay: any) => {
+            expect(essay.course).toBeDefined();
+            expect(essay.id).toBeDefined();
+            expect(essay.file).toBeDefined();
+        })
+        done();
+    })
+    test('Listagem de todos', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const { body, status, error } = await api.get('/essays/')
+            .set('Authorization', header);
+        expect(body.page, JSON.stringify({ body, error })).not.toBeUndefined();
+        expect(body.page, JSON.stringify({ body, error })).toBeInstanceOf(Array);
+        expect(status, JSON.stringify({ body, error })).toBe(200);
+        body.page.forEach((essay: any) => {
             expect(essay.course).toBeDefined();
             expect(essay.id).toBeDefined();
             expect(essay.file).toBeDefined();

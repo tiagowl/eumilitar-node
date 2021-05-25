@@ -23,7 +23,7 @@ export default class UserUseCase {
     #user: User | undefined | null;
     private repository: UserRepositoryInterface;
 
-    constructor(repository: UserRepositoryInterface){
+    constructor(repository: UserRepositoryInterface) {
         this.repository = repository;
     }
 
@@ -64,6 +64,12 @@ export default class UserUseCase {
             return !!amount;
         }
         return false;
+    }
+
+    public async get(id: number) {
+        this.#user = await this.repository.get({ id });
+        if(!this.#user) throw new Error('Usuário não encontrado');
+        return this.#user;
     }
 
 }
