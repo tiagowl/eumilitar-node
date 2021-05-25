@@ -3,7 +3,7 @@ import { hashPassword, userEntityFactory } from './shortcuts';
 import EssayThemeCase, { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeRepositoryInterface } from '../src/cases/EssayThemeCase';
 import EssayTheme, { Course } from '../src/entities/EssayTheme';
 import faker from 'faker';
-import EssayCase, { EssayCreationData, EssayInsertionData, EssayRepositoryInterface } from '../src/cases/EssayCase';
+import EssayCase, { EssayCreationData, EssayInsertionData, EssayPagination, EssayRepositoryInterface } from '../src/cases/EssayCase';
 import Essay, { EssayInterface } from '../src/entities/Essay';
 
 const defaultPassword = 'pass1235'
@@ -184,13 +184,14 @@ class EssayTestRepository implements EssayRepositoryInterface {
         }, false as boolean))
     }
 
-    async filter(filter: Partial<EssayInterface>) {
-        return this.database.filter(essay => {
-            return Object.entries(filter)
-                .reduce((valid, field) => {
-                    return valid && (essay[field[0]] === field[1])
-                }, true as boolean)
-        })
+    async filter(filter: Partial<EssayInterface>, pagination?: EssayPagination) {
+        const { pageSize = 10, page = 1, ordering = 'id' } = pagination || {};
+        return this.database.filter(essay => Object.entries(filter)
+            .reduce((valid, field) => valid && (essay[field[0]] === field[1]), true as boolean)
+        )
+            .sort((a, b) => a[ordering] - b[ordering])
+            .slice((page - 1) * pageSize, ((page - 1) * pageSize) + pageSize,)
+
     }
 }
 
@@ -298,6 +299,15 @@ describe('Redações', () => {
         const repository = new EssayTestRepository(essayDatabase);
         const useCase = new EssayCase(repository);
         const essays = await useCase.myEssays(6);
+        expect(essays.length).not.toBeLessThan(1);
+        const essay = essays[0];
+        expect(essay.id).not.toBeUndefined();
+        done();
+    })
+    test('Listagem de todas', async done => {
+        const repository = new EssayTestRepository(essayDatabase);
+        const useCase = new EssayCase(repository);
+        const essays = await useCase.allEssays({});
         expect(essays.length).not.toBeLessThan(1);
         const essay = essays[0];
         expect(essay.id).not.toBeUndefined();

@@ -18,7 +18,13 @@ export interface EssayRepositoryInterface {
     create: (data: EssayInsertionData) => Promise<EssayInterface>;
     themes: EssayThemeRepositoryInterface;
     exists: (is: Partial<EssayInterface>[]) => Promise<boolean>;
-    filter: (filter: Partial<EssayInterface>) => Promise<Essay[]>;
+    filter: (filter: Partial<EssayInterface>, pagination?: EssayPagination) => Promise<Essay[]>;
+}
+
+export interface EssayPagination {
+    page?: number;
+    pageSize?: number;
+    ordering?: keyof EssayInterface;
 }
 
 const beautyCourse = {
@@ -50,6 +56,10 @@ export default class EssayCase {
 
     public async myEssays(userId: number) {
         return this.repository.filter({ student: userId });
+    }
+
+    public async allEssays(filter: Partial<EssayInsertionData>, pagination?: EssayPagination) {
+        return this.repository.filter(filter, pagination);
     }
 
 }
