@@ -131,7 +131,7 @@ export class EssayRepository implements EssayRepositoryInterface {
             .offset(((page - 1) * (pageSize)))
             .limit(pageSize)
         const essaysData = await service.where(await this.parseToDB(filter))
-            .orderBy(fieldParserDB[ordering][0], 'desc')
+            .orderBy(fieldParserDB[ordering][0], 'asc')
             .catch(() => {
                 throw new Error('Erro ao consultar banco de dados')
             });
