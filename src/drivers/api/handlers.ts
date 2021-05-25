@@ -264,10 +264,16 @@ export function listEssays(context: Context): RequestHandler<any, EssayResponse[
     const handler = express.Router({ mergeParams: true }).use(isAuthenticated(context));
     handler.use(async (req, res) => {
         try {
-            if (!req.user) throw { message: 'Não autenticado', status: 401 };
+            const { user, query } = req;
+            if (!user) throw { message: 'Não autenticado', status: 401 };
             const controller = new EssayController(driver);
-            const response = await controller.myEssays(req.user.id);
-            res.status(200).json(response);
+            if (user.permission === 'admin') {
+                const response = await controller.allEssays(query);
+                res.status(200).json(response);
+            } else {
+                const response = await controller.myEssays(user.id);
+                res.status(200).json(response);
+            }
         } catch (error) {
             res.status(error.status || 400).json(error)
         } finally {
