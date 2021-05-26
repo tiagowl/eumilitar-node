@@ -20,6 +20,7 @@ export interface EssayRepositoryInterface {
     exists: (is: Partial<EssayInterface>[]) => Promise<boolean>;
     filter: (filter: Partial<EssayInterface>, pagination?: EssayPagination) => Promise<Essay[]>;
     count: (filter: Partial<EssayInsertionData>) => Promise<number>;
+    get: (filter: Partial<EssayInsertionData>) => Promise<Essay | undefined>;
 }
 
 export interface EssayPagination {
@@ -59,11 +60,15 @@ export default class EssayCase {
         return this.repository.filter({ student: userId });
     }
 
-    public async allEssays(filter: Partial<EssayInsertionData>, pagination?: EssayPagination) {
+    public async allEssays(filter: Partial<EssayInterface>, pagination?: EssayPagination) {
         return this.repository.filter(filter, pagination);
     }
 
-    public async count(filter: Partial<EssayInsertionData>) {
+    public async count(filter: Partial<EssayInterface>) {
         return this.repository.count(filter);
+    }
+
+    public async get(filter: Partial<EssayInterface>) {
+        return this.repository.get(filter)
     }
 }

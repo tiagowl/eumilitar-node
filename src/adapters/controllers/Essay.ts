@@ -124,4 +124,15 @@ export default class EssayController extends Controller<EssayData> {
         }
     }
 
+    public async get(id: number) {
+        try {
+            await yup.number().required().validate(id);
+            const essay = await this.useCase.get({ id });
+            if(!essay) return undefined;
+            return this.parseEntity(essay);
+        } catch (error) {
+            throw { message: error.message || 'Falha ao consultar redações', status: 500 }
+        }
+    }
+
 }

@@ -282,3 +282,25 @@ export function listEssays(context: Context): RequestHandler<any, EssayResponse[
     })
     return handler;
 }
+
+export function getEssay(context: Context): RequestHandler<{ id: string }, EssayResponse, void> {
+    const { driver } = context;
+    const handler = express.Router({ mergeParams: true }).use(isAdmin(context));
+    handler.use(async (req, res) => {
+        try {
+            const { id } = req.query;
+            const controller = new EssayController(driver);
+            const response = await controller.get(Number(id));
+            if (response) {
+                res.json(response).status(200);
+            } else {
+                res.status(404);
+            }
+        } catch (error) {
+            res.status(error.status || 400).json(error);
+        } finally {
+            res.end();
+        }
+    })
+    return handler;
+}
