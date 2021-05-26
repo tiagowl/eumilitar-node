@@ -78,7 +78,7 @@ export class EssayRepository implements EssayRepositoryInterface {
     private async parseFromDB(data: EssayModel) {
         const course = courseMap.find(item => item[0] === data.course_tag) as [number, Course]
         return new Essay({
-            id: data.user_id,
+            id: data.essay_id,
             file: data.file_url,
             student: data.user_id,
             course: course[1],

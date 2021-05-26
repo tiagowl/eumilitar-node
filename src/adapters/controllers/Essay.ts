@@ -74,7 +74,7 @@ export default class EssayController extends Controller<EssayData> {
 
     private async parseEntity(essay: Essay): Promise<EssayResponse> {
         const themeController = new EssayThemeController(this.driver)
-        return {
+        const parsed = {
             course: essay.course,
             file: essay.file,
             id: essay.id,
@@ -83,6 +83,7 @@ export default class EssayController extends Controller<EssayData> {
             theme: await themeController.get({ id: essay.theme }),
             student: await this.getStudent(essay.student),
         }
+        return parsed;
     }
 
     public async create(rawData: EssayInput) {

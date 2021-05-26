@@ -125,14 +125,16 @@ export async function createEssay(driver: Knex, id: number) {
         courses: new Set(['esa', 'espcex'] as Course[]),
         deactivated: false,
     }
-    const theme = await themeRepository.create(themeData);
+    const exists = await themeRepository.hasActiveTheme(themeData);
+    const theme = await (exists ? themeRepository.get({ courses: themeData.courses }, true) : themeRepository.create(themeData));
     const repository = new EssayRepository(driver);
     return repository.create({
         file: '/usr/share/data/theme.png',
         student: id,
-        course: [...theme.courses][1],
+        course: [...themeData.courses][1],
         sendDate: new Date(),
         status: 'pending',
-        theme: theme.id,
+        // @ts-ignore
+        theme: theme?.id,
     })
 }

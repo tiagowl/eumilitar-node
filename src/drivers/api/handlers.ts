@@ -288,7 +288,7 @@ export function getEssay(context: Context): RequestHandler<{ id: string }, Essay
     const handler = express.Router({ mergeParams: true }).use(isAdmin(context));
     handler.use(async (req, res) => {
         try {
-            const { id } = req.query;
+            const { id } = req.params;
             const controller = new EssayController(driver);
             const response = await controller.get(Number(id));
             res.status(200).json(response);

@@ -53,6 +53,12 @@ const routes: Route[] = [
             { handler: handlers.createEssay, method: 'post' },
             { handler: handlers.listEssays, method: 'get' },
         ]
+    },
+    {
+        path: '/essays/:id/',
+        handlers: [
+            { handler: handlers.getEssay, method: 'get' }
+        ]
     }
 ]
 
