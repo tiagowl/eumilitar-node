@@ -196,6 +196,12 @@ class EssayTestRepository implements EssayRepositoryInterface {
     async count(filter: Partial<EssayInterface>) {
         return (await this.filter(filter)).length
     }
+
+    async get(filter: Partial<EssayInterface>) {
+        return this.database.find(essay => Object.entries(filter)
+            .reduce((valid, field) => valid && (essay[field[0]] === field[1]), true as boolean)
+        )
+    }
 }
 
 describe('Testes nos casos de uso da entidade User', () => {
@@ -314,6 +320,14 @@ describe('Redações', () => {
         expect(essays.length).not.toBeLessThan(1);
         const essay = essays[0];
         expect(essay.id).not.toBeUndefined();
+        done();
+    })
+    test('Recuperação de uma redação', async done => {
+        const repository = new EssayTestRepository(essayDatabase);
+        const useCase = new EssayCase(repository);
+        const essay = await useCase.get({ id: 2 });
+        expect(essay).toBeDefined();
+        expect(essay?.id).toBe(2);
         done();
     })
 })

@@ -128,10 +128,10 @@ export default class EssayController extends Controller<EssayData> {
         try {
             await yup.number().required().validate(id);
             const essay = await this.useCase.get({ id });
-            if(!essay) return undefined;
+            if (!essay) throw { message: 'Redação não encontrada', status: 404 };
             return this.parseEntity(essay);
         } catch (error) {
-            throw { message: error.message || 'Falha ao consultar redações', status: 500 }
+            throw { message: error.message || 'Falha ao consultar redações', status: error.status || 500 }
         }
     }
 

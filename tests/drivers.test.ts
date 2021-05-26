@@ -1,8 +1,7 @@
 import faker from 'faker';
 import supertest from 'supertest';
 import { UserModel, UserService } from '../src/adapters/models/User';
-import Application from '../src/drivers/api';
-import { appFactory, deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
+import { appFactory, createEssay, deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
 import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { Course } from '../src/entities/EssayTheme';
@@ -46,7 +45,7 @@ describe('#1 Teste na api do usuário', () => {
         done()
     })
     it('Teste no login', async (done) => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const credentials = {
             email: user.email,
@@ -60,7 +59,7 @@ describe('#1 Teste na api do usuário', () => {
         done()
     })
     it('Teste login falho', async (done) => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const wrongCredentials = {
             email: 'lsjflas@faldfjl.comdd',
@@ -76,7 +75,7 @@ describe('#1 Teste na api do usuário', () => {
         done()
     })
     it('Senha errada', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const wrongPassword = {
             email: user.email,
@@ -92,7 +91,7 @@ describe('#1 Teste na api do usuário', () => {
         done()
     })
     it('Email errado', async (done) => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const wrongPassword = {
             email: 'fdd',
@@ -108,7 +107,7 @@ describe('#1 Teste na api do usuário', () => {
         done()
     })
     it('Recuperação de senha', async (done) => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const credentials = { email: user.email };
         const response = await api.post('/password-recoveries/')
@@ -118,7 +117,7 @@ describe('#1 Teste na api do usuário', () => {
         done();
     })
     test('Verificar token de mudança de senha', async (done) => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
         const service = UserService(driver);
@@ -130,7 +129,7 @@ describe('#1 Teste na api do usuário', () => {
         done();
     })
     test('Recuperar senha', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
         const service = UserService(driver);
@@ -151,7 +150,7 @@ describe('#1 Teste na api do usuário', () => {
         done();
     })
     test('Recuperar senha com token inválido', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const invalidToken = await generateConfirmationToken();
         const credentials = {
@@ -166,7 +165,7 @@ describe('#1 Teste na api do usuário', () => {
         done();
     })
     test('Recuperar senha com token expirado', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
         const service = UserService(driver);
@@ -184,7 +183,7 @@ describe('#1 Teste na api do usuário', () => {
         done();
     })
     test('Verificação do perfil do usuário', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const credentials = {
             email: user.email,
@@ -206,7 +205,7 @@ describe('#1 Teste na api do usuário', () => {
         done();
     })
     test('Verificação do perfil do usuário não autenticado', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const response = await api.get('/users/profile/')
         expect(response.body.message).toEqual('Token não fornecido');
@@ -214,7 +213,7 @@ describe('#1 Teste na api do usuário', () => {
         done();
     })
     test('Verificação do perfil do usuário com token inválido', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = crypto.randomBytes(32).toString('base64');
         expect(token).not.toBeUndefined();
@@ -229,7 +228,7 @@ describe('#1 Teste na api do usuário', () => {
         done();
     })
     test('Logout', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const credentials = {
             email: user.email,
@@ -269,7 +268,7 @@ describe('#2 Testes nos temas', () => {
         done()
     })
     test('Testes na criação de temas', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const credentials = {
             email: user.email,
@@ -302,7 +301,7 @@ describe('#2 Testes nos temas', () => {
         done();
     })
     test('Testes na listagem de temas', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const credentials = {
             email: user.email,
@@ -323,7 +322,7 @@ describe('#2 Testes nos temas', () => {
         done()
     })
     test('Atualização de temas', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
@@ -351,7 +350,7 @@ describe('#2 Testes nos temas', () => {
         done();
     })
     test('Desativação do tema', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
@@ -365,7 +364,7 @@ describe('#2 Testes nos temas', () => {
         done();
     })
     test('Listagem de temas ativos', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
@@ -407,11 +406,11 @@ describe('#3 Redações', () => {
         const service = UserService(driver);
         await deleteUser(user, service);
         const themeService = EssayThemeService(driver);
-        await themeService.del().delete()
+        await themeService.del().delete();
         done()
     })
     test('Criação', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
@@ -425,7 +424,7 @@ describe('#3 Redações', () => {
         done();
     })
     test('Listagem', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = await authenticate(student, api)
         const header = `Bearer ${token}`;
@@ -441,7 +440,7 @@ describe('#3 Redações', () => {
         done();
     })
     test('Listagem de todos', async done => {
-        const app = await appFactory();
+        const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
@@ -455,6 +454,19 @@ describe('#3 Redações', () => {
             expect(essay.id).toBeDefined();
             expect(essay.file).toBeDefined();
         })
+        done();
+    })
+    test('Recuperação de uma redação', async done => {
+        const app = await appFactory(driver);
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const base = await createEssay(driver, user.user_id);
+        const response = await api.get(`/essays/${base.id}/`)
+            .set('Authorization', header);
+        expect(response.status, JSON.stringify(response.body)).toBe(200);
+        expect(response.body).toBeDefined();
+        expect(response.body).toMatchObject(base);
         done();
     })
 })

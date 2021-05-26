@@ -1,7 +1,7 @@
 import AuthController from '../src/adapters/controllers/Auth';
 import { UserService } from '../src/adapters/models/User';
 import { TokenService } from '../src/adapters/models/Token';
-import { deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
+import { createEssay, deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
 import PasswordRecoveryController from '../src/adapters/controllers/PasswordRecovery';
 import settings from '../src/settings';
 import { PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
@@ -384,6 +384,14 @@ describe('#4 Redações', () => {
         expect(essays).not.toBeUndefined();
         expect(essays.count).not.toBeLessThan(1);
         expect(essays.page.length).not.toBeLessThan(1);
+        done();
+    })
+    test('Recuperação de uma redação', async done => {
+        const controller = new EssayController(driver);
+        const base = await createEssay(driver, user.user_id);
+        const essay = await controller.get(base.id);
+        expect(essay).toMatchObject(base);
+        expect(essay).toBeDefined();
         done();
     })
 })

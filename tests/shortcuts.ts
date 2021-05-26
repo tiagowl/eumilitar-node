@@ -10,6 +10,11 @@ import User, { UserData } from '../src/entities/User';
 import createStorage from '../src/drivers/storage';
 import Application from '../src/drivers/api';
 import { UserModel } from '../src/adapters/models/User';
+import EssayCase from '../src/cases/EssayCase';
+import { EssayRepository } from '../src/adapters/models/Essay';
+import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
+import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
+import { Course } from '../src/entities/EssayTheme';
 
 export const now = new Date();
 
@@ -66,9 +71,9 @@ export async function saveUser(user: any, service: Knex.QueryBuilder) {
 }
 
 export async function deleteUser(user: any, service: Knex.QueryBuilder) {
-    service
-        .where(user)
-        .del();
+    await service
+        .where({ user_id: user.user_id })
+        .del().delete();
 }
 
 export async function smtpFactory(): Promise<Mail> {
@@ -103,9 +108,31 @@ export async function saveConfirmationToken(token: string, userId: number, drive
     return service.insert(data);
 }
 
-export async function appFactory() {
+export async function appFactory(driver: Knex = driverFactory()) {
     const smtp = await smtpFactory();
-    const driver = driverFactory();
     const storage = createStorage(settings.storage)
     return new Application({ smtp, driver, storage, settings })
+}
+
+export async function createEssay(driver: Knex, id: number) {
+    const themeRepository = new EssayThemeRepository(driver);
+    const themeData: EssayThemeCreation = {
+        title: 'Título',
+        endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
+        startDate: new Date(Date.now() - 160 * 24 * 60 * 60 * 60),
+        helpText: faker.lorem.lines(3),
+        file: '/usr/share/data/theme.pdf',
+        courses: new Set(['esa', 'espcex'] as Course[]),
+        deactivated: false,
+    }
+    const theme = await themeRepository.create(themeData);
+    const repository = new EssayRepository(driver);
+    return repository.create({
+        file: '/usr/share/data/theme.png',
+        student: id,
+        course: [...theme.courses][1],
+        sendDate: new Date(),
+        status: 'pending',
+        theme: theme.id,
+    })
 }

@@ -291,11 +291,7 @@ export function getEssay(context: Context): RequestHandler<{ id: string }, Essay
             const { id } = req.query;
             const controller = new EssayController(driver);
             const response = await controller.get(Number(id));
-            if (response) {
-                res.json(response).status(200);
-            } else {
-                res.status(404);
-            }
+            res.status(200).json(response);
         } catch (error) {
             res.status(error.status || 400).json(error);
         } finally {
