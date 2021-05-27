@@ -15,18 +15,24 @@ export interface EssayInsertionData extends EssayCreationData {
 }
 
 export interface EssayRepositoryInterface {
-    create: (data: EssayInsertionData) => Promise<EssayInterface>;
     themes: EssayThemeRepositoryInterface;
+    create: (data: EssayInsertionData) => Promise<EssayInterface>;
     exists: (is: Partial<EssayInterface>[]) => Promise<boolean>;
     filter: (filter: Partial<EssayInterface>, pagination?: EssayPagination) => Promise<Essay[]>;
-    count: (filter: Partial<EssayInsertionData>) => Promise<number>;
-    get: (filter: Partial<EssayInsertionData>) => Promise<Essay | undefined>;
+    count: (filter: Partial<EssayInterface>) => Promise<number>;
+    get: (filter: Partial<EssayInterface>) => Promise<Essay | undefined>;
+    update: (id: number, data: Partial<EssayInsertionData>) => Promise<Essay>;
 }
 
 export interface EssayPagination {
     page?: number;
     pageSize?: number;
     ordering?: keyof EssayInterface;
+}
+
+export interface EssayPartialUpdate {
+    corrector?: number;
+    status?: Status;
 }
 
 const beautyCourse = {
@@ -70,5 +76,18 @@ export default class EssayCase {
 
     public async get(filter: Partial<EssayInterface>) {
         return this.repository.get(filter)
+    }
+
+    public async partialUpdate(id: number, data: EssayPartialUpdate) {
+        const essay = await this.repository.get({ id });
+        if (!essay) throw new Error('Redação não encontrada');
+        const fields = Object.entries(data) as [keyof EssayPartialUpdate, never][];
+        const allowedFields = ['corrector', 'status'];
+        fields.forEach(([field, value]) => {
+            if (allowedFields.indexOf(field) > -1) {
+                essay[field] = value;
+            }
+        })
+        return this.repository.update(id, essay);
     }
 }

@@ -202,6 +202,10 @@ class EssayTestRepository implements EssayRepositoryInterface {
             .reduce((valid, field) => valid && (essay[field[0]] === field[1]), true as boolean)
         )
     }
+
+    async update(id: number, data: Partial<EssayInterface>) {
+        return Object.assign(this.database[id], data)
+    }
 }
 
 describe('Testes nos casos de uso da entidade User', () => {
@@ -328,6 +332,20 @@ describe('Redações', () => {
         const essay = await useCase.get({ id: 2 });
         expect(essay).toBeDefined();
         expect(essay?.id).toBe(2);
+        done();
+    })
+    test('Atualização da redação', async done => {
+        const repository = new EssayTestRepository(essayDatabase);
+        const useCase = new EssayCase(repository);
+        const updated = await useCase.partialUpdate(1, { corrector: 2 });
+        const essay = await useCase.get({ id: 1 });
+        expect(updated).toBeDefined();
+        expect(updated.corrector).toBe(2);
+        // @ts-ignore
+        expect(updated).toMatchObject(essay);
+        expect(updated?.id).toEqual(essay?.id);
+        expect(updated?.corrector).toEqual(essay?.corrector);
+        expect(updated?.status).toEqual(essay?.status);
         done();
     })
 })

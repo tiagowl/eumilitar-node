@@ -1,7 +1,7 @@
 import { Course } from './EssayTheme';
 
 
-export type Status = "invalid" | "pending" | "revised";
+export type Status = "invalid" | "pending" | "revised" | "correcting";
 
 export interface EssayInterface {
     id: number;
@@ -12,6 +12,7 @@ export interface EssayInterface {
     lastModified: Date;
     status: Status;
     sendDate: Date;
+    corrector?: number;
 }
 
 export default class Essay {
@@ -23,6 +24,8 @@ export default class Essay {
     #lastModified: Date;
     #status: Status;
     readonly #sendDate: Date;
+    #corrector?: number | undefined;
+
 
     constructor(data: EssayInterface) {
         this.#id = data.id;
@@ -33,6 +36,7 @@ export default class Essay {
         this.#lastModified = data.lastModified;
         this.#status = data.status;
         this.#sendDate = data.sendDate;
+        this.#corrector = data.corrector;
     }
 
     get id() { return this.#id }
@@ -70,6 +74,17 @@ export default class Essay {
     }
 
     get sendDate() { return this.#sendDate }
+
+    get corrector(): number | undefined { return this.#corrector }
+    set corrector(value: number | undefined) {
+        if (typeof this.#corrector === 'undefined' && typeof value === 'number') {
+            this.#status = 'correcting';
+        } else if (typeof this.#corrector === 'number' && typeof value === 'undefined') {
+            this.#status = 'pending';
+        }
+        this.#corrector = value;
+        this.updateLastModified();
+    }
 
     private updateLastModified() { this.#lastModified = new Date(); }
 
