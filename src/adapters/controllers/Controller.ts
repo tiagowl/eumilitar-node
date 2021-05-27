@@ -20,14 +20,13 @@ export default class Controller<Fields> {
         return this.schema.isValid(data);
     }
 
-    public async validate(rawData: Fields): Promise<Fields> {
+    public async validate<Data = any>(rawData: Data): Promise<Data> {
         return this.schema.validate(rawData, {
             strict: true,
             abortEarly: false,
-            stripUnknown: false,
+            stripUnknown: true,
             recursive: true,
         })
-            .then(data => this.schema.noUnknown().cast(data, { stripUnknown: true }))
             .catch(async (errors: ValidationError) => {
                 throw {
                     message: errors.message,

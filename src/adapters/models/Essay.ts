@@ -1,15 +1,18 @@
 import { Knex } from "knex";
 import { EssayInsertionData, EssayPagination, EssayRepositoryInterface } from "../../cases/EssayCase";
 import { EssayThemeRepositoryInterface } from "../../cases/EssayThemeCase";
-import Essay, { EssayInterface, Status } from "../../entities/Essay";
+import { UserRepositoryInterface } from "../../cases/UserUseCase";
+import Essay, { EssayInterface, status, Status } from "../../entities/Essay";
 import { Course } from "../../entities/EssayTheme";
 import EssayThemeRepository from "./EssayTheme";
+import UserRepository from "./User";
 
 export interface EssayModel extends EssayInsertion {
     essay_id: number;
     last_modified: Date;
     sent_date: Date;
     local: boolean;
+    corrector?: number;
 }
 
 export interface EssayInsertion {
@@ -26,8 +29,10 @@ export const EssayService = (driver: Knex) => driver<Partial<EssayModel>, EssayM
 
 type Parser = (data: any) => any;
 
+type Translator = [keyof EssayModel, Parser]
+
 type FieldMapToDB = {
-    [P in keyof EssayInterface]: [keyof EssayModel, Parser];
+    [P in keyof EssayInterface]: Translator;
 }
 
 const courseMap: [number, Course][] = [
@@ -50,21 +55,24 @@ const fieldParserDB: FieldMapToDB = {
     lastModified: ['last_modified', value => new Date(value)],
     status: ['status', String],
     sendDate: ['sent_date', value => new Date(value)],
+    corrector: ['corrector', Number],
 }
 
 export class EssayRepository implements EssayRepositoryInterface {
     private driver: Knex;
     themes: EssayThemeRepositoryInterface;
+    users: UserRepositoryInterface;
 
     constructor(driver: Knex) {
         this.driver = driver;
         this.themes = new EssayThemeRepository(driver);
+        this.users = new UserRepository(driver);
     }
 
     private async parseToDB(data: Partial<EssayInterface>): Promise<EssayInsertion | Partial<EssayModel>> {
         const entries = Object.entries(data) as [keyof EssayInterface, any][];
         return entries.reduce((obj, [key, value]) => {
-            const [name, parser] = fieldParserDB[key];
+            const [name, parser] = fieldParserDB[key] as Translator;
             if (key === 'file') {
                 const path = value.split('/');
                 obj.file_url = parser(value);
@@ -86,6 +94,7 @@ export class EssayRepository implements EssayRepositoryInterface {
             status: data.status,
             lastModified: data.last_modified,
             sendDate: data.sent_date,
+            corrector: data.corrector,
         })
     }
 
@@ -130,8 +139,9 @@ export class EssayRepository implements EssayRepositoryInterface {
         if (!!pagination) service
             .offset(((page - 1) * (pageSize)))
             .limit(pageSize)
+        const orderingField = (fieldParserDB[ordering] as Translator)[0]
         const essaysData = await service.where(await this.parseToDB(filter))
-            .orderBy(fieldParserDB[ordering][0], 'asc')
+            .orderBy(orderingField, 'asc')
             .catch(() => {
                 throw new Error('Erro ao consultar banco de dados')
             });
@@ -144,6 +154,18 @@ export class EssayRepository implements EssayRepositoryInterface {
             .count<Record<string, { count: number }>>('essay_id as count')
             .catch(() => { throw new Error('Erro ao consultar banco de dados') });
         return amount[0].count;
+    }
+
+    public async update(id: number, data: Partial<EssayInsertionData>) {
+        const updated = await EssayService(this.driver).where('essay_id', id).update(await this.parseToDB(data))
+            .catch(() => { throw { message: 'Erro ao atualizar redação', status: 500 } });
+        if (updated < 1) throw { message: 'Erro ao atualizar redação', status: 404 };
+        if (updated > 1) throw { message: `${updated} redações afetadas!`, status: 500 };
+        const error = new Error('Erro ao consultar banco de dados')
+        const essay = await EssayService(this.driver).where('essay_id', id).first()
+            .catch(() => { throw { ...error, status: 500 } });
+        if (!essay) throw { ...error, status: 404 };
+        return this.parseFromDB(essay);
     }
 
 }

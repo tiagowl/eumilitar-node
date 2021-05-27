@@ -60,7 +60,7 @@ class UserTestRepository implements UserRepositoryInterface {
 class EssayThemeTestRepository implements EssayThemeRepositoryInterface {
     database: any[]
     constructor(database: any[]) {
-        this.database = [...database]
+        this.database = [...database];
     }
     public async create(data: EssayThemeCreation) {
         const theme = {
@@ -145,10 +145,14 @@ class EssayThemeTestRepository implements EssayThemeRepositoryInterface {
 class EssayTestRepository implements EssayRepositoryInterface {
     database: any[]
     themes: EssayThemeRepositoryInterface;
+    users: UserTestRepository;
 
     constructor(database: any[]) {
         this.database = [...database];
         this.themes = new EssayThemeTestRepository(essayThemeDatabase);
+        userDatabase.then(data => {
+            this.users = new UserTestRepository(data);
+        });
         const theme = new EssayTheme({
             title: 'Título',
             endDate: new Date(Date.now() + 15 * 24 * 60 * 60),
@@ -159,7 +163,7 @@ class EssayTestRepository implements EssayRepositoryInterface {
             lastModified: new Date(),
             id: faker.datatype.number(),
             deactivated: false,
-        })
+        });
         this.themes.get = async (_: EssayThemeFilter) => theme;
         expect(theme.active).toBeTruthy();
     }

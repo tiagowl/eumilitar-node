@@ -116,7 +116,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
     }
 
     public async create(rawData: EssayThemeInput): Promise<EssayThemeResponse> {
-        const data = await this.validate({ ...rawData, file: rawData.file.path });
+        const data = await this.validate({ ...rawData, file: rawData.file.path }) as EssayThemeData;
         return this.useCase.create({
             ...data,
             courses: new Set(data.courses),
@@ -150,7 +150,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
     public async update(id: number, rawData: EssayThemeUpdating) {
         try {
             this.schema = updatingSchema;
-            const data = await this.validate({ ...rawData, file: rawData.file?.path || '' });
+            const data = await this.validate({ ...rawData, file: rawData.file?.path || '' }) as EssayThemeData;
             const theme = await this.useCase.update(id, {
                 ...data,
                 courses: new Set(data.courses),

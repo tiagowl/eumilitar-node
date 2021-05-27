@@ -3,6 +3,8 @@ import { Course } from './EssayTheme';
 
 export type Status = "invalid" | "pending" | "revised" | "correcting";
 
+export const status: Status[] = ['invalid', 'pending', 'revised', 'correcting'];
+
 export interface EssayInterface {
     id: number;
     file: string;
@@ -15,7 +17,7 @@ export interface EssayInterface {
     corrector?: number;
 }
 
-export default class Essay {
+export default class Essay implements EssayInterface {
     readonly #id: number;
     #file: string;
     #student: number;
@@ -37,6 +39,20 @@ export default class Essay {
         this.#status = data.status;
         this.#sendDate = data.sendDate;
         this.#corrector = data.corrector;
+    }
+
+    get data(): EssayInterface {
+        return {
+            id: this.#id,
+            course: this.#course,
+            file: this.#file,
+            student: this.#student,
+            theme: this.#theme,
+            lastModified: this.#lastModified,
+            status: this.#status,
+            sendDate: this.#sendDate,
+            corrector: this.#corrector,
+        }
     }
 
     get id() { return this.#id }

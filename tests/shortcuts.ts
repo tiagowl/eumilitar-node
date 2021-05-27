@@ -52,6 +52,7 @@ export const userEntityFactory = async (inject?: any): Promise<User> => {
 
 export const dbSetting: Knex.Config = {
     ...settings.database,
+    // debug: true,
 }
 
 export const driverFactory = () => {

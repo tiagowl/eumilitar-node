@@ -1,6 +1,7 @@
 import Essay, { EssayInterface, Status } from "../entities/Essay";
 import EssayTheme, { Course } from '../entities/EssayTheme';
 import { EssayThemeRepositoryInterface } from './EssayThemeCase';
+import { UserRepositoryInterface } from "./UserUseCase";
 
 export interface EssayCreationData {
     file: string;
@@ -16,6 +17,7 @@ export interface EssayInsertionData extends EssayCreationData {
 
 export interface EssayRepositoryInterface {
     themes: EssayThemeRepositoryInterface;
+    users: UserRepositoryInterface;
     create: (data: EssayInsertionData) => Promise<EssayInterface>;
     exists: (is: Partial<EssayInterface>[]) => Promise<boolean>;
     filter: (filter: Partial<EssayInterface>, pagination?: EssayPagination) => Promise<Essay[]>;
@@ -39,6 +41,8 @@ const beautyCourse = {
     'esa': 'ESA',
     'espcex': 'EsPCEX',
 }
+
+export const allowedUpdateFields = ['corrector', 'status'];
 
 export default class EssayCase {
     private repository: EssayRepositoryInterface;
@@ -81,13 +85,17 @@ export default class EssayCase {
     public async partialUpdate(id: number, data: EssayPartialUpdate) {
         const essay = await this.repository.get({ id });
         if (!essay) throw new Error('Redação não encontrada');
+        if (!!data.corrector) {
+            const corrector = await this.repository.users.get({ id: data.corrector });
+            if (!corrector) throw new Error('Corretor inválido');
+            if (corrector.permission !== 'admin') throw new Error('Não autorizado!');
+        }
         const fields = Object.entries(data) as [keyof EssayPartialUpdate, never][];
-        const allowedFields = ['corrector', 'status'];
         fields.forEach(([field, value]) => {
-            if (allowedFields.indexOf(field) > -1) {
+            if (allowedUpdateFields.indexOf(field) > -1) {
                 essay[field] = value;
             }
         })
-        return this.repository.update(id, essay);
+        return this.repository.update(id, essay.data);
     }
 }

@@ -198,6 +198,11 @@ describe('#1 Testes na autenticação', () => {
 
 
 describe('#2 Testes nos temas de redação', () => {
+    afterAll(async (done) => {
+        const themeService = EssayThemeService(driver);
+        await themeService.delete().del()
+        done();
+    })
     test('Teste no modelo', async done => {
         const repository = new EssayThemeRepository(driver);
         const data: EssayThemeCreation = {
@@ -330,6 +335,8 @@ describe('#4 Redações', () => {
     afterAll(async (done) => {
         const service = UserService(driver);
         await deleteUser(user, service);
+        const themeService = EssayThemeService(driver);
+        await themeService.delete().del();
         done()
     })
     test('Criação de redações', async done => {
@@ -392,6 +399,17 @@ describe('#4 Redações', () => {
         const essay = await controller.get(base.id);
         expect(essay).toMatchObject(base);
         expect(essay).toBeDefined();
+        done();
+    })
+    test('Atualização da redação', async done => {
+        const controller = new EssayController(driver);
+        const base = await createEssay(driver, user.user_id);
+        const essay = await controller.partialUpdate(base.id,
+            { corrector: base.student, status: 'correcting' }
+        );
+        expect(essay).toBeDefined();
+        expect(essay.status).toBe('correcting');
+        expect(base.student).toBe(essay.corrector);
         done();
     })
 })

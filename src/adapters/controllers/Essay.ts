@@ -1,9 +1,9 @@
 import { Knex } from "knex";
-import Essay, { EssayInterface, Status } from "../../entities/Essay";
+import Essay, { EssayInterface, status, Status } from "../../entities/Essay";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import { EssayRepository } from "../models/Essay";
-import EssayCase, { EssayPagination } from "../../cases/EssayCase";
+import EssayCase, { EssayCreationData, EssayPagination, EssayPartialUpdate } from "../../cases/EssayCase";
 import { Course } from "../../entities/EssayTheme";
 import EssayThemeController, { EssayThemeResponse } from "./EssayTheme";
 import UserRepository from "../models/User";
@@ -29,6 +29,7 @@ export interface EssayResponse {
     sendDate: Date;
     status: Status;
     theme?: EssayThemeResponse;
+    corrector?: number;
     student: {
         id: number;
         name: string;
@@ -49,6 +50,11 @@ const schema = yup.object().shape({
     student: yup.number().required('É preciso informar o usuário'),
     course: yup.string().required('É preciso informar o curso')
         .oneOf(['esa', 'espcex'])
+})
+
+const partialUpdateSchema = yup.object().shape({
+    corrector: yup.number(),
+    status: yup.string().oneOf(status, "Status inválido"),
 })
 
 export default class EssayController extends Controller<EssayData> {
@@ -82,6 +88,7 @@ export default class EssayController extends Controller<EssayData> {
             status: essay.status,
             theme: await themeController.get({ id: essay.theme }),
             student: await this.getStudent(essay.student),
+            corrector: essay.corrector,
         }
         return parsed;
     }
@@ -92,7 +99,7 @@ export default class EssayController extends Controller<EssayData> {
                 ...rawData,
                 file: rawData.file.path,
                 student: rawData.student,
-            })
+            }) as EssayCreationData;
             const created = await this.useCase.create(data);
             return this.parseEntity(created);
         } catch (error) {
@@ -133,6 +140,18 @@ export default class EssayController extends Controller<EssayData> {
             return this.parseEntity(essay);
         } catch (error) {
             throw { message: error.message || 'Falha ao consultar redações', status: error.status || 500 }
+        }
+    }
+
+    public async partialUpdate(id: number, data: EssayPartialUpdate) {
+        try {
+            this.schema = partialUpdateSchema;
+            const validated = await this.validate(data);
+            const updated = await this.useCase.partialUpdate(id, validated);
+            return this.parseEntity(updated);
+        } catch (error) {
+            throw error
+            throw { message: error.message || 'Falha ao atualizar', status: error.status || 500 }
         }
     }
 
