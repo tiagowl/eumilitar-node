@@ -89,6 +89,10 @@ export default class EssayCase {
             const corrector = await this.repository.users.get({ id: data.corrector });
             if (!corrector) throw new Error('Corretor inválido');
             if (corrector.permission !== 'admin') throw new Error('Não autorizado!');
+            if (typeof essay.corrector === 'number' && essay.corrector !== data.corrector) {
+                throw new Error('Redação já está em correção');
+            }
+            if (essay.corrector === data.corrector) return essay;
         }
         const fields = Object.entries(data) as [keyof EssayPartialUpdate, never][];
         fields.forEach(([field, value]) => {
