@@ -51,8 +51,15 @@ export const userEntityFactory = async (inject?: any): Promise<User> => {
 }
 
 export const dbSetting: Knex.Config = {
-    ...settings.database,
-    // debug: true,
+    client: 'mysql',
+    connection: process.env.TEST_DATABASE_URL || {
+        host: process.env.TEST_DB_HOST,
+        user: process.env.TEST_DB_USER,
+        password: process.env.TEST_DB_PASS,
+        database: process.env.TEST_DB_NAME
+    },
+    pool: { min: 0, max: 5 },
+    acquireConnectionTimeout: 10000
 }
 
 export const driverFactory = () => {

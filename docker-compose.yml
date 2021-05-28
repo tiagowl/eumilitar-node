@@ -5,7 +5,6 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.dev
-        container_name: eu_militar_api
         restart: on-failure
         volumes:
             - ./:/usr/share/api:z
@@ -22,27 +21,53 @@ services:
             DB_PASS: password
             DB_HOST: db
             DB_PORT: 3306
+            TEST_DB_NAME: nice_marmot
+            TEST_DB_USER: user
+            TEST_DB_PASS: password
+            TEST_DB_HOST: test_db
+            TEST_DB_PORT: 3306
             CORS: '*'
             EXPIRATION_TIME: 48
 
     db:
         image: mariadb
         restart: on-failure
-        container_name: eu_militar_database
+        environment:
+            MYSQL_PASSWORD: password
+            MYSQL_USER: user
+            MYSQL_DATABASE: nice_marmot
+            MYSQL_ROOT_PASSWORD: passwd
+    
+    phpmyadmin:
+        image: phpmyadmin
+        restart: on-failure
+        depends_on:
+            - db
+        ports:
+            - 8080:80
+        environment:
+            MYSQL_PASSWORD: password
+            MYSQL_USER: user
+            MYSQL_DATABASE: nice_marmot
+            MYSQL_ROOT_PASSWORD: passwd
+            PMA_HOST: db
+
+    test_db:
+        image: mariadb
+        restart: on-failure
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user
             MYSQL_DATABASE: nice_marmot
             MYSQL_ROOT_PASSWORD: passwd
 
-    phpmyadmin:
+    test_phpmyadmin:
         image: phpmyadmin
         restart: on-failure
-        container_name: eu_militar_phpmyadmin
         depends_on:
             - db
         ports:
-            - 8080:80
+            - 8082:80
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user

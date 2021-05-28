@@ -150,7 +150,6 @@ export default class EssayController extends Controller<EssayData> {
             const updated = await this.useCase.partialUpdate(id, validated);
             return this.parseEntity(updated);
         } catch (error) {
-            throw error
             throw { message: error.message || 'Falha ao atualizar', status: error.status || 500 }
         }
     }

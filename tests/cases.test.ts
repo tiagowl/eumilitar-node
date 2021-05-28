@@ -145,6 +145,7 @@ class EssayThemeTestRepository implements EssayThemeRepositoryInterface {
 class EssayTestRepository implements EssayRepositoryInterface {
     database: any[]
     themes: EssayThemeRepositoryInterface;
+    // @ts-ignore
     users: UserTestRepository;
 
     constructor(database: any[]) {
@@ -208,7 +209,19 @@ class EssayTestRepository implements EssayRepositoryInterface {
     }
 
     async update(id: number, data: Partial<EssayInterface>) {
-        return Object.assign(this.database[id], data)
+        return this.database.map(item => {
+            if (item.id === id) {
+                return Object.entries(data).reduce((previous, [key, value]) => {
+                    try {
+                        previous[key] = value;
+                    } catch (error) {
+                        return previous
+                    }
+                    return previous
+                }, item)
+            }
+            return item
+        })[id]
     }
 }
 
@@ -341,10 +354,10 @@ describe('Redações', () => {
     test('Atualização da redação', async done => {
         const repository = new EssayTestRepository(essayDatabase);
         const useCase = new EssayCase(repository);
-        const updated = await useCase.partialUpdate(1, { corrector: 2 });
+        const updated = await useCase.partialUpdate(1, { corrector: 0 });
         const essay = await useCase.get({ id: 1 });
         expect(updated).toBeDefined();
-        expect(updated.corrector).toBe(2);
+        expect(updated.corrector).toBe(0);
         // @ts-ignore
         expect(updated).toMatchObject(essay);
         expect(updated?.id).toEqual(essay?.id);

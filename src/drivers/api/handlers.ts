@@ -300,3 +300,22 @@ export function getEssay(context: Context): RequestHandler<{ id: string }, Essay
     })
     return handler;
 }
+
+export function createEssayCorrector(context: Context): RequestHandler<{ id: string }, EssayResponse, void> {
+    const { driver } = context;
+    const handler = express.Router({ mergeParams: true }).use(isAdmin(context));
+    handler.use(async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { user } = req;
+            const controller = new EssayController(driver);
+            const response = await controller.partialUpdate(Number(id), { corrector: user?.id });
+            res.status(201).json(response);
+        } catch (error) {
+            res.status(error.status || 400).json(error);
+        } finally {
+            res.end();
+        }
+    })
+    return handler;
+}

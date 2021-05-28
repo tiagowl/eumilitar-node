@@ -469,4 +469,18 @@ describe('#3 Redações', () => {
         expect(response.body).toMatchObject(base);
         done();
     })
+    test('Início da correção da redação', async done => {
+        const app = await appFactory(driver);
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const base = await createEssay(driver, user.user_id);
+        const response = await api.post(`/essays/${base.id}/corrector/`)
+            .set('Authorization', header);
+        expect(response.status, JSON.stringify(response.body)).toBe(201);
+        expect(response.body).toBeDefined();
+        expect(response.body).toMatchObject(base);
+        expect(response.body.corrector).toEqual(user.user_id)
+        done();
+    })
 })
