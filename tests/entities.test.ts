@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import { hashPassword, now, userEntityFactory } from './shortcuts';
 import EssayTheme from '../src/entities/EssayTheme';
 import Essay from '../src/entities/Essay';
+import EssayInvalidation from '../src/entities/EssayInvalidation';
 
 test('Testes na entidade User', async (done) => {
     const password = 'l23jlk234';
@@ -58,4 +59,15 @@ test('Entidade da redação', () => {
         // @ts-ignore
         essay.id = 5
     }).toThrowError()
+})
+
+test('Entidade do cancelamento', () => {
+    const invalidation = new EssayInvalidation({
+        id: 0,
+        reason: 'other',
+        invalidationDate: new Date(),
+        corrector: 5,
+        essay: 3,
+    });
+    expect(invalidation.id).toBe(0);
 })

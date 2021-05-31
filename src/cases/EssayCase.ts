@@ -37,6 +37,13 @@ export interface EssayPartialUpdate {
     status?: Status;
 }
 
+export interface EssayInvalidationData {
+    corrector: number;
+    essay: number;
+    reason: string;
+    comment: string;
+}
+
 const beautyCourse = {
     'esa': 'ESA',
     'espcex': 'EsPCEX',
