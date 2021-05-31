@@ -97,7 +97,8 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
             const theme = await this.get({ id: ids[0] });
             if (!theme) throw new Error('Falha ao salvar tema');
             return theme;
-        } catch {
+        } catch (error) {
+            throw error;
             throw new Error('Falha ao gravar no banco de dados');
         }
     }
