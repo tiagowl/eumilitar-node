@@ -14,7 +14,7 @@ export interface EssayInterface {
     lastModified: Date;
     status: Status;
     sendDate: Date;
-    corrector?: number;
+    corrector?: number | null;
 }
 
 export default class Essay implements EssayInterface {
@@ -26,7 +26,7 @@ export default class Essay implements EssayInterface {
     #lastModified: Date;
     #status: Status;
     readonly #sendDate: Date;
-    #corrector?: number | undefined;
+    #corrector?: number | null;
 
 
     constructor(data: EssayInterface) {
@@ -91,8 +91,8 @@ export default class Essay implements EssayInterface {
 
     get sendDate() { return this.#sendDate }
 
-    get corrector(): number | undefined { return this.#corrector }
-    set corrector(value: number | undefined) {
+    get corrector(): number | null | undefined { return this.#corrector }
+    set corrector(value: number | null | undefined) {
         if (typeof this.#corrector === 'undefined' && typeof value === 'number') {
             this.#status = 'correcting';
         } else if (typeof this.#corrector === 'number' && typeof value === 'undefined') {

@@ -29,7 +29,7 @@ export interface EssayResponse {
     sendDate: Date;
     status: Status;
     theme?: EssayThemeResponse;
-    corrector?: number;
+    corrector?: number | null;
     student: {
         id: number;
         name: string;
@@ -148,6 +148,18 @@ export default class EssayController extends Controller<EssayData> {
             this.schema = partialUpdateSchema;
             const validated = await this.validate(data);
             const updated = await this.useCase.partialUpdate(id, validated);
+            return this.parseEntity(updated);
+        } catch (error) {
+            throw { message: error.message || 'Falha ao atualizar', status: error.status || 500 }
+        }
+    }
+
+    public async cancelCorrecting(id: number, corrector: number) {
+        try {
+            const validation = yup.number().required();
+            await validation.validate(id);
+            await validation.validate(corrector);
+            const updated = await this.useCase.cancelCorrecting(id, corrector);
             return this.parseEntity(updated);
         } catch (error) {
             throw { message: error.message || 'Falha ao atualizar', status: error.status || 500 }

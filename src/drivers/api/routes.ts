@@ -63,7 +63,8 @@ const routes: Route[] = [
     {
         path: '/essays/:id/corrector/',
         handlers: [
-            { handler: handlers.createEssayCorrector, method: 'post' }
+            { handler: handlers.createEssayCorrector, method: 'post' },
+            { handler: handlers.deleteEssayCorrector, method: 'delete' }
         ]
     }
 ]

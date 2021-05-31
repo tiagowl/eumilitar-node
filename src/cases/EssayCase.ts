@@ -33,7 +33,7 @@ export interface EssayPagination {
 }
 
 export interface EssayPartialUpdate {
-    corrector?: number;
+    corrector?: number | null;
     status?: Status;
 }
 
@@ -79,20 +79,22 @@ export default class EssayCase {
     }
 
     public async get(filter: Partial<EssayInterface>) {
-        return this.repository.get(filter)
+        return this.repository.get(filter);
     }
 
-    public async partialUpdate(id: number, data: EssayPartialUpdate) {
+    public async partialUpdate(id: number, data: EssayPartialUpdate, changingCorrector?: number) {
         const essay = await this.repository.get({ id });
         if (!essay) throw new Error('Redação não encontrada');
-        if (!!data.corrector) {
+        if (typeof data.corrector === 'number') {
             const corrector = await this.repository.users.get({ id: data.corrector });
             if (!corrector) throw new Error('Corretor inválido');
             if (corrector.permission !== 'admin') throw new Error('Não autorizado!');
             if (typeof essay.corrector === 'number' && essay.corrector !== data.corrector) {
                 throw new Error('Redação já está em correção');
             }
-            if (essay.corrector === data.corrector) return essay;
+        }
+        if (typeof changingCorrector === 'number' && changingCorrector !== essay.corrector) {
+            throw new Error('Não autorizado');
         }
         const fields = Object.entries(data) as [keyof EssayPartialUpdate, never][];
         fields.forEach(([field, value]) => {
@@ -100,6 +102,13 @@ export default class EssayCase {
                 essay[field] = value;
             }
         })
+        if (typeof changingCorrector === 'number' && data?.corrector === null) {
+            essay.corrector = null;
+        }
         return this.repository.update(id, essay.data);
+    }
+
+    public async cancelCorrecting(id: number, corrector: number) {
+        return this.partialUpdate(id, { status: 'pending', corrector: null }, corrector);
     }
 }

@@ -483,4 +483,20 @@ describe('#3 Redações', () => {
         expect(response.body.corrector).toEqual(user.user_id)
         done();
     })
+    test('Cancelamento da correção', async done => {
+        const app = await appFactory(driver);
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const base = await createEssay(driver, user.user_id);
+        await api.post(`/essays/${base.id}/corrector/`)
+            .set('Authorization', header);
+        const response = await api.delete(`/essays/${base.id}/corrector/`)
+            .set('Authorization', header);
+        expect(response.status, JSON.stringify(response.body)).toBe(200);
+        expect(response.body, JSON.stringify(response.body)).toBeDefined();
+        expect(response.body, JSON.stringify(response.body)).toMatchObject(base);
+        expect(response.body.corrector, JSON.stringify(response.body)).toBeNull();
+        done();
+    })
 })
