@@ -334,14 +334,14 @@ describe('#2 Testes nos temas', () => {
             title: faker.name.title(),
             startDate: new Date(Date.now() - 1500 * 25 * 60 * 60),
             endDate: new Date(Date.now() - 1495 * 25 * 60 * 60),
-            helpText: faker.lorem.paragraph(5),
+            helpText: faker.lorem.paragraph(2),
             courses: ['espcex', 'esa'],
         }
         const response = await api.put(`/themes/${selected.id}/`)
             .set('Authorization', header)
             .field('data', JSON.stringify(theme))
             .attach('themeFile', buffer, { filename: 'field.pdf', contentType: 'application/pdf' })
-        expect(response.status, response.error.toString()).toEqual(200);
+        expect(response.status, JSON.stringify(response.body)).toEqual(200);
         expect(response.body.title).toEqual(theme.title)
         expect(response.body.title).not.toEqual(selected.title)
         expect(response.body.id).not.toBeUndefined()

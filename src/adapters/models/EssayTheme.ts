@@ -74,7 +74,7 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
                 }, service).then(data => !!data)
             }
             return this.filter(filter, service).first().then(data => !!data);
-        } catch (error) {
+        } catch {
             throw new Error('Falha ao consultar o banco de dados');
         }
     }
@@ -84,7 +84,7 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
             const service = this.filterByActive(EssayThemeService(this.driver), active);
             const theme = await this.filter(filter, service).first();
             return !!theme ? this.parseFromDB(theme) : undefined;
-        } catch (error) {
+        } catch {
             throw new Error('Falha ao consultar o banco de dados')
         }
     }
@@ -97,8 +97,7 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
             const theme = await this.get({ id: ids[0] });
             if (!theme) throw new Error('Falha ao salvar tema');
             return theme;
-        } catch (error) {
-            throw error;
+        } catch {
             throw new Error('Falha ao gravar no banco de dados');
         }
     }
