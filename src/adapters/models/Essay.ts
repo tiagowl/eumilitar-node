@@ -157,7 +157,7 @@ export class EssayRepository implements EssayRepositoryInterface {
     }
 
     public async update(id: number, data: Partial<EssayInsertionData>) {
-        const updated = await EssayService(this.driver).debug(true).where('essay_id', id).update(await this.parseToDB(data))
+        const updated = await EssayService(this.driver).where('essay_id', id).update(await this.parseToDB(data))
             .catch(() => { throw { message: 'Erro ao atualizar redação', status: 500 } });
         if (updated < 1) throw { message: 'Erro ao atualizar redação', status: 404 };
         if (updated > 1) throw { message: `${updated} redações afetadas!`, status: 500 };
