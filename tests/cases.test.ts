@@ -3,9 +3,11 @@ import { hashPassword, userEntityFactory } from './shortcuts';
 import EssayThemeCase, { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeRepositoryInterface } from '../src/cases/EssayThemeCase';
 import EssayTheme, { Course } from '../src/entities/EssayTheme';
 import faker from 'faker';
-import EssayCase, { EssayCreationData, EssayInsertionData, EssayPagination, EssayRepositoryInterface } from '../src/cases/EssayCase';
+import EssayCase, { EssayCreationData, EssayInsertionData, EssayInvalidationData, EssayPagination, EssayRepositoryInterface } from '../src/cases/EssayCase';
 import Essay, { EssayInterface } from '../src/entities/Essay';
 import User from '../src/entities/User';
+import EssayInvalidation from '../src/entities/EssayInvalidation';
+import { EssayInvalidationRepositoryInterface } from '../src/cases/EssayInvalidation';
 
 const defaultPassword = 'pass1235'
 const userDatabase = Promise.all(new Array(5).fill(0).map(async (_, id) => await userEntityFactory({ password: await hashPassword(defaultPassword), id })));
@@ -30,6 +32,7 @@ const essayDatabase = new Array(5).fill(0).map((_, index) => new Essay({
     status: 'pending',
     sendDate: faker.date.past(),
 }));
+const essayInvalidationDatabase = new Array(3).fill(0).map((_, id) => new EssayInvalidation({ id, corrector: 0, essay: id, reason: 'invalid', invalidationDate: new Date() }))
 
 class UserTestRepository implements UserRepositoryInterface {
     database: any[]
@@ -143,16 +146,37 @@ class EssayThemeTestRepository implements EssayThemeRepositoryInterface {
 }
 
 // tslint:disable-next-line
+class EssayInvalidationTestRepository implements EssayInvalidationRepositoryInterface {
+    database: EssayInvalidation[];
+
+    constructor(database: EssayInvalidation[]) {
+        this.database = [...database];
+    }
+
+    public async create(data: EssayInvalidationData) {
+        const invalidation = new EssayInvalidation({
+            ...data,
+            id: this.database.length,
+            invalidationDate: new Date(),
+        })
+        this.database.push(invalidation);
+        return invalidation;
+    }
+}
+
+// tslint:disable-next-line
 class EssayTestRepository implements EssayRepositoryInterface {
     database: any[]
     themes: EssayThemeRepositoryInterface;
     // @ts-ignore
     users: UserTestRepository;
+    invalidations: EssayInvalidationRepositoryInterface;
 
     constructor(database: any[], users: User[]) {
         this.database = [...database];
         this.themes = new EssayThemeTestRepository(essayThemeDatabase);
         this.users = new UserTestRepository(users);
+        this.invalidations = new EssayInvalidationTestRepository(essayInvalidationDatabase);
         const theme = new EssayTheme({
             title: 'Título',
             endDate: new Date(Date.now() + 15 * 24 * 60 * 60),
@@ -362,6 +386,15 @@ describe('#3 Redações', () => {
         expect(updated?.id).toEqual(essay?.id);
         expect(updated?.corrector).toEqual(essay?.corrector);
         expect(updated?.status).toEqual(essay?.status);
+        done();
+    })
+    test('Invalidação da redação', async done => {
+        const repository = new EssayTestRepository(essayDatabase.map((item) => new Essay({ ...item.data, corrector: 0, status: 'correcting' })), await userDatabase);
+        const useCase = new EssayCase(repository);
+        const invalidation = await useCase.invalidate(2, { reason: 'invalid', corrector: 0, 'essay': 2, 'comment': faker.lorem.lines(5) });
+        const essay = await useCase.get({ id: 2 });
+        expect(invalidation).toBeDefined();
+        expect(invalidation.essay).toBe(essay.id);
         done();
     })
 })

@@ -1,6 +1,5 @@
 import { Course } from './EssayTheme';
 
-
 export type Status = "invalid" | "pending" | "revised" | "correcting";
 
 export const status: Status[] = ['invalid', 'pending', 'revised', 'correcting'];

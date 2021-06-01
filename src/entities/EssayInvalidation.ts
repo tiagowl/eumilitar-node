@@ -9,6 +9,8 @@ export interface EssayInvalidationInterface {
     comment?: string;
 }
 
+export const reasons: Reason[] = ['invalid', 'unreadable', 'tangent', 'other'];
+
 export default class EssayInvalidation implements EssayInvalidationInterface {
     #id: number;
     #corrector: number;

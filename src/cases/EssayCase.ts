@@ -1,5 +1,7 @@
 import Essay, { EssayInterface, Status } from "../entities/Essay";
+import { Reason, reasons } from "../entities/EssayInvalidation";
 import EssayTheme, { Course } from '../entities/EssayTheme';
+import EssayInvalidationCase, { EssayInvalidationRepositoryInterface } from "./EssayInvalidation";
 import { EssayThemeRepositoryInterface } from './EssayThemeCase';
 import { UserRepositoryInterface } from "./UserUseCase";
 
@@ -18,6 +20,7 @@ export interface EssayInsertionData extends EssayCreationData {
 export interface EssayRepositoryInterface {
     themes: EssayThemeRepositoryInterface;
     users: UserRepositoryInterface;
+    invalidations: EssayInvalidationRepositoryInterface;
     create: (data: EssayInsertionData) => Promise<EssayInterface>;
     exists: (is: Partial<EssayInterface>[]) => Promise<boolean>;
     filter: (filter: Partial<EssayInterface>, pagination?: EssayPagination) => Promise<Essay[]>;
@@ -40,8 +43,8 @@ export interface EssayPartialUpdate {
 export interface EssayInvalidationData {
     corrector: number;
     essay: number;
-    reason: string;
-    comment: string;
+    reason: Reason;
+    comment?: string;
 }
 
 const beautyCourse = {
@@ -86,12 +89,13 @@ export default class EssayCase {
     }
 
     public async get(filter: Partial<EssayInterface>) {
-        return this.repository.get(filter);
+        const essay = await this.repository.get(filter);
+        if (!essay) throw new Error('Redação não encontrada');
+        return essay;
     }
 
     public async partialUpdate(id: number, data: EssayPartialUpdate, changingCorrector?: number) {
-        const essay = await this.repository.get({ id });
-        if (!essay) throw new Error('Redação não encontrada');
+        const essay = await this.get({ id });
         if (typeof data.corrector === 'number') {
             const corrector = await this.repository.users.get({ id: data.corrector });
             if (!corrector) throw new Error('Corretor inválido');
@@ -117,5 +121,15 @@ export default class EssayCase {
 
     public async cancelCorrecting(id: number, corrector: number) {
         return this.partialUpdate(id, { status: 'pending', corrector: null }, corrector);
+    }
+
+    public async invalidate(id: number, reason: EssayInvalidationData) {
+        const essay = await this.get({ id });
+        if (essay.status !== 'correcting') throw new Error('Redação não está em correção');
+        if (reason.corrector !== essay.corrector) throw new Error('Não autorizado');
+        if (reasons.indexOf(reason.reason) < 0) throw new Error('Razão inválida');
+        essay.status = 'invalid';
+        await this.repository.update(id, essay.data);
+        return this.repository.invalidations.create(reason);
     }
 }
