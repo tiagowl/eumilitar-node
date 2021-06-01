@@ -2,6 +2,7 @@
 export interface CorrectionInterface {
     id: number;
     essay: number;
+    corrector: number;
     correctionDate: Date;
     isReadable: boolean;
     hasMarginSpacing: boolean;
@@ -26,6 +27,7 @@ export default class Correction implements CorrectionInterface {
     readonly #id: number;
     readonly #essay: number;
     readonly #correctionDate: Date;
+    readonly #corrector: number;
     public isReadable: boolean;
     public hasMarginSpacing: boolean;
     public obeyedMargins: boolean;
@@ -47,6 +49,7 @@ export default class Correction implements CorrectionInterface {
         this.#id = data.id;
         this.#essay = data.essay;
         this.#correctionDate = data.correctionDate;
+        this.#corrector = data.corrector;
         this.isReadable = data.isReadable;
         this.hasMarginSpacing = data.hasMarginSpacing;
         this.obeyedMargins = data.obeyedMargins;
@@ -70,5 +73,7 @@ export default class Correction implements CorrectionInterface {
     get essay() { return this.#essay }
 
     get correctionDate() { return this.#correctionDate }
+
+    get corrector() { return this.#corrector }
 
 }

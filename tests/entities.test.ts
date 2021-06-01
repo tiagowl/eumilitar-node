@@ -79,6 +79,7 @@ test('Entidade da correção', () => {
     const correction = new Correction({
         'id': 4,
         'essay': 3,
+        'corrector': 4,
         'accentuation': true,
         'agreement': true,
         'cohesion': true,

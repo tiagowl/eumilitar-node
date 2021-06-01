@@ -8,6 +8,8 @@ import Essay, { EssayInterface } from '../src/entities/Essay';
 import User from '../src/entities/User';
 import EssayInvalidation from '../src/entities/EssayInvalidation';
 import EssayInvalidationCase, { EssayInvalidationRepositoryInterface } from '../src/cases/EssayInvalidation';
+import Correction from '../src/entities/Correction';
+import CorrectionCase, { CorrectionInsertionData, CorrectionRepositoryInterface } from '../src/cases/Correction';
 
 const defaultPassword = 'pass1235'
 const userDatabase = Promise.all(new Array(5).fill(0).map(async (_, id) => await userEntityFactory({ password: await hashPassword(defaultPassword), id })));
@@ -250,6 +252,30 @@ class EssayTestRepository implements EssayRepositoryInterface {
     }
 }
 
+// tslint:disable-next-line
+class CorrectionTestRepository implements CorrectionRepositoryInterface {
+    database: Correction[];
+    users: UserRepositoryInterface;
+    essays: EssayRepositoryInterface;
+
+    constructor(database: Correction[], users: User[]) {
+        this.database = [...database];
+        this.users = new UserTestRepository(users);
+        this.essays = new EssayTestRepository(essayDatabase.map(item => new Essay({
+            ...item.data, status: 'correcting', corrector: 0
+        })), users);
+    }
+
+    public async create(data: CorrectionInsertionData) {
+        const correction = new Correction({
+            ...data,
+            id: this.database.length,
+        })
+        this.database.push(correction);
+        return correction;
+    }
+}
+
 describe('#1 Testes nos casos de uso da entidade User', () => {
     it('Autenticação', async (done) => {
         const repository = new UserTestRepository(await userDatabase);
@@ -401,6 +427,39 @@ describe('#4', () => {
         const essay = await essays.get({ id: 2 });
         expect(invalidation).toBeDefined();
         expect(invalidation.essay).toBe(essay.id);
+        done();
+    })
+})
+
+describe('#5 Correção', () => {
+    test('Criação', async done => {
+        const repository = new CorrectionTestRepository([], await userDatabase);
+        const useCase = new CorrectionCase(repository);
+        const essays = new EssayCase(repository.essays);
+        const correction = await useCase.create({
+            'essay': 1,
+            'corrector': 0,
+            'accentuation': true,
+            'agreement': true,
+            'cohesion': true,
+            'comment': faker.lorem.lines(5),
+            'conclusion': true,
+            'erased': false,
+            'followedGenre': true,
+            'hasMarginSpacing': true,
+            'isReadable': true,
+            'obeyedMargins': true,
+            'organized': true,
+            'orthography': true,
+            'points': 10,
+            'repeated': false,
+            'understoodTheme': true,
+            'veryShortSentences': false,
+        })
+        const essay = await essays.get({ id: 1 });
+        expect(correction).toBeDefined();
+        expect(correction).toBeInstanceOf(Correction);
+        expect(correction.essay).toBe(essay.id);
         done();
     })
 })
