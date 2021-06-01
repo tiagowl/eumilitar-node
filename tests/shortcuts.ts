@@ -64,7 +64,6 @@ export const dbSetting: Knex.Config = {
 
 export const driverFactory = () => {
     const driver = knex(dbSetting);
-    driver.migrate.latest();
     return driver;
 }
 

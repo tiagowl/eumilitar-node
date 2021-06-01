@@ -16,6 +16,7 @@ import faker from 'faker';
 import EssayThemeController, { EssayThemeInput, EssayThemePagination } from '../src/adapters/controllers/EssayTheme';
 import { Readable } from 'stream';
 import EssayController, { EssayInput } from '../src/adapters/controllers/Essay';
+import EssayInvalidationController from '../src/adapters/controllers/EssayInvalidation';
 
 const driver = driverFactory()
 
@@ -410,6 +411,35 @@ describe('#4 Redações', () => {
         expect(essay).toBeDefined();
         expect(essay.status).toBe('correcting');
         expect(base.student).toBe(essay.corrector);
+        done();
+    })
+})
+
+describe('#5 Invalidações', () => {
+    const user = userFactory();
+    beforeAll(async (done) => {
+        const service = UserService(driver);
+        await saveUser(user, service)
+        done();
+    })
+    afterAll(async (done) => {
+        const service = UserService(driver);
+        await deleteUser(user, service);
+        const themeService = EssayThemeService(driver);
+        await themeService.delete().del();
+        done()
+    })
+    test('Invalidação da redação', async done => {
+        const essays = new EssayController(driver);
+        const essay = await createEssay(driver, user.user_id);
+        await essays.partialUpdate(essay.id,
+            { corrector: user.user_id, status: 'correcting' }
+        );
+        const controller = new EssayInvalidationController(driver);
+        const created = await controller.create({ essay: essay.id, corrector: user.user_id, comment: faker.lorem.lines(7), reason: 'other' });
+        expect(created).toBeDefined();
+        expect(created.id).toBeDefined();
+        expect(created.essay).toBe(essay.id);
         done();
     })
 })
