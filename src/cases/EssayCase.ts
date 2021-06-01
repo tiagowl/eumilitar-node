@@ -20,7 +20,6 @@ export interface EssayInsertionData extends EssayCreationData {
 export interface EssayRepositoryInterface {
     themes: EssayThemeRepositoryInterface;
     users: UserRepositoryInterface;
-    invalidations: EssayInvalidationRepositoryInterface;
     create: (data: EssayInsertionData) => Promise<EssayInterface>;
     exists: (is: Partial<EssayInterface>[]) => Promise<boolean>;
     filter: (filter: Partial<EssayInterface>, pagination?: EssayPagination) => Promise<Essay[]>;
@@ -123,13 +122,4 @@ export default class EssayCase {
         return this.partialUpdate(id, { status: 'pending', corrector: null }, corrector);
     }
 
-    public async invalidate(id: number, reason: EssayInvalidationData) {
-        const essay = await this.get({ id });
-        if (essay.status !== 'correcting') throw new Error('Redação não está em correção');
-        if (reason.corrector !== essay.corrector) throw new Error('Não autorizado');
-        if (reasons.indexOf(reason.reason) < 0) throw new Error('Razão inválida');
-        essay.status = 'invalid';
-        await this.repository.update(id, essay.data);
-        return this.repository.invalidations.create(reason);
-    }
 }
