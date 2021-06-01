@@ -31,7 +31,7 @@ export default class EssayInvalidationCase {
         if (data.corrector !== essay.corrector) throw new Error('Não autorizado');
         if (reasons.indexOf(data.reason) < 0) throw new Error('Razão inválida');
         essay.status = 'invalid';
-        await this.repository.essays.update(data.essay, essay.data);
+        await this.repository.essays.update(essay.id, essay.data);
         return this.repository.create({ ...data, invalidationDate: new Date() });
     }
 

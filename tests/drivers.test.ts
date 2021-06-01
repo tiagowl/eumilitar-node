@@ -208,7 +208,7 @@ describe('#1 Teste na api do usuário', () => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const response = await api.get('/users/profile/')
-        expect(response.body.message).toEqual('Token não fornecido');
+        expect(response.body.message).toEqual('Não autenticado');
         expect(response.status).toBe(401);
         done();
     })
@@ -497,6 +497,56 @@ describe('#3 Redações', () => {
         expect(response.body, JSON.stringify(response.body)).toBeDefined();
         expect(response.body, JSON.stringify(response.body)).toMatchObject(base);
         expect(response.body.corrector, JSON.stringify(response.body)).toBeNull();
+        done();
+    })
+})
+
+describe('#4 Invalidação da redação', () => {
+    const user: UserModel = userFactory();
+    const student: UserModel = userFactory({ permission: 2 });
+    beforeAll(async (done) => {
+        const themeService = EssayThemeService(driver);
+        await themeService.delete().del()
+        const repository = new EssayThemeRepository(driver);
+        const themeData: EssayThemeCreation = {
+            title: 'Título',
+            endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
+            startDate: new Date(Date.now() - 160 * 24 * 60 * 60 * 60),
+            helpText: faker.lorem.lines(3),
+            file: '/usr/share/data/theme.pdf',
+            courses: new Set(['esa', 'espcex'] as Course[]),
+            deactivated: false,
+        }
+        const theme = await repository.create(themeData);
+        expect(theme.id).not.toBeUndefined();
+        expect(theme.id).not.toBeNull();
+        const service = UserService(driver);
+        await saveUser(user, service);
+        await saveUser(student, service);
+        done()
+    })
+    afterAll(async (done) => {
+        const service = UserService(driver);
+        await deleteUser(user, service);
+        const themeService = EssayThemeService(driver);
+        await themeService.del().delete();
+        done()
+    })
+    test('Invalidação', async done => {
+        const app = await appFactory(driver);
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const base = await createEssay(driver, user.user_id);
+        await api.post(`/essays/${base.id}/corrector/`)
+            .set('Authorization', header);
+        const response = await api.post(`/essays/${base.id}/invalidation/`)
+            .send({ reason: 'invalid', comment: faker.lorem.lines(3) })
+            .set('Authorization', header);
+        expect(response.status, JSON.stringify(response.body)).toBe(201);
+        expect(response.body, JSON.stringify(response.body)).toBeDefined();
+        expect(response.body.essay).toBe(base.id);
+        expect(response.body.corrector).toBe(user.user_id);
         done();
     })
 })

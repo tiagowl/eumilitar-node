@@ -5,8 +5,10 @@ import ChangePasswordController, { ChangePasswordInterface, ChangePasswordRespon
 import CheckAuthController from "../../adapters/controllers/CheckAuth";
 import CheckPasswordToken, { CheckPasswordInterface, CheckedTokenInterface } from "../../adapters/controllers/CheckPasswordToken";
 import EssayController, { EssayInput, EssayResponse } from "../../adapters/controllers/Essay";
+import EssayInvalidationController from "../../adapters/controllers/EssayInvalidation";
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
+import { EssayInvalidationInterface, Reason } from "../../entities/EssayInvalidation";
 import { Course } from "../../entities/EssayTheme";
 import User, { UserInterface } from "../../entities/User";
 import { Context } from "./interfaces";
@@ -19,8 +21,13 @@ interface EssayThemeRequest {
     courses: Course[];
 }
 
+interface EssayInvalidationRequest {
+    reason: Reason;
+    comment?: string;
+}
+
 async function getToken(header: string | undefined) {
-    if (!header) throw { message: 'Token não fornecido', status: 401 };
+    if (!header) throw { message: 'Não autenticado', status: 401 };
     return header.split(' ')[1];
 }
 
@@ -333,6 +340,25 @@ export function deleteEssayCorrector(context: Context): RequestHandler<{ id: str
             res.status(200).json(response);
         } catch (error) {
             res.status(error.status || 400).json(error);
+        } finally {
+            res.end();
+        }
+    })
+    return handler;
+}
+
+export function invalidateEssay(context: Context): RequestHandler<{ id: string }, EssayInvalidationInterface, EssayInvalidationRequest> {
+    const { driver } = context;
+    const handler = express.Router({ mergeParams: true }).use(isAdmin(context));
+    handler.use(async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { user } = req;
+            const controller = new EssayInvalidationController(driver);
+            const response = await controller.create({ ...req.body, essay: Number(id), corrector: Number(user?.id) });
+            res.status(201).json(response);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
         } finally {
             res.end();
         }
