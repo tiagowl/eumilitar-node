@@ -3,6 +3,8 @@ import { hashPassword, now, userEntityFactory } from './shortcuts';
 import EssayTheme from '../src/entities/EssayTheme';
 import Essay from '../src/entities/Essay';
 import EssayInvalidation from '../src/entities/EssayInvalidation';
+import Correction from '../src/entities/Correction';
+import faker from 'faker';
 
 test('Testes na entidade User', async (done) => {
     const password = 'l23jlk234';
@@ -70,4 +72,34 @@ test('Entidade do cancelamento', () => {
         essay: 3,
     });
     expect(invalidation.id).toBe(0);
+})
+
+
+test('Entidade da correção', () => {
+    const correction = new Correction({
+        'id': 4,
+        'essay': 3,
+        'accentuation': true,
+        'agreement': true,
+        'cohesion': true,
+        'comment': faker.lorem.lines(5),
+        'conclusion': true,
+        'correctionDate': new Date(),
+        'erased': false,
+        'followedGenre': true,
+        'hasMarginSpacing': true,
+        'isReadable': true,
+        'obeyedMargins': true,
+        'organized': true,
+        'orthography': true,
+        'points': 10,
+        'repeated': false,
+        'understoodTheme': true,
+        'veryShortSentences': false,
+    })
+    expect(correction.id).toBe(4);
+    expect(() => {
+        // @ts-ignore
+        correction.id = 5
+    }).toThrowError()
 })
