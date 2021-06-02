@@ -10,7 +10,7 @@ export type Context = {
     smtp: Mail;
     storage: Multer;
     settings: any;
-}
+};
 
 export type Handler = (props: Context) => RequestHandler<any, any, any>;
 

@@ -23,7 +23,7 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
         this.service = PasswordRecoveryService(driver);
     }
 
-    get tokenData() { return this._tokenData }
+    get tokenData() { return this._tokenData; }
 
     private async getTokenInfo(token: string) {
         return await this.service.where('token', token).first();
@@ -31,7 +31,7 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
 
     private async deleteToken(token: string) {
         const service = PasswordRecoveryService(this.driver);
-        return await service.where('token', token).del()
+        return await service.where('token', token).del();
     }
 
     public async check(data: CheckPasswordInterface,): Promise<CheckedTokenInterface> {
@@ -44,7 +44,7 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
             else this.deleteToken(data.token);
             return { isValid };
         } catch {
-            throw { isValid: false }
+            throw { isValid: false };
         }
     }
 

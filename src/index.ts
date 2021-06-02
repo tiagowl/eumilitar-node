@@ -7,4 +7,4 @@ function main() {
     api.serve(port, host);
 }
 
-main()
+main();

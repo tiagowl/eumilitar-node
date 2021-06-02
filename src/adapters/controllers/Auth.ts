@@ -16,12 +16,12 @@ export interface AuthInterface {
 export type AuthResponse = {
     token?: string,
     errors?: [keyof AuthInterface, string][]
-}
+};
 
 export const schema = yup.object({
     email: yup.string().required('O campo "email" é obrigatório').email('Informe um email válido'),
     password: yup.string().required('O campo "senha" é obrigatório')
-})
+});
 
 export default class AuthController extends Controller<AuthInterface> {
     private repository: UserRepository;
@@ -64,11 +64,11 @@ export default class AuthController extends Controller<AuthInterface> {
         try {
             const service = TokenService(this.driver);
             const deleted = await service.where('session_id', token).del();
-            if (deleted === 0) throw { message: "Nenhum token encontrado", status: 400 }
-            if (deleted > 1) throw { message: "Mais de um registro afetado", status: 500 }
+            if (deleted === 0) throw { message: "Nenhum token encontrado", status: 400 };
+            if (deleted > 1) throw { message: "Mais de um registro afetado", status: 500 };
         } catch (error) {
             if (error.status) throw error;
-            throw { message: 'Erro ao deletar token', status: 500 }
+            throw { message: 'Erro ao deletar token', status: 500 };
         }
     }
 }

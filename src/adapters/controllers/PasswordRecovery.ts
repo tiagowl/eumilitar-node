@@ -20,7 +20,7 @@ export interface MessageConfigInterface {
 
 export type PasswordRecoveryResponse = {
     message: string
-}
+};
 
 export default class PasswordRecoveryController extends Controller<PasswordRecoveryInterface> {
     private smtp: Transporter;
@@ -32,7 +32,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
     constructor(driver: Knex, smtp: Transporter, config: MessageConfigInterface) {
         const schema = yup.object().shape({
             email: yup.string().email('Email inválido').required('O campo "email" é obrigatório'),
-        })
+        });
         super(schema, driver);
         this.smtp = smtp;
         this.repository = new UserRepository(driver);
@@ -54,18 +54,18 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
             Caso você não tenha feito esta solicitação, basta ignorar este e-mail.\n
             Atenciosamente,
             Equipe de Suporte Eu Militar\n
-        `
+        `;
     }
 
     private async renderMessage(username: string, link: string) {
         return await PasswordRecoveryRender({
             link, username,
             expirationTime: this.config.expirationTime
-        })
+        });
     }
 
     private async sendConfirmationEmail(email: string, username: string) {
-        const token = encodeURIComponent(this.token || "")
+        const token = encodeURIComponent(this.token || "");
         const link = `${this.config.url}${token}`;
         return this.smtp.sendMail({
             from: this.config.sender,
@@ -73,7 +73,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
             subject: 'Recuperação de senha',
             text: await this.writeMessage(username, link),
             html: await this.renderMessage(username, link),
-        })
+        });
     }
 
     private async saveToken(userId: number) {
@@ -83,10 +83,10 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
                 expires: new Date(Date.now() + this.config.expirationTime * 60 * 60 * 1000),
                 selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
                 user_id: userId,
-            }
+            };
             return this.service.insert(token);
         }
-        throw { message: "Token inválido" }
+        throw { message: "Token inválido" };
     }
 
     public async recover(rawData: PasswordRecoveryInterface,): Promise<PasswordRecoveryResponse> {
@@ -97,7 +97,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
         return this.sendConfirmationEmail(user.email, user.fullName)
             .then(async () => ({ message: "Email enviado! Verifique sua caixa de entrada." }))
             .catch(async () => {
-                throw { message: 'Falha ao enviar o email! Tente novamente ou entre em contato com o suporte.' }
+                throw { message: 'Falha ao enviar o email! Tente novamente ou entre em contato com o suporte.' };
             });
     }
 

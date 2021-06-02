@@ -16,7 +16,7 @@ export interface CheckAuthResponse {
 
 const schema = yup.object().shape({
     token: yup.string().required('O token de autenticação é obrigatório'),
-})
+});
 
 export default class CheckAuthController extends Controller<CheckAuthInterface> {
     constructor(driver: Knex) {
@@ -37,9 +37,9 @@ export default class CheckAuthController extends Controller<CheckAuthInterface> 
         try {
             const data = await this.validate(rawData);
             const user = await this.retrieveUser(data.token);
-            return { isValid: true, user: await UserView(user) }
+            return { isValid: true, user: await UserView(user) };
         } catch (error) {
-            return { isValid: false }
+            return { isValid: false };
         }
     }
 

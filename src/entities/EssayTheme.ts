@@ -57,12 +57,12 @@ export default class EssayTheme implements EssayThemeInterface {
             file: this.#file,
             courses: this.#courses,
             deactivated: this.#deactivated,
-        }
+        };
     }
 
-    get id() { return this.#id }
+    get id() { return this.#id; }
 
-    get title() { return this.#title }
+    get title() { return this.#title; }
     set title(value: string) {
         this.#title = value;
         this.#lastModified = new Date();
@@ -74,7 +74,7 @@ export default class EssayTheme implements EssayThemeInterface {
         return (now >= this.#startDate && now < this.#endDate) && !this.#deactivated;
     }
 
-    get startDate() { return this.#startDate }
+    get startDate() { return this.#startDate; }
     set startDate(value: Date) {
         if (this.startDate > new Date()) {
             this.#startDate = value;
@@ -82,33 +82,33 @@ export default class EssayTheme implements EssayThemeInterface {
         }
     }
 
-    get endDate() { return this.#endDate }
+    get endDate() { return this.#endDate; }
     set endDate(value: Date) {
         this.#endDate = value;
         this.updateLastModified();
     }
 
-    get lastModified() { return this.#lastModified }
+    get lastModified() { return this.#lastModified; }
 
-    get helpText() { return this.#helpText }
+    get helpText() { return this.#helpText; }
     set helpText(value: string) {
         this.#helpText = value;
         this.updateLastModified();
     }
 
-    get file() { return this.#file }
+    get file() { return this.#file; }
     set file(value: string) {
         this.#file = value;
         this.updateLastModified();
     }
 
-    get courses() { return this.#courses }
+    get courses() { return this.#courses; }
     set courses(value: Set<Course>) {
         this.#courses = value;
         this.updateLastModified();
     }
 
-    get deactivated() { return this.#deactivated }
+    get deactivated() { return this.#deactivated; }
     set deactivated(value: boolean) {
         this.#deactivated = value;
         this.updateLastModified();

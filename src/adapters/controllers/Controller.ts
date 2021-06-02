@@ -4,7 +4,7 @@ import { ObjectSchema, ValidationError } from "yup";
 
 export interface ResponseError {
     message?: string;
-    errors?: [string, string][]
+    errors?: [string, string][];
 }
 
 export default class Controller<Fields> {

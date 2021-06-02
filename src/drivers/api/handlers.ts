@@ -36,7 +36,7 @@ async function checkAuth(req: Request, driver: Knex) {
     const token = await getToken(req.headers.authorization);
     const controller = new CheckAuthController(driver);
     const { user, isValid } = await controller.check({ token },);
-    if (!isValid || !user) throw { message: 'Não autorizado', status: 401 }
+    if (!isValid || !user) throw { message: 'Não autorizado', status: 401 };
     return user;
 }
 
@@ -48,14 +48,14 @@ function isAdmin({ driver }: Context): RequestHandler {
                 res.status(403).json({ message: 'Não autorizado', status: 403 });
                 res.end();
             } else {
-                req.user = user
+                req.user = user;
                 next();
             }
         } catch (error) {
             res.status(error.status || 400).json(error);
             res.end();
         }
-    }
+    };
 }
 
 function isAuthenticated({ driver }: Context): RequestHandler {
@@ -73,23 +73,23 @@ function isAuthenticated({ driver }: Context): RequestHandler {
             res.status(error.status || 400).json(error);
             res.end();
         }
-    }
+    };
 }
 
 export function createToken({ driver }: Context): RequestHandler<any, AuthResponse, AuthInterface> {
     return async (req, res) => {
         try {
             const controller = new AuthController(driver);
-            const response = await controller.auth(req.body, req.get('User-Agent'))
-            res.status(!!response.token ? 201 : 400)
+            const response = await controller.auth(req.body, req.get('User-Agent'));
+            res.status(!!response.token ? 201 : 400);
             res.json(response);
         } catch (error) {
-            res.status(400)
-            res.json(error)
+            res.status(400);
+            res.json(error);
         } finally {
-            res.end()
+            res.end();
         }
-    }
+    };
 }
 
 export function logOut(context: Context): RequestHandler<any, void, void> {
@@ -106,7 +106,7 @@ export function logOut(context: Context): RequestHandler<any, void, void> {
         } finally {
             res.end();
         }
-    }
+    };
 }
 
 export function passwordRecoveries({ driver, smtp, settings }: Context): RequestHandler<any, PasswordRecoveryResponse, PasswordRecoveryInterface> {
@@ -120,7 +120,7 @@ export function passwordRecoveries({ driver, smtp, settings }: Context): Request
         } finally {
             res.end();
         }
-    }
+    };
 }
 
 
@@ -135,7 +135,7 @@ export function checkChangePasswordToken({ driver }: Context): RequestHandler<an
         } finally {
             res.end();
         }
-    }
+    };
 }
 
 export function changePassword({ driver }: Context): RequestHandler<any, ChangePasswordResponse, ChangePasswordInterface> {
@@ -145,11 +145,11 @@ export function changePassword({ driver }: Context): RequestHandler<any, ChangeP
             const response = await controller.updatePassword(req.body);
             res.status(200).json(response);
         } catch (error) {
-            res.status(400).json(error)
+            res.status(400).json(error);
         } finally {
             res.end();
         }
-    }
+    };
 }
 
 
@@ -163,7 +163,7 @@ export function profile({ driver }: Context): RequestHandler<any, UserInterface,
         } finally {
             res.end();
         }
-    }
+    };
 }
 
 export function createEssayTheme(context: Context): RequestHandler<any, any, EssayThemeRequest> {
@@ -171,8 +171,8 @@ export function createEssayTheme(context: Context): RequestHandler<any, any, Ess
     return express().use(isAdmin(context), storage.single('themeFile'),
         async (req, res) => {
             try {
-                const data = JSON.parse(req.body.data)
-                const controller = new EssayThemeController(driver)
+                const data = JSON.parse(req.body.data);
+                const controller = new EssayThemeController(driver);
                 const response = await controller.create({
                     ...data,
                     startDate: new Date(data.startDate),
@@ -186,7 +186,7 @@ export function createEssayTheme(context: Context): RequestHandler<any, any, Ess
                 res.end();
             }
         }
-    )
+    );
 }
 
 export function listEssayThemes(context: Context): RequestHandler {
@@ -201,7 +201,7 @@ export function listEssayThemes(context: Context): RequestHandler {
         } finally {
             res.end();
         }
-    })
+    });
 }
 
 export function updateEssayThemes(context: Context): RequestHandler<any, EssayThemeResponse, EssayThemeRequest> {
@@ -224,7 +224,7 @@ export function updateEssayThemes(context: Context): RequestHandler<any, EssayTh
         } finally {
             res.end();
         }
-    })
+    });
     return handler;
 }
 
@@ -241,7 +241,7 @@ export function deactivateEssayTheme(context: Context): RequestHandler<any, Essa
         } finally {
             res.end();
         }
-    })
+    });
     return handler;
 }
 
@@ -258,11 +258,11 @@ export function createEssay(context: Context): RequestHandler<any, EssayResponse
             });
             res.status(201).json(response);
         } catch (error) {
-            res.status(error.status || 400).json(error)
+            res.status(error.status || 400).json(error);
         } finally {
             res.end();
         }
-    })
+    });
     return handler;
 }
 
@@ -282,11 +282,11 @@ export function listEssays(context: Context): RequestHandler<any, EssayResponse[
                 res.status(200).json(response);
             }
         } catch (error) {
-            res.status(error.status || 400).json(error)
+            res.status(error.status || 400).json(error);
         } finally {
             res.end();
         }
-    })
+    });
     return handler;
 }
 
@@ -304,7 +304,7 @@ export function getEssay(context: Context): RequestHandler<{ id: string }, Essay
         } finally {
             res.end();
         }
-    })
+    });
     return handler;
 }
 
@@ -323,7 +323,7 @@ export function createEssayCorrector(context: Context): RequestHandler<{ id: str
         } finally {
             res.end();
         }
-    })
+    });
     return handler;
 }
 
@@ -336,14 +336,14 @@ export function deleteEssayCorrector(context: Context): RequestHandler<{ id: str
             const { id } = req.params;
             const { user } = req;
             const controller = new EssayController(driver);
-            const response = await controller.cancelCorrecting(Number(id), user?.id as number)
+            const response = await controller.cancelCorrecting(Number(id), user?.id as number);
             res.status(200).json(response);
         } catch (error) {
             res.status(error.status || 400).json(error);
         } finally {
             res.end();
         }
-    })
+    });
     return handler;
 }
 
@@ -362,6 +362,6 @@ export function invalidateEssay(context: Context): RequestHandler<{ id: string }
         } finally {
             res.end();
         }
-    })
+    });
     return handler;
 }

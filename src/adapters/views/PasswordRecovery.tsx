@@ -5,7 +5,7 @@ export type Props = {
     link: string;
     username: string;
     expirationTime: number;
-}
+};
 
 function PasswordRecoveryMail({ username, link, expirationTime }: Props) {
     return (
@@ -41,7 +41,7 @@ function PasswordRecoveryMail({ username, link, expirationTime }: Props) {
                 </table>
             </body>
         </>
-    )
+    );
 }
 
 export default async function render(props: Props) {

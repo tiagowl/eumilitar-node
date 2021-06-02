@@ -29,22 +29,22 @@ export const EssayService = (driver: Knex) => driver<Partial<EssayModel>, EssayM
 
 type Parser = (data: any) => any;
 
-type Translator = [keyof EssayModel, Parser]
+type Translator = [keyof EssayModel, Parser];
 
 type FieldMapToDB = {
     [P in keyof EssayInterface]: Translator;
-}
+};
 
 const courseMap: [number, Course][] = [
     [2, 'esa'],
     [3, 'espcex'],
-]
+];
 
 const courseParser: Parser = data => {
     const field = courseMap.find(item => item[1] === data);
     if (!field) throw new Error('Curso inválido');
-    return field[0]
-}
+    return field[0];
+};
 
 const fieldParserDB: FieldMapToDB = {
     id: ['essay_id', Number],
@@ -56,7 +56,7 @@ const fieldParserDB: FieldMapToDB = {
     status: ['status', String],
     sendDate: ['sent_date', value => new Date(value)],
     corrector: ['corrector', (value: null | number) => !!value ? Number(value) : value],
-}
+};
 
 export class EssayRepository implements EssayRepositoryInterface {
     private driver: Knex;
@@ -76,15 +76,15 @@ export class EssayRepository implements EssayRepositoryInterface {
             if (key === 'file') {
                 const path = value.split('/');
                 obj.file_url = parser(value);
-                obj.file_name = path[path.lenth - 1]
+                obj.file_name = path[path.lenth - 1];
             }
             obj[name] = parser(value);
             return obj;
-        }, {} as Partial<EssayModel>)
+        }, {} as Partial<EssayModel>);
     }
 
     private async parseFromDB(data: EssayModel) {
-        const course = courseMap.find(item => item[0] === data.course_tag) as [number, Course]
+        const course = courseMap.find(item => item[0] === data.course_tag) as [number, Course];
         return new Essay({
             id: data.essay_id,
             file: data.file_url,
@@ -95,7 +95,7 @@ export class EssayRepository implements EssayRepositoryInterface {
             lastModified: data.last_modified,
             sendDate: data.sent_date,
             corrector: data.corrector,
-        })
+        });
     }
 
     public async get(filter: Partial<EssayInterface>) {
@@ -103,7 +103,7 @@ export class EssayRepository implements EssayRepositoryInterface {
         const parsedFilter = await this.parseToDB(filter);
         const essayData = await service.where(parsedFilter).first()
             .catch(() => {
-                throw new Error('Erro ao consultar banco de dados')
+                throw new Error('Erro ao consultar banco de dados');
             });
         if (!essayData) return undefined;
         return this.parseFromDB(essayData);
@@ -125,11 +125,11 @@ export class EssayRepository implements EssayRepositoryInterface {
         const service = EssayService(this.driver);
         await Promise.all(is.map(async (filter) => {
             service.orWhere(await this.parseToDB(filter));
-        }))
+        }));
         return await service.first()
             .then(data => !!data)
             .catch(() => {
-                throw new Error('Erro ao consultar banco de dados')
+                throw new Error('Erro ao consultar banco de dados');
             });
     }
 
@@ -138,12 +138,12 @@ export class EssayRepository implements EssayRepositoryInterface {
         const service = EssayService(this.driver);
         if (!!pagination) service
             .offset(((page - 1) * (pageSize)))
-            .limit(pageSize)
-        const orderingField = (fieldParserDB[ordering] as Translator)[0]
+            .limit(pageSize);
+        const orderingField = (fieldParserDB[ordering] as Translator)[0];
         const essaysData = await service.where(await this.parseToDB(filter))
             .orderBy(orderingField, 'asc')
             .catch(() => {
-                throw new Error('Erro ao consultar banco de dados')
+                throw new Error('Erro ao consultar banco de dados');
             });
         return Promise.all(essaysData.map(this.parseFromDB));
     }
@@ -152,18 +152,18 @@ export class EssayRepository implements EssayRepositoryInterface {
         const service = EssayService(this.driver);
         const amount = await service.where(await this.parseToDB(filter))
             .count<Record<string, { count: number }>>('essay_id as count')
-            .catch(() => { throw new Error('Erro ao consultar banco de dados') });
+            .catch(() => { throw new Error('Erro ao consultar banco de dados'); });
         return amount[0].count;
     }
 
     public async update(id: number, data: Partial<EssayInsertionData>) {
         const updated = await EssayService(this.driver).where('essay_id', id).update(await this.parseToDB(data))
-            .catch(() => { throw { message: 'Erro ao atualizar redação', status: 500 } });
+            .catch(() => { throw { message: 'Erro ao atualizar redação', status: 500 }; });
         if (updated < 1) throw { message: 'Erro ao atualizar redação', status: 404 };
         if (updated > 1) throw { message: `${updated} redações afetadas!`, status: 500 };
-        const error = new Error('Erro ao consultar banco de dados')
+        const error = new Error('Erro ao consultar banco de dados');
         const essay = await EssayService(this.driver).where('essay_id', id).first()
-            .catch(() => { throw { ...error, status: 500 } });
+            .catch(() => { throw { ...error, status: 500 }; });
         if (!essay) throw { ...error, status: 404 };
         return this.parseFromDB(essay);
     }

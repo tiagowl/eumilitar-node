@@ -2,12 +2,12 @@ import { Knex } from "knex";
 import { UserFilter, UserRepositoryInterface } from "../../cases/UserUseCase";
 import User, { AccountPermission, AccountStatus, UserData } from "../../entities/User";
 
-const statusMap: AccountStatus[] = ['inactive', 'active', 'pending']
+const statusMap: AccountStatus[] = ['inactive', 'active', 'pending'];
 const permissionMap: [number, AccountPermission][] = [
     [1, 'admin'],
     [2, 'esa'],
     [3, 'espcex'],
-]
+];
 
 function parseStatus(value: number): AccountStatus {
     return statusMap[value];
@@ -18,13 +18,13 @@ function parseStatusToDB(value: AccountStatus): number {
 }
 
 function parsePermission(value: number): AccountPermission {
-    const parsed = permissionMap.filter(item => item[0] === value)
-    return parsed[0][1]
+    const parsed = permissionMap.filter(item => item[0] === value);
+    return parsed[0][1];
 }
 
 function parsePermissionToDB(value: AccountPermission): number | undefined {
     const parsed = permissionMap.find(item => item[1] === value);
-    return !!parsed ? parsed[0] : undefined
+    return !!parsed ? parsed[0] : undefined;
 }
 
 type Parser = (value: any) => any;
@@ -32,7 +32,7 @@ type Parser = (value: any) => any;
 type FieldsMap = {
     entity: [keyof UserData, Parser],
     db: [keyof UserModel, Parser]
-}[]
+}[];
 
 export interface UserModel {
     user_id: number;
@@ -59,7 +59,7 @@ export interface UserModelFilter {
     date_modified?: Date;
 }
 
-export const UserService = (driver: Knex) => driver<UserModelFilter, UserModel>('users')
+export const UserService = (driver: Knex) => driver<UserModelFilter, UserModel>('users');
 
 export default class UserRepository implements UserRepositoryInterface {
     private service: Knex.QueryBuilder<UserModelFilter, UserModel>;
@@ -73,9 +73,9 @@ export default class UserRepository implements UserRepositoryInterface {
         { entity: ['permission', parsePermission], db: ['permission', parsePermissionToDB] },
         { entity: ['creationDate', (value) => new Date(value)], db: ['date_created', (value) => new Date(value)] },
         { entity: ['lastModified', (value) => new Date(value)], db: ['date_modified', (value) => new Date(value)] },
-    ]
+    ];
 
-    get query() { return this.service }
+    get query() { return this.service; }
 
     constructor(driver: Knex) {
         this.service = UserService(driver);
@@ -83,28 +83,28 @@ export default class UserRepository implements UserRepositoryInterface {
 
     private async toDb(filter: UserFilter) {
         const args = Object.entries(filter);
-        const parsedParams: UserModelFilter = {}
+        const parsedParams: UserModelFilter = {};
         return args.reduce((params, param: [string, any]) => {
-            const entityField = param[0]
-            const value = param[1]
-            const field = this.fieldsMap.find(item => item.entity[0] === entityField)
+            const entityField = param[0];
+            const value = param[1];
+            const field = this.fieldsMap.find(item => item.entity[0] === entityField);
             if (field) {
-                const dbField = field.db[0]
-                const dbValue = field.db[1](value)
-                params[dbField] = dbValue
+                const dbField = field.db[0];
+                const dbValue = field.db[1](value);
+                params[dbField] = dbValue;
                 return params;
             }
             return params;
-        }, parsedParams)
+        }, parsedParams);
     }
 
     public async toEntity(user: UserModel) {
         const fields: [keyof UserModel, any][] = Object.entries(user) as [keyof UserModel, any][];
         const data: UserData = fields.reduce((previous, field) => {
-            const entityField = this.fieldsMap.find(item => item.db[0] === field[0])?.entity
+            const entityField = this.fieldsMap.find(item => item.db[0] === field[0])?.entity;
             if (entityField) {
                 const [name, parser] = entityField;
-                previous[name] = parser(field[1]) as never
+                previous[name] = parser(field[1]) as never;
             }
             return previous;
         }, {} as UserData);
@@ -112,7 +112,7 @@ export default class UserRepository implements UserRepositoryInterface {
     }
 
     private async _filter(filter: UserFilter): Promise<Knex.QueryBuilder> {
-        return this.service.where(await this.toDb(filter))
+        return this.service.where(await this.toDb(filter));
     }
 
     public async filter(filter: UserFilter) {
@@ -126,7 +126,7 @@ export default class UserRepository implements UserRepositoryInterface {
     }
 
     public async get(filter: UserFilter) {
-        const filtered: any = this._filter(filter)
+        const filtered: any = this._filter(filter);
         return new Promise<User>((accept, reject) => {
             filtered.then((user: UserModel[]) => {
                 if (!user[0]) return reject({ message: 'Usuário não encontrado' });
@@ -142,7 +142,7 @@ export default class UserRepository implements UserRepositoryInterface {
                     lastModified: user[0].date_modified
                 }));
             });
-        })
+        });
     }
 
 }

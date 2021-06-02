@@ -34,16 +34,16 @@ export default class UserUseCase {
             return {
                 email: !!user,
                 password: !!user && await user.checkPassword(password, bcrypt.compare)
-            }
+            };
         } catch (error) {
             return {
                 email: false,
                 password: false,
-            }
+            };
         }
     }
 
-    get user() { return this.#user }
+    get user() { return this.#user; }
 
     private async hashPassword(password: string) {
         const salt = await bcrypt.genSalt(this.#saltRounds);

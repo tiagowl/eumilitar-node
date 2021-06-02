@@ -34,7 +34,7 @@ export interface EssayResponse {
         id: number;
         name: string;
         permission: AccountPermission;
-    }
+    };
 }
 
 export interface EssayListResponse {
@@ -50,12 +50,12 @@ const schema = yup.object().shape({
     student: yup.number().required('É preciso informar o usuário'),
     course: yup.string().required('É preciso informar o curso')
         .oneOf(['esa', 'espcex'])
-})
+});
 
 const partialUpdateSchema = yup.object().shape({
     corrector: yup.number(),
     status: yup.string().oneOf(status, "Status inválido"),
-})
+});
 
 export default class EssayController extends Controller<EssayData> {
     private repository: EssayRepository;
@@ -75,11 +75,11 @@ export default class EssayController extends Controller<EssayData> {
             id: user.id,
             name: user.fullName,
             permission: user.permission,
-        }
+        };
     }
 
     private async parseEntity(essay: Essay): Promise<EssayResponse> {
-        const themeController = new EssayThemeController(this.driver)
+        const themeController = new EssayThemeController(this.driver);
         const parsed = {
             course: essay.course,
             file: essay.file,
@@ -89,7 +89,7 @@ export default class EssayController extends Controller<EssayData> {
             theme: await themeController.get({ id: essay.theme }),
             student: await this.getStudent(essay.student),
             corrector: essay.corrector,
-        }
+        };
         return parsed;
     }
 
@@ -103,7 +103,7 @@ export default class EssayController extends Controller<EssayData> {
             const created = await this.useCase.create(data);
             return this.parseEntity(created);
         } catch (error) {
-            throw { message: error.message || 'Falha ao salvar redação' }
+            throw { message: error.message || 'Falha ao salvar redação' };
         }
     }
 
@@ -112,7 +112,7 @@ export default class EssayController extends Controller<EssayData> {
             const essays = await this.useCase.myEssays(userId);
             return Promise.all(essays.map(async essay => this.parseEntity(essay)));
         } catch (error) {
-            throw { message: error.message || 'Falha ao consultar redações', status: 500 }
+            throw { message: error.message || 'Falha ao consultar redações', status: 500 };
         }
     }
 
@@ -126,9 +126,9 @@ export default class EssayController extends Controller<EssayData> {
                 pages: Math.ceil(count / pageSize),
                 page: data,
                 count,
-            }
+            };
         } catch (error) {
-            throw { message: error.message || 'Falha ao consultar redações', status: 500 }
+            throw { message: error.message || 'Falha ao consultar redações', status: 500 };
         }
     }
 
@@ -139,7 +139,7 @@ export default class EssayController extends Controller<EssayData> {
             if (!essay) throw { message: 'Redação não encontrada', status: 404 };
             return this.parseEntity(essay);
         } catch (error) {
-            throw { message: error.message || 'Falha ao consultar redações', status: error.status || 500 }
+            throw { message: error.message || 'Falha ao consultar redações', status: error.status || 500 };
         }
     }
 
@@ -150,7 +150,7 @@ export default class EssayController extends Controller<EssayData> {
             const updated = await this.useCase.partialUpdate(id, validated);
             return this.parseEntity(updated);
         } catch (error) {
-            throw { message: error.message || 'Falha ao atualizar', status: error.status || 500 }
+            throw { message: error.message || 'Falha ao atualizar', status: error.status || 500 };
         }
     }
 
@@ -162,7 +162,7 @@ export default class EssayController extends Controller<EssayData> {
             const updated = await this.useCase.cancelCorrecting(id, corrector);
             return this.parseEntity(updated);
         } catch (error) {
-            throw { message: error.message || 'Falha ao atualizar', status: error.status || 500 }
+            throw { message: error.message || 'Falha ao atualizar', status: error.status || 500 };
         }
     }
 

@@ -59,22 +59,21 @@ const baseSchema = {
     endDate: yup.date().required().min(
         yup.ref('startDate'), 'A data de início deve ser anterior a data final'
     ),
-}
+};
 
 export const updatingSchema = yup.object({
     ...baseSchema,
     file: yup.string().notRequired(),
-})
+});
 
 export const schema = yup.object({
     ...baseSchema,
     file: yup.string().required('O arquivo do tema é obrigatório'),
-})
+});
 
-const toNumber = (data: string) => !!data ? Number(data) : undefined
+const toNumber = (data: string) => !!data ? Number(data) : undefined;
 
-const filterFields = ['id', 'title', 'courses', 'startDate', 'endDate', 'lastModified']
-
+const filterFields = ['id', 'title', 'courses', 'startDate', 'endDate', 'lastModified'];
 export const querySchema = yup.object({
     page: yup.number()
         .transform(toNumber)
@@ -88,7 +87,7 @@ export const querySchema = yup.object({
     active: yup.mixed<boolean>()
         .transform(data => data === '1' ? true : data === '0' ? false : undefined)
         .default(undefined)
-}).noUnknown()
+}).noUnknown();
 
 export default class EssayThemeController extends Controller<EssayThemeData> {
     private repository: EssayThemeRepository;
@@ -112,7 +111,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
             helpText: theme.helpText,
             courses: [...theme.courses],
             deactivated: theme.deactivated,
-        }
+        };
     }
 
     public async create(rawData: EssayThemeInput): Promise<EssayThemeResponse> {
@@ -125,11 +124,11 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                 return {
                     ...theme,
                     courses: [...theme.courses]
-                } as EssayThemeResponse
+                } as EssayThemeResponse;
             })
             .catch((error) => {
-                throw { message: error.message || 'Erro ao salvar o tema' }
-            })
+                throw { message: error.message || 'Erro ao salvar o tema' };
+            });
     }
 
     public async listAll(pagination?: EssayThemePagination): Promise<EssayThemeList> {
@@ -141,7 +140,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                 page: await Promise.all(page.map(async theme => (await this.parseEntity(theme)))),
                 count: page.length,
                 pages: Math.ceil(amount / data.size),
-            } as EssayThemeList
+            } as EssayThemeList;
         } catch (error) {
             throw { message: 'Erro ao consultar temas' };
         }
@@ -154,10 +153,10 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
             const theme = await this.useCase.update(id, {
                 ...data,
                 courses: new Set(data.courses),
-            })
+            });
             return this.parseEntity(theme);
         } catch (error) {
-            throw { message: error.message || 'Erro ao atualizar tema' }
+            throw { message: error.message || 'Erro ao atualizar tema' };
         }
     }
 

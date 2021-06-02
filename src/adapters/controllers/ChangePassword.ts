@@ -27,7 +27,7 @@ export const schema = yup.object().shape({
     token: yup.string()
         .required('O token é obrigatório')
         .length(64, 'Token inválido')
-})
+});
 
 export default class ChangePasswordController extends Controller<ChangePasswordInterface> {
     private repository: UserRepository;
@@ -40,13 +40,13 @@ export default class ChangePasswordController extends Controller<ChangePasswordI
     private async validateToken(token: string) {
         const checker = new CheckPasswordToken(this.driver);
         const { isValid } = await checker.check({ token });
-        if (!isValid || !checker.tokenData) throw { message: 'Token inválido' }
+        if (!isValid || !checker.tokenData) throw { message: 'Token inválido' };
         return checker.tokenData;
     }
 
     private async deleteToken(token: string) {
         const service = PasswordRecoveryService(this.driver);
-        return await service.where('token', token).del()
+        return await service.where('token', token).del();
     }
 
     public async updatePassword(rawData: ChangePasswordInterface) {
@@ -55,6 +55,6 @@ export default class ChangePasswordController extends Controller<ChangePasswordI
         const useCase = new UserUseCase(this.repository);
         const updated = await useCase.updatePassword(tokenData.user_id, data.password);
         if (updated) await this.deleteToken(data.token);
-        return { updated }
+        return { updated };
     }
 }

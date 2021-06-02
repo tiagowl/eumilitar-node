@@ -6,7 +6,7 @@ import mime from 'mime';
 import path from 'path';
 
 interface StorageTypes {
-    [s: string]: multer.StorageEngine
+    [s: string]: multer.StorageEngine;
 }
 
 function createFileName(_: any, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) {
@@ -18,7 +18,7 @@ function createFileName(_: any, file: Express.Multer.File, cb: (error: Error | n
 }
 
 export default function createStorage(settings: any) {
-    const destination = settings.local.destination
+    const destination = settings.local.destination;
     const storageTypes: StorageTypes = {
         s3: multerS3({
             s3: new aws.S3(),
@@ -33,7 +33,7 @@ export default function createStorage(settings: any) {
             },
             filename: createFileName,
         }),
-    }
+    };
     return multer({
         dest: destination,
         storage: storageTypes[settings.type],
@@ -47,6 +47,6 @@ export default function createStorage(settings: any) {
                 cb(new Error("Invalid file type."));
             }
         },
-    })
+    });
 
 }

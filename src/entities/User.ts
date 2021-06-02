@@ -1,5 +1,5 @@
 
-export type AccountStatus = 'active' | 'inactive' | 'pending'
+export type AccountStatus = 'active' | 'inactive' | 'pending';
 export type AccountPermission = 'admin' | 'esa' | 'espcex';
 
 export interface UserInterface {
@@ -49,27 +49,27 @@ export default class User implements UserInterface {
         this.#permission = data.permission;
     }
 
-    get id() { return this.#id }
+    get id() { return this.#id; }
 
     set fist_name(value: string) {
         this.#firstName = value;
-        this.updateDate()
+        this.updateDate();
     }
-    get firstName() { return this.#firstName }
+    get firstName() { return this.#firstName; }
 
     set lastName(value: string) {
         this.#lastName = value;
-        this.updateDate()
+        this.updateDate();
     }
-    get lastName() { return this.#lastName }
+    get lastName() { return this.#lastName; }
 
-    get fullName() { return [this.#firstName, this.#lastName].join(' ') }
+    get fullName() { return [this.#firstName, this.#lastName].join(' '); }
 
     set email(value: string) {
         this.#email = value;
         this.updateDate();
     }
-    get email() { return this.#email }
+    get email() { return this.#email; }
 
     set password(value: string) {
         this.#password = value;
@@ -80,17 +80,17 @@ export default class User implements UserInterface {
         this.#status = value;
         this.updateDate();
     }
-    get status() { return this.#status }
+    get status() { return this.#status; }
 
-    get creationDate() { return this.#creationDate }
+    get creationDate() { return this.#creationDate; }
 
-    get lastModified() { return this.#lastModified }
+    get lastModified() { return this.#lastModified; }
 
     set permission(value: AccountPermission) {
         this.#permission = value;
-        this.updateDate()
+        this.updateDate();
     }
-    get permission() { return this.#permission }
+    get permission() { return this.#permission; }
 
     public async checkPassword(password: string, checker: (password: string, hash: string) => Promise<boolean>) {
         return await checker(password, this.#password);

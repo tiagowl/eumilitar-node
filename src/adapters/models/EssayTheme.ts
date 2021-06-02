@@ -17,7 +17,7 @@ export interface EssayThemeInsertion {
     deactivated: boolean;
 }
 
-const divider = ', '
+const divider = ', ';
 
 export const EssayThemeService = (driver: Knex) => driver<EssayThemeInsertion, EssayThemeModel>('essay_themes');
 
@@ -29,12 +29,12 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
     }
 
     private async parseToInsert(data: EssayThemeCreation): Promise<EssayThemeInsertion> {
-        return { ...data, courses: [...data.courses].join(divider) }
+        return { ...data, courses: [...data.courses].join(divider) };
     }
 
     private async parseFromDB(data: EssayThemeModel): Promise<EssayThemeInterface> {
         const courses = new Set<Course>(data.courses.split(divider) as Course[]);
-        return { ...data, courses, deactivated: !!data.deactivated }
+        return { ...data, courses, deactivated: !!data.deactivated };
     }
 
     private filter(filter: EssayThemeFilter, service: Knex.QueryBuilder) {
@@ -42,11 +42,11 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
         return entries.reduce((query, [key, value]) => {
             if (key === 'courses') return query.where(function () {
                 [...value].forEach(course => {
-                    this.orWhere(key, 'like', `%${course}%`)
-                })
-            })
+                    this.orWhere(key, 'like', `%${course}%`);
+                });
+            });
             return query.where(key, value);
-        }, service)
+        }, service);
     }
 
     private filterByActive(service: Knex.QueryBuilder, active?: boolean): Knex.QueryBuilder {
@@ -55,13 +55,13 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
             service.where(function () {
                 return this.andWhere('startDate', '<=', now)
                     .andWhere('endDate', '>', now)
-                    .andWhere('deactivated', false)
+                    .andWhere('deactivated', false);
             })
             : active === false ?
                 service.where(function () {
                     return this.orWhere('startDate', '>', now)
                         .orWhere('endDate', '<', now)
-                        .orWhere('deactivated', true)
+                        .orWhere('deactivated', true);
                 }) : service;
     }
 
@@ -70,8 +70,8 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
             const service = EssayThemeService(this.driver);
             if ('reduce' in filter) {
                 return filter.reduce((query, item) => {
-                    return query.where(...item)
-                }, service).then(data => !!data)
+                    return query.where(...item);
+                }, service).then(data => !!data);
             }
             return this.filter(filter, service).first().then(data => !!data);
         } catch {
@@ -85,7 +85,7 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
             const theme = await this.filter(filter, service).first();
             return !!theme ? this.parseFromDB(theme) : undefined;
         } catch {
-            throw new Error('Falha ao consultar o banco de dados')
+            throw new Error('Falha ao consultar o banco de dados');
         }
     }
 
@@ -109,19 +109,19 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
                 .andWhere(function () {
                     this.orWhere(function () {
                         return this.where('startDate', '<=', theme.startDate)
-                            .where('endDate', '>', theme.startDate)
+                            .where('endDate', '>', theme.startDate);
                     })
                         .orWhere(function () {
                             return this.where('startDate', '>', theme.startDate)
-                                .where('startDate', '<', theme.endDate)
-                        })
+                                .where('startDate', '<', theme.endDate);
+                        });
                 })
                 .andWhere(function () {
                     [...theme.courses].reduce((previous, value) => {
-                        return previous.orWhere('courses', 'like', `%${value}%`)
-                    }, this)
+                        return previous.orWhere('courses', 'like', `%${value}%`);
+                    }, this);
                 })
-                .andWhere('deactivated', false)
+                .andWhere('deactivated', false);
             return qr.first().then(data => !!data);
         } catch {
             throw new Error('Falha ao consultar o banco de dados');
@@ -154,7 +154,7 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
 
     public async update(id: number, data: EssayThemeCreation) {
         try {
-            const parsedData = await this.parseToInsert(data)
+            const parsedData = await this.parseToInsert(data);
             const service = EssayThemeService(this.driver);
             const updated = await service.where('id', id).update(parsedData);
             if (updated === 0) throw new Error('Falha ao atualizar tema');
@@ -163,7 +163,7 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
             if (!theme) throw new Error('Falha ao recuperar tema');
             return new EssayTheme(theme);
         } catch {
-            throw new Error('Falha ao atualizar no banco de dados')
+            throw new Error('Falha ao atualizar no banco de dados');
         }
     }
 }

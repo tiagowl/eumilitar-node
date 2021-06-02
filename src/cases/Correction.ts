@@ -30,7 +30,7 @@ export interface CorrectionInsertionData extends CorrectionData {
 export interface CorrectionRepositoryInterface {
     essays: EssayRepositoryInterface;
     users: UserRepositoryInterface;
-    create: (data: CorrectionInsertionData) => Promise<Correction>
+    create: (data: CorrectionInsertionData) => Promise<Correction>;
 }
 
 export default class CorrectionCase {

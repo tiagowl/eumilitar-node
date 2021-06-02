@@ -49,7 +49,7 @@ export interface EssayInvalidationData {
 const beautyCourse = {
     'esa': 'ESA',
     'espcex': 'EsPCEX',
-}
+};
 
 export const allowedUpdateFields = ['corrector', 'status'];
 
@@ -65,11 +65,11 @@ export default class EssayCase {
         if (!themeData) throw new Error('Nenhum tema ativo para este curso');
         const theme = new EssayTheme(themeData);
         if (!theme.active) throw new Error('Tema inválido');
-        const baseFilter = { theme: theme.id, student: data.student }
+        const baseFilter = { theme: theme.id, student: data.student };
         const cantSend = (await this.repository.exists([
             { ...baseFilter, status: 'pending' },
             { ...baseFilter, status: 'revised' },
-        ]))
+        ]));
         if (cantSend) throw new Error(`Já foi enviada uma redação do curso "${beautyCourse[data.course]}" para o tema vigente`);
         const created = await this.repository.create({ ...data, theme: theme.id, sendDate: new Date(), status: 'pending' });
         return new Essay(created);
@@ -111,7 +111,7 @@ export default class EssayCase {
             if (allowedUpdateFields.indexOf(field) > -1) {
                 essay[field] = value;
             }
-        })
+        });
         if (typeof changingCorrector === 'number' && data?.corrector === null) {
             essay.corrector = null;
         }

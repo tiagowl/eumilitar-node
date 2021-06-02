@@ -53,6 +53,6 @@ const settings = Object.freeze({
             destination: path.resolve(__dirname, "..", "tmp", "uploads")
         }
     }
-})
+});
 
 export default settings;

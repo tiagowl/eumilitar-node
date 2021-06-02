@@ -6,6 +6,6 @@ import createStorage from './storage';
 export default function createServer(settings: any) {
     const driver = connect(settings.database);
     const smtp = createTransport(settings.smtp);
-    const storage = createStorage(settings.storage)
+    const storage = createStorage(settings.storage);
     return new Application({ driver, smtp, storage, settings });
 }

@@ -10,5 +10,5 @@ export async function UserView(user: User): Promise<UserInterface> {
         permission: user.permission,
         creationDate: user.creationDate,
         lastModified: user.lastModified,
-    }
+    };
 }

@@ -14,7 +14,7 @@ const schema = yup.object().shape({
         then: yup.string().required('É preciso descrever o motivo'),
         otherwise: yup.string(),
     }),
-})
+});
 
 export default class EssayInvalidationController extends Controller<EssayInvalidationCreationData> {
     private useCase: EssayInvalidationCase;
@@ -33,7 +33,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
             corrector: entity.corrector,
             reason: entity.reason,
             invalidationDate: entity.invalidationDate,
-        }
+        };
     }
 
     public async create(data: EssayInvalidationCreationData) {
@@ -43,7 +43,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
             return this.parseEntity(created);
         } catch (error) {
             if (error.status) throw error;
-            throw { message: error.message || 'Falha ao invalidar redação', status: 400 }
+            throw { message: error.message || 'Falha ao invalidar redação', status: 400 };
         }
     }
 }

@@ -13,10 +13,10 @@ export default class Application {
     constructor(context: Context) {
         this._server = express();
         this.routes = routes;
-        this.context = context
+        this.context = context;
         this.middlewares = getMiddlewares(this.context);
-        this.setUpMiddlewares()
-        this.setUpRoutes()
+        this.setUpMiddlewares();
+        this.setUpRoutes();
     }
 
     get server() { return this._server; }
@@ -26,21 +26,21 @@ export default class Application {
             const { path } = route;
             route.handlers.forEach(({ handler, method }) => {
                 this._server[method](path, handler(this.context));
-            })
-        })
+            });
+        });
     }
 
     private setUpMiddlewares() {
         this.middlewares.forEach(middleware => {
             this._server.use(middleware);
-        })
+        });
     }
 
     public serve(port: number, host: string) {
         this._server.listen({ port, host }, () => {
             // tslint:disable-next-line
-            console.info(`RUNNING AT http://${host}:${port}/`)
-        })
+            console.info(`RUNNING AT http://${host}:${port}/`);
+        });
     }
 
 }

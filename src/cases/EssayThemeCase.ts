@@ -11,7 +11,7 @@ export type EssayThemeFilter = {
     helpText?: string;
     file?: string;
     courses?: Set<Course>;
-} | [keyof EssayTheme, Operator, any][]
+} | [keyof EssayTheme, Operator, any][];
 
 export interface EssayThemeData {
     title: string;

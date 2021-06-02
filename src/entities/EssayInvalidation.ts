@@ -28,21 +28,21 @@ export default class EssayInvalidation implements EssayInvalidationInterface {
         this.#invalidationDate = data.invalidationDate;
     }
 
-    get id() { return this.#id }
+    get id() { return this.#id; }
 
-    get corrector() { return this.#corrector }
+    get corrector() { return this.#corrector; }
 
-    get essay() { return this.#essay }
+    get essay() { return this.#essay; }
 
-    get reason() { return this.#reason }
+    get reason() { return this.#reason; }
     set reason(value: Reason) {
         this.#reason = value;
     }
 
-    get comment(): string | undefined { return this.#comment }
+    get comment(): string | undefined { return this.#comment; }
     set comment(value: string | undefined) {
         this.#comment = value;
     }
 
-    get invalidationDate() { return this.#invalidationDate }
+    get invalidationDate() { return this.#invalidationDate; }
 }

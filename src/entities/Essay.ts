@@ -51,46 +51,46 @@ export default class Essay implements EssayInterface {
             status: this.#status,
             sendDate: this.#sendDate,
             corrector: this.#corrector,
-        }
+        };
     }
 
-    get id() { return this.#id }
+    get id() { return this.#id; }
 
-    get file() { return this.#file }
+    get file() { return this.#file; }
     set file(value: string) {
         this.#file = value;
         this.updateLastModified();
     }
 
-    get student() { return this.#student }
+    get student() { return this.#student; }
     set student(value: number) {
         this.#student = value;
         this.updateLastModified();
     }
 
-    get course() { return this.#course }
+    get course() { return this.#course; }
     set course(value: Course) {
         this.#course = value;
         this.updateLastModified();
     }
 
-    get theme() { return this.#theme }
+    get theme() { return this.#theme; }
     set theme(value: number) {
         this.#theme = value;
         this.updateLastModified();
     }
 
-    get lastModified() { return this.#lastModified }
+    get lastModified() { return this.#lastModified; }
 
-    get status() { return this.#status }
+    get status() { return this.#status; }
     set status(value: Status) {
         this.#status = value;
         this.updateLastModified();
     }
 
-    get sendDate() { return this.#sendDate }
+    get sendDate() { return this.#sendDate; }
 
-    get corrector(): number | null | undefined { return this.#corrector }
+    get corrector(): number | null | undefined { return this.#corrector; }
     set corrector(value: number | null | undefined) {
         if (typeof this.#corrector === 'undefined' && typeof value === 'number') {
             this.#status = 'correcting';

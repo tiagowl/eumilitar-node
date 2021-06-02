@@ -73,6 +73,6 @@ const routes: Route[] = [
             { handler: handlers.invalidateEssay, method: 'post' },
         ]
     }
-]
+];
 
 export default routes;

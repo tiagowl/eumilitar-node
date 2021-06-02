@@ -13,7 +13,7 @@ export interface EssayInvalidationModel {
     comment?: string;
 }
 
-export const EssayInvalidationService = (driver: Knex) => driver<Partial<EssayInvalidationModel>, EssayInvalidationModel[]>('essay_invalidations')
+export const EssayInvalidationService = (driver: Knex) => driver<Partial<EssayInvalidationModel>, EssayInvalidationModel[]>('essay_invalidations');
 
 export default class EssayInvalidationRepository implements EssayInvalidationRepositoryInterface {
     private driver: Knex;
@@ -25,9 +25,9 @@ export default class EssayInvalidationRepository implements EssayInvalidationRep
     }
 
     public async create(data: EssayInvalidationCreationData) {
-        const error = { message: 'Falha ao invalidar redação', status: 500 }
+        const error = { message: 'Falha ao invalidar redação', status: 500 };
         const created = await EssayInvalidationService(this.driver).insert(data)
-            .catch(() => { throw error });
+            .catch(() => { throw error; });
         if (created.length === 0) throw error;
         const invalidationData = await EssayInvalidationService(this.driver)
             .where('id', created[0]).first();

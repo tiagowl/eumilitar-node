@@ -68,12 +68,12 @@ export default class Correction implements CorrectionInterface {
         this.points = data.points;
     }
 
-    get id() { return this.#id }
+    get id() { return this.#id; }
 
-    get essay() { return this.#essay }
+    get essay() { return this.#essay; }
 
-    get correctionDate() { return this.#correctionDate }
+    get correctionDate() { return this.#correctionDate; }
 
-    get corrector() { return this.#corrector }
+    get corrector() { return this.#corrector; }
 
 }
