@@ -5,7 +5,13 @@
     ],
     "jsRules": {},
     "rules": {
-        "semicolon": "error"
+        "semicolon": true
     },
-    "rulesDirectory": []
+    "rulesDirectory": [],
+    "linterOptions": {
+        "exclude": [
+            "./tests/*",
+            "./dist/**/*"
+        ]
+    }
 }

@@ -79,28 +79,27 @@ test('Entidade da correção', () => {
     const correction = new Correction({
         'id': 4,
         'essay': 3,
-        'corrector': 4,
-        'accentuation': true,
-        'agreement': true,
-        'cohesion': true,
+        'accentuation': "Sim",
+        'agreement': "Sim",
+        'cohesion': "Sim",
         'comment': faker.lorem.lines(5),
-        'conclusion': true,
+        'conclusion': "Sim",
         'correctionDate': new Date(),
-        'erased': false,
-        'followedGenre': true,
-        'hasMarginSpacing': true,
-        'isReadable': true,
-        'obeyedMargins': true,
-        'organized': true,
-        'orthography': true,
+        'erased': "Não",
+        'followedGenre': "Sim",
+        'hasMarginSpacing': "Sim",
+        'isReadable': "Sim",
+        'obeyedMargins': "Sim",
+        'organized': "Sim",
+        'orthography': "Sim",
         'points': 10,
-        'repeated': false,
-        'understoodTheme': true,
-        'veryShortSentences': false,
-    })
+        'repeated': "Não",
+        'understoodTheme': "Sim",
+        'veryShortSentences': "Não",
+    });
     expect(correction.id).toBe(4);
     expect(() => {
         // @ts-ignore
-        correction.id = 5
-    }).toThrowError()
-})
+        correction.id = 5;
+    }).toThrowError();
+});

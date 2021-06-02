@@ -2,9 +2,8 @@ import Correction from "../entities/Correction";
 import { EssayRepositoryInterface } from "./EssayCase";
 import { UserRepositoryInterface } from "./UserUseCase";
 
-export interface CorrectionData {
+export interface CorrectionBase {
     essay: number;
-    corrector: number;
     isReadable: string;
     hasMarginSpacing: string;
     obeyedMargins: string;
@@ -23,7 +22,11 @@ export interface CorrectionData {
     points: number;
 }
 
-export interface CorrectionInsertionData extends CorrectionData {
+export interface CorrectionData extends CorrectionBase {
+    corrector: number;
+}
+
+export interface CorrectionInsertionData extends CorrectionBase {
     correctionDate: Date;
 }
 
@@ -40,10 +43,10 @@ export default class CorrectionCase {
         this.repository = repository;
     }
 
-    public async create(data: CorrectionData) {
-        const corrector = await this.repository.users.get({ id: data.corrector });
-        if (!corrector) throw new Error('Corretor não encontrado');
-        if (corrector.permission !== 'admin') throw new Error('Não autorizado');
+    public async create({ corrector, ...data }: CorrectionData) {
+        const correctorData = await this.repository.users.get({ id: corrector });
+        if (!correctorData) throw new Error('Corretor não encontrado');
+        if (correctorData.permission !== 'admin') throw new Error('Não autorizado');
         const essay = await this.repository.essays.get({ id: data.essay });
         if (!essay) throw new Error('Redação não encontrada');
         if (essay.status !== 'correcting') throw new Error('Redação não está em correção');
