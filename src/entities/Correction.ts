@@ -2,22 +2,21 @@
 export interface CorrectionInterface {
     id: number;
     essay: number;
-    corrector: number;
     correctionDate: Date;
-    isReadable: boolean;
-    hasMarginSpacing: boolean;
-    obeyedMargins: boolean;
-    erased: boolean;
-    orthography: boolean;
-    accentuation: boolean;
-    agreement: boolean;
-    repeated: boolean;
-    veryShortSentences: boolean;
-    understoodTheme: boolean;
-    followedGenre: boolean;
-    cohesion: boolean;
-    organized: boolean;
-    conclusion: boolean;
+    isReadable: string;
+    hasMarginSpacing: string;
+    obeyedMargins: string;
+    erased: string;
+    orthography: string;
+    accentuation: string;
+    agreement: string;
+    repeated: string;
+    veryShortSentences: string;
+    understoodTheme: string;
+    followedGenre: string;
+    cohesion: string;
+    organized: string;
+    conclusion: string;
     comment: string;
     points: number;
 }
@@ -27,21 +26,20 @@ export default class Correction implements CorrectionInterface {
     readonly #id: number;
     readonly #essay: number;
     readonly #correctionDate: Date;
-    readonly #corrector: number;
-    public isReadable: boolean;
-    public hasMarginSpacing: boolean;
-    public obeyedMargins: boolean;
-    public erased: boolean;
-    public orthography: boolean;
-    public accentuation: boolean;
-    public agreement: boolean;
-    public repeated: boolean;
-    public veryShortSentences: boolean;
-    public understoodTheme: boolean;
-    public followedGenre: boolean;
-    public cohesion: boolean;
-    public organized: boolean;
-    public conclusion: boolean;
+    public isReadable: string;
+    public hasMarginSpacing: string;
+    public obeyedMargins: string;
+    public erased: string;
+    public orthography: string;
+    public accentuation: string;
+    public agreement: string;
+    public repeated: string;
+    public veryShortSentences: string;
+    public understoodTheme: string;
+    public followedGenre: string;
+    public cohesion: string;
+    public organized: string;
+    public conclusion: string;
     public comment: string;
     public points: number;
 
@@ -49,7 +47,6 @@ export default class Correction implements CorrectionInterface {
         this.#id = data.id;
         this.#essay = data.essay;
         this.#correctionDate = data.correctionDate;
-        this.#corrector = data.corrector;
         this.isReadable = data.isReadable;
         this.hasMarginSpacing = data.hasMarginSpacing;
         this.obeyedMargins = data.obeyedMargins;
@@ -73,7 +70,5 @@ export default class Correction implements CorrectionInterface {
     get essay() { return this.#essay; }
 
     get correctionDate() { return this.#correctionDate; }
-
-    get corrector() { return this.#corrector; }
 
 }
