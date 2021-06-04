@@ -615,4 +615,47 @@ describe('#5 Correção da redação', () => {
         expect(response.body.essay).toBe(base.id);
         done();
     })
+    test('Recuperação', async done => {
+        const app = await appFactory(driver);
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const base = await createEssay(driver, user.user_id);
+        const data = {
+            'accentuation': "Sim",
+            'agreement': "Sim",
+            'cohesion': "Sim",
+            'comment': faker.lorem.lines(5),
+            'conclusion': "Sim",
+            'erased': "Não",
+            'followedGenre': "Sim",
+            'hasMarginSpacing': "Sim",
+            'isReadable': "Sim",
+            'obeyedMargins': "Sim",
+            'organized': "Sim",
+            'orthography': "Sim",
+            'points': 7.55,
+            'repeated': "Não",
+            'understoodTheme': "Sim",
+            'veryShortSentences': "Não",
+        }
+        await api.post(`/essays/${base.id}/corrector/`)
+            .set('Authorization', header);
+        const created = await api.post(`/essays/${base.id}/correction/`)
+            .send(data)
+            .set('Authorization', header);
+        expect(created.status, JSON.stringify(created.body)).toBe(201);
+        expect(created.body, JSON.stringify(created.body)).toBeDefined();
+        const response = await api.get(`/essays/${base.id}/correction/`)
+            .set('Authorization', header);
+        expect(response.status, JSON.stringify(response.body)).toBe(200);
+        expect(response.body, JSON.stringify(response.body)).toBeDefined();
+        expect(response.body.essay).toBe(base.id);
+        (Object.entries(data) as [keyof typeof data, any][])
+            .forEach(([key, value]) => {
+                expect(response.body[key]).toBeDefined();
+                expect(response.body[key]).toBe(value);
+            });
+        done();
+    })
 })

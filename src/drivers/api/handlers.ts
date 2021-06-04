@@ -405,3 +405,21 @@ export function correctEssay(context: Context): RequestHandler<{ id: string }, C
     });
     return handler;
 }
+
+export function getCorrection(context: Context): RequestHandler<{ id: string }, CorrectionInterface, void> {
+    const { driver } = context;
+    const handler = express.Router({ mergeParams: true }).use(isAuthenticated(context));
+    handler.use(async (req, res) => {
+        try {
+            const { id } = req.params;
+            const controller = new CorrectionController(driver);
+            const response = await controller.get({ essay: Number(id) });
+            res.status(200).json(response);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    });
+    return handler;
+}
