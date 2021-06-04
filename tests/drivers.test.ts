@@ -550,3 +550,69 @@ describe('#4 Invalidação da redação', () => {
         done();
     })
 })
+
+describe('#5 Correção da redação', () => {
+    const user: UserModel = userFactory();
+    const student: UserModel = userFactory({ permission: 2 });
+    beforeAll(async (done) => {
+        const themeService = EssayThemeService(driver);
+        await themeService.delete().del()
+        const repository = new EssayThemeRepository(driver);
+        const themeData: EssayThemeCreation = {
+            title: 'Título',
+            endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
+            startDate: new Date(Date.now() - 160 * 24 * 60 * 60 * 60),
+            helpText: faker.lorem.lines(3),
+            file: '/usr/share/data/theme.pdf',
+            courses: new Set(['esa', 'espcex'] as Course[]),
+            deactivated: false,
+        }
+        const theme = await repository.create(themeData);
+        expect(theme.id).not.toBeUndefined();
+        expect(theme.id).not.toBeNull();
+        const service = UserService(driver);
+        await saveUser(user, service);
+        await saveUser(student, service);
+        done()
+    })
+    afterAll(async (done) => {
+        const service = UserService(driver);
+        await deleteUser(user, service);
+        const themeService = EssayThemeService(driver);
+        await themeService.del().delete();
+        done()
+    })
+    test('Criação', async done => {
+        const app = await appFactory(driver);
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const base = await createEssay(driver, user.user_id);
+        await api.post(`/essays/${base.id}/corrector/`)
+            .set('Authorization', header);
+        const response = await api.post(`/essays/${base.id}/correction/`)
+            .send({
+                'accentuation': "Sim",
+                'agreement': "Sim",
+                'cohesion': "Sim",
+                'comment': faker.lorem.lines(5),
+                'conclusion': "Sim",
+                'erased': "Não",
+                'followedGenre': "Sim",
+                'hasMarginSpacing': "Sim",
+                'isReadable': "Sim",
+                'obeyedMargins': "Sim",
+                'organized': "Sim",
+                'orthography': "Sim",
+                'points': 8.55,
+                'repeated': "Não",
+                'understoodTheme': "Sim",
+                'veryShortSentences': "Não",
+            })
+            .set('Authorization', header);
+        expect(response.status, JSON.stringify(response.body)).toBe(201);
+        expect(response.body, JSON.stringify(response.body)).toBeDefined();
+        expect(response.body.essay).toBe(base.id);
+        done();
+    })
+})

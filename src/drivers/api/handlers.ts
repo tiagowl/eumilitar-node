@@ -4,10 +4,12 @@ import AuthController, { AuthInterface, AuthResponse } from "../../adapters/cont
 import ChangePasswordController, { ChangePasswordInterface, ChangePasswordResponse } from "../../adapters/controllers/ChangePassword";
 import CheckAuthController from "../../adapters/controllers/CheckAuth";
 import CheckPasswordToken, { CheckPasswordInterface, CheckedTokenInterface } from "../../adapters/controllers/CheckPasswordToken";
+import CorrectionController from "../../adapters/controllers/Correction";
 import EssayController, { EssayInput, EssayResponse } from "../../adapters/controllers/Essay";
 import EssayInvalidationController from "../../adapters/controllers/EssayInvalidation";
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
+import { CorrectionInterface } from "../../entities/Correction";
 import { EssayInvalidationInterface, Reason } from "../../entities/EssayInvalidation";
 import { Course } from "../../entities/EssayTheme";
 import User, { UserInterface } from "../../entities/User";
@@ -24,6 +26,25 @@ interface EssayThemeRequest {
 interface EssayInvalidationRequest {
     reason: Reason;
     comment?: string;
+}
+
+interface CorrectionRequest {
+    isReadable: string;
+    hasMarginSpacing: string;
+    obeyedMargins: string;
+    erased: string;
+    orthography: string;
+    accentuation: string;
+    agreement: string;
+    repeated: string;
+    veryShortSentences: string;
+    understoodTheme: string;
+    followedGenre: string;
+    cohesion: string;
+    organized: string;
+    conclusion: string;
+    comment: string;
+    points: number;
 }
 
 async function getToken(header: string | undefined) {
@@ -355,6 +376,25 @@ export function invalidateEssay(context: Context): RequestHandler<{ id: string }
             const { id } = req.params;
             const { user } = req;
             const controller = new EssayInvalidationController(driver);
+            const response = await controller.create({ ...req.body, essay: Number(id), corrector: Number(user?.id) });
+            res.status(201).json(response);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    });
+    return handler;
+}
+
+export function correctEssay(context: Context): RequestHandler<{ id: string }, CorrectionInterface, CorrectionRequest> {
+    const { driver } = context;
+    const handler = express.Router({ mergeParams: true }).use(isAdmin(context));
+    handler.use(async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { user } = req;
+            const controller = new CorrectionController(driver);
             const response = await controller.create({ ...req.body, essay: Number(id), corrector: Number(user?.id) });
             res.status(201).json(response);
         } catch (error) {
