@@ -57,4 +57,14 @@ export default class CorrectionController extends Controller<CorrectionData> {
             throw { message: error.message || "Falha ao salvar correção", status: 400 };
         }
     }
+
+    public async get(filter: Partial<CorrectionInterface>) {
+        try {
+            const data = await this.useCase.get(filter);
+            return this.parseEntity(data);
+        } catch (error) {
+            if (error.status) throw error;
+            throw { message: error.message || "Falha ao encontrar correção", status: 500 };
+        }
+    }
 }

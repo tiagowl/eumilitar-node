@@ -106,4 +106,12 @@ export default class CorrectionRepository implements CorrectionRepositoryInterfa
         return new Correction(await this.parseFromDB(savedData) as CorrectionInterface);
     }
 
+    public async get(filter: Partial<CorrectionInterface>) {
+        const parsed = await this.parseToDb(filter);
+        const data = await CorrectionService(this.driver).where(parsed)
+            .first().catch(() => { throw { message: 'Erro ao consultar banco de dados', status: 500 }; });
+        if (!data) throw { message: 'Correção não encontrada', status: 404 };
+        return new Correction(await this.parseFromDB(data) as CorrectionInterface);
+    }
+
 }
