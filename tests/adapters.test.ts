@@ -17,6 +17,7 @@ import EssayThemeController, { EssayThemeInput, EssayThemePagination } from '../
 import { Readable } from 'stream';
 import EssayController, { EssayInput } from '../src/adapters/controllers/Essay';
 import EssayInvalidationController from '../src/adapters/controllers/EssayInvalidation';
+import CorrectionController from '../src/adapters/controllers/Correction';
 
 const driver = driverFactory()
 
@@ -87,7 +88,7 @@ describe('#1 Testes na autenticação', () => {
         }
         done()
     })
-    test('Recuperação de senha com mail inválido', async done => {
+    test('Recuperação de senha com email inválido', async done => {
         const credentials = { email: 'wrongmail.com' }
         const smtp = await smtpFactory();
         const controller = new PasswordRecoveryController(driver, smtp, settings.messageConfig);
@@ -96,7 +97,8 @@ describe('#1 Testes na autenticação', () => {
         } catch (error) {
             expect(error).toEqual({
                 message: "Email inválido",
-                errors: [["email", "Email inválido",]]
+                errors: [["email", "Email inválido",]],
+                status: 400,
             });
         }
         done()
@@ -440,6 +442,59 @@ describe('#5 Invalidações', () => {
         expect(created).toBeDefined();
         expect(created.id).toBeDefined();
         expect(created.essay).toBe(essay.id);
+        done();
+    })
+})
+
+describe('#6 Correções', () => {
+    const user = userFactory();
+    beforeAll(async (done) => {
+        const service = UserService(driver);
+        await saveUser(user, service)
+        done();
+    })
+    afterAll(async (done) => {
+        const service = UserService(driver);
+        await deleteUser(user, service);
+        const themeService = EssayThemeService(driver);
+        await themeService.delete().del();
+        done()
+    })
+    test('Correção', async done => {
+        const essays = new EssayController(driver);
+        const essay = await createEssay(driver, user.user_id);
+        await essays.partialUpdate(essay.id,
+            { corrector: user.user_id, status: 'correcting' }
+        );
+        const controller = new CorrectionController(driver);
+        const data = {
+            'essay': essay.id,
+            'corrector': user.user_id,
+            'accentuation': "Sim",
+            'agreement': "Sim",
+            'cohesion': "Sim",
+            'comment': faker.lorem.lines(5),
+            'conclusion': "Sim",
+            'erased': "Não",
+            'followedGenre': "Sim",
+            'hasMarginSpacing': "Sim",
+            'isReadable': "Sim",
+            'obeyedMargins': "Sim",
+            'organized': "Sim",
+            'orthography': "Sim",
+            'points': 9.44,
+            'repeated': "Não",
+            'understoodTheme': "Sim",
+            'veryShortSentences': "Não",
+        }
+        const created = await controller.create(data);
+        expect(created.essay).toBe(essay.id);
+        (Object.entries(data) as [keyof typeof data, any][])
+            .forEach(([key, value]) => {
+                if (key === 'corrector') return;
+                expect(created[key]).toBeDefined();
+                expect(created[key]).toBe(value);
+            })
         done();
     })
 })

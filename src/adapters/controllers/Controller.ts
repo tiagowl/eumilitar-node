@@ -31,6 +31,7 @@ export default class Controller<Fields> {
                 throw {
                     message: errors.message,
                     errors: errors.inner.map(error => ([error.path, error.message])),
+                    status: 400,
                 };
             });
     }

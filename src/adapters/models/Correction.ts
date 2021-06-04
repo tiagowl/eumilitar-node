@@ -78,7 +78,7 @@ export default class CorrectionRepository implements CorrectionRepositoryInterfa
         const fields = Object.entries(data) as [keyof CorrectionInterface, any][];
         return Object.fromEntries(fields.map(([key, value]) => {
             const transformer = fieldsMap.find(item => item.entity[0] === key);
-            if (!transformer) throw new Error(`Campo "${key}" inválido`);
+            if (!transformer) throw { message: `Campo "${key}" inválido`, status: 400 };
             const [name, parser] = transformer.model;
             return [name, parser(value)];
         })) as Partial<CorrectionModel>;
@@ -88,7 +88,7 @@ export default class CorrectionRepository implements CorrectionRepositoryInterfa
         const fields = Object.entries(data) as [keyof CorrectionModel, any][];
         return Object.fromEntries(fields.map(([key, value]) => {
             const transformer = fieldsMap.find(item => item.model[0] === key);
-            if (!transformer) throw new Error(`Campo "${key}" inválido`);
+            if (!transformer) throw { message: `Campo "${key}" inválido`, status: 400 };
             const [name, parser] = transformer.entity;
             return [name, parser(value)];
         })) as Partial<CorrectionInterface>;
@@ -96,9 +96,9 @@ export default class CorrectionRepository implements CorrectionRepositoryInterfa
 
     public async create(data: CorrectionInsertionData) {
         const parsed = await this.parseToDb(data);
-        const error = new Error('Erro ao salvar correção');
-        const [id] = await CorrectionService(this.driver).insert(parsed)
-            .catch(() => { throw error; });
+        const error = { message: 'Erro ao salvar correção', status: 500 };
+        const [id] = await CorrectionService(this.driver).insert(parsed);
+            // .catch(() => { throw error; });
         if (typeof id === 'undefined') throw error;
         const savedData = await CorrectionService(this.driver).where('grading_id', id)
             .first().catch(() => { throw error; });
