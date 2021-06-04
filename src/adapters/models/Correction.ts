@@ -97,8 +97,8 @@ export default class CorrectionRepository implements CorrectionRepositoryInterfa
     public async create(data: CorrectionInsertionData) {
         const parsed = await this.parseToDb(data);
         const error = { message: 'Erro ao salvar correção', status: 500 };
-        const [id] = await CorrectionService(this.driver).insert(parsed);
-            // .catch(() => { throw error; });
+        const [id] = await CorrectionService(this.driver).insert(parsed)
+            .catch(() => { throw error; });
         if (typeof id === 'undefined') throw error;
         const savedData = await CorrectionService(this.driver).where('grading_id', id)
             .first().catch(() => { throw error; });
