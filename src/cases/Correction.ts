@@ -1,4 +1,4 @@
-import Correction from "../entities/Correction";
+import Correction, { CorrectionInterface } from "../entities/Correction";
 import { EssayRepositoryInterface } from "./EssayCase";
 import { UserRepositoryInterface } from "./UserUseCase";
 
@@ -34,6 +34,7 @@ export interface CorrectionRepositoryInterface {
     essays: EssayRepositoryInterface;
     users: UserRepositoryInterface;
     create: (data: CorrectionInsertionData) => Promise<Correction>;
+    get: (filter: Partial<CorrectionInterface>) => Promise<Correction>;
 }
 
 export default class CorrectionCase {
@@ -54,5 +55,9 @@ export default class CorrectionCase {
         essay.status = 'revised';
         await this.repository.essays.update(essay.id, essay.data);
         return this.repository.create({ ...data, correctionDate: new Date() });
+    }
+
+    public async get(filter: Partial<CorrectionInterface>) {
+        return this.repository.get(filter);
     }
 }

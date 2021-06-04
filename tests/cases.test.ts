@@ -8,7 +8,7 @@ import Essay, { EssayInterface } from '../src/entities/Essay';
 import User from '../src/entities/User';
 import EssayInvalidation from '../src/entities/EssayInvalidation';
 import EssayInvalidationCase, { EssayInvalidationRepositoryInterface } from '../src/cases/EssayInvalidation';
-import Correction from '../src/entities/Correction';
+import Correction, { CorrectionInterface } from '../src/entities/Correction';
 import CorrectionCase, { CorrectionInsertionData, CorrectionRepositoryInterface } from '../src/cases/Correction';
 
 const defaultPassword = 'pass1235'
@@ -274,6 +274,12 @@ class CorrectionTestRepository implements CorrectionRepositoryInterface {
         this.database.push(correction);
         return correction;
     }
+
+    public async get(filter: Partial<CorrectionInterface>) {
+        return this.database.find((correction => (Object.entries(filter) as [keyof CorrectionInterface, any][])
+            .reduce((valid, [key, value]) => valid && (correction[key] === value), true as boolean))
+        ) as Correction;
+    }
 }
 
 describe('#1 Testes nos casos de uso da entidade User', () => {
@@ -460,6 +466,35 @@ describe('#5 Correção', () => {
         expect(correction).toBeDefined();
         expect(correction).toBeInstanceOf(Correction);
         expect(correction.essay).toBe(essay.id);
+        done();
+    })
+    test('Recuperação', async done => {
+        const correction = new Correction({
+            'id': 0,
+            'essay': 1,
+            'accentuation': "Sim",
+            'agreement': "Sim",
+            'cohesion': "Sim",
+            'comment': faker.lorem.lines(5),
+            'conclusion': "Sim",
+            'erased': "Não",
+            'followedGenre': "Sim",
+            'hasMarginSpacing': "Sim",
+            'isReadable': "Sim",
+            'obeyedMargins': "Sim",
+            'organized': "Sim",
+            'orthography': "Sim",
+            'points': 10,
+            'repeated': "Não",
+            'understoodTheme': "Sim",
+            'veryShortSentences': "Não",
+            'correctionDate': new Date(),
+        })
+        const repository = new CorrectionTestRepository([correction], await userDatabase);
+        const useCase = new CorrectionCase(repository);
+        const retrieved = await useCase.get({ essay: correction.essay });
+        expect(correction).toMatchObject(correction);
+        expect(retrieved).toBeInstanceOf(Correction);
         done();
     })
 })
