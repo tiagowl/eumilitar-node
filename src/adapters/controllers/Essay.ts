@@ -3,7 +3,7 @@ import Essay, { EssayInterface, status, Status } from "../../entities/Essay";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import { EssayRepository } from "../models/Essay";
-import EssayCase, { EssayCreationData, EssayPagination, EssayPartialUpdate } from "../../cases/EssayCase";
+import EssayCase, { EssayCreationData, EssayFilter, EssayPagination, EssayPartialUpdate } from "../../cases/EssayCase";
 import { Course } from "../../entities/EssayTheme";
 import EssayThemeController, { EssayThemeResponse } from "./EssayTheme";
 import UserRepository from "../models/User";
@@ -43,7 +43,7 @@ export interface EssayListResponse {
     page: EssayResponse[];
 }
 
-export interface ListEssayParams extends Partial<EssayInterface>, EssayPagination { }
+export interface ListEssayParams extends EssayFilter, EssayPagination { }
 
 const schema = yup.object().shape({
     file: yup.string().required('O arquivo é obrigatório'),
@@ -65,6 +65,10 @@ const filterSchema = yup.object().shape({
     corrector: yup.number(),
     student: yup.number(),
     search: yup.string(),
+    period: yup.object({
+        start: yup.date(),
+        end: yup.date(),
+    })
 });
 
 export default class EssayController extends Controller<EssayData> {

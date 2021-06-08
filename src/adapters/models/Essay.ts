@@ -98,7 +98,7 @@ export class EssayRepository implements EssayRepositoryInterface {
         });
     }
 
-    private search(service: Knex.QueryBuilder, search?: string) {
+    private search(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, search?: string) {
         if (!!search) service.whereIn('user_id', UserService(this.driver)
             .orWhere('first_name', 'like', `%${search}%`)
             .orWhere('last_name', 'like', `%${search}%`)
@@ -108,9 +108,18 @@ export class EssayRepository implements EssayRepositoryInterface {
         return service;
     }
 
+    private period(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, period?: { start?: Date, end?: Date }) {
+        const { start, end } = period || {};
+        return !!period ? service.where(function () {
+            if (!!end) this.where('sent_date', '<', end);
+            if (!!start) this.where('sent_date', '>', start);
+        }) : service;
+    }
+
     public async get(filterData: EssayFilter) {
         const service = EssayService(this.driver);
-        const { search, ...filter } = filterData;
+        const { search, period, ...filter } = filterData;
+        this.period(service, period);
         this.search(service, search);
         const parsedFilter = await this.parseToDB(filter);
         const essayData = await service.where(parsedFilter).first()
@@ -148,11 +157,12 @@ export class EssayRepository implements EssayRepositoryInterface {
 
     public async filter(filterData: EssayFilter, pagination?: EssayPagination) {
         const { pageSize = 10, page = 1, ordering = 'sendDate' } = pagination || {};
-        const { search, ...filter } = filterData;
+        const { search, period, ...filter } = filterData;
         const service = EssayService(this.driver);
         if (!!pagination) service
             .offset(((page - 1) * (pageSize)))
             .limit(pageSize);
+        this.period(service, period);
         this.search(service, search);
         const orderingField = (fieldParserDB[ordering] as Translator)[0];
         const essaysData = await service.where(await this.parseToDB(filter))
@@ -164,8 +174,9 @@ export class EssayRepository implements EssayRepositoryInterface {
     }
 
     public async count(filterData: EssayFilter) {
-        const { search, ...filter } = filterData;
+        const { search, period, ...filter } = filterData;
         const service = this.search(EssayService(this.driver), search);
+        this.period(service, period);
         const amount = await service.where(await this.parseToDB(filter))
             .count<Record<string, { count: number }>>('essay_id as count')
             .catch(() => { throw new Error('Erro ao consultar banco de dados'); });

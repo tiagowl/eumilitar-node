@@ -48,6 +48,10 @@ export interface EssayInvalidationData {
 
 export interface EssayFilter extends Partial<EssayInterface> {
     search?: string;
+    period?: {
+        start?: Date;
+        end?: Date;
+    };
 }
 
 const beautyCourse = {
