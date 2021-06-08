@@ -21,10 +21,10 @@ export interface EssayRepositoryInterface {
     themes: EssayThemeRepositoryInterface;
     users: UserRepositoryInterface;
     create: (data: EssayInsertionData) => Promise<EssayInterface>;
-    exists: (is: Partial<EssayInterface>[]) => Promise<boolean>;
-    filter: (filter: Partial<EssayInterface>, pagination?: EssayPagination) => Promise<Essay[]>;
-    count: (filter: Partial<EssayInterface>) => Promise<number>;
-    get: (filter: Partial<EssayInterface>) => Promise<Essay | undefined>;
+    exists: (is: EssayFilter[]) => Promise<boolean>;
+    filter: (filter: EssayFilter, pagination?: EssayPagination) => Promise<Essay[]>;
+    count: (filter: EssayFilter) => Promise<number>;
+    get: (filter: EssayFilter) => Promise<Essay | undefined>;
     update: (id: number, data: Partial<EssayInsertionData>) => Promise<Essay>;
 }
 
@@ -44,6 +44,10 @@ export interface EssayInvalidationData {
     essay: number;
     reason: Reason;
     comment?: string;
+}
+
+export interface EssayFilter extends Partial<EssayInterface> {
+    search?: string;
 }
 
 const beautyCourse = {
@@ -79,15 +83,15 @@ export default class EssayCase {
         return this.repository.filter({ student: userId });
     }
 
-    public async allEssays(filter: Partial<EssayInterface>, pagination?: EssayPagination) {
+    public async allEssays(filter: EssayFilter, pagination?: EssayPagination) {
         return this.repository.filter(filter, pagination);
     }
 
-    public async count(filter: Partial<EssayInterface>) {
+    public async count(filter: EssayFilter) {
         return this.repository.count(filter);
     }
 
-    public async get(filter: Partial<EssayInterface>) {
+    public async get(filter: EssayFilter) {
         const essay = await this.repository.get(filter);
         if (!essay) throw new Error('Redação não encontrada');
         return essay;

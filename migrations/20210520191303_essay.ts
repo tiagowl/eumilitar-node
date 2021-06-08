@@ -16,7 +16,7 @@ export async function up(knex: Knex): Promise<void> {
                 .onDelete('CASCADE').onUpdate('CASCADE')
                 .notNullable();
             table.integer('course_tag', 1).notNullable();
-            table.dateTime('sent_date').notNullable()
+            table.dateTime('sent_date').notNullable();
         })
     ).alterTable('essays', (table) => {
         table.boolean('local').defaultTo(true)
@@ -31,8 +31,8 @@ export async function up(knex: Knex): Promise<void> {
         table.string('file_name').defaultTo('')
             .nullable().alter();
         table.dateTime('sent_date').notNullable()
-            .defaultTo(knex.fn.now()).alter()
-    })
+            .defaultTo(knex.fn.now()).alter();
+    });
 }
 
 
