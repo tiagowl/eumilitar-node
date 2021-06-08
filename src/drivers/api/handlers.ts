@@ -12,7 +12,7 @@ import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecovery
 import { CorrectionInterface } from "../../entities/Correction";
 import { EssayInvalidationInterface, Reason } from "../../entities/EssayInvalidation";
 import { Course } from "../../entities/EssayTheme";
-import User, { UserInterface } from "../../entities/User";
+import User, { AccountPermission, UserInterface } from "../../entities/User";
 import { Context } from "./interfaces";
 
 interface EssayThemeRequest {
@@ -61,16 +61,16 @@ async function checkAuth(req: Request, driver: Knex) {
     return user;
 }
 
-function isAdmin({ driver }: Context): RequestHandler {
+function checkPermission({ driver }: Context, permissions: AccountPermission[]): RequestHandler {
     return async (req, res, next) => {
         try {
             const user = await checkAuth(req, driver);
-            if (user.permission !== 'admin') {
-                res.status(403).json({ message: 'Não autorizado', status: 403 });
-                res.end();
-            } else {
+            if (permissions.indexOf(user.permission) > -1) {
                 req.user = user;
                 next();
+            } else {
+                res.status(403).json({ message: 'Não autorizado', status: 403 });
+                res.end();
             }
         } catch (error) {
             res.status(error.status || 400).json(error);
@@ -189,7 +189,7 @@ export function profile({ driver }: Context): RequestHandler<any, UserInterface,
 
 export function createEssayTheme(context: Context): RequestHandler<any, any, EssayThemeRequest> {
     const { driver, storage } = context;
-    return express().use(isAdmin(context), storage.single('themeFile'),
+    return express().use(checkPermission(context, ['admin', 'corrector']), storage.single('themeFile'),
         async (req, res) => {
             try {
                 const data = JSON.parse(req.body.data);
@@ -227,7 +227,7 @@ export function listEssayThemes(context: Context): RequestHandler {
 
 export function updateEssayThemes(context: Context): RequestHandler<any, EssayThemeResponse, EssayThemeRequest> {
     const { driver, storage } = context;
-    const handler = express.Router({ mergeParams: true }).use(isAdmin(context), storage.single('themeFile'));
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']), storage.single('themeFile'));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
@@ -251,7 +251,7 @@ export function updateEssayThemes(context: Context): RequestHandler<any, EssayTh
 
 export function deactivateEssayTheme(context: Context): RequestHandler<any, EssayThemeResponse, undefined> {
     const { driver } = context;
-    const handler = express.Router({ mergeParams: true }).use(isAdmin(context));
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']));
     handler.use(async (req, res) => {
         try {
             const controller = new EssayThemeController(driver);
@@ -295,7 +295,7 @@ export function listEssays(context: Context): RequestHandler<any, EssayResponse[
             const { user, query } = req;
             if (!user) throw { message: 'Não autenticado', status: 401 };
             const controller = new EssayController(driver);
-            if (user.permission === 'admin') {
+            if (['admin', 'corrector'].indexOf(user.permission) > -1) {
                 const response = await controller.allEssays(query);
                 res.status(200).json(response);
             } else {
@@ -313,7 +313,7 @@ export function listEssays(context: Context): RequestHandler<any, EssayResponse[
 
 export function getEssay(context: Context): RequestHandler<{ id: string }, EssayResponse, void> {
     const { driver } = context;
-    const handler = express.Router({ mergeParams: true }).use(isAdmin(context));
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
@@ -331,7 +331,7 @@ export function getEssay(context: Context): RequestHandler<{ id: string }, Essay
 
 export function createEssayCorrector(context: Context): RequestHandler<{ id: string }, EssayResponse, void> {
     const { driver } = context;
-    const handler = express.Router({ mergeParams: true }).use(isAdmin(context));
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
@@ -351,7 +351,7 @@ export function createEssayCorrector(context: Context): RequestHandler<{ id: str
 
 export function deleteEssayCorrector(context: Context): RequestHandler<{ id: string }, EssayResponse, void> {
     const { driver } = context;
-    const handler = express.Router({ mergeParams: true }).use(isAdmin(context));
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
@@ -370,7 +370,7 @@ export function deleteEssayCorrector(context: Context): RequestHandler<{ id: str
 
 export function invalidateEssay(context: Context): RequestHandler<{ id: string }, EssayInvalidationInterface, EssayInvalidationRequest> {
     const { driver } = context;
-    const handler = express.Router({ mergeParams: true }).use(isAdmin(context));
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
@@ -389,7 +389,7 @@ export function invalidateEssay(context: Context): RequestHandler<{ id: string }
 
 export function correctEssay(context: Context): RequestHandler<{ id: string }, CorrectionInterface, CorrectionRequest> {
     const { driver } = context;
-    const handler = express.Router({ mergeParams: true }).use(isAdmin(context));
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;

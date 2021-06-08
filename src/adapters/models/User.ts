@@ -7,6 +7,7 @@ const permissionMap: [number, AccountPermission][] = [
     [1, 'admin'],
     [2, 'esa'],
     [3, 'espcex'],
+    [5, 'corrector'],
 ];
 
 function parseStatus(value: number): AccountStatus {

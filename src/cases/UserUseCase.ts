@@ -1,4 +1,4 @@
-import User, { AccountStatus } from "../entities/User";
+import User, { AccountStatus, AccountPermission } from "../entities/User";
 import bcrypt from 'bcrypt';
 
 export interface UserFilter {
@@ -10,6 +10,7 @@ export interface UserFilter {
     status?: AccountStatus;
     creationDate?: Date;
     lastModified?: Date;
+    permission?: AccountPermission;
 }
 
 export interface UserRepositoryInterface {
