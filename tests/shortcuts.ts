@@ -10,7 +10,6 @@ import User, { UserData } from '../src/entities/User';
 import createStorage from '../src/drivers/storage';
 import Application from '../src/drivers/api';
 import { UserModel } from '../src/adapters/models/User';
-import EssayCase from '../src/cases/EssayCase';
 import { EssayRepository } from '../src/adapters/models/Essay';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';

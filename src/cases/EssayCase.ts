@@ -106,7 +106,7 @@ export default class EssayCase {
         if (typeof data.corrector === 'number') {
             const corrector = await this.repository.users.get({ id: data.corrector });
             if (!corrector) throw new Error('Corretor inválido');
-            if (corrector.permission !== 'admin') throw new Error('Não autorizado!');
+            if (['admin', 'corrector'].indexOf(corrector.permission) < 0) throw new Error('Não autorizado!');
             if (typeof essay.corrector === 'number' && essay.corrector !== data.corrector) {
                 throw new Error('Redação já está em correção');
             }

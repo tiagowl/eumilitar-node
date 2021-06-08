@@ -189,7 +189,7 @@ export function profile({ driver }: Context): RequestHandler<any, UserInterface,
 
 export function createEssayTheme(context: Context): RequestHandler<any, any, EssayThemeRequest> {
     const { driver, storage } = context;
-    return express().use(checkPermission(context, ['admin', 'corrector']), storage.single('themeFile'),
+    return express().use(checkPermission(context, ['admin']), storage.single('themeFile'),
         async (req, res) => {
             try {
                 const data = JSON.parse(req.body.data);
@@ -227,7 +227,7 @@ export function listEssayThemes(context: Context): RequestHandler {
 
 export function updateEssayThemes(context: Context): RequestHandler<any, EssayThemeResponse, EssayThemeRequest> {
     const { driver, storage } = context;
-    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']), storage.single('themeFile'));
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin']), storage.single('themeFile'));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
@@ -251,7 +251,7 @@ export function updateEssayThemes(context: Context): RequestHandler<any, EssayTh
 
 export function deactivateEssayTheme(context: Context): RequestHandler<any, EssayThemeResponse, undefined> {
     const { driver } = context;
-    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']));
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin']));
     handler.use(async (req, res) => {
         try {
             const controller = new EssayThemeController(driver);

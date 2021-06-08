@@ -47,11 +47,11 @@ export default class CorrectionCase {
     public async create({ corrector, ...data }: CorrectionData) {
         const correctorData = await this.repository.users.get({ id: corrector });
         if (!correctorData) throw new Error('Corretor não encontrado');
-        if (correctorData.permission !== 'admin') throw new Error('Não autorizado');
+        if (['admin', 'corrector'].indexOf(correctorData.permission) < 0) throw new Error('Não autorizado');
         const essay = await this.repository.essays.get({ id: data.essay });
         if (!essay) throw new Error('Redação não encontrada');
         if (essay.status !== 'correcting') throw new Error('Redação não está em correção');
-        if (essay.corrector !== essay.corrector) throw new Error('Não autorizado');
+        if (correctorData.id !== essay.corrector) throw new Error('Não autorizado');
         essay.status = 'revised';
         await this.repository.essays.update(essay.id, essay.data);
         return this.repository.create({ ...data, correctionDate: new Date() });
