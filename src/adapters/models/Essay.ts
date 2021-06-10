@@ -2,7 +2,7 @@ import { Knex } from "knex";
 import { EssayFilter, EssayInsertionData, EssayPagination, EssayRepositoryInterface } from "../../cases/EssayCase";
 import { EssayThemeRepositoryInterface } from "../../cases/EssayThemeCase";
 import { UserRepositoryInterface } from "../../cases/UserUseCase";
-import Essay, { EssayInterface, status, Status } from "../../entities/Essay";
+import Essay, { EssayInterface, Status } from "../../entities/Essay";
 import { Course } from "../../entities/EssayTheme";
 import EssayThemeRepository from "./EssayTheme";
 import UserRepository, { UserService } from "./User";
@@ -116,6 +116,14 @@ export class EssayRepository implements EssayRepositoryInterface {
         }) : service;
     }
 
+    private byStatus(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, status?: Status) {
+        if (status === 'evaluated') {
+            return service.orWhere('status', '=', 'revised')
+                .orWhere('status', '=', 'invalid');
+        }
+        return status;
+    }
+
     public async get(filterData: EssayFilter) {
         const service = EssayService(this.driver);
         const { search, period, ...filter } = filterData;
@@ -157,12 +165,13 @@ export class EssayRepository implements EssayRepositoryInterface {
 
     public async filter(filterData: EssayFilter, pagination?: EssayPagination) {
         const { pageSize = 10, page = 1, ordering = 'sendDate' } = pagination || {};
-        const { search, period, ...filter } = filterData;
+        const { search, period, status, ...filter } = filterData;
         const service = EssayService(this.driver);
         if (!!pagination) service
             .offset(((page - 1) * (pageSize)))
             .limit(pageSize);
         this.period(service, period);
+        this.byStatus(service, status);
         this.search(service, search);
         const orderingField = (fieldParserDB[ordering] as Translator)[0];
         const essaysData = await service.where(await this.parseToDB(filter))
@@ -174,9 +183,11 @@ export class EssayRepository implements EssayRepositoryInterface {
     }
 
     public async count(filterData: EssayFilter) {
-        const { search, period, ...filter } = filterData;
+        const { search, period, status, ...filter } = filterData;
         const service = this.search(EssayService(this.driver), search);
         this.period(service, period);
+        this.byStatus(service, status);
+        this.search(service, search);
         const amount = await service.where(await this.parseToDB(filter))
             .count<Record<string, { count: number }>>('essay_id as count')
             .catch(() => { throw new Error('Erro ao consultar banco de dados'); });
