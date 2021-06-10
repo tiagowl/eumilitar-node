@@ -431,7 +431,7 @@ export function listUsers(context: Context) {
     handler.use(async (req, res) => {
         try {
             const controller = new UserController(driver);
-            const response = await controller.all(req.params || {});
+            const response = await controller.all(req.query || {});
             res.status(200).json(response);
         } catch (error) {
             res.status(error.status || 500).json(error);
