@@ -17,6 +17,7 @@ export interface UserRepositoryInterface {
     get: (filter: UserFilter) => Promise<User | null | undefined>;
     filter: (filter: UserFilter) => Promise<this>;
     update: (data: UserFilter) => Promise<number>;
+    all(): Promise<User[]>;
 }
 
 export default class UserUseCase {
@@ -71,6 +72,10 @@ export default class UserUseCase {
         this.#user = await this.repository.get({ id });
         if(!this.#user) throw new Error('Usuário não encontrado');
         return this.#user;
+    }
+
+    public async listAll(filter?: UserFilter) {
+        return (await this.repository.filter(filter || {})).all();
     }
 
 }

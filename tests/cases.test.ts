@@ -48,6 +48,7 @@ class UserTestRepository implements UserRepositoryInterface {
     async filter(filter: UserFilter) {
         // @ts-ignore
         const fields: [keyof UserFilter, any][] = Object.entries(filter);
+        if(!fields.length) return this;
         this.database = this.database.filter(item => (
             !!fields.filter(([key, value]) => item[key] === value).length
         ))
@@ -59,6 +60,10 @@ class UserTestRepository implements UserRepositoryInterface {
             return item;
         })
         return this.database.length;
+    }
+
+    async all() {
+        return this.database;
     }
 }
 
@@ -317,6 +322,13 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         const failAuth = await useCase.authenticate(user?.email || "", defaultPassword)
         expect(failAuth).toEqual({ email: true, password: false })
         done()
+    })
+    test('Listagem dos usuários', async done => {
+        const usedRepo = new UserTestRepository(await userDatabase);
+        const useCase = new UserUseCase(usedRepo);
+        const all = await useCase.listAll();
+        expect(all).toMatchObject(await userDatabase);
+        done();
     })
 })
 
