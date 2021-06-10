@@ -412,7 +412,7 @@ describe('#4 Redações', () => {
         );
         expect(essay).toBeDefined();
         expect(essay.status).toBe('correcting');
-        expect(base.student).toBe(essay.corrector);
+        expect(base.student).toBe(essay?.corrector?.id);
         done();
     })
 })

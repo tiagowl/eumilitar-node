@@ -480,7 +480,7 @@ describe('#3 Redações', () => {
         expect(response.status, JSON.stringify(response.body)).toBe(201);
         expect(response.body).toBeDefined();
         expect(response.body).toMatchObject(base);
-        expect(response.body.corrector).toEqual(user.user_id)
+        expect(response.body.corrector.id).toEqual(user.user_id)
         done();
     })
     test('Cancelamento da correção', async done => {
