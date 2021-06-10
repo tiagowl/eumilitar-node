@@ -146,5 +146,10 @@ export default class UserRepository implements UserRepositoryInterface {
         });
     }
 
+    public async all() {
+        const users = await this.service.select('*') as UserModel[];
+        return Promise.all(users.map(async user => this.toEntity(user)));
+    }
+
 }
 

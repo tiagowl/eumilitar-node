@@ -18,6 +18,7 @@ import { Readable } from 'stream';
 import EssayController, { EssayInput } from '../src/adapters/controllers/Essay';
 import EssayInvalidationController from '../src/adapters/controllers/EssayInvalidation';
 import CorrectionController from '../src/adapters/controllers/Correction';
+import UserController from '../src/adapters/controllers/User';
 
 const driver = driverFactory()
 
@@ -534,6 +535,36 @@ describe('#6 Correções', () => {
                 expect(data[key]).toBeDefined();
                 expect(data[key]).toBe(value);
             })
+        done();
+    })
+})
+
+describe('#7 Testes no usuário', () => {
+    const user = userFactory()
+    const passwordService = PasswordRecoveryService(driver);
+    beforeAll(async (done) => {
+        const service = UserService(driver);
+        await saveUser(user, service)
+        const themeService = EssayThemeService(driver);
+        await themeService.delete().del()
+        done();
+    })
+    afterAll(async (done) => {
+        const service = UserService(driver);
+        await deleteUser(user, service)
+        const themeService = EssayThemeService(driver);
+        await themeService.del().delete();
+        done()
+    })
+    test('Listagem', async done => {
+        const controller = new UserController(driver);
+        const users = await controller.all({ status: 'active' });
+        expect(users).toBeDefined();
+        expect(users.length).toBeGreaterThan(0);
+        users.forEach(user => {
+            expect(user.status).toBe('active');
+            expect(user.id).toBeDefined();
+        })
         done();
     })
 })
