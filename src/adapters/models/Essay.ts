@@ -41,7 +41,7 @@ const courseMap: [number, Course][] = [
 ];
 
 const courseParser: Parser = data => {
-    const field = courseMap.find(item => item[1] === data);
+    const field = courseMap.find(([index, slug]) => slug === data);
     if (!field) throw new Error('Curso inválido');
     return field[0];
 };
@@ -117,11 +117,14 @@ export class EssayRepository implements EssayRepositoryInterface {
     }
 
     private byStatus(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, status?: Status) {
+        if (!status) return service;
         if (status === 'evaluated') {
-            return service.orWhere('status', '=', 'revised')
-                .orWhere('status', '=', 'invalid');
+            return service.where(function () {
+                this.orWhere('status', '=', 'revised')
+                    .orWhere('status', '=', 'invalid');
+            });
         }
-        return status;
+        return service.where('status', '=', status);
     }
 
     public async get(filterData: EssayFilter) {
@@ -166,7 +169,7 @@ export class EssayRepository implements EssayRepositoryInterface {
     public async filter(filterData: EssayFilter, pagination?: EssayPagination) {
         const { pageSize = 10, page = 1, ordering = 'sendDate' } = pagination || {};
         const { search, period, status, ...filter } = filterData;
-        const service = EssayService(this.driver);
+        const service = EssayService(this.driver).debug(true);
         if (!!pagination) service
             .offset(((page - 1) * (pageSize)))
             .limit(pageSize);
