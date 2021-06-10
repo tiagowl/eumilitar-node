@@ -169,7 +169,7 @@ export class EssayRepository implements EssayRepositoryInterface {
     public async filter(filterData: EssayFilter, pagination?: EssayPagination) {
         const { pageSize = 10, page = 1, ordering = 'sendDate' } = pagination || {};
         const { search, period, status, ...filter } = filterData;
-        const service = EssayService(this.driver).debug(true);
+        const service = EssayService(this.driver);
         if (!!pagination) service
             .offset(((page - 1) * (pageSize)))
             .limit(pageSize);

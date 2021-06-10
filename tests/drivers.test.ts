@@ -298,7 +298,7 @@ describe('#2 Testes nos temas', () => {
             title: 'Título',
             startDate: new Date(Date.now() - 15 * 25 * 60 * 60),
             endDate: new Date(Date.now() - 2 * 25 * 60 * 60),
-            helpText: faker.lorem.paragraph(1),
+            helpText: faker.lorem.paragraph(10),
             courses: ['espcex'],
             themeFile: buffer
         }
