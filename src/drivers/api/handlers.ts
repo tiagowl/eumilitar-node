@@ -9,6 +9,7 @@ import EssayController, { EssayInput, EssayResponse } from "../../adapters/contr
 import EssayInvalidationController from "../../adapters/controllers/EssayInvalidation";
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
+import UserController, { UserResponse } from "../../adapters/controllers/User";
 import { CorrectionInterface } from "../../entities/Correction";
 import { EssayInvalidationInterface, Reason } from "../../entities/EssayInvalidation";
 import { Course } from "../../entities/EssayTheme";
@@ -414,6 +415,23 @@ export function getCorrection(context: Context): RequestHandler<{ id: string }, 
             const { id } = req.params;
             const controller = new CorrectionController(driver);
             const response = await controller.get({ essay: Number(id) });
+            res.status(200).json(response);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    });
+    return handler;
+}
+
+export function listUsers(context: Context) {
+    const { driver } = context;
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin']));
+    handler.use(async (req, res) => {
+        try {
+            const controller = new UserController(driver);
+            const response = await controller.all(req.params || {});
             res.status(200).json(response);
         } catch (error) {
             res.status(error.status || 500).json(error);

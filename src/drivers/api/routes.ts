@@ -79,6 +79,12 @@ const routes: Route[] = [
             { handler: handlers.correctEssay, method: 'post' },
             { handler: handlers.getCorrection, method: 'get' },
         ]
+    },
+    {
+        path: '/users/',
+        handlers: [
+            { handler: handlers.listUsers, method: 'get' }
+        ]
     }
 ];
 

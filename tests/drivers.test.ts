@@ -249,6 +249,18 @@ describe('#1 Teste na api do usuário', () => {
         expect(notResponse.status).toEqual(401);
         done();
     })
+    test('Listar usuários', async (done) => {
+        const app = await appFactory(driver);
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const { body, status, error} = await api.get('/users/')
+            .set('Authorization', header);
+        expect(status, JSON.stringify({ body, error })).toBe(200);
+        expect(body, JSON.stringify(body)).toBeInstanceOf(Array);
+        expect(body.length, JSON.stringify(body)).toBeGreaterThan(0);
+        done();
+    })
 })
 
 describe('#2 Testes nos temas', () => {

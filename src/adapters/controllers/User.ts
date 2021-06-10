@@ -1,23 +1,25 @@
 import { Knex } from 'knex';
 import * as yup from 'yup';
 import UserUseCase, { UserFilter } from '../../cases/UserUseCase';
-import User from '../../entities/User';
+import User, { AccountPermission, AccountStatus } from '../../entities/User';
 import UserRepository from '../models/User';
 import Controller from './Controller';
 
-export interface UserInterface {
-    email: string;
-    password: string;
-}
 
 export type UserResponse = {
-    token?: string,
-    errors?: [keyof UserInterface, string][]
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    status: AccountStatus;
+    permission: AccountPermission;
+    creationDate: Date;
+    lastModified: Date;
 };
 
 export const schema = yup.object({});
 
-export default class UserController extends Controller<UserInterface> {
+export default class UserController extends Controller<any> {
     private repository: UserRepository;
     private useCase: UserUseCase;
 
@@ -40,7 +42,7 @@ export default class UserController extends Controller<UserInterface> {
         };
     }
 
-    public async all(filter: UserFilter) {
+    public async all(filter: UserFilter): Promise<UserResponse[]> {
         const users = await this.useCase.listAll(filter);
         return Promise.all(users.map(async user => this.parseEntity(user)));
     }
