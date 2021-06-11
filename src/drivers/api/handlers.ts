@@ -441,3 +441,22 @@ export function listUsers(context: Context) {
     });
     return handler;
 }
+
+
+export function getInvalidation(context: Context) {
+    const { driver } = context;
+    const handler = express.Router({ mergeParams: true }).use(isAuthenticated(context));
+    handler.use(async (req, res) => {
+        try {
+            const { id } = req.params;
+            const controller = new EssayInvalidationController(driver);
+            const response = await controller.get(Number(id));
+            res.status(200).json(response);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    });
+    return handler;
+}

@@ -46,4 +46,13 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
             throw { message: error.message || 'Falha ao invalidar redação', status: 400 };
         }
     }
+
+    public async get(essayId: number) {
+        try {
+            const invalidation = await this.useCase.get(essayId);
+            return this.parseEntity(invalidation);
+        } catch (error) {
+            throw { message: error.message || 'Falha ao invalidar redação', status: 500 };
+        }
+    }
 }

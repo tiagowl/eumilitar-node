@@ -71,6 +71,7 @@ const routes: Route[] = [
         path: '/essays/:id/invalidation/',
         handlers: [
             { handler: handlers.invalidateEssay, method: 'post' },
+            { handler: handlers.getInvalidation, method: 'get' }
         ]
     },
     {

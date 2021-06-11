@@ -445,6 +445,22 @@ describe('#5 Invalidações', () => {
         expect(created.essay).toBe(essay.id);
         done();
     })
+    test('Recuperação da invalidação', async done => {
+        const essays = new EssayController(driver);
+        const essay = await createEssay(driver, user.user_id);
+        await essays.partialUpdate(essay.id,
+            { corrector: user.user_id, status: 'correcting' }
+        );
+        const controller = new EssayInvalidationController(driver);
+        const created = await controller.create({ essay: essay.id, corrector: user.user_id, comment: faker.lorem.lines(7), reason: 'other' });
+        expect(created).toBeDefined();
+        const invalidation = await controller.get(essay.id);
+        expect(invalidation).toMatchObject(created);
+        expect(invalidation).toBeDefined();
+        expect(invalidation.id).toBeDefined();
+        expect(invalidation.essay).toBe(essay.id);
+        done();
+    })
 })
 
 describe('#6 Correções', () => {

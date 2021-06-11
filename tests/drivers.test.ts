@@ -254,7 +254,7 @@ describe('#1 Teste na api do usuário', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const { body, status, error} = await api.get('/users/')
+        const { body, status, error } = await api.get('/users/')
             .set('Authorization', header);
         expect(status, JSON.stringify({ body, error })).toBe(200);
         expect(body, JSON.stringify(body)).toBeInstanceOf(Array);
@@ -559,6 +559,24 @@ describe('#4 Invalidação da redação', () => {
         expect(response.body, JSON.stringify(response.body)).toBeDefined();
         expect(response.body.essay).toBe(base.id);
         expect(response.body.corrector).toBe(user.user_id);
+        done();
+    })
+    test('Recuperação', async done => {
+        const app = await appFactory(driver);
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const base = await createEssay(driver, user.user_id);
+        await api.post(`/essays/${base.id}/corrector/`)
+            .set('Authorization', header);
+        const invalidation = await api.post(`/essays/${base.id}/invalidation/`)
+            .send({ reason: 'invalid', comment: faker.lorem.lines(3) })
+            .set('Authorization', header);
+        const { body, status, error } = await api.get(`/essays/${base.id}/invalidation/`)
+            .set('Authorization', header);
+        expect(status).toBe(200);
+        expect(body).toMatchObject(invalidation.body);
+        expect(body.essay).toBe(base.id);
         done();
     })
 })
