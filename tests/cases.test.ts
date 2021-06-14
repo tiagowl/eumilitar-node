@@ -391,7 +391,10 @@ describe('#3 Redações', () => {
             course: 'esa',
             student: 1,
         }
-        const repository = new EssayTestRepository(essayDatabase, await userDatabase);
+        const repository = new EssayTestRepository(essayDatabase, (await userDatabase).map(user => {
+            user.permission = 'esa&espcex';
+            return user;
+        }));
         const useCase = new EssayCase(repository);
         const created = await useCase.create(data);
         expect(created).not.toBeUndefined();
@@ -427,7 +430,10 @@ describe('#3 Redações', () => {
         done();
     })
     test('Atualização da redação', async done => {
-        const repository = new EssayTestRepository(essayDatabase, await userDatabase);
+        const repository = new EssayTestRepository(essayDatabase, await (await userDatabase).map(user => {
+            user.permission = 'admin';
+            return user;
+        }));
         const useCase = new EssayCase(repository);
         const updated = await useCase.partialUpdate(1, { corrector: 0 });
         const essay = await useCase.get({ id: 1 });

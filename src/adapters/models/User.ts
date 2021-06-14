@@ -7,6 +7,7 @@ const permissionMap: [number, AccountPermission][] = [
     [1, 'admin'],
     [2, 'esa'],
     [3, 'espcex'],
+    [4, 'esa&espcex'],
     [5, 'corrector'],
 ];
 
