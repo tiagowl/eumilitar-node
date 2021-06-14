@@ -330,15 +330,18 @@ describe('#2 Testes nos temas de redação', () => {
 
 
 describe('#4 Redações', () => {
-    const user = userFactory();
+    const user = userFactory({ permission: 4 });
+    const corrector = userFactory({ permission: 5 });
     beforeAll(async (done) => {
         const service = UserService(driver);
-        await saveUser(user, service)
+        await saveUser(user, service);
+        await saveUser(corrector, service);
         done();
     })
     afterAll(async (done) => {
         const service = UserService(driver);
         await deleteUser(user, service);
+        await deleteUser(corrector, service);
         const themeService = EssayThemeService(driver);
         await themeService.delete().del();
         done()
@@ -409,11 +412,11 @@ describe('#4 Redações', () => {
         const controller = new EssayController(driver);
         const base = await createEssay(driver, user.user_id);
         const essay = await controller.partialUpdate(base.id,
-            { corrector: base.student, status: 'correcting' }
+            { corrector: corrector.user_id, status: 'correcting' }
         );
         expect(essay).toBeDefined();
         expect(essay.status).toBe('correcting');
-        expect(base.student).toBe(essay?.corrector?.id);
+        expect(corrector.user_id).toBe(essay?.corrector?.id);
         done();
     })
 })
