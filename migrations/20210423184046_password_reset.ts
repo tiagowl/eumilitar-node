@@ -8,9 +8,9 @@ export async function up(knex: Knex): Promise<void> {
         table.integer('user_id').unsigned()
             .references('user_id').inTable('users')
             .onDelete('CASCADE').onUpdate('CASCADE')
-            .notNullable();
+            .nullable();
         table.dropColumn('email');
-    })
+    });
 }
 
 
