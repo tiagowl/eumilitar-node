@@ -13,6 +13,7 @@ export async function up(knex: Knex): Promise<void> {
 
 export async function down(knex: Knex): Promise<void> {
     return knex.schema.alterTable('essays', table => {
+        table.dropForeign(['corrector'], 'essays_corrector_foreign');
         table.dropColumn('corrector');
     })
 }

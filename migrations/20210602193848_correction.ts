@@ -23,7 +23,7 @@ export async function up(knex: Knex): Promise<void> {
         return knex.schema.createTable('essay_grading', table => {
             table.increments('grading_id').index().notNullable();
             table.text('grading_comments').notNullable();
-            table.integer('essay_id').unsigned()
+            table.integer('essay_id')
                 .references('essay_id').inTable('essays')
                 .onDelete('CASCADE').onUpdate('CASCADE')
                 .notNullable();
