@@ -1,0 +1,12 @@
+[Unit]
+Description=Eu-Militar API
+After=network.target
+After=mysqld.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=eumilitar
+ExecStart=/usr/bin/env node /usr/share/eumilitar
