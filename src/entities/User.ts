@@ -1,6 +1,6 @@
 
 export type AccountStatus = 'active' | 'inactive' | 'pending';
-export type AccountPermission = 'admin' | 'esa' | 'espcex' | 'corrector';
+export type AccountPermission = 'admin' | 'esa' | 'espcex' | 'corrector' | 'esa&espcex';
 
 export interface UserInterface {
     id: number;

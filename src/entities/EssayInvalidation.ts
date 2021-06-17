@@ -1,4 +1,4 @@
-export type Reason = 'invalid' | 'unreadable' | 'tangent' | 'other';
+export type Reason = 'invalid' | 'unreadable' | 'tangent' | 'notProse' | 'grammatical' | 'minLength' | 'genre' | 'corrupted' | 'other';
 
 export interface EssayInvalidationInterface {
     id: number;
@@ -9,7 +9,7 @@ export interface EssayInvalidationInterface {
     comment?: string;
 }
 
-export const reasons: Reason[] = ['invalid', 'unreadable', 'tangent', 'other'];
+export const reasons: Reason[] = ['invalid', 'unreadable', 'tangent', 'notProse', 'grammatical', 'minLength', 'genre', 'corrupted', 'other'];
 
 export default class EssayInvalidation implements EssayInvalidationInterface {
     #id: number;

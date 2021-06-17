@@ -34,4 +34,11 @@ export default class EssayInvalidationRepository implements EssayInvalidationRep
         if (!invalidationData) throw error;
         return new EssayInvalidation(invalidationData);
     }
+
+    public async get(essayId: number) {
+        const data = await EssayInvalidationService(this.driver)
+            .where('essay', essayId).first();
+        if (!data) throw { message: 'Invalidação não encontrada', status: 404 };
+        return new EssayInvalidation(data);
+    }
 }

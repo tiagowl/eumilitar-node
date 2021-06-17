@@ -249,6 +249,18 @@ describe('#1 Teste na api do usuário', () => {
         expect(notResponse.status).toEqual(401);
         done();
     })
+    test('Listar usuários', async (done) => {
+        const app = await appFactory(driver);
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const { body, status, error } = await api.get('/users/')
+            .set('Authorization', header);
+        expect(status, JSON.stringify({ body, error })).toBe(200);
+        expect(body, JSON.stringify(body)).toBeInstanceOf(Array);
+        expect(body.length, JSON.stringify(body)).toBeGreaterThan(0);
+        done();
+    })
 })
 
 describe('#2 Testes nos temas', () => {
@@ -286,7 +298,7 @@ describe('#2 Testes nos temas', () => {
             title: 'Título',
             startDate: new Date(Date.now() - 15 * 25 * 60 * 60),
             endDate: new Date(Date.now() - 2 * 25 * 60 * 60),
-            helpText: faker.lorem.paragraph(1),
+            helpText: faker.lorem.paragraph(10),
             courses: ['espcex'],
             themeFile: buffer
         }
@@ -412,7 +424,7 @@ describe('#3 Redações', () => {
     test('Criação', async done => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
-        const token = await authenticate(user, api)
+        const token = await authenticate(student, api)
         const header = `Bearer ${token}`;
         const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
         const { body, status, error } = await api.post('/essays/')
@@ -480,7 +492,7 @@ describe('#3 Redações', () => {
         expect(response.status, JSON.stringify(response.body)).toBe(201);
         expect(response.body).toBeDefined();
         expect(response.body).toMatchObject(base);
-        expect(response.body.corrector).toEqual(user.user_id)
+        expect(response.body.corrector.id).toEqual(user.user_id)
         done();
     })
     test('Cancelamento da correção', async done => {
@@ -547,6 +559,24 @@ describe('#4 Invalidação da redação', () => {
         expect(response.body, JSON.stringify(response.body)).toBeDefined();
         expect(response.body.essay).toBe(base.id);
         expect(response.body.corrector).toBe(user.user_id);
+        done();
+    })
+    test('Recuperação', async done => {
+        const app = await appFactory(driver);
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const base = await createEssay(driver, user.user_id);
+        await api.post(`/essays/${base.id}/corrector/`)
+            .set('Authorization', header);
+        const invalidation = await api.post(`/essays/${base.id}/invalidation/`)
+            .send({ reason: 'invalid', comment: faker.lorem.lines(3) })
+            .set('Authorization', header);
+        const { body, status, error } = await api.get(`/essays/${base.id}/invalidation/`)
+            .set('Authorization', header);
+        expect(status).toBe(200);
+        expect(body).toMatchObject(invalidation.body);
+        expect(body.essay).toBe(base.id);
         done();
     })
 })

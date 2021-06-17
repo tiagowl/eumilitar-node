@@ -29,7 +29,11 @@ export interface EssayResponse {
     sendDate: Date;
     status: Status;
     theme?: EssayThemeResponse;
-    corrector?: number | null;
+    corrector?: {
+        id: number;
+        name: string;
+        permission: AccountPermission;
+    } | null;
     student: {
         id: number;
         name: string;
@@ -81,7 +85,7 @@ export default class EssayController extends Controller<EssayData> {
         this.useCase = new EssayCase(this.repository);
     }
 
-    private async getStudent(id: number) {
+    private async getUser(id: number) {
         const repository = new UserRepository(this.driver);
         const userCase = new UserUseCase(repository);
         const user = await userCase.get(id);
@@ -101,8 +105,8 @@ export default class EssayController extends Controller<EssayData> {
             sendDate: essay.sendDate,
             status: essay.status,
             theme: await themeController.get({ id: essay.theme }),
-            student: await this.getStudent(essay.student),
-            corrector: essay.corrector,
+            student: await this.getUser(essay.student),
+            corrector: !!essay.corrector ? await this.getUser(essay.corrector) : null,
         };
         return parsed;
     }

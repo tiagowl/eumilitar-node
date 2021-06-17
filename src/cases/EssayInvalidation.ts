@@ -15,6 +15,7 @@ export interface EssayInvalidationInsertionData extends EssayInvalidationCreatio
 export interface EssayInvalidationRepositoryInterface {
     create: (data: EssayInvalidationInsertionData) => Promise<EssayInvalidation>;
     essays: EssayRepositoryInterface;
+    get: (essay: number) => Promise<EssayInvalidation>;
 }
 
 export default class EssayInvalidationCase {
@@ -33,6 +34,10 @@ export default class EssayInvalidationCase {
         essay.status = 'invalid';
         await this.repository.essays.update(essay.id, essay.data);
         return this.repository.create({ ...data, invalidationDate: new Date() });
+    }
+
+    public async get(essayId: number) {
+        return this.repository.get(essayId);
     }
 
 }

@@ -48,6 +48,7 @@ class UserTestRepository implements UserRepositoryInterface {
     async filter(filter: UserFilter) {
         // @ts-ignore
         const fields: [keyof UserFilter, any][] = Object.entries(filter);
+        if (!fields.length) return this;
         this.database = this.database.filter(item => (
             !!fields.filter(([key, value]) => item[key] === value).length
         ))
@@ -59,6 +60,10 @@ class UserTestRepository implements UserRepositoryInterface {
             return item;
         })
         return this.database.length;
+    }
+
+    async all() {
+        return this.database;
     }
 }
 
@@ -166,6 +171,12 @@ class EssayInvalidationTestRepository implements EssayInvalidationRepositoryInte
             invalidationDate: new Date(),
         })
         this.database.push(invalidation);
+        return invalidation;
+    }
+
+    public async get(essayId: number) {
+        const invalidation = this.database.find(({ id }) => id === essayId);
+        if (!invalidation) throw new Error('Não encontrado');
         return invalidation;
     }
 }
@@ -318,6 +329,13 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         expect(failAuth).toEqual({ email: true, password: false })
         done()
     })
+    test('Listagem dos usuários', async done => {
+        const usedRepo = new UserTestRepository(await userDatabase);
+        const useCase = new UserUseCase(usedRepo);
+        const all = await useCase.listAll();
+        expect(all).toMatchObject(await userDatabase);
+        done();
+    })
 })
 
 describe('#2 Testes nos temas da redação', () => {
@@ -373,7 +391,10 @@ describe('#3 Redações', () => {
             course: 'esa',
             student: 1,
         }
-        const repository = new EssayTestRepository(essayDatabase, await userDatabase);
+        const repository = new EssayTestRepository(essayDatabase, (await userDatabase).map(user => {
+            user.permission = 'esa&espcex';
+            return user;
+        }));
         const useCase = new EssayCase(repository);
         const created = await useCase.create(data);
         expect(created).not.toBeUndefined();
@@ -409,7 +430,10 @@ describe('#3 Redações', () => {
         done();
     })
     test('Atualização da redação', async done => {
-        const repository = new EssayTestRepository(essayDatabase, await userDatabase);
+        const repository = new EssayTestRepository(essayDatabase, await (await userDatabase).map(user => {
+            user.permission = 'admin';
+            return user;
+        }));
         const useCase = new EssayCase(repository);
         const updated = await useCase.partialUpdate(1, { corrector: 0 });
         const essay = await useCase.get({ id: 1 });
@@ -424,7 +448,7 @@ describe('#3 Redações', () => {
     })
 })
 
-describe('#4', () => {
+describe('#4 Invalidação', () => {
     test('Criação', async done => {
         const repository = new EssayInvalidationTestRepository(essayInvalidationDatabase, await userDatabase);
         const useCase = new EssayInvalidationCase(repository);
@@ -433,6 +457,14 @@ describe('#4', () => {
         const essay = await essays.get({ id: 2 });
         expect(invalidation).toBeDefined();
         expect(invalidation.essay).toBe(essay.id);
+        done();
+    })
+    test('Recuperação', async done => {
+        const repository = new EssayInvalidationTestRepository(essayInvalidationDatabase, await userDatabase);
+        const useCase = new EssayInvalidationCase(repository);
+        const invalidation = await useCase.get(0);
+        expect(invalidation).toBeDefined();
+        expect(invalidation.essay).toBe(0);
         done();
     })
 })

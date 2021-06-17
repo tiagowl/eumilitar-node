@@ -69,14 +69,20 @@ export default class EssayCase {
     }
 
     public async create(data: EssayCreationData) {
+        const student = await this.repository.users.get({ id: data.student });
+        if(!student) throw new Error('Estudante não encontrado');
+        if(student.status !== 'active') throw new Error('Não autorizado');
         const themeData = await this.repository.themes.get({ courses: new Set([data.course]) }, true);
         if (!themeData) throw new Error('Nenhum tema ativo para este curso');
         const theme = new EssayTheme(themeData);
         if (!theme.active) throw new Error('Tema inválido');
+        const hasPermission = theme.courses.has(student.permission as Course) || student.permission === 'esa&espcex';
+        if(!hasPermission) throw new Error('Não autorizado');
         const baseFilter = { theme: theme.id, student: data.student };
         const cantSend = (await this.repository.exists([
             { ...baseFilter, status: 'pending' },
             { ...baseFilter, status: 'revised' },
+            { ...baseFilter, status: 'correcting' },
         ]));
         if (cantSend) throw new Error(`Já foi enviada uma redação do curso "${beautyCourse[data.course]}" para o tema vigente`);
         const created = await this.repository.create({ ...data, theme: theme.id, sendDate: new Date(), status: 'pending' });

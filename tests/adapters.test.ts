@@ -18,6 +18,7 @@ import { Readable } from 'stream';
 import EssayController, { EssayInput } from '../src/adapters/controllers/Essay';
 import EssayInvalidationController from '../src/adapters/controllers/EssayInvalidation';
 import CorrectionController from '../src/adapters/controllers/Correction';
+import UserController from '../src/adapters/controllers/User';
 
 const driver = driverFactory()
 
@@ -329,15 +330,18 @@ describe('#2 Testes nos temas de redação', () => {
 
 
 describe('#4 Redações', () => {
-    const user = userFactory();
+    const user = userFactory({ permission: 4 });
+    const corrector = userFactory({ permission: 5 });
     beforeAll(async (done) => {
         const service = UserService(driver);
-        await saveUser(user, service)
+        await saveUser(user, service);
+        await saveUser(corrector, service);
         done();
     })
     afterAll(async (done) => {
         const service = UserService(driver);
         await deleteUser(user, service);
+        await deleteUser(corrector, service);
         const themeService = EssayThemeService(driver);
         await themeService.delete().del();
         done()
@@ -408,11 +412,11 @@ describe('#4 Redações', () => {
         const controller = new EssayController(driver);
         const base = await createEssay(driver, user.user_id);
         const essay = await controller.partialUpdate(base.id,
-            { corrector: base.student, status: 'correcting' }
+            { corrector: corrector.user_id, status: 'correcting' }
         );
         expect(essay).toBeDefined();
         expect(essay.status).toBe('correcting');
-        expect(base.student).toBe(essay.corrector);
+        expect(corrector.user_id).toBe(essay?.corrector?.id);
         done();
     })
 })
@@ -442,6 +446,22 @@ describe('#5 Invalidações', () => {
         expect(created).toBeDefined();
         expect(created.id).toBeDefined();
         expect(created.essay).toBe(essay.id);
+        done();
+    })
+    test('Recuperação da invalidação', async done => {
+        const essays = new EssayController(driver);
+        const essay = await createEssay(driver, user.user_id);
+        await essays.partialUpdate(essay.id,
+            { corrector: user.user_id, status: 'correcting' }
+        );
+        const controller = new EssayInvalidationController(driver);
+        const created = await controller.create({ essay: essay.id, corrector: user.user_id, comment: faker.lorem.lines(7), reason: 'other' });
+        expect(created).toBeDefined();
+        const invalidation = await controller.get(essay.id);
+        expect(invalidation).toMatchObject(created);
+        expect(invalidation).toBeDefined();
+        expect(invalidation.id).toBeDefined();
+        expect(invalidation.essay).toBe(essay.id);
         done();
     })
 })
@@ -534,6 +554,36 @@ describe('#6 Correções', () => {
                 expect(data[key]).toBeDefined();
                 expect(data[key]).toBe(value);
             })
+        done();
+    })
+})
+
+describe('#7 Testes no usuário', () => {
+    const user = userFactory()
+    const passwordService = PasswordRecoveryService(driver);
+    beforeAll(async (done) => {
+        const service = UserService(driver);
+        await saveUser(user, service)
+        const themeService = EssayThemeService(driver);
+        await themeService.delete().del()
+        done();
+    })
+    afterAll(async (done) => {
+        const service = UserService(driver);
+        await deleteUser(user, service)
+        const themeService = EssayThemeService(driver);
+        await themeService.del().delete();
+        done()
+    })
+    test('Listagem', async done => {
+        const controller = new UserController(driver);
+        const users = await controller.all({ status: 'active' });
+        expect(users).toBeDefined();
+        expect(users.length).toBeGreaterThan(0);
+        users.forEach(user => {
+            expect(user.status).toBe('active');
+            expect(user.id).toBeDefined();
+        })
         done();
     })
 })
