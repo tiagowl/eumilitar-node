@@ -634,7 +634,7 @@ describe('#5 Correção da redação', () => {
             'obeyedMargins': "Sim",
             'organized': "Sim",
             'orthography': "Sim",
-            'points': 7.55,
+            'points': 7.5,
             'repeated': "Não",
             'understoodTheme': "Sim",
             'veryShortSentences': "Não",

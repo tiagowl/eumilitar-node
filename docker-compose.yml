@@ -75,4 +75,4 @@ services:
             MYSQL_USER: user
             MYSQL_DATABASE: nice_marmot
             MYSQL_ROOT_PASSWORD: passwd
-            PMA_HOST: db
+            PMA_HOST: test_db
