@@ -36,7 +36,8 @@ describe('#1 Testes na autenticação', () => {
     const user = userFactory()
     const passwordService = PasswordRecoveryService(driver);
     beforeAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(driver)
+            .onConflict('user_id').merge();
         await saveUser(user, service)
         const themeService = EssayThemeService(driver);
         await themeService.delete().del()
@@ -333,13 +334,15 @@ describe('#4 Redações', () => {
     const user = userFactory({ permission: 4 });
     const corrector = userFactory({ permission: 5 });
     beforeAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(driver)
+            .onConflict('user_id').merge();
         await saveUser(user, service);
         await saveUser(corrector, service);
         done();
     })
     afterAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(driver)
+            .onConflict('user_id').merge();
         await deleteUser(user, service);
         await deleteUser(corrector, service);
         const themeService = EssayThemeService(driver);
@@ -384,14 +387,14 @@ describe('#4 Redações', () => {
         expect(created.id, JSON.stringify(created)).not.toBeNaN();
         expect(created.course).toBe(data.course);
         done();
-    })
+    }, 10000)
     test('Listagem', async done => {
         const controller = new EssayController(driver);
         const essays = await controller.myEssays(user.user_id);
         expect(essays).not.toBeUndefined();
         expect(essays.length).not.toBeLessThan(1);
         done();
-    })
+    }, 10000)
     test('Listagem de todos', async (done) => {
         const controller = new EssayController(driver);
         const essays = await controller.allEssays({});
@@ -399,7 +402,7 @@ describe('#4 Redações', () => {
         expect(essays.count).not.toBeLessThan(1);
         expect(essays.page.length).not.toBeLessThan(1);
         done();
-    })
+    }, 10000)
     test('Recuperação de uma redação', async done => {
         const controller = new EssayController(driver);
         const base = await createEssay(driver, user.user_id);
@@ -407,7 +410,7 @@ describe('#4 Redações', () => {
         expect(essay).toMatchObject(base);
         expect(essay).toBeDefined();
         done();
-    })
+    }, 10000)
     test('Atualização da redação', async done => {
         const controller = new EssayController(driver);
         const base = await createEssay(driver, user.user_id);
@@ -418,13 +421,14 @@ describe('#4 Redações', () => {
         expect(essay.status).toBe('correcting');
         expect(corrector.user_id).toBe(essay?.corrector?.id);
         done();
-    })
+    }, 10000)
 })
 
 describe('#5 Invalidações', () => {
     const user = userFactory();
     beforeAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(driver)
+            .onConflict('user_id').merge();
         await saveUser(user, service)
         done();
     })
@@ -447,7 +451,7 @@ describe('#5 Invalidações', () => {
         expect(created.id).toBeDefined();
         expect(created.essay).toBe(essay.id);
         done();
-    })
+    }, 10000)
     test('Recuperação da invalidação', async done => {
         const essays = new EssayController(driver);
         const essay = await createEssay(driver, user.user_id);
@@ -463,13 +467,14 @@ describe('#5 Invalidações', () => {
         expect(invalidation.id).toBeDefined();
         expect(invalidation.essay).toBe(essay.id);
         done();
-    })
+    }, 10000)
 })
 
 describe('#6 Correções', () => {
     const user = userFactory();
     beforeAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(driver)
+            .onConflict('user_id').merge();
         await saveUser(user, service)
         done();
     })
@@ -560,9 +565,9 @@ describe('#6 Correções', () => {
 
 describe('#7 Testes no usuário', () => {
     const user = userFactory()
-    const passwordService = PasswordRecoveryService(driver);
     beforeAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(driver)
+            .onConflict('user_id').merge();
         await saveUser(user, service)
         const themeService = EssayThemeService(driver);
         await themeService.delete().del()

@@ -5,7 +5,7 @@ export async function up(knex: Knex): Promise<void> {
     return knex.schema.createTable('essay_themes', (table) => {
         table.increments('id').primary().index().notNullable();
         table.string('title', 255).notNullable();
-        table.string('helpText', 255).notNullable().defaultTo('');
+        table.text('helpText').notNullable().defaultTo('');
         table.string('file', 255).notNullable();
         table.string('courses').notNullable();
         table.timestamp('startDate').notNullable();
