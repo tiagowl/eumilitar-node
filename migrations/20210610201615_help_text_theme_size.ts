@@ -10,7 +10,8 @@ export async function up(knex: Knex): Promise<void> {
 
 export async function down(knex: Knex): Promise<void> {
     return knex.schema.alterTable('essay_themes', table => {
-        table.string('helpText', 255).notNullable().defaultTo('');
+        table.string('helpText', 255).notNullable()
+            .defaultTo('').alter();
     });
 }
 

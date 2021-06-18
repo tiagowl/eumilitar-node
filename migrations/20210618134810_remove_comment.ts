@@ -2,20 +2,30 @@ import { Knex } from "knex";
 
 
 export async function up(knex: Knex): Promise<void> {
-    return knex.schema.alterTable('essay_grading', table => {
-        for (let index = 1; index <= 14; index++) {
-            table.dropColumn(`comment_c${index}`);
-        }
+    const columns = await Promise.all(new Array(14).fill(0).map(async (_, index) => {
+        const column = `comment_c${index + 1}`;
+        const exists = await knex.schema.hasColumn('essay_grading', column);
+        return exists ? column : false;
+    }));
+    return knex.schema.alterTable('essay_grading', async table => {
+        columns.forEach(column => {
+            if (column) table.dropColumn(column);
+        });
     });
 }
 
 
 export async function down(knex: Knex): Promise<void> {
+    const columns = await Promise.all(new Array(14).fill(0).map(async (_, index) => {
+        const column = `comment_c${index + 1}`;
+        const exists = await knex.schema.hasColumn('essay_grading', column);
+        return !exists ? column : false;
+    }));
     return knex.schema.alterTable('essay_grading', table => {
-        for (let index = 1; index <= 14; index++) {
-            table.string(`comment_c${index}`, 500)
+        columns.forEach(column => {
+            if(column) table.string(column, 500)
                 .nullable().defaultTo(null);
-        }
+        });
     });
 }
 
