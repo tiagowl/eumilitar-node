@@ -6,8 +6,7 @@ export async function up(knex: Knex): Promise<void> {
     const exists = await schema.hasTable('essays');
     return (exists ? schema :
         schema.createTable('essays', table => {
-            table.increments('essay_id').index()
-                .notNullable();
+            table.specificType('essay_id', 'int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY');
             table.string('file_name', 255).notNullable();
             table.string('file_url', 200).notNullable();
             table.string('file_path', 255).notNullable();
