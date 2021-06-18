@@ -57,6 +57,8 @@ services:
     test_db:
         image: mariadb
         restart: on-failure
+        volumes:
+            - ~/.data/eu-militar-test:/var/lib/mysql
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user

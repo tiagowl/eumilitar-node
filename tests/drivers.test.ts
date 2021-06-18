@@ -31,7 +31,8 @@ async function authenticate(user: UserModel, api: supertest.SuperTest<supertest.
 describe('#1 Teste na api do usuário', () => {
     const user = userFactory();
     beforeAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(driver)
+            .onConflict('user_id').merge();
         await saveUser(user, service);
         const themeService = EssayThemeService(driver);
         await themeService.del().delete()
@@ -266,7 +267,8 @@ describe('#1 Teste na api do usuário', () => {
 describe('#2 Testes nos temas', () => {
     const user: UserModel = userFactory();
     beforeAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(driver)
+            .onConflict('user_id').merge();
         await saveUser(user, service);
         const themeService = EssayThemeService(driver);
         await themeService.del().delete()
@@ -409,7 +411,8 @@ describe('#3 Redações', () => {
         const theme = await repository.create(themeData);
         expect(theme.id).not.toBeUndefined();
         expect(theme.id).not.toBeNull();
-        const service = UserService(driver);
+        const service = UserService(driver)
+            .onConflict('user_id').merge();
         await saveUser(user, service);
         await saveUser(student, service);
         done()
@@ -532,7 +535,8 @@ describe('#4 Invalidação da redação', () => {
         const theme = await repository.create(themeData);
         expect(theme.id).not.toBeUndefined();
         expect(theme.id).not.toBeNull();
-        const service = UserService(driver);
+        const service = UserService(driver)
+            .onConflict('user_id').merge();
         await saveUser(user, service);
         await saveUser(student, service);
         done()
@@ -600,11 +604,12 @@ describe('#5 Correção da redação', () => {
         const theme = await repository.create(themeData);
         expect(theme.id).not.toBeUndefined();
         expect(theme.id).not.toBeNull();
-        const service = UserService(driver);
+        const service = UserService(driver)
+            .onConflict('user_id').merge();
         await saveUser(user, service);
         await saveUser(student, service);
         done()
-    })
+    }, 100000)
     afterAll(async (done) => {
         const service = UserService(driver);
         await deleteUser(user, service);
@@ -644,7 +649,7 @@ describe('#5 Correção da redação', () => {
         expect(response.body, JSON.stringify(response.body)).toBeDefined();
         expect(response.body.essay).toBe(base.id);
         done();
-    })
+    }, 100000)
     test('Recuperação', async done => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
@@ -687,5 +692,5 @@ describe('#5 Correção da redação', () => {
                 expect(response.body[key]).toBe(value);
             });
         done();
-    })
+    }, 100000)
 })
