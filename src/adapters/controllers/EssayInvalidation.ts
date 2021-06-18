@@ -33,6 +33,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
             corrector: entity.corrector,
             reason: entity.reason,
             invalidationDate: entity.invalidationDate,
+            comment: entity.comment,
         };
     }
 
