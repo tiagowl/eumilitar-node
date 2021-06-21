@@ -16,11 +16,11 @@ interface EssayThemeBaseInterface {
 }
 
 export interface EssayThemeInput extends EssayThemeBaseInterface {
-    file: Express.Multer.File;
+    file: Express.MulterS3.File;
 }
 
 export interface EssayThemeUpdating extends EssayThemeBaseInterface {
-    file?: Express.Multer.File;
+    file?: Express.MulterS3.File;
 }
 
 export interface EssayThemeResponse extends EssayThemeBaseInterface {
@@ -115,7 +115,9 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
     }
 
     public async create(rawData: EssayThemeInput): Promise<EssayThemeResponse> {
-        const data = await this.validate({ ...rawData, file: rawData.file.path }) as EssayThemeData;
+        // tslint:disable-next-line
+        console.error(rawData.file);
+        const data = await this.validate({ ...rawData, file: rawData.file.path || rawData.file.location }) as EssayThemeData;
         return this.useCase.create({
             ...data,
             courses: new Set(data.courses),
@@ -149,7 +151,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
     public async update(id: number, rawData: EssayThemeUpdating) {
         try {
             this.schema = updatingSchema;
-            const data = await this.validate({ ...rawData, file: rawData.file?.path || '' }) as EssayThemeData;
+            const data = await this.validate({ ...rawData, file: rawData.file?.path || rawData.file?.location }) as EssayThemeData;
             const theme = await this.useCase.update(id, {
                 ...data,
                 courses: new Set(data.courses),
@@ -171,7 +173,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
 
     public async get(filter: Partial<EssayThemeResponse>) {
         const theme = await this.useCase.get({ ...filter, courses: new Set(filter.courses) });
-        if(!theme) return undefined;
+        if (!theme) return undefined;
         return this.parseEntity(new EssayTheme(theme));
     }
 

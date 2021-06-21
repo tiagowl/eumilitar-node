@@ -40,6 +40,7 @@ const settings = Object.freeze({
     },
     storage: {
         bucket: process.env.BUCKET_NAME || '',
+        destination: process.env.S3_DESTINATION || '',
         permission: process.env.STORAGE_PERMISSION || "authenticated-read",
         allowedMimes: [
             "application/pdf",
@@ -49,6 +50,10 @@ const settings = Object.freeze({
         ],
         type: process.env.STORAGE_TYPE || 'local',
         maxSize: Number(process.env.MAX_SIZE_UPLOAD || 10) * 1024 * 1024,
+        credentials: {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        },
         local: {
             destination: path.resolve(__dirname, "..", "tmp", "uploads")
         }

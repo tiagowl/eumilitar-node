@@ -276,7 +276,7 @@ export function createEssay(context: Context): RequestHandler<any, EssayResponse
             if (!req.user) throw { message: 'Não autenticado', status: 401 };
             const controller = new EssayController(driver);
             const response = await controller.create({
-                course: req.body.course, file: req.file, student: req.user.id
+                course: req.body.course, file: (req.file as Express.MulterS3.File), student: req.user.id
             });
             res.status(201).json(response);
         } catch (error) {

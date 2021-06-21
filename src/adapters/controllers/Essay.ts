@@ -11,7 +11,7 @@ import UserUseCase from "../../cases/UserUseCase";
 import { AccountPermission } from "../../entities/User";
 
 export interface EssayInput {
-    file: Express.Multer.File;
+    file: Express.MulterS3.File;
     student: number;
     course: Course;
 }
@@ -115,7 +115,7 @@ export default class EssayController extends Controller<EssayData> {
         try {
             const data = await this.validate({
                 ...rawData,
-                file: rawData.file.path,
+                file: rawData.file.path || rawData.file.location,
                 student: rawData.student,
             }) as EssayCreationData;
             const created = await this.useCase.create(data);
