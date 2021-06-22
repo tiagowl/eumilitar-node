@@ -5,19 +5,53 @@
 
 image: node:14
 
+definitions:
+  services:
+    mysql:
+      image: mysql:5.7
+      variables:
+        MYSQL_DATABASE: 'pipelines'
+        MYSQL_RANDOM_ROOT_PASSWORD: 'yes' 
+        MYSQL_USER: 'test_user'
+        MYSQL_PASSWORD: 'test_user_password'
+  steps:
+    - step: &deploy
+        name: Build and Deploy
+        script:
+          - scp ./install.sh $USER_ADMIN@$SERVER_HOST:/tmp/install.sh
+          - ssh -t $USER_ADMIN@$SERVER_HOST "\
+            ENV_TYPE=$ENV_TYPE;\
+            ENV_BRANCH=$BITBUCKET_BRANCH;\
+            EUMILITAR_REPOSITORY=$REPOSITORY;\
+            VAR_ENVS=$VAR_ENVS;\
+            bash /tmp/install.sh"
 pipelines:
   default:
     - step:
+        services:
+          - mysql
         name: Build and Test
         caches:
           - node
         script:
+          - export TEST_DB_NAME=pipelines
+          - export TEST_DB_USER=test_user
+          - export TEST_DB_PASS=test_user_password
+          - export TEST_DB_HOST=mysql
+          - export TEST_DB_PORT=3306
           - yarn install
-          - yarn migrate:test
+          - yarn migrate:test --env test
           - yarn test
   branches:
+    master:
+      - step:
+          name: Set envs
+          script:
+            - export VAR_ENVS=$PRODUCTION_VARS
+      - step: *deploy
     staging:
       - step:
-          name: Build and Deploy
+          name: Set envs
           script:
-            - ls
+            - export VAR_ENVS=$STAGING_VARS
+      - step: *deploy
