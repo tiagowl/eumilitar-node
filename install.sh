@@ -1,23 +1,33 @@
 #!/bin/bash
 
-DIR="/usr/share/eumilitar"
+DIR="/usr/share/eumilitar/$ENV_TYPE"
+SERVICE="eumilitar-$ENV_TYPE"
 
-useradd api -Ms /bin/false
+useradd eumilitar-api -Ms /bin/false
+
+install_eumilitar() {
+    cd $DIR
+    rm -rf ./node_modules ./dist
+    git checkout $ENV_BRANCH
+    git pull --force --no-commit --rebase origin $ENV_BRANCH
+    yarn install
+    yarn build
+    echo $VAR_ENVS >.env
+    echo "ExecStart=/usr/bin/env node $DIR" >>eumilitar.service
+    cp -f ./eumilitar.service /etc/systemd/system/$SERVICE.service
+}
 
 if [ -d "$DIR/.git" ]; then
     echo "Instalação encontrada"
-    cd $DIR
-    git pull
-    yarn install
-    yarn build
-    systemclt restart eumilitar
+    echo "Atualizando..."
+    install_eumilitar
+    echo "Atualizado"
+    systemclt restart $SERVICE
 else
     echo "Instalando..."
     mkdir -p $DIR || exit
     git clone $EUMILITAR_REPOSITORY $DIR
-    cd $DIR
-    yarn install
-    yarn build
-    cp ./eumilitar.service /etc/systemd/system/
-    systemctl enable eumilitar --now
+    install_eumilitar
+    echo "Instalado"
+    systemctl enable $SERVICE --now
 fi

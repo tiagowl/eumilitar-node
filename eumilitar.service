@@ -8,5 +8,4 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
-User=eumilitar
-ExecStart=/usr/bin/env node /usr/share/eumilitar
+User=eumilitar-api
