@@ -115,8 +115,6 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
     }
 
     public async create(rawData: EssayThemeInput): Promise<EssayThemeResponse> {
-        // tslint:disable-next-line
-        console.error(rawData.file);
         const data = await this.validate({ ...rawData, file: rawData.file.path || rawData.file.location }) as EssayThemeData;
         return this.useCase.create({
             ...data,

@@ -10,22 +10,19 @@ interface StorageTypes {
 
 
 export default function createStorage(settings: any) {
-    const { credentials, bucket, destination } = settings;
+    const { credentials, bucket, destination, permission } = settings;
     function createFileName(_: any, file: Express.MulterS3.File, cb: (error: Error | null, destination: string) => void) {
         const fileExtension = mime.getExtension(file.mimetype);
         const now = new Date().toISOString();
         const id = v4();
-        const name = `${destination}${id}-${now}.${fileExtension}`;
-        cb(null, name);
+        cb(null, `${destination}${id}-${now}.${fileExtension}`);
     }
     const storageTypes: StorageTypes = {
         s3: multerS3({
-            s3: new S3({
-                credentials,
-            }),
+            s3: new S3({ credentials, }),
             bucket,
             contentType: multerS3.AUTO_CONTENT_TYPE,
-            // acl: settings.permission,
+            acl: permission,
             key: createFileName,
         }),
         local: multer.diskStorage({

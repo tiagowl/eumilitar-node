@@ -231,10 +231,12 @@ describe('#2 Testes nos temas de redação', () => {
             startDate: new Date(Date.now() - 70 * 24 * 60 * 60),
             helpText: faker.lorem.lines(3),
             deactivated: false,
+            // @ts-ignore
             file: {
                 path: '/usr/share/data/theme.pdf',
                 buffer: Buffer.from(new ArrayBuffer(10), 0, 2),
                 size: 1,
+                bucket: faker.internet.userName(),
                 fieldname: 'themeFile',
                 filename: faker.name.title(),
                 destination: '/usr/share/data/',
@@ -242,6 +244,7 @@ describe('#2 Testes nos temas de redação', () => {
                 encoding: 'utf-8',
                 originalname: faker.name.title(),
                 stream: new Readable(),
+                location: faker.internet.url(),
             },
             courses: ['esa', 'espcex'] as Course[]
         }
@@ -264,6 +267,7 @@ describe('#2 Testes nos temas de redação', () => {
             startDate: new Date(Date.now() + 350 * 24 * 60 * 60),
             helpText: faker.lorem.lines(3),
             deactivated: false,
+            // @ts-ignore
             file: {
                 path: '/usr/share/data/theme.pdf',
                 buffer: Buffer.from(new ArrayBuffer(10), 0, 2),
@@ -275,6 +279,7 @@ describe('#2 Testes nos temas de redação', () => {
                 encoding: 'utf-8',
                 originalname: faker.name.title(),
                 stream: new Readable(),
+                location: faker.internet.url(),
             },
             courses: ['esa', 'espcex'] as Course[],
         }
@@ -298,6 +303,7 @@ describe('#2 Testes nos temas de redação', () => {
             startDate: new Date(Date.now() + 3500 * 24 * 60 * 60),
             helpText: faker.lorem.lines(3),
             deactivated: false,
+            // @ts-ignore
             file: {
                 path: '/usr/share/data/theme.pdf',
                 buffer: Buffer.from(new ArrayBuffer(10), 0, 2),
@@ -309,6 +315,7 @@ describe('#2 Testes nos temas de redação', () => {
                 encoding: 'utf-8',
                 originalname: faker.name.title(),
                 stream: new Readable(),
+                location: faker.internet.url(),
             },
             courses: ['esa'] as Course[],
         }
@@ -366,6 +373,7 @@ describe('#4 Redações', () => {
         expect(theme.id).not.toBeUndefined();
         expect(theme.id).not.toBeNull();
         const data: EssayInput = {
+            // @ts-ignore
             file: {
                 path: '/usr/share/data/theme.png',
                 buffer: Buffer.from(new ArrayBuffer(10), 0, 2),
@@ -377,6 +385,7 @@ describe('#4 Redações', () => {
                 encoding: 'utf-8',
                 originalname: faker.name.title(),
                 stream: new Readable(),
+                location: faker.internet.url(),
             },
             student: user.user_id,
             course: 'espcex',
