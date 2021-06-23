@@ -1,42 +1,51 @@
 #!/bin/bash
 
-ENV_BRANCH=$1
-ENV_TYPE=$2
-EUMILITAR_REPOSITORY=$3
-VAR_ENVS=$4
+ENV_TYPE=$1
 
 DIR="/usr/share/eumilitar/$ENV_TYPE"
 SERVICE="eumilitar-$ENV_TYPE"
 USER_NAME="eumilitar-api"
+UPLOADED="/tmp/eumilitar"
 
-echo "" >.env
-
-for env in $VAR_ENVS; do
-    echo "
-$env" >>.env
-done
-
-install_eumilitar() {
-    useradd $USER_NAME -Ms /bin/false
+prepare_dir() {
+    mkdir -p $DIR
+    cd $UPLOADED
+    cp -rf $UPLOADED/* $DIR/
+    cp -f .env $DIR/.env
     cd $DIR
-    rm -rf ./node_modules ./dist
-    git checkout $ENV_BRANCH
-    git pull --force --progress origin $ENV_BRANCH
-    yarn install || exit
-    yarn build || exit
-    yarn migrate || exit
-    rm -rf ./node_modules
-    yarn install --production
+}
+
+create_user() {
+    useradd $USER_NAME -Ms /bin/false || true
+}
+
+prepare() {
+    yarn install --production || exit
+    yarn migrate:prod || exit
+}
+
+create_service() {
     echo "$(cat eumilitar.service)
 User=$USER_NAME
 ExecStart=/usr/bin/env node $DIR 
-    " >$SERVICE.service
-    cp -f ./$SERVICE.service /etc/systemd/system/$SERVICE.service
-    chmod -R 0400 .
-    chown -R $USER_NAME:$USER_NAME $DIR
+    " >/etc/systemd/system/$SERVICE.service
 }
 
-if [ -d "$DIR/.git" ]; then
+post_install() {
+    chmod -R 0400 $DIR
+    chown -R $USER_NAME:$USER_NAME $DIR
+    rm -rf $UPLOADED
+}
+
+install_eumilitar() {
+    prepare_dir &&
+        create_user &&
+        prepare &&
+        create_service &&
+        post_install || exit
+}
+
+if [ -d "$DIR" ]; then
     echo "Instalação encontrada"
     echo "Atualizando..."
     install_eumilitar
@@ -44,8 +53,6 @@ if [ -d "$DIR/.git" ]; then
     systemctl restart $SERVICE
 else
     echo "Instalando..."
-    mkdir -p $DIR || exit
-    git clone $EUMILITAR_REPOSITORY $DIR || exit
     install_eumilitar
     echo "Instalado"
     systemctl enable $SERVICE --now
