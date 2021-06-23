@@ -1,20 +1,29 @@
 #!/bin/bash
 
-export DIR="/usr/share/eumilitar/$ENV_TYPE"
-export SERVICE="eumilitar-$ENV_TYPE"
-export USER_NAME="eumilitar-api"
+ENV_BRANCH=$1
+ENV_TYPE=$2
+EUMILITAR_REPOSITORY=$3
+VAR_ENVS=$4
+
+DIR="/usr/share/eumilitar/$ENV_TYPE"
+SERVICE="eumilitar-$ENV_TYPE"
+USER_NAME="eumilitar-api"
 
 install_eumilitar() {
     useradd $USER_NAME -Ms /bin/false
     cd $DIR
     rm -rf ./node_modules ./dist
     git checkout $ENV_BRANCH
-    git pull --force --no-commit --rebase origin $ENV_BRANCH
+    git pull --force --progress origin $ENV_BRANCH
     yarn install
     yarn build
     echo $VAR_ENVS >.env
-    echo "ExecStart=/usr/bin/env node $DIR" >>eumilitar.service
-    cp -f ./eumilitar.service /etc/systemd/system/$SERVICE.service
+    echo "
+        $(cat eumilitar.service)
+        User=$USER_NAME
+        ExecStart=/usr/bin/env node $DIR
+    " >$SERVICE.service
+    cp -f ./$SERVICE.service /etc/systemd/system/$SERVICE.service
     chmod -R 0400 .
     chown -R $USER_NAME:$USER_NAME $DIR
 }
