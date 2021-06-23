@@ -121,3 +121,6 @@ database/
 migrations/*.js
 ./*.js
 tmp/
+*.local
+*.local.*
+.ssh

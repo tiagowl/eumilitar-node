@@ -1,11 +1,11 @@
 #!/bin/bash
 
-DIR="/usr/share/eumilitar/$ENV_TYPE"
-SERVICE="eumilitar-$ENV_TYPE"
-
-useradd eumilitar-api -Ms /bin/false
+export DIR="/usr/share/eumilitar/$ENV_TYPE"
+export SERVICE="eumilitar-$ENV_TYPE"
+export USER_NAME="eumilitar-api"
 
 install_eumilitar() {
+    useradd $USER_NAME -Ms /bin/false
     cd $DIR
     rm -rf ./node_modules ./dist
     git checkout $ENV_BRANCH
@@ -15,6 +15,8 @@ install_eumilitar() {
     echo $VAR_ENVS >.env
     echo "ExecStart=/usr/bin/env node $DIR" >>eumilitar.service
     cp -f ./eumilitar.service /etc/systemd/system/$SERVICE.service
+    chmod -R 0400 .
+    chown -R $USER_NAME:$USER_NAME $DIR
 }
 
 if [ -d "$DIR/.git" ]; then
@@ -26,7 +28,7 @@ if [ -d "$DIR/.git" ]; then
 else
     echo "Instalando..."
     mkdir -p $DIR || exit
-    git clone $EUMILITAR_REPOSITORY $DIR
+    git clone $EUMILITAR_REPOSITORY $DIR || exit
     install_eumilitar
     echo "Instalado"
     systemctl enable $SERVICE --now

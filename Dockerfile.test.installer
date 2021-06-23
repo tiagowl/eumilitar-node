@@ -1,0 +1,23 @@
+FROM centos:7
+
+RUN yum update -y && \
+    yum install -y \
+    git systemd curl && \
+    curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
+    yum install -y nodejs && \
+    npm install -g yarn
+
+
+ARG ENV_BRANCH
+ARG VAR_ENVS 
+ARG ENV_TYPE
+ARG EUMILITAR_REPOSITORY
+
+ENV EUMILITAR_REPOSITORY $EUMILITAR_REPOSITORY
+ENV ENV_BRANCH $ENV_BRANCH
+ENV VAR_ENVS  $VAR_ENVS 
+ENV ENV_TYPE $ENV_TYPE
+
+ADD ./install.sh /tmp/
+COPY .ssh /root/.ssh
+RUN bash /tmp/install.sh
