@@ -17,12 +17,11 @@ install_eumilitar() {
     git pull --force --progress origin $ENV_BRANCH
     yarn install
     yarn build
+    yarn migrate
+    rm -rf ./node_modules
+    yarn install --production
     echo $VAR_ENVS >.env
-    echo "
-        $(cat eumilitar.service)
-        User=$USER_NAME
-        ExecStart=/usr/bin/env node $DIR
-    " >$SERVICE.service
+    echo $(cat eumilitar.service) \n User=$USER_NAME \n ExecStart=/usr/bin/env node $DIR >$SERVICE.service
     cp -f ./$SERVICE.service /etc/systemd/system/$SERVICE.service
     chmod -R 0400 .
     chown -R $USER_NAME:$USER_NAME $DIR
@@ -33,7 +32,7 @@ if [ -d "$DIR/.git" ]; then
     echo "Atualizando..."
     install_eumilitar
     echo "Atualizado"
-    systemclt restart $SERVICE
+    systemctl restart $SERVICE
 else
     echo "Instalando..."
     mkdir -p $DIR || exit
