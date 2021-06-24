@@ -8,9 +8,9 @@ export async function up(knex: Knex): Promise<void> {
         table.text('helpText').notNullable().defaultTo('');
         table.string('file', 255).notNullable();
         table.string('courses').notNullable();
-        table.timestamp('startDate').notNullable();
-        table.timestamp('endDate').notNullable();
-        table.timestamp('lastModified').notNullable().defaultTo(knex.fn.now());
+        table.dateTime('startDate').notNullable();
+        table.dateTime('endDate').notNullable();
+        table.dateTime('lastModified').notNullable().defaultTo(knex.fn.now());
     })
 }
 

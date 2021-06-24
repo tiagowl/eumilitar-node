@@ -23,7 +23,7 @@ export async function up(knex: Knex): Promise<void> {
         .createTable('login_sessions', (table) => {
             table.string('session_id', 255).primary()
             table.integer('user_id', 11).unsigned().references('user_id').inTable('users').onDelete('CASCADE')
-            table.timestamp('login_time').notNullable().defaultTo(knex.fn.now())
+            table.timestamp('login_time').notNullable().defaultTo(knex.fn.now());
         })
     return createLoginSessions;
 }

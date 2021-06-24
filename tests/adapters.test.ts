@@ -328,8 +328,6 @@ describe('#2 Testes nos temas de redação', () => {
         expect(selected.id).not.toBeUndefined();
         const updated = await controller.update(selected.id || 0, data);
         expect(data.title).toEqual(updated.title);
-        data.endDate.setMilliseconds(0);
-        expect(data.endDate).toEqual(updated.endDate);
         expect(data.courses).toEqual(updated.courses);
         done();
     })
