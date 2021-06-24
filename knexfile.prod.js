@@ -1,7 +1,6 @@
 "use strict";
 const { config } = require('dotenv');
 config();
-console.log(process.env);
 module.exports = {
     client: 'mysql',
     connection: process.env.DATABASE_URL || {

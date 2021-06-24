@@ -1,13 +1,14 @@
 #!/bin/bash
 
 ENV_TYPE=$1
-
-DIR="/usr/share/eumilitar/$ENV_TYPE"
+ROOT_DIR="/usr/share/eumilitar"
+DIR="$ROOT_DIR/$ENV_TYPE"
 SERVICE="eumilitar-$ENV_TYPE"
 USER_NAME="eumilitar-api"
 UPLOADED="/tmp/eumilitar"
 
 prepare_dir() {
+    rm -r $DIR
     mkdir -p $DIR
     cd $UPLOADED
     cp -rf $UPLOADED/* $DIR/
@@ -16,10 +17,12 @@ prepare_dir() {
 }
 
 create_user() {
-    useradd $USER_NAME -Ms /bin/false || true
+    userdel $USER_NAME
+    useradd $USER_NAME -Ms /bin/sh || true
 }
 
 prepare() {
+    rm -rf ./node_modules
     yarn install --production || exit
     yarn migrate:prod || exit
 }
@@ -32,9 +35,11 @@ ExecStart=/usr/bin/env node $DIR
 }
 
 post_install() {
-    chmod -R 0400 $DIR
-    chown -R $USER_NAME:$USER_NAME $DIR
+    chown -Rc $USER_NAME:$USER_NAME $ROOT_DIR
+    chown -Rc $USER_NAME:$USER_NAME $DIR/*
+    chmod 0400 .env
     rm -rf $UPLOADED
+    systemctl daemon-reload
 }
 
 install_eumilitar() {
