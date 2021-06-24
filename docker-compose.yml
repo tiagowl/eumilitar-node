@@ -8,7 +8,6 @@ services:
         restart: on-failure
         volumes:
             - ./:/usr/share/api:z
-        env_file: .env
         user: root
         ports:
             - 80:22000
@@ -30,10 +29,10 @@ services:
             EXPIRATION_TIME: 48
 
     db:
-        image: mariadb
+        image: mysql:5.7
         restart: on-failure
         volumes:
-            - ~/.data/eu-militar:/var/lib/mysql
+            - eu-militar:/var/lib/mysql
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user
@@ -55,10 +54,10 @@ services:
             PMA_HOST: db
 
     test_db:
-        image: mariadb
+        image: mysql:5.7
         restart: on-failure
         volumes:
-            - ~/.data/eu-militar-test:/var/lib/mysql
+            - eu-militar-test:/var/lib/mysql
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user
@@ -78,3 +77,7 @@ services:
             MYSQL_DATABASE: nice_marmot
             MYSQL_ROOT_PASSWORD: passwd
             PMA_HOST: test_db
+
+volumes: 
+    eu-militar:
+    eu-militar-test:

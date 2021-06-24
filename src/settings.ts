@@ -1,7 +1,7 @@
 import path from 'path';
 import { config } from 'dotenv';
 
-config({ path: path.resolve('../.env') });
+config({ path: path.resolve('.env') });
 
 const settings = Object.freeze({
     database: {

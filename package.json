@@ -72,7 +72,7 @@
     "migrate:test": "knex migrate:latest --env test",
     "migrate": "knex migrate:latest",
     "migrate:prod": "knex migrate:latest --env production",
-    "migrate:prepare": "tsc --outDir ./migrations.prod ./migrations/*",
+    "migrate:prepare": "tsc --outDir ./migrations.prod --module commonjs --target ES2020 --lib es2020 ./migrations/*",
     "dev": "nodemon",
     "lint": "tslint -c tslint.json 'src/**/*.ts'"
   },
