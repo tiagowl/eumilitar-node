@@ -30,7 +30,8 @@ prepare() {
 create_service() {
     echo "$(cat eumilitar.service)
 User=$USER_NAME
-ExecStart=/usr/bin/env node $DIR 
+WorkingDirectory=$DIR 
+ExecStart=/usr/bin/env node $DIR
     " >/etc/systemd/system/$SERVICE.service
 }
 
