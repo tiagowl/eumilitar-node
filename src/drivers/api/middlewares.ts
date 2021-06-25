@@ -5,13 +5,11 @@ import morgan from 'morgan';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import cookieSession from 'cookie-session';
-import CheckAuthController from "../../adapters/controllers/CheckAuth";
 import { Context } from "./interfaces";
 
 
-function getMiddlewares({ settings }: Context) {
-
-    const middlewares: RequestHandler[] = [
+function getMiddlewares({ settings }: Context): RequestHandler[] {
+    return [
         cors(settings.cors),
         express.json(),
         cookieParser(),
@@ -19,8 +17,6 @@ function getMiddlewares({ settings }: Context) {
         helmet(settings.helmet),
         morgan(settings.logging.format, settings.logging.options),
     ];
-
-    return middlewares;
 }
 
 
