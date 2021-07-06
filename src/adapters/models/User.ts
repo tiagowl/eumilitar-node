@@ -124,8 +124,6 @@ export default class UserRepository implements UserRepositoryInterface {
 
     public async update(data: UserFilter) {
         const parsedData = await this.toDb(data);
-        // tslint:disable-next-line
-        console.log(parsedData);
         return this.service.update(parsedData);
     }
 

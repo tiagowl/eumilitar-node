@@ -114,10 +114,10 @@ export async function saveConfirmationToken(token: string, userId: number, drive
     return service.insert(data);
 }
 
-export async function appFactory(driver: Knex = driverFactory()) {
+export async function appFactory(driver: Knex = driverFactory(), customSettings = settings) {
     const smtp = await smtpFactory();
     const storage = createStorage(settings.storage)
-    return new Application({ smtp, driver, storage, settings })
+    return new Application({ smtp, driver, storage, settings: customSettings })
 }
 
 export async function createEssay(driver: Knex, id: number) {

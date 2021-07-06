@@ -9,7 +9,7 @@ import EssayController, { EssayInput, EssayResponse } from "../../adapters/contr
 import EssayInvalidationController from "../../adapters/controllers/EssayInvalidation";
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
-import UserController, { UserResponse } from "../../adapters/controllers/User";
+import UserController, { CancelData, UserResponse } from "../../adapters/controllers/User";
 import { CorrectionInterface } from "../../entities/Correction";
 import { EssayInvalidationInterface, Reason } from "../../entities/EssayInvalidation";
 import { Course } from "../../entities/EssayTheme";
@@ -459,4 +459,19 @@ export function getInvalidation(context: Context) {
         }
     });
     return handler;
+}
+
+export function cancelUser(context: Context): RequestHandler<void, void, CancelData> {
+    const { driver, settings } = context;
+    return async (req, res) => {
+        try {
+            const controller = new UserController(driver, settings.hotmart.hottok);
+            await controller.cancel(req.body);
+            res.status(204).send(undefined);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    };
 }

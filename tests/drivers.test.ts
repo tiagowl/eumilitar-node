@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { Course } from '../src/entities/EssayTheme';
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
+import settings from '../src/settings';
 
 const driver = driverFactory();
 
@@ -260,6 +261,32 @@ describe('#1 Teste na api do usuário', () => {
         expect(status, JSON.stringify({ body, error })).toBe(200);
         expect(body, JSON.stringify(body)).toBeInstanceOf(Array);
         expect(body.length, JSON.stringify(body)).toBeGreaterThan(0);
+        done();
+    })
+    test('Cancelar usuário', async done => {
+        const hottok = faker.datatype.uuid()
+        const app = await appFactory(driver, { ...settings, hotmart: { hottok }, });
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const { body, status, error } = await api.post('/users/cancellation/')
+            .send({
+                hottok,
+                'actualRecurrenceValue': 335.34,
+                'cancellationDate': Date.now(),
+                'dateNextCharge': faker.date.future(3).getTime(),
+                'productName': user.permission,
+                'subscriberCode': faker.random.alphaNumeric(),
+                'subscriptionId': faker.datatype.number(),
+                'subscriptionPlanName': faker.name.title(),
+                'userEmail': user.email,
+                'userName': user.first_name,
+            });
+        expect(body).toMatchObject({});
+        expect(status).toBe(204);
+        const response = await api.get('/users/profile/')
+            .set('Authorization', header);
+        expect(response.body?.status).toBe('inactive');
         done();
     })
 })

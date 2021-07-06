@@ -86,6 +86,12 @@ const routes: Route[] = [
         handlers: [
             { handler: handlers.listUsers, method: 'get' }
         ]
+    },
+    {
+        path: '/users/cancellation/',
+        handlers: [
+            { handler: handlers.cancelUser, method: 'post' },
+        ]
     }
 ];
 
