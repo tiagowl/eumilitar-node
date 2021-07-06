@@ -389,13 +389,13 @@ export function invalidateEssay(context: Context): RequestHandler<{ id: string }
 }
 
 export function correctEssay(context: Context): RequestHandler<{ id: string }, CorrectionInterface, CorrectionRequest> {
-    const { driver } = context;
+    const { driver, smtp, settings } = context;
     const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
             const { user } = req;
-            const controller = new CorrectionController(driver);
+            const controller = new CorrectionController(driver, smtp, settings.messageConfig);
             const response = await controller.create({ ...req.body, essay: Number(id), corrector: Number(user?.id) });
             res.status(201).json(response);
         } catch (error) {
@@ -408,12 +408,12 @@ export function correctEssay(context: Context): RequestHandler<{ id: string }, C
 }
 
 export function getCorrection(context: Context): RequestHandler<{ id: string }, CorrectionInterface, void> {
-    const { driver } = context;
+    const { driver, smtp, settings } = context;
     const handler = express.Router({ mergeParams: true }).use(isAuthenticated(context));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
-            const controller = new CorrectionController(driver);
+            const controller = new CorrectionController(driver, smtp, settings.messageConfig);
             const response = await controller.get({ essay: Number(id) });
             res.status(200).json(response);
         } catch (error) {

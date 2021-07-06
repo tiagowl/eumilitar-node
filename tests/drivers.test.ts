@@ -35,7 +35,7 @@ describe('#1 Teste na api do usuário', () => {
             .onConflict('user_id').merge();
         await saveUser(user, service);
         const themeService = EssayThemeService(driver);
-        await themeService.del().delete()
+        await themeService.del().delete();
         done()
     })
     afterAll(async (done) => {
@@ -123,7 +123,7 @@ describe('#1 Teste na api do usuário', () => {
         const token = await generateConfirmationToken();
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, driver);
         const response = await api.get(`/password-recoveries/${encodeURIComponent(token)}/`);
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ isValid: true });
@@ -135,7 +135,7 @@ describe('#1 Teste na api do usuário', () => {
         const token = await generateConfirmationToken();
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, driver);
         const credentials = {
             token,
             password: 'abda143501',
@@ -143,7 +143,7 @@ describe('#1 Teste na api do usuário', () => {
         }
         const response = await api.put('/users/profile/password/')
             .send(credentials);
-        expect(response.status).toBe(200);
+        expect(response.status, JSON.stringify(response.body)).toBe(200);
         expect(response.body).toEqual({ updated: true });
         const checkResponse = await api.get(`/password-recoveries/${encodeURIComponent(token)}/`);
         expect(checkResponse.status).toBe(200)
@@ -171,7 +171,7 @@ describe('#1 Teste na api do usuário', () => {
         const token = await generateConfirmationToken();
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver, new Date());
+        await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date());
         const credentials = {
             token,
             password: 'abda143501',

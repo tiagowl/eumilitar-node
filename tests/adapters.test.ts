@@ -498,7 +498,8 @@ describe('#6 Correções', () => {
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
-        const controller = new CorrectionController(driver);
+        const smtp = await smtpFactory();
+        const controller = new CorrectionController(driver, smtp, settings.messageConfig);
         const data = {
             'essay': essay.id,
             'corrector': user.user_id,
@@ -535,7 +536,8 @@ describe('#6 Correções', () => {
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
-        const controller = new CorrectionController(driver);
+        const smtp = await smtpFactory();
+        const controller = new CorrectionController(driver, smtp, settings.messageConfig);
         const pre = {
             'essay': essay.id,
             'corrector': user.user_id,
