@@ -119,7 +119,7 @@ describe('#1 Testes na autenticação', () => {
         const token = await generateConfirmationToken();
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver, new Date());
+        await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date());
         const controller = new CheckPasswordToken(driver);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeFalsy()
@@ -600,6 +600,26 @@ describe('#7 Testes no usuário', () => {
             expect(user.status).toBe('active');
             expect(user.id).toBeDefined();
         })
+        done();
+    })
+    test('Cancelamento', async done => {
+        const token = faker.random.alpha();
+        const controller = new UserController(driver, token);
+        const users = await controller.all({ status: 'active' });
+        const user = users[0];
+        const cancellation = await controller.cancel({
+            'hottok': token,
+            'actualRecurrenceValue': 335.34,
+            'cancellationDate': Date.now(),
+            'dateNextCharge': faker.date.future(3).getTime(),
+            'productName': user.permission,
+            'subscriberCode': faker.random.alphaNumeric(),
+            'subscriptionId': faker.datatype.number(),
+            'subscriptionPlanName': faker.name.title(),
+            'userEmail': user.email,
+            'userName': user.firstName,
+        })
+        expect(cancellation).toMatchObject({ success: true });
         done();
     })
 })

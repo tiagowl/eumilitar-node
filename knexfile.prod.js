@@ -1,6 +1,7 @@
 "use strict";
 const { config } = require('dotenv');
-config();
+const path = require('path');
+config({ path: path.resolve(__dirname, ".env") });
 module.exports = {
     client: 'mysql',
     connection: process.env.DATABASE_URL || {

@@ -1,7 +1,7 @@
 import path from 'path';
 import { config } from 'dotenv';
 
-config();
+config({ path: path.resolve(__dirname, "..", ".env") });
 
 const settings = Object.freeze({
     database: {
@@ -60,6 +60,9 @@ const settings = Object.freeze({
         local: {
             destination: path.resolve(__dirname, "..", "tmp", "uploads")
         }
+    },
+    hotmart: {
+        hottok: process.env.HOTTOK,
     }
 });
 

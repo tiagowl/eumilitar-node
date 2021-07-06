@@ -83,7 +83,7 @@ export default class UserUseCase {
         const user = await this.repository.get({ email: userMail });
         if (!user) throw new Error('Usuário não encontrado');
         user.status = 'inactive';
-        const updated = await this.repository.update(user);
+        const updated = await this.repository.update(user.data);
         if (updated === 0) throw new Error('Nenhum usuário atualizado');
         if (updated > 1) throw new Error('Mais de um usuário afetado');
         return updated;

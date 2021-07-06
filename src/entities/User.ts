@@ -49,6 +49,20 @@ export default class User implements UserInterface {
         this.#permission = data.permission;
     }
 
+    get data() {
+        return {
+            id: this.#id,
+            firstName: this.#firstName,
+            lastName: this.#lastName,
+            email: this.#email,
+            password: this.#password,
+            status: this.#status,
+            creationDate: this.#creationDate,
+            lastModified: this.#lastModified,
+            permission: this.#permission,
+        };
+    }
+
     get id() { return this.#id; }
 
     set fist_name(value: string) {
@@ -97,7 +111,7 @@ export default class User implements UserInterface {
     }
 
     public async update(data: UserUpdateData) {
-        if(data) {
+        if (data) {
             this.#email = data.email || this.#email;
             this.#firstName = data.firstName || this.#firstName;
             this.#lastName = data.lastName || this.#lastName;
@@ -109,7 +123,7 @@ export default class User implements UserInterface {
         return this;
     }
 
-    private async updateDate(){
+    private async updateDate() {
         this.#lastModified = new Date();
     }
 
