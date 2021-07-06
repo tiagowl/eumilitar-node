@@ -70,12 +70,23 @@ export default class UserUseCase {
 
     public async get(id: number) {
         this.#user = await this.repository.get({ id });
-        if(!this.#user) throw new Error('Usuário não encontrado');
+        if (!this.#user) throw new Error('Usuário não encontrado');
         return this.#user;
     }
 
     public async listAll(filter?: UserFilter) {
-        return (await this.repository.filter(filter || {})).all();
+        const filtered = await this.repository.filter(filter || {});
+        return filtered.all();
+    }
+
+    public async cancel(userMail: string) {
+        const user = await this.repository.get({ email: userMail });
+        if (!user) throw new Error('Usuário não encontrado');
+        user.status = 'inactive';
+        const updated = await this.repository.update(user);
+        if (updated === 0) throw new Error('Nenhum usuário atualizado');
+        if (updated > 1) throw new Error('Mais de um usuário afetado');
+        return updated;
     }
 
 }

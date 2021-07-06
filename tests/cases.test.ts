@@ -37,8 +37,8 @@ const essayDatabase = new Array(5).fill(0).map((_, index) => new Essay({
 const essayInvalidationDatabase = new Array(3).fill(0).map((_, id) => new EssayInvalidation({ id, corrector: 0, essay: id, reason: 'invalid', invalidationDate: new Date() }))
 
 class UserTestRepository implements UserRepositoryInterface {
-    database: any[]
-    constructor(database: any[]) {
+    database: User[]
+    constructor(database: User[]) {
         this.database = [...database]
     }
     async get(filter: UserFilter) {
@@ -334,6 +334,17 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         const useCase = new UserUseCase(usedRepo);
         const all = await useCase.listAll();
         expect(all).toMatchObject(await userDatabase);
+        done();
+    });
+    test('Cancelamento', async done => {
+        const userRepo = new UserTestRepository(await userDatabase);
+        const user = await userRepo.get({ id: 0 });
+        const useCase = new UserUseCase(userRepo);
+        const cancellation = await useCase.cancel(user.email);
+        expect(cancellation).toBe(1);
+        const updatedUser = await userRepo.get({ id: 0 });
+        expect(updatedUser.email).toEqual(user.email);
+        expect(updatedUser.status).toEqual('inactive');
         done();
     })
 })
