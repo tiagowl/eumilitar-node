@@ -452,7 +452,8 @@ describe('#5 Invalidações', () => {
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
-        const controller = new EssayInvalidationController(driver);
+        const smtp = await smtpFactory();
+        const controller = new EssayInvalidationController(driver, smtp, settings.messageConfig);
         const created = await controller.create({ essay: essay.id, corrector: user.user_id, comment: faker.lorem.lines(7), reason: 'other' });
         expect(created).toBeDefined();
         expect(created.id).toBeDefined();
@@ -465,7 +466,8 @@ describe('#5 Invalidações', () => {
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
-        const controller = new EssayInvalidationController(driver);
+        const smtp = await smtpFactory();
+        const controller = new EssayInvalidationController(driver, smtp, settings.messageConfig);
         const created = await controller.create({ essay: essay.id, corrector: user.user_id, comment: faker.lorem.lines(7), reason: 'other' });
         expect(created).toBeDefined();
         const invalidation = await controller.get(essay.id);

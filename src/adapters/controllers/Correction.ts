@@ -74,7 +74,7 @@ export default class CorrectionController extends Controller<CorrectionData> {
         return this.smtp.sendMail({
             from: this.config.sender,
             to: user.email,
-            subject: 'Recuperação de senha',
+            subject: 'Redação Corrigida',
             text: await this.writeNotification(user.firstName),
             html: await this.renderNotification(user.firstName),
         });
