@@ -15,12 +15,12 @@ services:
             - db
         environment:
             PORT: 22000
-            DB_NAME: nice_marmot
+            DB_NAME: eumili89_portal_aluno
             DB_USER: user
             DB_PASS: password
             DB_HOST: db
             DB_PORT: 3306
-            TEST_DB_NAME: nice_marmot
+            TEST_DB_NAME: eumili89_portal_aluno
             TEST_DB_USER: user
             TEST_DB_PASS: password
             TEST_DB_HOST: test_db
@@ -36,7 +36,7 @@ services:
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user
-            MYSQL_DATABASE: nice_marmot
+            MYSQL_DATABASE: eumili89_portal_aluno
             MYSQL_ROOT_PASSWORD: passwd
     
     phpmyadmin:
@@ -49,7 +49,7 @@ services:
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user
-            MYSQL_DATABASE: nice_marmot
+            MYSQL_DATABASE: eumili89_portal_aluno
             MYSQL_ROOT_PASSWORD: passwd
             PMA_HOST: db
 
@@ -61,7 +61,7 @@ services:
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user
-            MYSQL_DATABASE: nice_marmot
+            MYSQL_DATABASE: eumili89_portal_aluno
             MYSQL_ROOT_PASSWORD: passwd
 
     test_phpmyadmin:
@@ -74,7 +74,7 @@ services:
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user
-            MYSQL_DATABASE: nice_marmot
+            MYSQL_DATABASE: eumili89_portal_aluno
             MYSQL_ROOT_PASSWORD: passwd
             PMA_HOST: test_db
 
