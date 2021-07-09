@@ -23,8 +23,6 @@ export async function up(knex: Knex): Promise<void> {
         table.dateTime('last_modified').notNullable()
             .defaultTo(knex.fn.now());
         table.integer('theme').unsigned()
-            .references('id').inTable('essay_themes')
-            .onDelete('CASCADE').onUpdate('CASCADE')
             .nullable();
         table.string('status', 15).nullable();
         table.string('file_name').defaultTo('')
@@ -37,7 +35,6 @@ export async function up(knex: Knex): Promise<void> {
 
 export async function down(knex: Knex): Promise<void> {
     return knex.schema.alterTable('essays', table => {
-        table.dropForeign('theme');
         table.dropColumn('local');
         table.dropColumn('last_modified');
         table.dropColumn('theme');
