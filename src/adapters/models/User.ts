@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import { UserFilter, UserRepositoryInterface } from "../../cases/UserUseCase";
+import { UserFilter, UserRepositoryInterface, UserSavingData } from "../../cases/UserUseCase";
 import User, { AccountPermission, AccountStatus, UserData } from "../../entities/User";
 
 const statusMap: AccountStatus[] = ['inactive', 'active', 'pending'];
@@ -76,11 +76,13 @@ export default class UserRepository implements UserRepositoryInterface {
         { entity: ['creationDate', (value) => new Date(value)], db: ['date_created', (value) => new Date(value)] },
         { entity: ['lastModified', (value) => new Date(value)], db: ['date_modified', (value) => new Date(value)] },
     ];
+    private driver: Knex;
 
     get query() { return this.service; }
 
     constructor(driver: Knex) {
         this.service = UserService(driver);
+        this.driver = driver;
     }
 
     private async toDb(filter: UserFilter) {
@@ -150,6 +152,20 @@ export default class UserRepository implements UserRepositoryInterface {
     public async all() {
         const users = await this.service.select('*') as UserModel[];
         return Promise.all(users.map(async user => this.toEntity(user)));
+    }
+
+    public async save(data: UserSavingData) {
+        try {
+            const error = new Error('Usuário não foi salvo');
+            const parsedData = await this.toDb(data);
+            const [saved] = await UserService(this.driver).insert(parsedData);
+            if (saved) throw error;
+            const recovered = await UserService(this.driver).where('user_id', saved).first();
+            if (!recovered) throw error;
+            return this.toEntity(recovered);
+        } catch (error) {
+            throw { message: 'Erro ao salvar no banco de dados', status: 500 };
+        }
     }
 
 }

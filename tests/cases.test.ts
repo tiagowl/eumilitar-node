@@ -1,8 +1,8 @@
-import UserUseCase, { UserFilter, UserRepositoryInterface } from '../src/cases/UserUseCase';
+import UserUseCase, { UserFilter, UserRepositoryInterface, UserSavingData } from '../src/cases/UserUseCase';
 import { hashPassword, userEntityFactory } from './shortcuts';
 import EssayThemeCase, { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeRepositoryInterface } from '../src/cases/EssayThemeCase';
 import EssayTheme, { Course } from '../src/entities/EssayTheme';
-import faker from 'faker';
+import faker, { fake } from 'faker';
 import EssayCase, { EssayCreationData, EssayInsertionData, EssayInvalidationData, EssayPagination, EssayRepositoryInterface } from '../src/cases/EssayCase';
 import Essay, { EssayInterface } from '../src/entities/Essay';
 import User from '../src/entities/User';
@@ -64,6 +64,15 @@ class UserTestRepository implements UserRepositoryInterface {
 
     async all() {
         return this.database;
+    }
+
+    async save(data: UserSavingData) {
+        const user = new User({
+            ...data,
+            id: this.database.length,
+        });
+        this.database.push(user);
+        return user;
     }
 }
 
@@ -345,6 +354,20 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         const updatedUser = await userRepo.get({ id: 0 });
         expect(updatedUser.email).toEqual(user.email);
         expect(updatedUser.status).toEqual('inactive');
+        done();
+    })
+    test('Criação', async done => {
+        const userRepo = new UserTestRepository(await userDatabase);
+        const useCase = new UserUseCase(userRepo);
+        const created = await useCase.create({
+            email: faker.internet.email(),
+            firstName: faker.name.firstName(),
+            lastName: faker.name.lastName(),
+            password: faker.internet.password(),
+            permission: 'admin',
+            status: 'active',
+        });
+        expect(created).toBeInstanceOf(User);
         done();
     })
 })

@@ -1,4 +1,4 @@
-import User, { AccountStatus, AccountPermission } from "../entities/User";
+import User, { AccountStatus, AccountPermission, UserInterface, UserData } from "../entities/User";
 import bcrypt from 'bcrypt';
 
 export interface UserFilter {
@@ -13,10 +13,31 @@ export interface UserFilter {
     permission?: AccountPermission;
 }
 
+export interface UserCreation {
+    firstName: string;
+    lastName: string;
+    email: string;
+    status: AccountStatus;
+    permission: AccountPermission;
+    password: string;
+}
+
+export interface UserSavingData {
+    firstName: string;
+    lastName: string;
+    email: string;
+    status: AccountStatus;
+    permission: AccountPermission;
+    creationDate: Date;
+    lastModified: Date;
+    password: string;
+}
+
 export interface UserRepositoryInterface {
     get: (filter: UserFilter) => Promise<User | null | undefined>;
     filter: (filter: UserFilter) => Promise<this>;
     update: (data: UserFilter) => Promise<number>;
+    save: (user: UserSavingData) => Promise<User>;
     all(): Promise<User[]>;
 }
 
@@ -87,6 +108,14 @@ export default class UserUseCase {
         if (updated === 0) throw new Error('Nenhum usuário atualizado');
         if (updated > 1) throw new Error('Mais de um usuário afetado');
         return updated;
+    }
+
+    public async create(data: UserCreation) {
+        return this.repository.save({
+            ...data,
+            lastModified: new Date(),
+            creationDate: new Date(),
+        });
     }
 
 }
