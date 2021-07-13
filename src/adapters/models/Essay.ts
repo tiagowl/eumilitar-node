@@ -36,6 +36,7 @@ type FieldMapToDB = {
 };
 
 const courseMap: [number, Course][] = [
+    [0, 'blank'],
     [2, 'esa'],
     [3, 'espcex'],
 ];

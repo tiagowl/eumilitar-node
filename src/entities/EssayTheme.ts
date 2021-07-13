@@ -1,4 +1,4 @@
-export type Course = "esa" | "espcex";
+export type Course = "esa" | "espcex" | "blank";
 
 export interface EssayThemeInterface {
     id: number;
