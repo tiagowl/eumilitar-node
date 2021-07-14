@@ -17,7 +17,7 @@ import { Course } from '../src/entities/EssayTheme';
 import createLogger from '../src/drivers/logger';
 
 export const now = new Date();
-const logger = createLogger(settings.logger);
+export const logger = createLogger(settings.logger);
 
 export const userFactory = (inject?: Partial<UserModel>) => {
     const data = {

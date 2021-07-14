@@ -1,7 +1,7 @@
 import faker from 'faker';
 import supertest from 'supertest';
 import { UserModel, UserService } from '../src/adapters/models/User';
-import { appFactory, createEssay, deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
+import { logger, appFactory, createEssay, deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
 import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { Course } from '../src/entities/EssayTheme';
@@ -398,7 +398,7 @@ describe('#3 Redações', () => {
     beforeAll(async (done) => {
         const themeService = EssayThemeService(driver);
         await themeService.delete().del()
-        const repository = new EssayThemeRepository(driver);
+        const repository = new EssayThemeRepository(driver, logger);
         const themeData: EssayThemeCreation = {
             title: 'Título',
             endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
@@ -522,7 +522,7 @@ describe('#4 Invalidação da redação', () => {
     beforeAll(async (done) => {
         const themeService = EssayThemeService(driver);
         await themeService.delete().del()
-        const repository = new EssayThemeRepository(driver);
+        const repository = new EssayThemeRepository(driver, logger);
         const themeData: EssayThemeCreation = {
             title: 'Título',
             endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
@@ -591,7 +591,7 @@ describe('#5 Correção da redação', () => {
     beforeAll(async (done) => {
         const themeService = EssayThemeService(driver);
         await themeService.delete().del()
-        const repository = new EssayThemeRepository(driver);
+        const repository = new EssayThemeRepository(driver, logger);
         const themeData: EssayThemeCreation = {
             title: 'Título',
             endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
