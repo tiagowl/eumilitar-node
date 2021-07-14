@@ -57,6 +57,7 @@ export interface EssayFilter extends Partial<EssayInterface> {
 const beautyCourse = {
     'esa': 'ESA',
     'espcex': 'EsPCEX',
+    'blank': '',
 };
 
 export const allowedUpdateFields = ['corrector', 'status'];
