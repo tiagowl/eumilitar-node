@@ -43,7 +43,12 @@ export default class UserController extends Controller<any> {
     }
 
     public async all(filter: UserFilter): Promise<UserResponse[]> {
-        const users = await this.useCase.listAll(filter);
-        return Promise.all(users.map(async user => this.parseEntity(user)));
+        try {
+            const users = await this.useCase.listAll(filter);
+            return Promise.all(users.map(async user => this.parseEntity(user)));
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: 'Erro ao consultar usuários', status: 500 };
+        }
     }
 }

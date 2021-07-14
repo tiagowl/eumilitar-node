@@ -69,25 +69,30 @@ export default class CorrectionController extends Controller<CorrectionData> {
     }
 
     private async notify(essayId: number) {
-        const essay = await this.repository.essays.get({ id: essayId });
-        const user = await this.repository.users.get({ id: essay?.student });
-        if (!user) return;
-        return this.smtp.sendMail({
-            from: this.config.sender,
-            to: user.email,
-            subject: 'Redação Corrigida',
-            text: await this.writeNotification(user.firstName),
-            html: await this.renderNotification(user.firstName),
-        });
+        try {
+            const essay = await this.repository.essays.get({ id: essayId });
+            const user = await this.repository.users.get({ id: essay?.student });
+            if (!user) return;
+            return this.smtp.sendMail({
+                from: this.config.sender,
+                to: user.email,
+                subject: 'Redação Corrigida',
+                text: await this.writeNotification(user.firstName),
+                html: await this.renderNotification(user.firstName),
+            });
+        } catch (error) {
+            this.logger.error(error);
+        }
     }
 
     public async create(data: CorrectionData) {
         try {
             const validated = await this.validate(data);
             const created = await this.useCase.create(validated);
-            this.notify(created.essay);
+            this.notify(created.essay).catch(this.logger.error);
             return this.parseEntity(created);
         } catch (error) {
+            this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message || "Falha ao salvar correção", status: 400 };
         }
@@ -98,6 +103,7 @@ export default class CorrectionController extends Controller<CorrectionData> {
             const data = await this.useCase.get(filter);
             return this.parseEntity(data);
         } catch (error) {
+            this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message || "Falha ao encontrar correção", status: 500 };
         }

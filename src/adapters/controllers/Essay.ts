@@ -122,6 +122,7 @@ export default class EssayController extends Controller<EssayData> {
             const created = await this.useCase.create(data);
             return this.parseEntity(created);
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Falha ao salvar redação' };
         }
     }
@@ -131,6 +132,7 @@ export default class EssayController extends Controller<EssayData> {
             const essays = await this.useCase.myEssays(userId);
             return Promise.all(essays.map(async essay => this.parseEntity(essay)));
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Falha ao consultar redações', status: 500 };
         }
     }
@@ -150,6 +152,7 @@ export default class EssayController extends Controller<EssayData> {
                 count,
             };
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Falha ao consultar redações', status: 500 };
         }
     }
@@ -161,6 +164,7 @@ export default class EssayController extends Controller<EssayData> {
             if (!essay) throw { message: 'Redação não encontrada', status: 404 };
             return this.parseEntity(essay);
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Falha ao consultar redações', status: error.status || 500 };
         }
     }
@@ -172,6 +176,7 @@ export default class EssayController extends Controller<EssayData> {
             const updated = await this.useCase.partialUpdate(id, validated);
             return this.parseEntity(updated);
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Falha ao atualizar', status: error.status || 500 };
         }
     }
@@ -184,6 +189,7 @@ export default class EssayController extends Controller<EssayData> {
             const updated = await this.useCase.cancelCorrecting(id, corrector);
             return this.parseEntity(updated);
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Falha ao atualizar', status: error.status || 500 };
         }
     }

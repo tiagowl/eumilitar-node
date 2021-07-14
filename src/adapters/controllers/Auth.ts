@@ -54,16 +54,21 @@ export default class AuthController extends Controller<AuthInterface> {
     }
 
     public async auth(rawData: AuthInterface, userAgent?: string): Promise<AuthResponse> {
-        const data = await this.validate(rawData);
-        const useCase = new UserUseCase(this.repository);
-        const auth = await useCase.authenticate(data.email, data.password);
-        if (!!auth.email && !!auth.password) {
-            const token = await this.generateToken();
-            if (!!useCase.user) this.saveToken(useCase.user, token, userAgent);
-            return { token };
+        try {
+            const data = await this.validate(rawData);
+            const useCase = new UserUseCase(this.repository);
+            const auth = await useCase.authenticate(data.email, data.password);
+            if (!!auth.email && !!auth.password) {
+                const token = await this.generateToken();
+                if (!!useCase.user) this.saveToken(useCase.user, token, userAgent);
+                return { token };
+            }
+            if (!auth.email) throw { errors: [['email', 'Email inválido']] };
+            else throw { errors: [['password', 'Senha inválida']] };
+        } catch (error) {
+            this.logger.error(error);
+            throw error;
         }
-        if (!auth.email) throw { errors: [['email', 'Email inválido']] };
-        else throw { errors: [['password', 'Senha inválida']] };
     }
 
     public async logOut(token: string) {

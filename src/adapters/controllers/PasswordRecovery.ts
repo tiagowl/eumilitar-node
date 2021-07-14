@@ -91,15 +91,21 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
     }
 
     public async recover(rawData: PasswordRecoveryInterface,): Promise<PasswordRecoveryResponse> {
-        const data = await this.validate(rawData);
-        const user = await this.repository.get(data);
-        this.token = await this.generateConfirmationToken();
-        await this.saveToken(user.id);
-        return this.sendConfirmationEmail(user.email, user.fullName)
-            .then(async () => ({ message: "Email enviado! Verifique sua caixa de entrada." }))
-            .catch(async () => {
-                throw { message: 'Falha ao enviar o email! Tente novamente ou entre em contato com o suporte.' };
-            });
+        try {
+            const data = await this.validate(rawData);
+            const user = await this.repository.get(data);
+            this.token = await this.generateConfirmationToken();
+            await this.saveToken(user.id);
+            return this.sendConfirmationEmail(user.email, user.fullName)
+                .then(async () => ({ message: "Email enviado! Verifique sua caixa de entrada." }))
+                .catch(async (error) => {
+                    this.logger.error(error);
+                    throw { message: 'Falha ao enviar o email! Tente novamente ou entre em contato com o suporte.' };
+                });
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: error.message, status: 500 };
+        }
     }
 
 }

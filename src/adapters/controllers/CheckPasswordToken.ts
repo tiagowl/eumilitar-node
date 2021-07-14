@@ -44,7 +44,8 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
             if (isValid) this._tokenData = info;
             else this.deleteToken(data.token);
             return { isValid };
-        } catch {
+        } catch (error) {
+            this.logger.error(error);
             throw { isValid: false };
         }
     }

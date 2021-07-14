@@ -61,17 +61,21 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
     }
 
     private async notify(essayId: number) {
-        const essay = await this.repository.essays.get({ id: essayId });
-        const users = new UserRepository(this.driver, this.logger);
-        const user = await users.get({ id: essay?.student });
-        if (!user) return;
-        return this.smtp.sendMail({
-            from: this.config.sender,
-            to: user.email,
-            subject: 'Redação Corrigida',
-            text: await this.writeNotification(user.firstName),
-            html: await this.renderNotification(user.firstName),
-        });
+        try {
+            const essay = await this.repository.essays.get({ id: essayId });
+            const users = new UserRepository(this.driver, this.logger);
+            const user = await users.get({ id: essay?.student });
+            if (!user) return;
+            return this.smtp.sendMail({
+                from: this.config.sender,
+                to: user.email,
+                subject: 'Redação Corrigida',
+                text: await this.writeNotification(user.firstName),
+                html: await this.renderNotification(user.firstName),
+            });
+        } catch (error) {
+            this.logger.error(error);
+        }
     }
 
 
@@ -79,9 +83,10 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
         try {
             const validated = await this.validate(data);
             const created = await this.useCase.create(validated);
-            this.notify(created.essay);
+            this.notify(created.essay).catch(this.logger.error);
             return this.parseEntity(created);
         } catch (error) {
+            this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message || 'Falha ao invalidar redação', status: 400 };
         }
@@ -92,6 +97,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
             const invalidation = await this.useCase.get(essayId);
             return this.parseEntity(invalidation);
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Falha ao invalidar redação', status: 500 };
         }
     }

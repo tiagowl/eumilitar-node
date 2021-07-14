@@ -40,6 +40,7 @@ export default class CheckAuthController extends Controller<CheckAuthInterface> 
             const user = await this.retrieveUser(data.token);
             return { isValid: true, user: await UserView(user) };
         } catch (error) {
+            this.logger.error(error);
             return { isValid: false };
         }
     }
