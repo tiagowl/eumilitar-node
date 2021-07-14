@@ -96,7 +96,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
 
     constructor(driver: Knex, logger: Logger) {
         super(schema, driver, logger);
-        this.repository = new EssayThemeRepository(driver);
+        this.repository = new EssayThemeRepository(driver, logger);
         this.useCase = new EssayThemeCase(this.repository);
     }
 

@@ -82,12 +82,12 @@ export default class EssayController extends Controller<EssayData> {
 
     constructor(driver: Knex, logger: Logger) {
         super(schema, driver, logger);
-        this.repository = new EssayRepository(driver);
+        this.repository = new EssayRepository(driver, logger);
         this.useCase = new EssayCase(this.repository);
     }
 
     private async getUser(id: number) {
-        const repository = new UserRepository(this.driver);
+        const repository = new UserRepository(this.driver, this.logger);
         const userCase = new UserUseCase(repository);
         const user = await userCase.get(id);
         return {

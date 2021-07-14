@@ -29,7 +29,7 @@ export default class AuthController extends Controller<AuthInterface> {
 
     constructor(driver: Knex, logger: Logger) {
         super(schema, driver, logger);
-        this.repository = new UserRepository(driver);
+        this.repository = new UserRepository(driver, logger);
     }
 
     private async generateToken() {
@@ -39,13 +39,18 @@ export default class AuthController extends Controller<AuthInterface> {
     }
 
     private async saveToken(user: User, token: string, userAgent?: string) {
-        const service = TokenService(this.driver);
-        return service.insert({
-            session_id: token,
-            login_time: new Date(),
-            user_id: user.id,
-            user_agent: userAgent,
-        });
+        try {
+            const service = TokenService(this.driver);
+            return service.insert({
+                session_id: token,
+                login_time: new Date(),
+                user_id: user.id,
+                user_agent: userAgent,
+            });
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: 'Erro ao salvar token', status: 500 };
+        }
     }
 
     public async auth(rawData: AuthInterface, userAgent?: string): Promise<AuthResponse> {
@@ -68,6 +73,7 @@ export default class AuthController extends Controller<AuthInterface> {
             if (deleted === 0) throw { message: "Nenhum token encontrado", status: 400 };
             if (deleted > 1) throw { message: "Mais de um registro afetado", status: 500 };
         } catch (error) {
+            this.logger.error(error);
             if (error.status) throw error;
             throw { message: 'Erro ao deletar token', status: 500 };
         }

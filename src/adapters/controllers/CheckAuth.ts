@@ -25,7 +25,7 @@ export default class CheckAuthController extends Controller<CheckAuthInterface> 
     }
 
     private async retrieveUser(token: string): Promise<User> {
-        const repository = new UserRepository(this.driver);
+        const repository = new UserRepository(this.driver, this.logger);
         const user = await repository.query
             .innerJoin('login_sessions', 'users.user_id', '=', 'login_sessions.user_id')
             .where('login_sessions.session_id', token)

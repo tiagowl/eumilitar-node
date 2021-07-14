@@ -29,7 +29,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
 
     constructor(driver: Knex, smtp: Transporter, config: MessageConfigInterface, logger: Logger) {
         super(schema, driver, logger);
-        this.repository = new EssayInvalidationRepository(driver);
+        this.repository = new EssayInvalidationRepository(driver, logger);
         this.useCase = new EssayInvalidationCase(this.repository);
         this.smtp = smtp;
         this.config = config;
@@ -62,7 +62,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
 
     private async notify(essayId: number) {
         const essay = await this.repository.essays.get({ id: essayId });
-        const users = new UserRepository(this.driver);
+        const users = new UserRepository(this.driver, this.logger);
         const user = await users.get({ id: essay?.student });
         if (!user) return;
         return this.smtp.sendMail({

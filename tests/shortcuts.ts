@@ -14,8 +14,10 @@ import { EssayRepository } from '../src/adapters/models/Essay';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
 import { Course } from '../src/entities/EssayTheme';
+import createLogger from '../src/drivers/logger';
 
 export const now = new Date();
+const logger = createLogger(settings.logger);
 
 export const userFactory = (inject?: Partial<UserModel>) => {
     const data = {
@@ -116,12 +118,12 @@ export async function saveConfirmationToken(token: string, userId: number, drive
 
 export async function appFactory(driver: Knex = driverFactory()) {
     const smtp = await smtpFactory();
-    const storage = createStorage(settings.storage)
-    return new Application({ smtp, driver, storage, settings })
+    const storage = createStorage(settings.storage);
+    return new Application({ smtp, driver, storage, settings, logger })
 }
 
 export async function createEssay(driver: Knex, id: number) {
-    const themeRepository = new EssayThemeRepository(driver);
+    const themeRepository = new EssayThemeRepository(driver, logger);
     const themeData: EssayThemeCreation = {
         title: 'Título',
         endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
@@ -133,7 +135,7 @@ export async function createEssay(driver: Knex, id: number) {
     }
     const exists = await themeRepository.hasActiveTheme(themeData);
     const theme = await (exists ? themeRepository.get({ courses: themeData.courses }, true) : themeRepository.create(themeData));
-    const repository = new EssayRepository(driver);
+    const repository = new EssayRepository(driver, logger);
     return repository.create({
         file: '/usr/share/data/theme.png',
         student: id,

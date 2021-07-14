@@ -35,27 +35,42 @@ export default class ChangePasswordController extends Controller<ChangePasswordI
 
     constructor(driver: Knex, logger: Logger) {
         super(schema, driver, logger);
-        this.repository = new UserRepository(driver);
+        this.repository = new UserRepository(driver, logger);
     }
 
     private async validateToken(token: string) {
-        const checker = new CheckPasswordToken(this.driver, this.logger);
-        const { isValid } = await checker.check({ token });
-        if (!isValid || !checker.tokenData) throw { message: 'Token inválido' };
-        return checker.tokenData;
+        try {
+            const checker = new CheckPasswordToken(this.driver, this.logger);
+            const { isValid } = await checker.check({ token });
+            if (!isValid || !checker.tokenData) throw { message: 'Token inválido' };
+            return checker.tokenData;
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: error.message || 'Erro ao validar token', status: 400 };
+        }
     }
 
     private async deleteToken(token: string) {
-        const service = PasswordRecoveryService(this.driver);
-        return await service.where('token', token).del();
+        try {
+            const service = PasswordRecoveryService(this.driver);
+            return await service.where('token', token).del();
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: 'Erro ao deletar token', status: 500 };
+        }
     }
 
     public async updatePassword(rawData: ChangePasswordInterface) {
-        const data = await this.validate(rawData);
-        const tokenData = await this.validateToken(data.token);
-        const useCase = new UserUseCase(this.repository);
-        const updated = await useCase.updatePassword(tokenData.user_id, data.password);
-        if (updated) await this.deleteToken(data.token);
-        return { updated };
+        try {
+            const data = await this.validate(rawData);
+            const tokenData = await this.validateToken(data.token);
+            const useCase = new UserUseCase(this.repository);
+            const updated = await useCase.updatePassword(tokenData.user_id, data.password);
+            if (updated) await this.deleteToken(data.token);
+            return { updated };
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: error.message || "Erro ao atualizar senha", status: 400 };
+        }
     }
 }

@@ -1,5 +1,6 @@
 import path from 'path';
 import { config } from 'dotenv';
+import { transports, format } from 'winston';
 
 config();
 
@@ -61,7 +62,19 @@ const settings = Object.freeze({
             destination: path.resolve(__dirname, "..", "tmp", "uploads")
         }
     },
-    logger: {},
+    logger: {
+        transports: [
+            new transports.File({ filename: 'error.log', level: 'error' }),
+            new transports.Console({ level: 'error' }),
+            new transports.Console({
+                level: 'info', format: format.combine(
+                    format.colorize({ colors: { info: 'green' } }),
+                    format.timestamp(),
+                    format.printf(({ message }) => message),
+                ),
+            }),
+        ]
+    },
 });
 
 export default settings;

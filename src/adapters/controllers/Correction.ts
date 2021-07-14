@@ -40,7 +40,7 @@ export default class CorrectionController extends Controller<CorrectionData> {
 
     constructor(driver: Knex, smtp: Transporter, config: MessageConfigInterface, logger: Logger) {
         super(schema, driver, logger);
-        this.repository = new CorrectionRepository(driver);
+        this.repository = new CorrectionRepository(driver, logger);
         this.useCase = new CorrectionCase(this.repository);
         this.smtp = smtp;
         this.config = config;

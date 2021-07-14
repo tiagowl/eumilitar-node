@@ -6,6 +6,7 @@ import Essay, { EssayInterface, Status } from "../../entities/Essay";
 import { Course } from "../../entities/EssayTheme";
 import EssayThemeRepository from "./EssayTheme";
 import UserRepository, { UserService } from "./User";
+import { Logger } from 'winston';
 
 export interface EssayModel extends EssayInsertion {
     essay_id: number;
@@ -61,13 +62,15 @@ const fieldParserDB: FieldMapToDB = {
 
 export class EssayRepository implements EssayRepositoryInterface {
     private driver: Knex;
-    themes: EssayThemeRepositoryInterface;
-    users: UserRepositoryInterface;
+    private logger: Logger;
+    public themes: EssayThemeRepositoryInterface;
+    public users: UserRepositoryInterface;
 
-    constructor(driver: Knex) {
+    constructor(driver: Knex, logger: Logger) {
         this.driver = driver;
-        this.themes = new EssayThemeRepository(driver);
-        this.users = new UserRepository(driver);
+        this.themes = new EssayThemeRepository(driver, logger);
+        this.users = new UserRepository(driver, logger);
+        this.logger = logger;
     }
 
     private async parseToDB(data: EssayFilter): Promise<EssayInsertion | Partial<EssayModel>> {
@@ -135,7 +138,8 @@ export class EssayRepository implements EssayRepositoryInterface {
         this.search(service, search);
         const parsedFilter = await this.parseToDB(filter);
         const essayData = await service.where(parsedFilter).first()
-            .catch(() => {
+            .catch((err) => {
+                this.logger.error(err);
                 throw new Error('Erro ao consultar banco de dados');
             });
         if (!essayData) return undefined;
@@ -147,7 +151,10 @@ export class EssayRepository implements EssayRepositoryInterface {
         const error = new Error('Falha ao gravar no banco de dados');
         const parsed = await this.parseToDB(data);
         const created = await service.insert({ ...parsed, local: false, status: 'pending' })
-            .catch(() => { throw error; });
+            .catch((err) => {
+                this.logger.error(err);
+                throw error;
+            });
         const id = created[0];
         const check = await this.get({ id });
         if (!check) throw error;
@@ -162,7 +169,8 @@ export class EssayRepository implements EssayRepositoryInterface {
         }));
         return await service.first()
             .then(data => !!data)
-            .catch(() => {
+            .catch((err) => {
+                this.logger.error(err);
                 throw new Error('Erro ao consultar banco de dados');
             });
     }
@@ -180,7 +188,8 @@ export class EssayRepository implements EssayRepositoryInterface {
         const orderingField = (fieldParserDB[ordering] as Translator)[0];
         const essaysData = await service.where(await this.parseToDB(filter))
             .orderBy(orderingField, 'asc')
-            .catch(() => {
+            .catch((err) => {
+                this.logger.error(err);
                 throw new Error('Erro ao consultar banco de dados');
             });
         return Promise.all(essaysData?.map(this.parseFromDB));
@@ -194,18 +203,27 @@ export class EssayRepository implements EssayRepositoryInterface {
         this.search(service, search);
         const amount = await service.where(await this.parseToDB(filter))
             .count<Record<string, { count: number }>>('essay_id as count')
-            .catch(() => { throw new Error('Erro ao consultar banco de dados'); });
+            .catch((err) => {
+                this.logger.error(err);
+                throw new Error('Erro ao consultar banco de dados');
+            });
         return amount[0].count;
     }
 
     public async update(id: number, data: Partial<EssayInsertionData>) {
         const updated = await EssayService(this.driver).where('essay_id', id).update(await this.parseToDB(data))
-            .catch(() => { throw { message: 'Erro ao atualizar redação', status: 500 }; });
+            .catch((err) => {
+                this.logger.error(err);
+                throw { message: 'Erro ao atualizar redação', status: 500 };
+            });
         if (updated < 1) throw { message: 'Erro ao atualizar redação', status: 404 };
         if (updated > 1) throw { message: `${updated} redações afetadas!`, status: 500 };
         const error = new Error('Erro ao consultar banco de dados');
         const essay = await EssayService(this.driver).where('essay_id', id).first()
-            .catch(() => { throw { ...error, status: 500 }; });
+            .catch((err) => {
+                this.logger.error(err);
+                throw { ...error, status: 500 };
+            });
         if (!essay) throw { ...error, status: 404 };
         return this.parseFromDB(essay);
     }

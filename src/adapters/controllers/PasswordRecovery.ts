@@ -36,7 +36,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
         });
         super(schema, driver, logger);
         this.smtp = smtp;
-        this.repository = new UserRepository(driver);
+        this.repository = new UserRepository(driver, logger);
         this.config = config;
         this.service = PasswordRecoveryService(driver);
     }

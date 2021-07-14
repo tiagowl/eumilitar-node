@@ -25,7 +25,7 @@ export default class UserController extends Controller<any> {
 
     constructor(driver: Knex, logger: Logger) {
         super(schema, driver, logger);
-        this.repository = new UserRepository(driver);
+        this.repository = new UserRepository(driver, logger);
         this.useCase = new UserUseCase(this.repository);
     }
 
