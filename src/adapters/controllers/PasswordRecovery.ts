@@ -6,6 +6,7 @@ import UserRepository from "../models/User";
 import crypto from 'crypto';
 import { PasswordRecoveryInsert, PasswordRecoveryModel, PasswordRecoveryService } from '../models/PasswordRecoveries';
 import PasswordRecoveryRender from '../views/PasswordRecovery';
+import { Logger } from 'winston';
 
 export interface PasswordRecoveryInterface {
     email: string;
@@ -29,11 +30,11 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
     private token?: string;
     private service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
 
-    constructor(driver: Knex, smtp: Transporter, config: MessageConfigInterface) {
+    constructor(driver: Knex, smtp: Transporter, config: MessageConfigInterface, logger: Logger) {
         const schema = yup.object().shape({
             email: yup.string().email('Email inválido').required('O campo "email" é obrigatório'),
         });
-        super(schema, driver);
+        super(schema, driver, logger);
         this.smtp = smtp;
         this.repository = new UserRepository(driver);
         this.config = config;

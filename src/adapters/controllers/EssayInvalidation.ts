@@ -8,6 +8,7 @@ import message from '../views/CorrectionNotification';
 import { MessageConfigInterface } from "./PasswordRecovery";
 import { Transporter } from "nodemailer";
 import UserRepository from "../models/User";
+import { Logger } from 'winston';
 
 const schema = yup.object().shape({
     corrector: yup.number().required("É preciso informar o corretor!"),
@@ -26,8 +27,8 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
     private smtp: Transporter;
     private config: MessageConfigInterface;
 
-    constructor(driver: Knex, smtp: Transporter, config: MessageConfigInterface) {
-        super(schema, driver);
+    constructor(driver: Knex, smtp: Transporter, config: MessageConfigInterface, logger: Logger) {
+        super(schema, driver, logger);
         this.repository = new EssayInvalidationRepository(driver);
         this.useCase = new EssayInvalidationCase(this.repository);
         this.smtp = smtp;

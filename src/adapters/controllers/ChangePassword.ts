@@ -5,6 +5,7 @@ import UserRepository from "../models/User";
 import CheckPasswordToken from "./CheckPasswordToken";
 import UserUseCase from "../../cases/UserUseCase";
 import { PasswordRecoveryService } from "../models/PasswordRecoveries";
+import { Logger } from 'winston';
 
 export interface ChangePasswordInterface {
     password: string;
@@ -32,13 +33,13 @@ export const schema = yup.object().shape({
 export default class ChangePasswordController extends Controller<ChangePasswordInterface> {
     private repository: UserRepository;
 
-    constructor(driver: Knex) {
-        super(schema, driver);
+    constructor(driver: Knex, logger: Logger) {
+        super(schema, driver, logger);
         this.repository = new UserRepository(driver);
     }
 
     private async validateToken(token: string) {
-        const checker = new CheckPasswordToken(this.driver);
+        const checker = new CheckPasswordToken(this.driver, this.logger);
         const { isValid } = await checker.check({ token });
         if (!isValid || !checker.tokenData) throw { message: 'Token inválido' };
         return checker.tokenData;

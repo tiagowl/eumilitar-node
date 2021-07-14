@@ -9,6 +9,7 @@ import EssayThemeController, { EssayThemeResponse } from "./EssayTheme";
 import UserRepository from "../models/User";
 import UserUseCase from "../../cases/UserUseCase";
 import { AccountPermission } from "../../entities/User";
+import { Logger } from 'winston';
 
 export interface EssayInput {
     file: Express.MulterS3.File;
@@ -79,8 +80,8 @@ export default class EssayController extends Controller<EssayData> {
     private repository: EssayRepository;
     private useCase: EssayCase;
 
-    constructor(driver: Knex) {
-        super(schema, driver);
+    constructor(driver: Knex, logger: Logger) {
+        super(schema, driver, logger);
         this.repository = new EssayRepository(driver);
         this.useCase = new EssayCase(this.repository);
     }
@@ -97,7 +98,7 @@ export default class EssayController extends Controller<EssayData> {
     }
 
     private async parseEntity(essay: Essay): Promise<EssayResponse> {
-        const themeController = new EssayThemeController(this.driver);
+        const themeController = new EssayThemeController(this.driver, this.logger);
         const parsed = {
             course: essay.course,
             file: essay.file,

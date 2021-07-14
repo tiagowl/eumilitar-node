@@ -4,6 +4,7 @@ import * as yup from 'yup';
 import User, { UserInterface } from "../../entities/User";
 import UserRepository from "../models/User";
 import { UserView } from "../views/User";
+import { Logger } from 'winston';
 
 export interface CheckAuthInterface {
     token: string;
@@ -19,8 +20,8 @@ const schema = yup.object().shape({
 });
 
 export default class CheckAuthController extends Controller<CheckAuthInterface> {
-    constructor(driver: Knex) {
-        super(schema, driver);
+    constructor(driver: Knex, logger: Logger) {
+        super(schema, driver, logger);
     }
 
     private async retrieveUser(token: string): Promise<User> {

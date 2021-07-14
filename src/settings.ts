@@ -60,7 +60,8 @@ const settings = Object.freeze({
         local: {
             destination: path.resolve(__dirname, "..", "tmp", "uploads")
         }
-    }
+    },
+    logger: {},
 });
 
 export default settings;

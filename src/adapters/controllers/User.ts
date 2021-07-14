@@ -4,7 +4,7 @@ import UserUseCase, { UserFilter } from '../../cases/UserUseCase';
 import User, { AccountPermission, AccountStatus } from '../../entities/User';
 import UserRepository from '../models/User';
 import Controller from './Controller';
-
+import { Logger } from 'winston';
 
 export type UserResponse = {
     id: number;
@@ -23,8 +23,8 @@ export default class UserController extends Controller<any> {
     private repository: UserRepository;
     private useCase: UserUseCase;
 
-    constructor(driver: Knex) {
-        super(schema, driver);
+    constructor(driver: Knex, logger: Logger) {
+        super(schema, driver, logger);
         this.repository = new UserRepository(driver);
         this.useCase = new UserUseCase(this.repository);
     }
