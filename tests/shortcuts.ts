@@ -2,8 +2,7 @@ import faker from 'faker';
 import knex, { Knex } from 'knex';
 import bcrypt from 'bcrypt';
 import settings from '../src/settings';
-import nodemailer from 'nodemailer';
-import Mail from 'nodemailer/lib/mailer';
+import { Mail, MailData } from '../src/adapters/interfaces';
 import crypto from 'crypto';
 import { PasswordRecoveryInsert, PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
 import User, { UserData } from '../src/entities/User';
@@ -15,9 +14,11 @@ import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
 import { Course } from '../src/entities/EssayTheme';
 import createLogger from '../src/drivers/logger';
+import createTransport from '../src/drivers/smtp';
 
 export const now = new Date();
 export const logger = createLogger(settings.logger);
+export const mails: MailData[] = [];
 
 export const userFactory = (inject?: Partial<UserModel>) => {
     const data = {
@@ -85,20 +86,11 @@ export async function deleteUser(user: any, service: Knex.QueryBuilder) {
 }
 
 export async function smtpFactory(): Promise<Mail> {
-    return new Promise((accept, reject) => {
-        nodemailer.createTestAccount((err, account) => {
-            if (account) {
-                const transporter = nodemailer.createTransport({
-                    ...account.smtp,
-                    auth: {
-                        user: account.user,
-                        pass: account.pass,
-                    }
-                })
-                accept(transporter)
-            } else reject(err);
-        })
-    })
+    return {
+        async sendMail(mail) {
+            mails.push(mail);
+        }
+    }
 }
 
 export async function generateConfirmationToken() {

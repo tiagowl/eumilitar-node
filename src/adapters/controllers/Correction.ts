@@ -4,7 +4,7 @@ import * as yup from 'yup';
 import { Knex } from "knex";
 import CorrectionRepository from "../models/Correction";
 import Correction, { CorrectionInterface } from "../../entities/Correction";
-import { Transporter } from "nodemailer";
+import { Mail } from "../interfaces";
 import { MessageConfigInterface } from "./PasswordRecovery";
 import message from '../views/CorrectionNotification';
 import { Logger } from 'winston';
@@ -35,10 +35,10 @@ const schema = yup.object().shape({
 export default class CorrectionController extends Controller<CorrectionData> {
     private repository: CorrectionRepositoryInterface;
     private useCase: CorrectionCase;
-    private smtp: Transporter;
+    private smtp: Mail;
     private config: MessageConfigInterface;
 
-    constructor(driver: Knex, smtp: Transporter, config: MessageConfigInterface, logger: Logger) {
+    constructor(driver: Knex, smtp: Mail, config: MessageConfigInterface, logger: Logger) {
         super(schema, driver, logger);
         this.repository = new CorrectionRepository(driver, logger);
         this.useCase = new CorrectionCase(this.repository);
@@ -75,7 +75,7 @@ export default class CorrectionController extends Controller<CorrectionData> {
             if (!user) return;
             return this.smtp.sendMail({
                 from: this.config.sender,
-                to: user.email,
+                to: { email: user.email, name: user.firstName },
                 subject: 'Redação Corrigida',
                 text: await this.writeNotification(user.firstName),
                 html: await this.renderNotification(user.firstName),
