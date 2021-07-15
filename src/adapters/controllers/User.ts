@@ -30,7 +30,15 @@ export interface CancelData {
     subscriptionPlanName: string;
 }
 
-export const schema = yup.object().shape({});
+export interface OrderData {
+    hottok: string;
+    prod: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+    status: string;
+}
+
 
 export default class UserController extends Controller<any> {
     private repository: UserRepository;
@@ -38,6 +46,14 @@ export default class UserController extends Controller<any> {
     private cancelSchema: yup.ObjectSchema<any>;
 
     constructor(driver: Knex, logger: Logger, hottok?: string) {
+        const schema = yup.object().shape({
+            hottok: yup.string().required('O campo "hottok" é obrigatório').is([hottok], '"hottok" inválido'),
+            prod: yup.number().required(),
+            first_name: yup.string().required(),
+            last_name: yup.string().required(),
+            email: yup.string().required(),
+            status: yup.string().required(),
+        });
         super(schema, driver, logger);
         this.cancelSchema = yup.object({
             hottok: yup.string().required('O campo "hottok" é obrigatório').is([hottok], '"hottok" inválido'),
@@ -88,6 +104,20 @@ export default class UserController extends Controller<any> {
                 message: error.message || "Requisição inválida",
                 status: error.status || 400
             };
+        }
+    }
+
+    public async create(data: OrderData) {
+        try {
+            const validated = await this.validate(data);
+            // const saved = await this.useCase.create({
+            //     email: validated.email,
+            //     firstName: validated.first_name,
+            //     lastName: validated.last_name,
+                
+            // })
+        } catch (error) {
+            this.logger.error(error);
         }
     }
 }
