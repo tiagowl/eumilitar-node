@@ -2,6 +2,7 @@ import { Knex } from "knex";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import { PasswordRecoveryInsert, PasswordRecoveryModel, PasswordRecoveryService } from '../models/PasswordRecoveries';
+import { Logger } from 'winston';
 
 export interface CheckPasswordInterface {
     token: string;
@@ -18,8 +19,8 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
     private service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
     private _tokenData?: PasswordRecoveryModel;
 
-    constructor(driver: Knex) {
-        super(schema, driver);
+    constructor(driver: Knex, logger: Logger) {
+        super(schema, driver, logger);
         this.service = PasswordRecoveryService(driver);
     }
 
@@ -43,7 +44,8 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
             if (isValid) this._tokenData = info;
             else this.deleteToken(data.token);
             return { isValid };
-        } catch {
+        } catch (error) {
+            this.logger.error(error);
             throw { isValid: false };
         }
     }

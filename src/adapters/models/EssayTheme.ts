@@ -1,6 +1,7 @@
 import { Knex } from "knex";
 import { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeRepositoryInterface } from "../../cases/EssayThemeCase";
 import EssayTheme, { Course, EssayThemeInterface } from "../../entities/EssayTheme";
+import { Logger } from 'winston';
 
 export interface EssayThemeModel extends EssayThemeInsertion {
     id: number;
@@ -23,9 +24,11 @@ export const EssayThemeService = (driver: Knex) => driver<EssayThemeInsertion, E
 
 export default class EssayThemeRepository implements EssayThemeRepositoryInterface {
     private driver: Knex;
+    private logger: Logger;
 
-    constructor(driver: Knex) {
+    constructor(driver: Knex, logger: Logger) {
         this.driver = driver;
+        this.logger = logger;
     }
 
     private async parseToInsert(data: EssayThemeCreation): Promise<EssayThemeInsertion> {
@@ -74,7 +77,8 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
                 }, service).then(data => !!data);
             }
             return this.filter(filter, service).first().then(data => !!data);
-        } catch {
+        } catch (error) {
+            this.logger.error(error);
             throw new Error('Falha ao consultar o banco de dados');
         }
     }
@@ -84,7 +88,8 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
             const service = this.filterByActive(EssayThemeService(this.driver), active);
             const theme = await this.filter(filter, service).first();
             return !!theme ? this.parseFromDB(theme) : undefined;
-        } catch {
+        } catch (error) {
+            this.logger.error(error);
             throw new Error('Falha ao consultar o banco de dados');
         }
     }
@@ -97,7 +102,8 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
             const theme = await this.get({ id: ids[0] });
             if (!theme) throw new Error('Falha ao salvar tema');
             return theme;
-        } catch {
+        } catch (error) {
+            this.logger.error(error);
             throw new Error('Falha ao gravar no banco de dados');
         }
     }
@@ -123,7 +129,8 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
                 })
                 .andWhere('deactivated', false);
             return qr.first().then(data => !!data);
-        } catch {
+        } catch (error) {
+            this.logger.error(error);
             throw new Error('Falha ao consultar o banco de dados');
         }
     }
@@ -133,7 +140,8 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
             const service = EssayThemeService(this.driver);
             const amount = await service.count<Record<string, { count: number }>>('id as count');
             return amount[0].count;
-        } catch {
+        } catch (error) {
+            this.logger.error(error);
             throw new Error('Falha ao consultar banco de dados');
         }
     }
@@ -147,7 +155,8 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
                 .limit((pageSize || 10))
                 .select<EssayThemeModel[]>('*');
             return Promise.all(themes.map(async theme => new EssayTheme(await this.parseFromDB(theme))));
-        } catch {
+        } catch (error) {
+            this.logger.error(error);
             throw new Error('Falha ao consultar o banco de dados');
         }
     }
@@ -162,7 +171,8 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
             const theme = await this.get({ id });
             if (!theme) throw new Error('Falha ao recuperar tema');
             return new EssayTheme(theme);
-        } catch {
+        } catch (error) {
+            this.logger.error(error);
             throw new Error('Falha ao atualizar no banco de dados');
         }
     }

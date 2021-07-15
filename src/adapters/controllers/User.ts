@@ -4,7 +4,7 @@ import UserUseCase, { UserFilter } from '../../cases/UserUseCase';
 import User, { AccountPermission, AccountStatus } from '../../entities/User';
 import UserRepository from '../models/User';
 import Controller from './Controller';
-
+import { Logger } from 'winston';
 
 export type UserResponse = {
     id: number;
@@ -37,8 +37,8 @@ export default class UserController extends Controller<any> {
     private useCase: UserUseCase;
     private cancelSchema: yup.ObjectSchema<any>;
 
-    constructor(driver: Knex, hottok?: string) {
-        super(schema, driver);
+    constructor(driver: Knex, logger: Logger, hottok?: string) {
+        super(schema, driver, logger);
         this.cancelSchema = yup.object({
             hottok: yup.string().required('O campo "hottok" é obrigatório').is([hottok], '"hottok" inválido'),
             subscriptionId: yup.number().required('O campo "subscriptionId" é obrigatório'),
@@ -51,7 +51,7 @@ export default class UserController extends Controller<any> {
             productName: yup.string().required('O campo "productName" é obrigatório'),
             subscriptionPlanName: yup.string().required('O campo "subscriptionPlanName" é obrigatório'),
         });
-        this.repository = new UserRepository(driver);
+        this.repository = new UserRepository(driver, logger);
         this.useCase = new UserUseCase(this.repository);
     }
 
@@ -69,8 +69,13 @@ export default class UserController extends Controller<any> {
     }
 
     public async all(filter: UserFilter): Promise<UserResponse[]> {
-        const users = await this.useCase.listAll(filter);
-        return Promise.all(users.map(async user => this.parseEntity(user)));
+        try {
+            const users = await this.useCase.listAll(filter);
+            return Promise.all(users.map(async user => this.parseEntity(user)));
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: 'Erro ao consultar usuários', status: 500 };
+        }
     }
 
     public async cancel(data: CancelData) {

@@ -9,6 +9,7 @@ import EssayThemeController, { EssayThemeResponse } from "./EssayTheme";
 import UserRepository from "../models/User";
 import UserUseCase from "../../cases/UserUseCase";
 import { AccountPermission } from "../../entities/User";
+import { Logger } from 'winston';
 
 export interface EssayInput {
     file: Express.MulterS3.File;
@@ -79,14 +80,14 @@ export default class EssayController extends Controller<EssayData> {
     private repository: EssayRepository;
     private useCase: EssayCase;
 
-    constructor(driver: Knex) {
-        super(schema, driver);
-        this.repository = new EssayRepository(driver);
+    constructor(driver: Knex, logger: Logger) {
+        super(schema, driver, logger);
+        this.repository = new EssayRepository(driver, logger);
         this.useCase = new EssayCase(this.repository);
     }
 
     private async getUser(id: number) {
-        const repository = new UserRepository(this.driver);
+        const repository = new UserRepository(this.driver, this.logger);
         const userCase = new UserUseCase(repository);
         const user = await userCase.get(id);
         return {
@@ -97,7 +98,7 @@ export default class EssayController extends Controller<EssayData> {
     }
 
     private async parseEntity(essay: Essay): Promise<EssayResponse> {
-        const themeController = new EssayThemeController(this.driver);
+        const themeController = new EssayThemeController(this.driver, this.logger);
         const parsed = {
             course: essay.course,
             file: essay.file,
@@ -121,6 +122,7 @@ export default class EssayController extends Controller<EssayData> {
             const created = await this.useCase.create(data);
             return this.parseEntity(created);
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Falha ao salvar redação' };
         }
     }
@@ -130,6 +132,7 @@ export default class EssayController extends Controller<EssayData> {
             const essays = await this.useCase.myEssays(userId);
             return Promise.all(essays.map(async essay => this.parseEntity(essay)));
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Falha ao consultar redações', status: 500 };
         }
     }
@@ -149,6 +152,7 @@ export default class EssayController extends Controller<EssayData> {
                 count,
             };
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Falha ao consultar redações', status: 500 };
         }
     }
@@ -160,6 +164,7 @@ export default class EssayController extends Controller<EssayData> {
             if (!essay) throw { message: 'Redação não encontrada', status: 404 };
             return this.parseEntity(essay);
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Falha ao consultar redações', status: error.status || 500 };
         }
     }
@@ -171,6 +176,7 @@ export default class EssayController extends Controller<EssayData> {
             const updated = await this.useCase.partialUpdate(id, validated);
             return this.parseEntity(updated);
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Falha ao atualizar', status: error.status || 500 };
         }
     }
@@ -183,6 +189,7 @@ export default class EssayController extends Controller<EssayData> {
             const updated = await this.useCase.cancelCorrecting(id, corrector);
             return this.parseEntity(updated);
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Falha ao atualizar', status: error.status || 500 };
         }
     }

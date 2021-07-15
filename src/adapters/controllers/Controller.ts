@@ -1,6 +1,6 @@
 import { Knex } from "knex";
 import { ObjectSchema, ValidationError } from "yup";
-
+import { Logger } from "winston";
 
 export interface ResponseError {
     message?: string;
@@ -10,10 +10,12 @@ export interface ResponseError {
 export default class Controller<Fields> {
     protected schema: ObjectSchema<any>;
     protected driver: Knex;
+    protected logger: Logger;
 
-    constructor(schema: ObjectSchema<any>, driver: Knex) {
+    constructor(schema: ObjectSchema<any>, driver: Knex, logger: Logger) {
         this.schema = schema;
         this.driver = driver;
+        this.logger = logger;
     }
 
     public async isValid(data: Fields) {

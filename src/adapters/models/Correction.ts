@@ -5,6 +5,7 @@ import { UserRepositoryInterface } from "../../cases/UserUseCase";
 import Correction, { CorrectionInterface } from "../../entities/Correction";
 import { EssayRepository } from "./Essay";
 import UserRepository from "./User";
+import { Logger } from 'winston';
 
 
 export interface CorrectionModel extends CorrectionModelInsertionData {
@@ -65,13 +66,15 @@ export const CorrectionService = (driver: Knex) => driver<CorrectionModelInserti
 
 export default class CorrectionRepository implements CorrectionRepositoryInterface {
     private driver: Knex;
+    private logger: Logger;
     public users: UserRepositoryInterface;
     public essays: EssayRepositoryInterface;
 
-    constructor(driver: Knex) {
+    constructor(driver: Knex, logger: Logger) {
         this.driver = driver;
-        this.users = new UserRepository(driver);
-        this.essays = new EssayRepository(driver);
+        this.users = new UserRepository(driver, logger);
+        this.essays = new EssayRepository(driver, logger);
+        this.logger = logger;
     }
 
     private async parseToDb(data: Partial<CorrectionInterface>): Promise<Partial<CorrectionModel>> {
@@ -98,10 +101,16 @@ export default class CorrectionRepository implements CorrectionRepositoryInterfa
         const parsed = await this.parseToDb(data);
         const error = { message: 'Erro ao salvar correção', status: 500 };
         const [id] = await CorrectionService(this.driver).insert(parsed)
-            .catch(() => { throw error; });
+            .catch((err: Error) => {
+                this.logger.error(err);
+                throw error;
+            });
         if (typeof id === 'undefined') throw error;
         const savedData = await CorrectionService(this.driver).where('grading_id', id)
-            .first().catch(() => { throw error; });
+            .first().catch((err) => {
+                this.logger.error(err);
+                throw error;
+            });
         if (!savedData) throw error;
         return new Correction(await this.parseFromDB(savedData) as CorrectionInterface);
     }
@@ -109,9 +118,13 @@ export default class CorrectionRepository implements CorrectionRepositoryInterfa
     public async get(filter: Partial<CorrectionInterface>) {
         const parsed = await this.parseToDb(filter);
         const data = await CorrectionService(this.driver).where(parsed)
-            .first().catch(() => { throw { message: 'Erro ao consultar banco de dados', status: 500 }; });
+            .first().catch((error) => {
+                this.logger.error(error);
+                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+            });
         if (!data) throw { message: 'Correção não encontrada', status: 404 };
-        return new Correction(await this.parseFromDB(data) as CorrectionInterface);
+        const correctionData = await this.parseFromDB(data) as CorrectionInterface;
+        return new Correction(correctionData);
     }
 
 }

@@ -7,6 +7,7 @@ import Controller from './Controller';
 import crypto from 'crypto';
 import { TokenService } from '../models/Token';
 import { ValidationError } from 'yup';
+import { Logger } from 'winston';
 
 export interface AuthInterface {
     email: string;
@@ -26,9 +27,9 @@ export const schema = yup.object({
 export default class AuthController extends Controller<AuthInterface> {
     private repository: UserRepository;
 
-    constructor(driver: Knex) {
-        super(schema, driver);
-        this.repository = new UserRepository(driver);
+    constructor(driver: Knex, logger: Logger) {
+        super(schema, driver, logger);
+        this.repository = new UserRepository(driver, logger);
     }
 
     private async generateToken() {
@@ -38,26 +39,36 @@ export default class AuthController extends Controller<AuthInterface> {
     }
 
     private async saveToken(user: User, token: string, userAgent?: string) {
-        const service = TokenService(this.driver);
-        return service.insert({
-            session_id: token,
-            login_time: new Date(),
-            user_id: user.id,
-            user_agent: userAgent,
-        });
+        try {
+            const service = TokenService(this.driver);
+            return service.insert({
+                session_id: token,
+                login_time: new Date(),
+                user_id: user.id,
+                user_agent: userAgent,
+            });
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: 'Erro ao salvar token', status: 500 };
+        }
     }
 
     public async auth(rawData: AuthInterface, userAgent?: string): Promise<AuthResponse> {
-        const data = await this.validate(rawData);
-        const useCase = new UserUseCase(this.repository);
-        const auth = await useCase.authenticate(data.email, data.password);
-        if (!!auth.email && !!auth.password) {
-            const token = await this.generateToken();
-            if (!!useCase.user) this.saveToken(useCase.user, token, userAgent);
-            return { token };
+        try {
+            const data = await this.validate(rawData);
+            const useCase = new UserUseCase(this.repository);
+            const auth = await useCase.authenticate(data.email, data.password);
+            if (!!auth.email && !!auth.password) {
+                const token = await this.generateToken();
+                if (!!useCase.user) this.saveToken(useCase.user, token, userAgent);
+                return { token };
+            }
+            if (!auth.email) throw { errors: [['email', 'Email inválido']] };
+            else throw { errors: [['password', 'Senha inválida']] };
+        } catch (error) {
+            this.logger.error(error);
+            throw error;
         }
-        if (!auth.email) throw { errors: [['email', 'Email inválido']] };
-        else throw { errors: [['password', 'Senha inválida']] };
     }
 
     public async logOut(token: string) {
@@ -67,6 +78,7 @@ export default class AuthController extends Controller<AuthInterface> {
             if (deleted === 0) throw { message: "Nenhum token encontrado", status: 400 };
             if (deleted > 1) throw { message: "Mais de um registro afetado", status: 500 };
         } catch (error) {
+            this.logger.error(error);
             if (error.status) throw error;
             throw { message: 'Erro ao deletar token', status: 500 };
         }

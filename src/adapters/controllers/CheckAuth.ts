@@ -4,6 +4,7 @@ import * as yup from 'yup';
 import User, { UserInterface } from "../../entities/User";
 import UserRepository from "../models/User";
 import { UserView } from "../views/User";
+import { Logger } from 'winston';
 
 export interface CheckAuthInterface {
     token: string;
@@ -19,12 +20,12 @@ const schema = yup.object().shape({
 });
 
 export default class CheckAuthController extends Controller<CheckAuthInterface> {
-    constructor(driver: Knex) {
-        super(schema, driver);
+    constructor(driver: Knex, logger: Logger) {
+        super(schema, driver, logger);
     }
 
     private async retrieveUser(token: string): Promise<User> {
-        const repository = new UserRepository(this.driver);
+        const repository = new UserRepository(this.driver, this.logger);
         const user = await repository.query
             .innerJoin('login_sessions', 'users.user_id', '=', 'login_sessions.user_id')
             .where('login_sessions.session_id', token)
@@ -39,6 +40,7 @@ export default class CheckAuthController extends Controller<CheckAuthInterface> 
             const user = await this.retrieveUser(data.token);
             return { isValid: true, user: await UserView(user) };
         } catch (error) {
+            this.logger.error(error);
             return { isValid: false };
         }
     }

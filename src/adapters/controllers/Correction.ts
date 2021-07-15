@@ -7,6 +7,7 @@ import Correction, { CorrectionInterface } from "../../entities/Correction";
 import { Transporter } from "nodemailer";
 import { MessageConfigInterface } from "./PasswordRecovery";
 import message from '../views/CorrectionNotification';
+import { Logger } from 'winston';
 
 const schema = yup.object().shape({
     essay: yup.number().required('É preciso informar qual redação será corrigida'),
@@ -37,9 +38,9 @@ export default class CorrectionController extends Controller<CorrectionData> {
     private smtp: Transporter;
     private config: MessageConfigInterface;
 
-    constructor(driver: Knex, smtp: Transporter, config: MessageConfigInterface) {
-        super(schema, driver);
-        this.repository = new CorrectionRepository(driver);
+    constructor(driver: Knex, smtp: Transporter, config: MessageConfigInterface, logger: Logger) {
+        super(schema, driver, logger);
+        this.repository = new CorrectionRepository(driver, logger);
         this.useCase = new CorrectionCase(this.repository);
         this.smtp = smtp;
         this.config = config;
@@ -68,25 +69,30 @@ export default class CorrectionController extends Controller<CorrectionData> {
     }
 
     private async notify(essayId: number) {
-        const essay = await this.repository.essays.get({ id: essayId });
-        const user = await this.repository.users.get({ id: essay?.student });
-        if (!user) return;
-        return this.smtp.sendMail({
-            from: this.config.sender,
-            to: user.email,
-            subject: 'Redação Corrigida',
-            text: await this.writeNotification(user.firstName),
-            html: await this.renderNotification(user.firstName),
-        });
+        try {
+            const essay = await this.repository.essays.get({ id: essayId });
+            const user = await this.repository.users.get({ id: essay?.student });
+            if (!user) return;
+            return this.smtp.sendMail({
+                from: this.config.sender,
+                to: user.email,
+                subject: 'Redação Corrigida',
+                text: await this.writeNotification(user.firstName),
+                html: await this.renderNotification(user.firstName),
+            });
+        } catch (error) {
+            this.logger.error(error);
+        }
     }
 
     public async create(data: CorrectionData) {
         try {
             const validated = await this.validate(data);
             const created = await this.useCase.create(validated);
-            this.notify(created.essay);
+            this.notify(created.essay).catch(this.logger.error);
             return this.parseEntity(created);
         } catch (error) {
+            this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message || "Falha ao salvar correção", status: 400 };
         }
@@ -97,6 +103,7 @@ export default class CorrectionController extends Controller<CorrectionData> {
             const data = await this.useCase.get(filter);
             return this.parseEntity(data);
         } catch (error) {
+            this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message || "Falha ao encontrar correção", status: 500 };
         }

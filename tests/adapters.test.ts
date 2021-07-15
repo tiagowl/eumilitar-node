@@ -19,8 +19,10 @@ import EssayController, { EssayInput } from '../src/adapters/controllers/Essay';
 import EssayInvalidationController from '../src/adapters/controllers/EssayInvalidation';
 import CorrectionController from '../src/adapters/controllers/Correction';
 import UserController from '../src/adapters/controllers/User';
+import createLogger from '../src/drivers/logger';
 
-const driver = driverFactory()
+const driver = driverFactory();
+const logger = createLogger(settings.logger);
 
 beforeAll(async (done) => {
     await driver.migrate.latest();
@@ -55,7 +57,7 @@ describe('#1 Testes na autenticação', () => {
             email: user.email,
             password: user.passwd
         };
-        const controller = new AuthController(driver);
+        const controller = new AuthController(driver, logger);
         const token = await controller.auth(credentials);
         expect(token.token).not.toBeNull();
         const tokenService = TokenService(driver);
@@ -69,7 +71,7 @@ describe('#1 Testes na autenticação', () => {
         const userData = await service.where('email', user.email).first();
         const credentials = { email: user.email, }
         const smtp = await smtpFactory();
-        const controller = new PasswordRecoveryController(driver, smtp, settings.messageConfig);
+        const controller = new PasswordRecoveryController(driver, smtp, settings.messageConfig, logger);
         const response = await controller.recover(credentials);
         expect(response).toEqual({ message: "Email enviado! Verifique sua caixa de entrada." });
         const token = await passwordService.where('user_id', userData?.user_id).first();
@@ -82,7 +84,7 @@ describe('#1 Testes na autenticação', () => {
     test('Recuperação de senha com email errado', async (done) => {
         const credentials = { email: 'wrong@mail.com' }
         const smtp = await smtpFactory();
-        const controller = new PasswordRecoveryController(driver, smtp, settings.messageConfig);
+        const controller = new PasswordRecoveryController(driver, smtp, settings.messageConfig, logger);
         try {
             await controller.recover(credentials);
         } catch (error) {
@@ -93,7 +95,7 @@ describe('#1 Testes na autenticação', () => {
     test('Recuperação de senha com email inválido', async done => {
         const credentials = { email: 'wrongmail.com' }
         const smtp = await smtpFactory();
-        const controller = new PasswordRecoveryController(driver, smtp, settings.messageConfig);
+        const controller = new PasswordRecoveryController(driver, smtp, settings.messageConfig, logger);
         try {
             await controller.recover(credentials);
         } catch (error) {
@@ -109,8 +111,8 @@ describe('#1 Testes na autenticação', () => {
         const token = await generateConfirmationToken();
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver);
-        const controller = new CheckPasswordToken(driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, driver);
+        const controller = new CheckPasswordToken(driver, logger);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeTruthy()
         done();
@@ -120,7 +122,7 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date());
-        const controller = new CheckPasswordToken(driver);
+        const controller = new CheckPasswordToken(driver, logger);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeFalsy()
         done();
@@ -129,8 +131,8 @@ describe('#1 Testes na autenticação', () => {
         const token = await generateConfirmationToken();
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver, new Date(0));
-        const controller = new CheckPasswordToken(driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date(0));
+        const controller = new CheckPasswordToken(driver, logger);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeFalsy()
         done();
@@ -140,8 +142,8 @@ describe('#1 Testes na autenticação', () => {
         const invalidToken = await generateConfirmationToken()
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver);
-        const controller = new CheckPasswordToken(driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, driver);
+        const controller = new CheckPasswordToken(driver, logger);
         const { isValid } = await controller.check({ token: invalidToken });
         expect(isValid).toBeFalsy()
         done();
@@ -151,8 +153,8 @@ describe('#1 Testes na autenticação', () => {
         const invalidToken = (await generateConfirmationToken()).slice(0, 15)
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver);
-        const controller = new CheckPasswordToken(driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, driver);
+        const controller = new CheckPasswordToken(driver, logger);
         const { isValid } = await controller.check({ token: invalidToken },);
         expect(isValid).toBeFalsy()
         done();
@@ -161,16 +163,16 @@ describe('#1 Testes na autenticação', () => {
         const token = await generateConfirmationToken();
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, driver);
         const newPassword = 'newPassword'
-        const controller = new ChangePasswordController(driver);
+        const controller = new ChangePasswordController(driver, logger);
         const updated = await controller.updatePassword({
             password: newPassword,
             confirmPassword: newPassword,
             token,
         });
         expect(updated).toEqual({ updated: true })
-        const checker = new CheckPasswordToken(driver);
+        const checker = new CheckPasswordToken(driver, logger);
         const { isValid } = await checker.check({ token },);
         expect(isValid).toBeFalsy()
         done();
@@ -180,9 +182,9 @@ describe('#1 Testes na autenticação', () => {
             email: user.email,
             password: 'newPassword'
         };
-        const auth = new AuthController(driver);
+        const auth = new AuthController(driver, logger);
         const { token } = await auth.auth(credentials);
-        const controller = new CheckAuthController(driver);
+        const controller = new CheckAuthController(driver, logger);
         const response = await controller.check({ token: token || '' });
         expect(response.isValid).toBeTruthy();
         expect(response.user).not.toBeNull();
@@ -192,7 +194,7 @@ describe('#1 Testes na autenticação', () => {
     })
     test('Verificar autenticação com token inválido', async (done) => {
         const token = crypto.randomBytes(32).toString('base64');
-        const controller = new CheckAuthController(driver);
+        const controller = new CheckAuthController(driver, logger);
         const response = await controller.check({ token: token || '' });
         expect(response.isValid).toBeFalsy();
         expect(response.user).toBeUndefined();
@@ -209,7 +211,7 @@ describe('#2 Testes nos temas de redação', () => {
         done();
     })
     test('Teste no modelo', async done => {
-        const repository = new EssayThemeRepository(driver);
+        const repository = new EssayThemeRepository(driver, logger);
         const data: EssayThemeCreation = {
             title: 'Título',
             endDate: new Date(Date.now() - 150 * 24 * 60 * 60),
@@ -248,7 +250,7 @@ describe('#2 Testes nos temas de redação', () => {
             },
             courses: ['esa', 'espcex'] as Course[]
         }
-        const controller = new EssayThemeController(driver);
+        const controller = new EssayThemeController(driver, logger);
         const created = await controller.create(data);
         expect(created.id).not.toBeNull();
         expect(created.id).not.toBeUndefined();
@@ -283,7 +285,7 @@ describe('#2 Testes nos temas de redação', () => {
             },
             courses: ['esa', 'espcex'] as Course[],
         }
-        const controller = new EssayThemeController(driver);
+        const controller = new EssayThemeController(driver, logger);
         await controller.create(data);
         await controller.create({ ...data, startDate: new Date(Date.now() + 790 * 24 * 60 * 60), endDate: new Date(Date.now() + 800 * 24 * 60 * 60) });
         const themes = await controller.listAll(pagination);
@@ -319,7 +321,7 @@ describe('#2 Testes nos temas de redação', () => {
             },
             courses: ['esa'] as Course[],
         }
-        const controller = new EssayThemeController(driver);
+        const controller = new EssayThemeController(driver, logger);
         const all = await controller.listAll();
         expect(all.pages).not.toBeLessThan(1);
         expect(all.page).toBeInstanceOf(Array);
@@ -357,7 +359,7 @@ describe('#4 Redações', () => {
     test('Criação de redações', async done => {
         const themeService = EssayThemeService(driver);
         await themeService.delete().del()
-        const repository = new EssayThemeRepository(driver);
+        const repository = new EssayThemeRepository(driver, logger);
         const themeData: EssayThemeCreation = {
             title: 'Título',
             endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
@@ -388,7 +390,7 @@ describe('#4 Redações', () => {
             student: user.user_id,
             course: 'espcex',
         }
-        const controller = new EssayController(driver);
+        const controller = new EssayController(driver, logger);
         const created = await controller.create(data);
         expect(created.id, JSON.stringify(created)).not.toBeUndefined();
         expect(created.id, JSON.stringify(created)).not.toBeNaN();
@@ -396,14 +398,14 @@ describe('#4 Redações', () => {
         done();
     }, 10000)
     test('Listagem', async done => {
-        const controller = new EssayController(driver);
+        const controller = new EssayController(driver, logger);
         const essays = await controller.myEssays(user.user_id);
         expect(essays).not.toBeUndefined();
         expect(essays.length).not.toBeLessThan(1);
         done();
     }, 10000)
     test('Listagem de todos', async (done) => {
-        const controller = new EssayController(driver);
+        const controller = new EssayController(driver, logger);
         const essays = await controller.allEssays({});
         expect(essays).not.toBeUndefined();
         expect(essays.count).not.toBeLessThan(1);
@@ -411,7 +413,7 @@ describe('#4 Redações', () => {
         done();
     }, 10000)
     test('Recuperação de uma redação', async done => {
-        const controller = new EssayController(driver);
+        const controller = new EssayController(driver, logger);
         const base = await createEssay(driver, user.user_id);
         const essay = await controller.get(base.id);
         expect(essay).toMatchObject(base);
@@ -419,7 +421,7 @@ describe('#4 Redações', () => {
         done();
     }, 10000)
     test('Atualização da redação', async done => {
-        const controller = new EssayController(driver);
+        const controller = new EssayController(driver, logger);
         const base = await createEssay(driver, user.user_id);
         const essay = await controller.partialUpdate(base.id,
             { corrector: corrector.user_id, status: 'correcting' }
@@ -447,13 +449,13 @@ describe('#5 Invalidações', () => {
         done()
     })
     test('Invalidação da redação', async done => {
-        const essays = new EssayController(driver);
+        const essays = new EssayController(driver, logger);
         const essay = await createEssay(driver, user.user_id);
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
         const smtp = await smtpFactory();
-        const controller = new EssayInvalidationController(driver, smtp, settings.messageConfig);
+        const controller = new EssayInvalidationController(driver, smtp, settings.messageConfig, logger);
         const created = await controller.create({ essay: essay.id, corrector: user.user_id, comment: faker.lorem.lines(7), reason: 'other' });
         expect(created).toBeDefined();
         expect(created.id).toBeDefined();
@@ -461,13 +463,13 @@ describe('#5 Invalidações', () => {
         done();
     }, 10000)
     test('Recuperação da invalidação', async done => {
-        const essays = new EssayController(driver);
+        const essays = new EssayController(driver, logger);
         const essay = await createEssay(driver, user.user_id);
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
         const smtp = await smtpFactory();
-        const controller = new EssayInvalidationController(driver, smtp, settings.messageConfig);
+        const controller = new EssayInvalidationController(driver, smtp, settings.messageConfig, logger);
         const created = await controller.create({ essay: essay.id, corrector: user.user_id, comment: faker.lorem.lines(7), reason: 'other' });
         expect(created).toBeDefined();
         const invalidation = await controller.get(essay.id);
@@ -495,13 +497,13 @@ describe('#6 Correções', () => {
         done()
     })
     test('Correção', async done => {
-        const essays = new EssayController(driver);
+        const essays = new EssayController(driver, logger);
         const essay = await createEssay(driver, user.user_id);
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
         const smtp = await smtpFactory();
-        const controller = new CorrectionController(driver, smtp, settings.messageConfig);
+        const controller = new CorrectionController(driver, smtp, settings.messageConfig, logger);
         const data = {
             'essay': essay.id,
             'corrector': user.user_id,
@@ -533,13 +535,13 @@ describe('#6 Correções', () => {
         done();
     })
     test('Recuperar correção', async (done) => {
-        const essays = new EssayController(driver);
+        const essays = new EssayController(driver, logger);
         const essay = await createEssay(driver, user.user_id);
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
         const smtp = await smtpFactory();
-        const controller = new CorrectionController(driver, smtp, settings.messageConfig);
+        const controller = new CorrectionController(driver, smtp, settings.messageConfig, logger);
         const pre = {
             'essay': essay.id,
             'corrector': user.user_id,
@@ -592,7 +594,7 @@ describe('#7 Testes no usuário', () => {
         done()
     })
     test('Listagem', async done => {
-        const controller = new UserController(driver);
+        const controller = new UserController(driver, logger);
         const users = await controller.all({ status: 'active' });
         expect(users).toBeDefined();
         expect(users.length).toBeGreaterThan(0);
@@ -604,7 +606,7 @@ describe('#7 Testes no usuário', () => {
     })
     test('Cancelamento', async done => {
         const token = faker.random.alpha();
-        const controller = new UserController(driver, token);
+        const controller = new UserController(driver, logger, token);
         const users = await controller.all({ status: 'active' });
         const user = users[0];
         const cancellation = await controller.cancel({

@@ -5,6 +5,7 @@ import { Course } from '../../entities/EssayTheme';
 import { Knex } from "knex";
 import EssayThemeCase from "../../cases/EssayThemeCase";
 import EssayThemeRepository, { EssayThemeModel } from '../models/EssayTheme';
+import { Logger } from 'winston';
 
 interface EssayThemeBaseInterface {
     title: string;
@@ -93,9 +94,9 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
     private repository: EssayThemeRepository;
     private useCase: EssayThemeCase;
 
-    constructor(driver: Knex) {
-        super(schema, driver);
-        this.repository = new EssayThemeRepository(driver);
+    constructor(driver: Knex, logger: Logger) {
+        super(schema, driver, logger);
+        this.repository = new EssayThemeRepository(driver, logger);
         this.useCase = new EssayThemeCase(this.repository);
     }
 
@@ -127,6 +128,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                 } as EssayThemeResponse;
             })
             .catch((error) => {
+                this.logger.error(error);
                 throw { message: error.message || 'Erro ao salvar o tema' };
             });
     }
@@ -142,6 +144,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                 pages: Math.ceil(amount / data.size),
             } as EssayThemeList;
         } catch (error) {
+            this.logger.error(error);
             throw { message: 'Erro ao consultar temas' };
         }
     }
@@ -156,6 +159,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
             });
             return this.parseEntity(theme);
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Erro ao atualizar tema' };
         }
     }
@@ -165,14 +169,20 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
             const theme = await this.useCase.deactivate(id);
             return this.parseEntity(theme);
         } catch (error) {
+            this.logger.error(error);
             throw { message: error.message || 'Erro ao desativar tema' };
         }
     }
 
     public async get(filter: Partial<EssayThemeResponse>) {
-        const theme = await this.useCase.get({ ...filter, courses: new Set(filter.courses) });
-        if (!theme) return undefined;
-        return this.parseEntity(new EssayTheme(theme));
+        try {
+            const theme = await this.useCase.get({ ...filter, courses: new Set(filter.courses) });
+            if (!theme) return undefined;
+            return this.parseEntity(new EssayTheme(theme));
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: 'Erro ao consultar tema', status: 500 };
+        }
     }
 
 }

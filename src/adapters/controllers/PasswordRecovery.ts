@@ -6,6 +6,7 @@ import UserRepository from "../models/User";
 import crypto from 'crypto';
 import { PasswordRecoveryInsert, PasswordRecoveryModel, PasswordRecoveryService } from '../models/PasswordRecoveries';
 import PasswordRecoveryRender from '../views/PasswordRecovery';
+import { Logger } from 'winston';
 
 export interface PasswordRecoveryInterface {
     email: string;
@@ -29,13 +30,13 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
     private token?: string;
     private service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
 
-    constructor(driver: Knex, smtp: Transporter, config: MessageConfigInterface) {
+    constructor(driver: Knex, smtp: Transporter, config: MessageConfigInterface, logger: Logger) {
         const schema = yup.object().shape({
             email: yup.string().email('Email inválido').required('O campo "email" é obrigatório'),
         });
-        super(schema, driver);
+        super(schema, driver, logger);
         this.smtp = smtp;
-        this.repository = new UserRepository(driver);
+        this.repository = new UserRepository(driver, logger);
         this.config = config;
         this.service = PasswordRecoveryService(driver);
     }
@@ -90,15 +91,21 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
     }
 
     public async recover(rawData: PasswordRecoveryInterface,): Promise<PasswordRecoveryResponse> {
-        const data = await this.validate(rawData);
-        const user = await this.repository.get(data);
-        this.token = await this.generateConfirmationToken();
-        await this.saveToken(user.id);
-        return this.sendConfirmationEmail(user.email, user.fullName)
-            .then(async () => ({ message: "Email enviado! Verifique sua caixa de entrada." }))
-            .catch(async () => {
-                throw { message: 'Falha ao enviar o email! Tente novamente ou entre em contato com o suporte.' };
-            });
+        try {
+            const data = await this.validate(rawData);
+            const user = await this.repository.get(data);
+            this.token = await this.generateConfirmationToken();
+            await this.saveToken(user.id);
+            return this.sendConfirmationEmail(user.email, user.fullName)
+                .then(async () => ({ message: "Email enviado! Verifique sua caixa de entrada." }))
+                .catch(async (error) => {
+                    this.logger.error(error);
+                    throw { message: 'Falha ao enviar o email! Tente novamente ou entre em contato com o suporte.' };
+                });
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: error.message, status: 500 };
+        }
     }
 
 }

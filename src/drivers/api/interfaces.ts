@@ -2,6 +2,7 @@ import { Knex } from "knex";
 import { RequestHandler } from 'express';
 import Mail from "nodemailer/lib/mailer";
 import { Multer } from "multer";
+import winston from "winston";
 
 export type Method = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
@@ -10,6 +11,7 @@ export type Context = {
     smtp: Mail;
     storage: Multer;
     settings: any;
+    logger: winston.Logger;
 };
 
 export type Handler = (props: Context) => RequestHandler<any, any, any>;

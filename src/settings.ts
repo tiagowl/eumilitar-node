@@ -1,7 +1,14 @@
 import path from 'path';
 import { config } from 'dotenv';
+import { transports, format } from 'winston';
 
 config({ path: path.resolve(__dirname, "..", ".env") });
+
+const errorFormat = format.combine(
+    format.printf(error => {
+        return `[${new Date().toISOString()}]: ${JSON.stringify(error)};${!!error.stack ? '\n' + error.stack : ''}`;
+    })
+);
 
 const settings = Object.freeze({
     database: {
@@ -63,7 +70,25 @@ const settings = Object.freeze({
     },
     hotmart: {
         hottok: process.env.HOTTOK,
-    }
+    },
+    logger: {
+        transports: [
+            new transports.File({
+                filename: 'error.log',
+                level: 'error',
+                format: errorFormat,
+            }),
+            new transports.Console({ level: 'error', format: errorFormat }),
+            new transports.Console({
+                level: 'info',
+                format: format.combine(
+                    format.colorize({ colors: { info: 'green' } }),
+                    format.timestamp(),
+                    format.printf(({ message }) => message),
+                ),
+            }),
+        ]
+    },
 });
 
 export default settings;
