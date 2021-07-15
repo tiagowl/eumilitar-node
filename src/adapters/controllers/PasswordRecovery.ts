@@ -103,8 +103,8 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
                     throw { message: 'Falha ao enviar o email! Tente novamente ou entre em contato com o suporte.' };
                 });
         } catch (error) {
-            this.logger.error(error);
-            throw { message: error.message, status: 500 };
+            this.logger.error({ ...error });
+            throw error;
         }
     }
 

@@ -99,7 +99,7 @@ describe('#1 Testes na autenticação', () => {
         try {
             await controller.recover(credentials);
         } catch (error) {
-            expect(error).toEqual({
+            expect(error).toMatchObject({
                 message: "Email inválido",
                 errors: [["email", "Email inválido",]],
                 status: 400,

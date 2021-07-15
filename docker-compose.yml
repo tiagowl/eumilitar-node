@@ -13,6 +13,7 @@ services:
             - 80:22000
         depends_on:
             - db
+            - test_db
         environment:
             PORT: 22000
             DB_NAME: eumili89_portal_aluno
