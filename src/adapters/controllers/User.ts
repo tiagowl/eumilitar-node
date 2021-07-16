@@ -114,7 +114,7 @@ export default class UserController extends Controller<any> {
             //     email: validated.email,
             //     firstName: validated.first_name,
             //     lastName: validated.last_name,
-                
+            //     permission: validated.prod,
             // })
         } catch (error) {
             this.logger.error(error);

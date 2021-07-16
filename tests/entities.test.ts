@@ -5,6 +5,7 @@ import Essay from '../src/entities/Essay';
 import EssayInvalidation from '../src/entities/EssayInvalidation';
 import Correction from '../src/entities/Correction';
 import faker from 'faker';
+import Product from '../src/entities/Product';
 
 test('Testes na entidade User', async (done) => {
     const password = 'l23jlk234';
@@ -102,4 +103,14 @@ test('Entidade da correção', () => {
         // @ts-ignore
         correction.id = 5;
     }).toThrowError();
+});
+
+test('Produtos', () => {
+    expect(() => {
+        new Product({
+            id: faker.datatype.number(),
+            code: faker.datatype.number(),
+            name: faker.lorem.sentence(),
+        })
+    }).not.toThrowError();
 });
