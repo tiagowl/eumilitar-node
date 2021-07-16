@@ -107,7 +107,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
                 });
         } catch (error) {
             this.logger.error(error);
-            throw { message: error.message, status: 500 };
+            throw { message: error.message, status: error.status || 500 };
         }
     }
 
