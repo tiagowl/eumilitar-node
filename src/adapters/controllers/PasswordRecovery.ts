@@ -1,5 +1,5 @@
 import Controller from "./Controller";
-import { Transporter } from 'nodemailer';
+import { Mail } from '../interfaces';
 import { Knex } from "knex";
 import * as yup from 'yup';
 import UserRepository from "../models/User";
@@ -13,7 +13,10 @@ export interface PasswordRecoveryInterface {
 }
 
 export interface MessageConfigInterface {
-    sender: string;
+    sender: {
+        email: string;
+        name: string;
+    };
     url: string;
     expirationTime: number;
 }
@@ -24,13 +27,13 @@ export type PasswordRecoveryResponse = {
 };
 
 export default class PasswordRecoveryController extends Controller<PasswordRecoveryInterface> {
-    private smtp: Transporter;
+    private smtp: Mail;
     private repository: UserRepository;
     private config: MessageConfigInterface;
     private token?: string;
     private service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
 
-    constructor(driver: Knex, smtp: Transporter, config: MessageConfigInterface, logger: Logger) {
+    constructor(driver: Knex, smtp: Mail, config: MessageConfigInterface, logger: Logger) {
         const schema = yup.object().shape({
             email: yup.string().email('Email inválido').required('O campo "email" é obrigatório'),
         });
@@ -70,7 +73,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
         const link = `${this.config.url}${token}`;
         return this.smtp.sendMail({
             from: this.config.sender,
-            to: email,
+            to: { email, name: username },
             subject: 'Recuperação de senha',
             text: await this.writeMessage(username, link),
             html: await this.renderMessage(username, link),

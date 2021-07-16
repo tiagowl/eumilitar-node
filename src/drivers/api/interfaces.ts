@@ -1,6 +1,6 @@
 import { Knex } from "knex";
 import { RequestHandler } from 'express';
-import Mail from "nodemailer/lib/mailer";
+import { Mail } from "../../adapters/interfaces";
 import { Multer } from "multer";
 import winston from "winston";
 

@@ -6,7 +6,7 @@ import EssayInvalidationCase, { EssayInvalidationCreationData, EssayInvalidation
 import EssayInvalidationRepository from "../models/EssayInvalidation";
 import message from '../views/CorrectionNotification';
 import { MessageConfigInterface } from "./PasswordRecovery";
-import { Transporter } from "nodemailer";
+import { Mail } from '../interfaces';
 import UserRepository from "../models/User";
 import { Logger } from 'winston';
 
@@ -24,10 +24,10 @@ const schema = yup.object().shape({
 export default class EssayInvalidationController extends Controller<EssayInvalidationCreationData> {
     private useCase: EssayInvalidationCase;
     private repository: EssayInvalidationRepositoryInterface;
-    private smtp: Transporter;
+    private smtp: Mail;
     private config: MessageConfigInterface;
 
-    constructor(driver: Knex, smtp: Transporter, config: MessageConfigInterface, logger: Logger) {
+    constructor(driver: Knex, smtp: Mail, config: MessageConfigInterface, logger: Logger) {
         super(schema, driver, logger);
         this.repository = new EssayInvalidationRepository(driver, logger);
         this.useCase = new EssayInvalidationCase(this.repository);
@@ -68,7 +68,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
             if (!user) return;
             return this.smtp.sendMail({
                 from: this.config.sender,
-                to: user.email,
+                to: { email: user.email, name: user.firstName },
                 subject: 'Redação Corrigida',
                 text: await this.writeNotification(user.firstName),
                 html: await this.renderNotification(user.firstName),

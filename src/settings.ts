@@ -39,12 +39,15 @@ const settings = Object.freeze({
         port: Number(process.env.SMTP_PORT),
         secure: process.env.SMTP_SECURE === 'true',
         auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
+            key: process.env.MAILJET_API_KEY,
+            secret: process.env.MAILJET_API_SECRET,
         },
     },
     messageConfig: {
-        sender: process.env.EMAIL_SENDER || "",
+        sender: {
+            email: process.env.EMAIL_SENDER || "",
+            name: process.env.NAME_SENDER || "",
+        },
         url: process.env.PASSWORD_RECOVERY_URL || "",
         expirationTime: Number(process.env.EXPIRATION_TIME || 4)
     },

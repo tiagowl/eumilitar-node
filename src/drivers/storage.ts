@@ -11,11 +11,15 @@ interface StorageTypes {
 
 export default function createStorage(settings: any) {
     const { credentials, bucket, destination, permission } = settings;
-    function createFileName(_: any, file: Express.MulterS3.File, cb: (error: Error | null, destination: string) => void) {
-        const fileExtension = mime.getExtension(file.mimetype);
-        const now = new Date().toISOString();
-        const id = v4();
-        cb(null, `${destination}${id}-${now}.${fileExtension}`);
+    function createFileName(_: any, file: Express.MulterS3.File, cb: (error: Error | null, filename: string) => void) {
+        try {
+            const fileExtension = mime.getExtension(file.mimetype);
+            const now = new Date().toISOString();
+            const id = v4();
+            cb(null, `${destination}${id}-${now}.${fileExtension}`);
+        } catch {
+            cb(new Error('Erro ao nomear arquivo'), '');
+        }
     }
     const storageTypes: StorageTypes = {
         s3: multerS3({
@@ -27,7 +31,11 @@ export default function createStorage(settings: any) {
         }),
         local: multer.diskStorage({
             destination: (_req, _file, cb) => {
-                cb(null, settings.local.destination);
+                try {
+                    cb(null, settings.local.destination);
+                } catch (error) {
+                    cb(new Error('Erro ao salvar arquivo'), '');
+                }
             },
             filename: createFileName,
         }),
@@ -38,10 +46,14 @@ export default function createStorage(settings: any) {
             fileSize: settings.maxSize,
         },
         fileFilter: (_, file, cb) => {
-            if (settings.allowedMimes.includes(file.mimetype)) {
-                cb(null, true);
-            } else {
-                cb(new Error("Invalid file type."));
+            try {
+                if (settings.allowedMimes.includes(file.mimetype)) {
+                    cb(null, true);
+                } else {
+                    cb(new Error("Invalid file type."));
+                }
+            } catch {
+                cb(new Error('Erro ao verificar tipo do arquivo'));
             }
         },
     });

@@ -117,20 +117,19 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
 
     public async create(rawData: EssayThemeInput): Promise<EssayThemeResponse> {
         const data = await this.validate({ ...rawData, file: rawData.file.path || rawData.file.location }) as EssayThemeData;
-        return this.useCase.create({
-            ...data,
-            courses: new Set(data.courses),
-        })
-            .then(theme => {
-                return {
-                    ...theme,
-                    courses: [...theme.courses]
-                } as EssayThemeResponse;
-            })
-            .catch((error) => {
-                this.logger.error(error);
-                throw { message: error.message || 'Erro ao salvar o tema' };
+        try {
+            const theme = await this.useCase.create({
+                ...data,
+                courses: new Set(data.courses),
             });
+            return {
+                ...theme,
+                courses: [...theme.courses]
+            } as EssayThemeResponse;
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: error.message || 'Erro ao salvar o tema', status: 500 };
+        }
     }
 
     public async listAll(pagination?: EssayThemePagination): Promise<EssayThemeList> {
@@ -177,11 +176,11 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
     public async get(filter: Partial<EssayThemeResponse>) {
         try {
             const theme = await this.useCase.get({ ...filter, courses: new Set(filter.courses) });
-            if (!theme) return undefined;
+            if (!theme) throw { message: 'Tema não encontrado', status: 404 };
             return this.parseEntity(new EssayTheme(theme));
         } catch (error) {
             this.logger.error(error);
-            throw { message: 'Erro ao consultar tema', status: 500 };
+            throw { message: 'Erro ao consultar tema', status: error.status || 500 };
         }
     }
 
