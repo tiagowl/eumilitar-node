@@ -111,6 +111,7 @@ test('Produtos', () => {
             id: faker.datatype.number(),
             code: faker.datatype.number(),
             name: faker.lorem.sentence(),
+            course: 'esa',
         })
     }).not.toThrowError();
 });

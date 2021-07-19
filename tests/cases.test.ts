@@ -10,6 +10,8 @@ import EssayInvalidation from '../src/entities/EssayInvalidation';
 import EssayInvalidationCase, { EssayInvalidationRepositoryInterface } from '../src/cases/EssayInvalidation';
 import Correction, { CorrectionInterface } from '../src/entities/Correction';
 import CorrectionCase, { CorrectionInsertionData, CorrectionRepositoryInterface } from '../src/cases/Correction';
+import ProductCase, { ProductRepositoryInterface } from '../src/cases/ProductCase';
+import Product, { ProductInterface } from '../src/entities/Product';
 
 const defaultPassword = 'pass1235'
 const userDatabase = Promise.all(new Array(5).fill(0).map(async (_, id) => await userEntityFactory({ password: await hashPassword(defaultPassword), id })));
@@ -302,6 +304,22 @@ class CorrectionTestRepository implements CorrectionRepositoryInterface {
     }
 }
 
+// tslint:disable-next-line
+class ProductTestRepository implements ProductRepositoryInterface {
+    private database = new Array(5).fill(0).map((_, id) => new Product({
+        id,
+        code: id * 10,
+        course: 'esa',
+        name: faker.lorem.sentence(),
+    }));
+
+    public async get(filter: Partial<ProductInterface>) {
+        return this.database.find((correction => (Object.entries(filter) as [keyof ProductInterface, any][])
+            .reduce((valid, [key, value]) => valid && (correction[key] === value), true as boolean))
+        ) as Product;
+    }
+}
+
 describe('#1 Testes nos casos de uso da entidade User', () => {
     it('Autenticação', async (done) => {
         const repository = new UserTestRepository(await userDatabase);
@@ -563,4 +581,15 @@ describe('#5 Correção', () => {
         expect(retrieved).toBeInstanceOf(Correction);
         done();
     })
+})
+
+describe('#6 Produtos', () => {
+    test('Criação', async done => {
+        const repository = new ProductTestRepository();
+        const useCase = new ProductCase(repository);
+        const product = await useCase.get(10);
+        expect(product).toBeInstanceOf(Product);
+        expect(product.id).toBe(1);
+        done();
+    });
 })
