@@ -6,7 +6,7 @@ export default function create(settings: winston.LoggerOptions) {
         if (error instanceof Error) {
             logger.log({ level: 'error', message: error.stack || error.message });
         } else {
-            logger.log({ level: 'error', message: error });
+            logger.log('error', { error, stack: new Error().stack });
         }
         return logger;
     };
