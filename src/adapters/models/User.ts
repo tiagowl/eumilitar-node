@@ -1,7 +1,8 @@
 import { Knex } from "knex";
 import { UserFilter, UserRepositoryInterface, UserSavingData } from "../../cases/UserUseCase";
-import User, { AccountPermission, AccountStatus, UserData } from "../../entities/User";
+import User, { AccountPermission, AccountStatus, UserData, UserInterface } from "../../entities/User";
 import { Logger } from 'winston';
+import Repository, { FieldsMap } from "./Repository";
 
 const statusMap: AccountStatus[] = ['inactive', 'active', 'pending'];
 const permissionMap: [number, AccountPermission][] = [
@@ -30,13 +31,6 @@ function parsePermissionToDB(value: AccountPermission): number | undefined {
     return !!parsed ? parsed[0] : undefined;
 }
 
-type Parser = (value: any) => any;
-
-type FieldsMap = {
-    entity: [keyof UserData, Parser],
-    db: [keyof UserModel, Parser]
-}[];
-
 export interface UserModel {
     user_id: number;
     first_name: string;
@@ -64,59 +58,31 @@ export interface UserModelFilter {
 
 export const UserService = (driver: Knex) => driver<UserModelFilter, UserModel>('users');
 
-export default class UserRepository implements UserRepositoryInterface {
+const fieldsMap: FieldsMap<UserModel, UserData> = [
+    [['user_id', Number], ['id', Number],],
+    [['first_name', String], ['firstName', String],],
+    [['last_name', String], ['lastName', String],],
+    [['email', String], ['email', String],],
+    [['passwd', String], ['password', String],],
+    [['status', parseStatusToDB], ['status', parseStatus],],
+    [['permission', parsePermissionToDB], ['permission', parsePermission],],
+    [['date_created', (value) => new Date(value)], ['creationDate', (value) => new Date(value)],],
+    [['date_modified', (value) => new Date(value)], ['lastModified', (value) => new Date(value)],],
+];
+
+export default class UserRepository extends Repository<UserModel, UserData> implements UserRepositoryInterface {
     private service: Knex.QueryBuilder<UserModelFilter, UserModel>;
     private logger: Logger;
-    private fieldsMap: FieldsMap = [
-        { entity: ['id', Number], db: ['user_id', Number] },
-        { entity: ['firstName', String], db: ['first_name', String] },
-        { entity: ['lastName', String], db: ['last_name', String] },
-        { entity: ['email', String], db: ['email', String] },
-        { entity: ['password', String], db: ['passwd', String] },
-        { entity: ['status', parseStatus], db: ['status', parseStatusToDB] },
-        { entity: ['permission', parsePermission], db: ['permission', parsePermissionToDB] },
-        { entity: ['creationDate', (value) => new Date(value)], db: ['date_created', (value) => new Date(value)] },
-        { entity: ['lastModified', (value) => new Date(value)], db: ['date_modified', (value) => new Date(value)] },
-    ];
     private driver: Knex;
 
-    get query() { return this.service; }
-
     constructor(driver: Knex, logger: Logger) {
+        super(fieldsMap);
         this.service = UserService(driver);
         this.driver = driver;
         this.logger = logger;
     }
 
-    private async toDb(filter: UserFilter) {
-        const args = Object.entries(filter);
-        const parsedParams: UserModelFilter = {};
-        return args.reduce((params, param: [string, any]) => {
-            const entityField = param[0];
-            const value = param[1];
-            const field = this.fieldsMap.find(item => item.entity[0] === entityField);
-            if (field) {
-                const dbField = field.db[0];
-                const dbValue = field.db[1](value);
-                params[dbField] = dbValue;
-                return params;
-            }
-            return params;
-        }, parsedParams);
-    }
-
-    public async toEntity(user: UserModel) {
-        const fields: [keyof UserModel, any][] = Object.entries(user) as [keyof UserModel, any][];
-        const data: UserData = fields.reduce((previous, field) => {
-            const entityField = this.fieldsMap.find(item => item.db[0] === field[0])?.entity;
-            if (entityField) {
-                const [name, parser] = entityField;
-                previous[name] = parser(field[1]) as never;
-            }
-            return previous;
-        }, {} as UserData);
-        return new User(data);
-    }
+    get query() { return this.service; }
 
     private async _filter(filter: UserFilter): Promise<Knex.QueryBuilder> {
         return this.service.where(await this.toDb(filter));
@@ -164,7 +130,7 @@ export default class UserRepository implements UserRepositoryInterface {
     public async all() {
         try {
             const users = await this.service.select('*') as UserModel[];
-            return Promise.all(users.map(async user => this.toEntity(user)));
+            return Promise.all(users.map(async user => new User(await this.toEntity(user))));
         } catch (error) {
             this.logger.error(error);
             throw { message: 'Erro ao consultar banco de dados', status: 500 };
@@ -179,7 +145,8 @@ export default class UserRepository implements UserRepositoryInterface {
             if (saved) throw error;
             const recovered = await UserService(this.driver).where('user_id', saved).first();
             if (!recovered) throw error;
-            return this.toEntity(recovered);
+            const entityData = await this.toEntity(recovered);
+            return new User(entityData);
         } catch (error) {
             throw { message: 'Erro ao salvar no banco de dados', status: 500 };
         }

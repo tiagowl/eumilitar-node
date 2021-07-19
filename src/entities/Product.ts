@@ -1,4 +1,4 @@
-type Course = 'esa' | 'espcex';
+export type Course = 'esa' | 'espcex';
 
 export interface ProductInterface {
     id: number;
