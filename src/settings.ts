@@ -5,8 +5,8 @@ import { transports, format } from 'winston';
 config({ path: path.resolve(__dirname, "..", ".env") });
 
 const errorFormat = format.combine(
-    format.printf(error => {
-        return `[${new Date().toISOString()}]: ${JSON.stringify(error)};${!!error.stack ? '\n' + error.stack : ''}`;
+    format.printf(({ message }) => {
+        return `[${new Date().toISOString()}]: ${JSON.stringify(message)};`;
     })
 );
 
