@@ -65,7 +65,6 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
             const essay = await this.repository.essays.get({ id: essayId });
             const users = new UserRepository(this.driver, this.logger);
             const user = await users.get({ id: essay?.student });
-            if (!user) return;
             return this.smtp.sendMail({
                 from: this.config.sender,
                 to: { email: user.email, name: user.firstName },
@@ -83,7 +82,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
         try {
             const validated = await this.validate(data);
             const created = await this.useCase.create(validated);
-            this.notify(created.essay).catch(this.logger.error);
+            this.notify(created.essay);
             return this.parseEntity(created);
         } catch (error) {
             this.logger.error(error);
