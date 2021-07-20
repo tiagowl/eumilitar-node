@@ -31,7 +31,8 @@ export default class CheckAuthController extends Controller<CheckAuthInterface> 
             .where('login_sessions.session_id', token)
             .first();
         if (!user) throw new Error('Token inválido');
-        return repository.toEntity(user);
+        const userData = await repository.toEntity(user);
+        return new User(userData);
     }
 
     public async check(rawData: CheckAuthInterface): Promise<CheckAuthResponse> {

@@ -85,7 +85,6 @@ export default class EssayThemeRepository implements EssayThemeRepositoryInterfa
 
     public async get(filter: EssayThemeFilter, active?: boolean) {
         try {
-            this.logger.info(JSON.stringify(filter));
             const service = this.filterByActive(EssayThemeService(this.driver), active);
             const theme = await this.filter(filter, service).first();
             return !!theme ? this.parseFromDB(theme) : undefined;

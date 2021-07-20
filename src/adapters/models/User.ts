@@ -72,14 +72,10 @@ const fieldsMap: FieldsMap<UserModel, UserData> = [
 
 export default class UserRepository extends Repository<UserModel, UserData> implements UserRepositoryInterface {
     private service: Knex.QueryBuilder<UserModelFilter, UserModel>;
-    private logger: Logger;
-    private driver: Knex;
 
     constructor(driver: Knex, logger: Logger) {
-        super(fieldsMap);
+        super(fieldsMap, logger, driver);
         this.service = UserService(driver);
-        this.driver = driver;
-        this.logger = logger;
     }
 
     get query() { return this.service; }

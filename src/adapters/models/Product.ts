@@ -34,24 +34,13 @@ const parserMap: FieldsMap<ProductModel, ProductInterface> = [
 export const ProductService = (driver: Knex) => driver<Partial<ProductModel>, ProductModel>('products');
 
 export default class ProductRepository extends Repository<ProductModel, ProductInterface> implements ProductRepositoryInterface {
-    private service: Knex.QueryBuilder<Partial<ProductModel>, ProductModel>;
-    private logger: Logger;
-    private driver: Knex;
 
     constructor(driver: Knex, logger: Logger) {
-        super(parserMap);
-        this.service = ProductService(driver);
-        this.driver = driver;
-        this.logger = logger;
+        super(parserMap, logger, driver);
     }
 
-    public async get(code: number) {
-        const error = (error: Error) => {
-            this.logger.error(error);
-            throw { message: 'Erro ao processar dados', status: 500 };
-        }
-        const parsed = await this.toDb({ code })
-            .catch(error);
+    public async get(filter: Partial<ProductInterface>) {
+        const parsed = await this.toDb(filter);
         const product = await ProductService(this.driver)
             .where(parsed).first()
             .catch((error) => {
@@ -59,7 +48,7 @@ export default class ProductRepository extends Repository<ProductModel, ProductI
                 throw { message: 'Erro ao consultar banco de dados', status: 500 };
             });
         if (!product) throw { message: 'Produto não encontrado', status: 404 };
-        const entityData = await this.toEntity(product).catch(error);
+        const entityData = await this.toEntity(product);
         return new Product(entityData);
     }
 }
