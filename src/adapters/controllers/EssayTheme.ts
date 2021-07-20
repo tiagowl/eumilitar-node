@@ -3,7 +3,7 @@ import Controller from "./Controller";
 import * as yup from 'yup';
 import { Course } from '../../entities/EssayTheme';
 import { Knex } from "knex";
-import EssayThemeCase from "../../cases/EssayThemeCase";
+import EssayThemeCase, { EssayThemeFilter } from "../../cases/EssayThemeCase";
 import EssayThemeRepository, { EssayThemeModel } from '../models/EssayTheme';
 import { Logger } from 'winston';
 
@@ -138,7 +138,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
             const page = await this.useCase.findAll(data.page, data?.size || 10, data.order as keyof EssayThemeInterface, data.active);
             const amount = await this.useCase.count();
             return {
-                page: await Promise.all(page.map(async theme => (await this.parseEntity(theme)))),
+                page: await Promise.all(page.map(this.parseEntity)),
                 count: page.length,
                 pages: Math.ceil(amount / data.size),
             } as EssayThemeList;
@@ -175,9 +175,11 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
 
     public async get(filter: Partial<EssayThemeResponse>) {
         try {
-            const theme = await this.useCase.get({ ...filter, courses: new Set(filter.courses) });
-            if (!theme) throw { message: 'Tema não encontrado', status: 404 };
-            return this.parseEntity(new EssayTheme(theme));
+            const filterData = !!filter.courses ? { ...filter, courses: new Set(filter.courses) } : filter as EssayThemeFilter;
+            const theme = await this.useCase.get(filterData);
+            if (!theme) return undefined;
+            const entity = new EssayTheme(theme);
+            return this.parseEntity(entity);
         } catch (error) {
             this.logger.error(error);
             throw { message: 'Erro ao consultar tema', status: error.status || 500 };
