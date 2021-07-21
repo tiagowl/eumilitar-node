@@ -467,14 +467,16 @@ export function getInvalidation(context: Context) {
 }
 
 export function cancelUser(context: Context): RequestHandler<void, void, CancelData> {
-    const { driver, settings } = context;
+    const { driver, settings, logger } = context;
     return async (req, res) => {
         try {
-            const controller = new UserController(driver, settings.hotmart.hottok);
-            await controller.cancel(req.body);
-            res.status(204).send(undefined);
+            const controller = new UserController(driver, logger, settings.hotmart.hottok);
+            const { success } = await controller.cancel(req.body);
+            if (success) res.status(204).send();
+            else res.status(400);
         } catch (error) {
             res.status(error.status || 500).json(error);
+            logger.error(error);
         } finally {
             res.end();
         }

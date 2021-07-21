@@ -46,7 +46,7 @@ describe('#1 Teste na api do usuário', () => {
         await themeService.del().delete()
         done()
     })
-    it('Teste no login', async (done) => {
+    it('#11 Teste no login', async (done) => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const credentials = {
@@ -60,7 +60,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.body.token).not.toBeNull()
         done()
     })
-    it('Teste login falho', async (done) => {
+    it('#12 Teste login falho', async (done) => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const wrongCredentials = {
@@ -76,7 +76,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.body.errors).toEqual([['email', 'Email inválido']])
         done()
     })
-    it('Senha errada', async done => {
+    it('#13 Senha errada', async done => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const wrongPassword = {
@@ -92,7 +92,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.body.errors).toEqual([['password', 'Senha inválida']])
         done()
     })
-    it('Email errado', async (done) => {
+    it('#14 Email errado', async (done) => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const wrongPassword = {
@@ -108,7 +108,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.body.errors).toEqual([['email', 'Informe um email válido']])
         done()
     })
-    it('Recuperação de senha', async (done) => {
+    it('#15 Recuperação de senha', async (done) => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const credentials = { email: user.email };
@@ -118,7 +118,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.status).toBe(201);
         done();
     })
-    test('Verificar token de mudança de senha', async (done) => {
+    test('#16 Verificar token de mudança de senha', async (done) => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
@@ -130,7 +130,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.body).toEqual({ isValid: true });
         done();
     })
-    test('Recuperar senha', async done => {
+    test('#17 Recuperar senha', async done => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
@@ -151,7 +151,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(checkResponse.body).toEqual({ isValid: false });
         done();
     })
-    test('Recuperar senha com token inválido', async done => {
+    test('#18 Recuperar senha com token inválido', async done => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const invalidToken = await generateConfirmationToken();
@@ -166,7 +166,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.body).toEqual({ "message": "Token inválido", status: 400 });
         done();
     })
-    test('Recuperar senha com token expirado', async done => {
+    test('#19 Recuperar senha com token expirado', async done => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
@@ -184,7 +184,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.body).toEqual({ "message": "Token inválido", status: 400 });
         done();
     })
-    test('Verificação do perfil do usuário', async done => {
+    test('#191 Verificação do perfil do usuário', async done => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const credentials = {
@@ -206,7 +206,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.body.password).toBeUndefined();
         done();
     })
-    test('Verificação do perfil do usuário não autenticado', async done => {
+    test('#192 Verificação do perfil do usuário não autenticado', async done => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const response = await api.get('/users/profile/')
@@ -214,7 +214,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.status).toBe(401);
         done();
     })
-    test('Verificação do perfil do usuário com token inválido', async done => {
+    test('#193 Verificação do perfil do usuário com token inválido', async done => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = crypto.randomBytes(32).toString('base64');
@@ -229,7 +229,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.body.password).toBeUndefined();
         done();
     })
-    test('Logout', async done => {
+    test('#194 Logout', async done => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const credentials = {
@@ -251,7 +251,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(notResponse.status).toEqual(401);
         done();
     })
-    test('Listar usuários', async (done) => {
+    test('#195 Listar usuários', async (done) => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
         const token = await authenticate(user, api)
@@ -263,9 +263,9 @@ describe('#1 Teste na api do usuário', () => {
         expect(body.length, JSON.stringify(body)).toBeGreaterThan(0);
         done();
     })
-    test('Cancelar usuário', async done => {
-        const hottok = faker.datatype.uuid()
-        const app = await appFactory(driver, { ...settings, hotmart: { hottok }, });
+    test('#196 Cancelar usuário', async done => {
+        const hottok = faker.datatype.string();
+        const app = await appFactory(driver, { ...settings, hotmart: { hottok } });
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
@@ -283,7 +283,7 @@ describe('#1 Teste na api do usuário', () => {
                 'userName': user.first_name,
             });
         expect(body).toMatchObject({});
-        expect(status).toBe(204);
+        expect(status, JSON.stringify(error)).toBe(204);
         const response = await api.get('/users/profile/')
             .set('Authorization', header);
         expect(response.body?.status).toBe('inactive');

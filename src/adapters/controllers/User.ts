@@ -96,10 +96,11 @@ export default class UserController extends Controller<any> {
 
     public async cancel(data: CancelData) {
         try {
-            const validatedData = await this.cancelSchema.validate(data) as CancelData;
-            await this.useCase.cancel(validatedData.userEmail);
-            return { success: true };
+            const { userEmail } = await this.cancelSchema.validate(data) as CancelData;
+            const success = await this.useCase.cancel(userEmail);
+            return { success: !!success };
         } catch (error) {
+            this.logger.error(error);
             throw {
                 message: error.message || "Requisição inválida",
                 status: error.status || 400

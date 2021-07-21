@@ -580,7 +580,8 @@ describe('#7 Testes no usuário', () => {
     const user = userFactory()
     beforeAll(async (done) => {
         const service = UserService(driver)
-            .onConflict('user_id').merge();
+            .onConflict(['email', 'user_id'])
+            .merge();
         await saveUser(user, service)
         const themeService = EssayThemeService(driver);
         await themeService.delete().del()
@@ -593,7 +594,7 @@ describe('#7 Testes no usuário', () => {
         await themeService.del().delete();
         done()
     })
-    test('Listagem', async done => {
+    test('#71 Listagem', async done => {
         const controller = new UserController(driver, logger);
         const users = await controller.all({ status: 'active' });
         expect(users).toBeDefined();
@@ -604,7 +605,7 @@ describe('#7 Testes no usuário', () => {
         })
         done();
     })
-    test('Cancelamento', async done => {
+    test('#72 Cancelamento', async done => {
         const token = faker.random.alpha();
         const controller = new UserController(driver, logger, token);
         const users = await controller.all({ status: 'active' });
