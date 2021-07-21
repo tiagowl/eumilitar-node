@@ -162,7 +162,7 @@ describe('#1 Teste na api do usuário', () => {
         const response = await api.put('/users/profile/password/')
             .send(credentials);
         expect(response.status).toBe(400);
-        expect(response.body).toEqual({ "message": "Token inválido" });
+        expect(response.body).toEqual({ "message": "Token inválido", status: 400 });
         done();
     })
     test('Recuperar senha com token expirado', async done => {
@@ -180,7 +180,7 @@ describe('#1 Teste na api do usuário', () => {
         const response = await api.put('/users/profile/password/')
             .send(credentials);
         expect(response.status).toBe(400);
-        expect(response.body).toEqual({ "message": "Token inválido" });
+        expect(response.body).toEqual({ "message": "Token inválido", status: 400 });
         done();
     })
     test('Verificação do perfil do usuário', async done => {

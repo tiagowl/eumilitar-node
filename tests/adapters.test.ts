@@ -111,7 +111,7 @@ describe('#1 Testes na autenticação', () => {
         const token = await generateConfirmationToken();
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, driver);
         const controller = new CheckPasswordToken(driver, logger);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeTruthy()
@@ -121,7 +121,7 @@ describe('#1 Testes na autenticação', () => {
         const token = await generateConfirmationToken();
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver, new Date());
+        await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date());
         const controller = new CheckPasswordToken(driver, logger);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeFalsy()
@@ -131,7 +131,7 @@ describe('#1 Testes na autenticação', () => {
         const token = await generateConfirmationToken();
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver, new Date(0));
+        await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date(0));
         const controller = new CheckPasswordToken(driver, logger);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeFalsy()
@@ -142,7 +142,7 @@ describe('#1 Testes na autenticação', () => {
         const invalidToken = await generateConfirmationToken()
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, driver);
         const controller = new CheckPasswordToken(driver, logger);
         const { isValid } = await controller.check({ token: invalidToken });
         expect(isValid).toBeFalsy()
@@ -153,7 +153,7 @@ describe('#1 Testes na autenticação', () => {
         const invalidToken = (await generateConfirmationToken()).slice(0, 15)
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, driver);
         const controller = new CheckPasswordToken(driver, logger);
         const { isValid } = await controller.check({ token: invalidToken },);
         expect(isValid).toBeFalsy()
@@ -163,7 +163,7 @@ describe('#1 Testes na autenticação', () => {
         const token = await generateConfirmationToken();
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        saveConfirmationToken(token, userData?.user_id || 0, driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, driver);
         const newPassword = 'newPassword'
         const controller = new ChangePasswordController(driver, logger);
         const updated = await controller.updatePassword({

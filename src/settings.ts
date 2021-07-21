@@ -5,8 +5,8 @@ import { transports, format } from 'winston';
 config();
 
 const errorFormat = format.combine(
-    format.printf(({ message }) => {
-        return `[${new Date().toISOString()}]: ${JSON.stringify(message)};`;
+    format.printf((error) => {
+        return `[${new Date().toISOString()}]: ${JSON.stringify(error)};`;
     })
 );
 
