@@ -361,12 +361,15 @@ describe('#2 Testes nos temas', () => {
     test('Atualização de temas', async done => {
         const app = await appFactory(driver);
         const api = supertest(app.server);
-        const token = await authenticate(user, api)
+        const token = await authenticate(user, api);
+        expect(token).not.toBeUndefined();
+        expect(token).not.toBeNull();
         const header = `Bearer ${token}`;
         const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
         const themes = await api.get('/themes/')
-            .set('Authorization', header)
-        const selected = themes.body.page[0];
+            .set('Authorization', header);
+        expect(themes.status, JSON.stringify(themes.error)).toBe(200);
+        const selected = (themes.body?.page || [])[0];
         const theme = {
             title: faker.name.title(),
             startDate: new Date(Date.now() - 1500 * 25 * 60 * 60),
@@ -393,6 +396,7 @@ describe('#2 Testes nos temas', () => {
         const header = `Bearer ${token}`;
         const themes = await api.get('/themes/')
             .set('Authorization', header)
+        expect(themes.status, JSON.stringify(themes.error)).toBe(200);
         const selected = themes.body.page[0];
         const response = await api.delete(`/themes/${selected.id}/`)
             .set('Authorization', header)
