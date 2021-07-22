@@ -1,6 +1,6 @@
 import express, { Express, RequestHandler } from 'express';
 import routes from './routes';
-import { Context, Route } from './interfaces';
+import { Context, Route } from '../interfaces';
 import getMiddlewares from './middlewares';
 
 

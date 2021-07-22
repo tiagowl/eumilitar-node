@@ -1,3 +1,7 @@
+import { Knex } from "knex";
+import { Multer } from "multer";
+import winston from "winston";
+
 export interface MailData {
     from: {
         email: string;
@@ -14,4 +18,29 @@ export interface MailData {
 
 export interface Mail {
     sendMail(data: MailData): Promise<any>;
+}
+
+export interface Settings {
+    messageConfig: MessageConfigInterface;
+    hotmart: {
+        hottok: string;
+    };
+}
+
+export type Context = {
+    driver: Knex;
+    smtp: Mail;
+    storage: Multer;
+    settings: Settings;
+    logger: winston.Logger;
+};
+
+
+export interface MessageConfigInterface {
+    sender: {
+        email: string;
+        name: string;
+    };
+    url: string;
+    expirationTime: number;
 }

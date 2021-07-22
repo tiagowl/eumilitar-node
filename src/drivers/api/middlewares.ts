@@ -5,7 +5,7 @@ import morgan from 'morgan';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import cookieSession from 'cookie-session';
-import { Context } from "./interfaces";
+import { Context } from "../interfaces";
 
 
 function getMiddlewares({ settings }: Context): RequestHandler[] {

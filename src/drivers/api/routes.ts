@@ -1,4 +1,4 @@
-import { Route } from "./interfaces";
+import { Route } from "../interfaces";
 import * as handlers from './handlers';
 
 const routes: Route[] = [

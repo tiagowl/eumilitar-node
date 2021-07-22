@@ -1,6 +1,7 @@
 import path from 'path';
 import { config } from 'dotenv';
 import { transports, format } from 'winston';
+import { Settings } from './drivers/interfaces';
 
 config({ path: path.resolve(__dirname, "..", ".env") });
 
@@ -10,7 +11,7 @@ const errorFormat = format.combine(
     })
 );
 
-const settings = Object.freeze({
+const settings: Settings = Object.freeze({
     database: {
         client: 'mysql',
         connection: process.env.DATABASE_URL || {
@@ -29,18 +30,18 @@ const settings = Object.freeze({
     helmet: {},
     logging: { format: 'common', options: {} },
     cors: {
-        origin: process.env.CORS,
+        origin: process.env.CORS || '',
     },
     session: {
         keys: process.env.KEYS?.split(' ') || new Array(2).fill(5).map(() => Math.random().toString(32).substr(2))
     },
     smtp: {
-        host: process.env.SMTP_HOST,
+        host: process.env.SMTP_HOST || '',
         port: Number(process.env.SMTP_PORT),
         secure: process.env.SMTP_SECURE === 'true',
         auth: {
-            key: process.env.MAILJET_API_KEY,
-            secret: process.env.MAILJET_API_SECRET,
+            key: process.env.MAILJET_API_KEY || '',
+            secret: process.env.MAILJET_API_SECRET || '',
         },
     },
     messageConfig: {
@@ -61,18 +62,18 @@ const settings = Object.freeze({
             "image/jpeg",
             "image/gif",
         ],
-        type: process.env.STORAGE_TYPE || 'local',
+        type: (process.env.STORAGE_TYPE as 's3' | 'local') || 'local',
         maxSize: Number(process.env.MAX_SIZE_UPLOAD || 10) * 1024 * 1024,
         credentials: {
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
         },
         local: {
             destination: path.resolve(__dirname, "..", "tmp", "uploads")
         }
     },
     hotmart: {
-        hottok: process.env.HOTTOK,
+        hottok: process.env.HOTTOK || '',
     },
     logger: {
         transports: [

@@ -4,10 +4,10 @@ import * as yup from 'yup';
 import { Knex } from "knex";
 import CorrectionRepository from "../models/Correction";
 import Correction, { CorrectionInterface } from "../../entities/Correction";
-import { Mail } from "../interfaces";
-import { MessageConfigInterface } from "./PasswordRecovery";
+import { Mail, MessageConfigInterface } from "../interfaces";
 import message from '../views/CorrectionNotification';
 import { Logger } from 'winston';
+import { Context } from '../interfaces';
 
 const schema = yup.object().shape({
     essay: yup.number().required('É preciso informar qual redação será corrigida'),
@@ -38,12 +38,13 @@ export default class CorrectionController extends Controller<CorrectionData> {
     private smtp: Mail;
     private config: MessageConfigInterface;
 
-    constructor(driver: Knex, smtp: Mail, config: MessageConfigInterface, logger: Logger) {
-        super(schema, driver, logger);
+    constructor(context: Context) {
+        const { driver, logger, smtp, settings } = context;
+        super(context, schema);
         this.repository = new CorrectionRepository(driver, logger);
         this.useCase = new CorrectionCase(this.repository);
         this.smtp = smtp;
-        this.config = config;
+        this.config = settings.messageConfig;
     }
 
     private async parseEntity(data: Correction): Promise<CorrectionInterface> {

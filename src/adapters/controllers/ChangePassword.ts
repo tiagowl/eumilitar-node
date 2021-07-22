@@ -6,6 +6,7 @@ import CheckPasswordToken from "./CheckPasswordToken";
 import UserUseCase from "../../cases/UserUseCase";
 import { PasswordRecoveryService } from "../models/PasswordRecoveries";
 import { Logger } from 'winston';
+import { Context } from "../interfaces";
 
 export interface ChangePasswordInterface {
     password: string;
@@ -33,14 +34,15 @@ export const schema = yup.object().shape({
 export default class ChangePasswordController extends Controller<ChangePasswordInterface> {
     private repository: UserRepository;
 
-    constructor(driver: Knex, logger: Logger) {
-        super(schema, driver, logger);
+    constructor(context: Context) {
+        const { driver, logger } = context;
+        super(context, schema);
         this.repository = new UserRepository(driver, logger);
     }
 
     private async validateToken(token: string) {
         try {
-            const checker = new CheckPasswordToken(this.driver, this.logger);
+            const checker = new CheckPasswordToken(this.context);
             const { isValid } = await checker.check({ token });
             if (!isValid || !checker.tokenData) throw { message: 'Token inválido' };
             return checker.tokenData;
@@ -67,6 +69,7 @@ export default class ChangePasswordController extends Controller<ChangePasswordI
             const useCase = new UserUseCase(this.repository);
             const updated = await useCase.updatePassword(tokenData.user_id, data.password);
             if (updated) await this.deleteToken(data.token);
+            else throw { message: 'Senha não atualizada' };
             return { updated };
         } catch (error) {
             this.logger.error(error);

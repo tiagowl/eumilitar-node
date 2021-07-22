@@ -5,10 +5,10 @@ import { Knex } from "knex";
 import EssayInvalidationCase, { EssayInvalidationCreationData, EssayInvalidationRepositoryInterface } from "../../cases/EssayInvalidation";
 import EssayInvalidationRepository from "../models/EssayInvalidation";
 import message from '../views/CorrectionNotification';
-import { MessageConfigInterface } from "./PasswordRecovery";
-import { Mail } from '../interfaces';
+import { Mail, MessageConfigInterface } from '../interfaces';
 import UserRepository from "../models/User";
 import { Logger } from 'winston';
+import { Context } from "../interfaces";
 
 const schema = yup.object().shape({
     corrector: yup.number().required("É preciso informar o corretor!"),
@@ -27,12 +27,13 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
     private smtp: Mail;
     private config: MessageConfigInterface;
 
-    constructor(driver: Knex, smtp: Mail, config: MessageConfigInterface, logger: Logger) {
-        super(schema, driver, logger);
+    constructor(context: Context) {
+        const { driver, logger, smtp, settings } = context;
+        super(context, schema);
         this.repository = new EssayInvalidationRepository(driver, logger);
         this.useCase = new EssayInvalidationCase(this.repository);
         this.smtp = smtp;
-        this.config = config;
+        this.config = settings.messageConfig;
     }
 
     private async parseEntity(entity: EssayInvalidation): Promise<EssayInvalidationInterface> {

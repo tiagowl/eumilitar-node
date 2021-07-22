@@ -1,14 +1,12 @@
 import faker from 'faker';
 import supertest from 'supertest';
 import { UserModel, UserService } from '../src/adapters/models/User';
-import { logger, appFactory, createEssay, deleteUser, driverFactory, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
+import { logger, appFactory, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
 import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { Course } from '../src/entities/EssayTheme';
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
 import settings from '../src/settings';
-
-const driver = driverFactory();
 
 beforeAll(async (done) => {
     await driver.migrate.latest().finally(done)
@@ -171,8 +169,6 @@ describe('#1 Teste na api do usuário', () => {
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
         const service = UserService(driver);
-        const userData = await service.where('email', user.email).first();
-        await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date());
         const credentials = {
             token,
             password: 'abda143501',

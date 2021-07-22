@@ -1,6 +1,7 @@
 import { Knex } from "knex";
 import { ObjectSchema, ValidationError } from "yup";
 import { Logger } from "winston";
+import { Context } from "../interfaces";
 
 export interface ResponseError {
     message?: string;
@@ -11,8 +12,11 @@ export default class Controller<Fields> {
     protected schema: ObjectSchema<any>;
     protected driver: Knex;
     protected logger: Logger;
+    protected context: Context;
 
-    constructor(schema: ObjectSchema<any>, driver: Knex, logger: Logger) {
+    constructor(context: Context, schema: ObjectSchema<any>) {
+        const { driver, logger } = context;
+        this.context = context;
         this.schema = schema;
         this.driver = driver;
         this.logger = logger;

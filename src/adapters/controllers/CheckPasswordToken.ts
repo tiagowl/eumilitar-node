@@ -3,6 +3,7 @@ import Controller from "./Controller";
 import * as yup from 'yup';
 import { PasswordRecoveryInsert, PasswordRecoveryModel, PasswordRecoveryService } from '../models/PasswordRecoveries';
 import { Logger } from 'winston';
+import { Context } from "../interfaces";
 
 export interface CheckPasswordInterface {
     token: string;
@@ -19,8 +20,9 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
     private service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
     private _tokenData?: PasswordRecoveryModel;
 
-    constructor(driver: Knex, logger: Logger) {
-        super(schema, driver, logger);
+    constructor(context: Context) {
+        const { driver } = context;
+        super(context, schema);
         this.service = PasswordRecoveryService(driver);
     }
 

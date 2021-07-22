@@ -8,6 +8,7 @@ import crypto from 'crypto';
 import { TokenService } from '../models/Token';
 import { ValidationError } from 'yup';
 import { Logger } from 'winston';
+import { Context } from '../interfaces';
 
 export interface AuthInterface {
     email: string;
@@ -27,8 +28,9 @@ export const schema = yup.object({
 export default class AuthController extends Controller<AuthInterface> {
     private repository: UserRepository;
 
-    constructor(driver: Knex, logger: Logger) {
-        super(schema, driver, logger);
+    constructor(context: Context) {
+        const { logger, driver } = context;
+        super(context, schema);
         this.repository = new UserRepository(driver, logger);
     }
 

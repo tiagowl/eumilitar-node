@@ -5,6 +5,7 @@ import User, { AccountPermission, AccountStatus } from '../../entities/User';
 import UserRepository from '../models/User';
 import Controller from './Controller';
 import { Logger } from 'winston';
+import { Context } from '../interfaces';
 
 export type UserResponse = {
     id: number;
@@ -45,7 +46,8 @@ export default class UserController extends Controller<any> {
     private useCase: UserUseCase;
     private cancelSchema: yup.ObjectSchema<any>;
 
-    constructor(driver: Knex, logger: Logger, hottok?: string) {
+    constructor(context: Context) {
+        const { settings: { hotmart: { hottok } } } = context;
         const schema = yup.object().shape({
             hottok: yup.string().required('O campo "hottok" é obrigatório').is([hottok], '"hottok" inválido'),
             prod: yup.number().required(),
@@ -54,7 +56,7 @@ export default class UserController extends Controller<any> {
             email: yup.string().required(),
             status: yup.string().required(),
         });
-        super(schema, driver, logger);
+        super(context, schema);
         this.cancelSchema = yup.object({
             hottok: yup.string().required('O campo "hottok" é obrigatório').is([hottok], '"hottok" inválido'),
             subscriptionId: yup.number().required('O campo "subscriptionId" é obrigatório'),
@@ -67,7 +69,7 @@ export default class UserController extends Controller<any> {
             productName: yup.string().required('O campo "productName" é obrigatório'),
             subscriptionPlanName: yup.string().required('O campo "subscriptionPlanName" é obrigatório'),
         });
-        this.repository = new UserRepository(driver, logger);
+        this.repository = new UserRepository(context.driver, context.logger);
         this.useCase = new UserUseCase(this.repository);
     }
 

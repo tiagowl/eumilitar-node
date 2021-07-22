@@ -14,7 +14,7 @@ import { CorrectionInterface } from "../../entities/Correction";
 import { EssayInvalidationInterface, Reason } from "../../entities/EssayInvalidation";
 import { Course } from "../../entities/EssayTheme";
 import User, { AccountPermission, UserInterface } from "../../entities/User";
-import { Context } from "./interfaces";
+import { Context } from "../interfaces";
 
 interface EssayThemeRequest {
     title: string;
@@ -55,9 +55,8 @@ async function getToken(header: string | undefined) {
 
 
 async function checkAuth(req: Request, context: Context) {
-    const { driver, logger } = context;
     const token = await getToken(req.headers.authorization);
-    const controller = new CheckAuthController(driver, logger);
+    const controller = new CheckAuthController(context);
     const { user, isValid } = await controller.check({ token },);
     if (!isValid || !user) throw { message: 'Não autorizado', status: 401 };
     return user;
@@ -100,10 +99,9 @@ function isAuthenticated(context: Context): RequestHandler {
 }
 
 export function createToken(context: Context): RequestHandler<any, AuthResponse, AuthInterface> {
-    const { driver, logger } = context;
     return async (req, res) => {
         try {
-            const controller = new AuthController(driver, logger);
+            const controller = new AuthController(context);
             const response = await controller.auth(req.body, req.get('User-Agent'));
             res.status(!!response.token ? 201 : 400);
             res.json(response);
@@ -117,11 +115,10 @@ export function createToken(context: Context): RequestHandler<any, AuthResponse,
 }
 
 export function logOut(context: Context): RequestHandler<any, void, void> {
-    const { driver, logger } = context;
     return async (req, res) => {
         try {
             await checkAuth(req, context);
-            const controller = new AuthController(driver, logger);
+            const controller = new AuthController(context);
             const token = await getToken(req.headers.authorization);
             await controller.logOut(token);
             res.status(204);
@@ -134,10 +131,9 @@ export function logOut(context: Context): RequestHandler<any, void, void> {
 }
 
 export function passwordRecoveries(context: Context): RequestHandler<any, PasswordRecoveryResponse, PasswordRecoveryInterface> {
-    const { driver, smtp, settings, logger } = context;
     return async (req, res) => {
         try {
-            const controller = new PasswordRecoveryController(driver, smtp, settings.messageConfig, logger);
+            const controller = new PasswordRecoveryController(context);
             const response = await controller.recover(req.body);
             res.status(201).json(response);
         } catch (error) {
@@ -150,10 +146,9 @@ export function passwordRecoveries(context: Context): RequestHandler<any, Passwo
 
 
 export function checkChangePasswordToken(context: Context): RequestHandler<any, CheckedTokenInterface, CheckPasswordInterface> {
-    const { driver, logger } = context;
     return async (req, res) => {
         try {
-            const controller = new CheckPasswordToken(driver, logger);
+            const controller = new CheckPasswordToken(context);
             const response = await controller.check(req.params);
             res.status(200).json(response);
         } catch (error) {
@@ -165,10 +160,9 @@ export function checkChangePasswordToken(context: Context): RequestHandler<any, 
 }
 
 export function changePassword(context: Context): RequestHandler<any, ChangePasswordResponse, ChangePasswordInterface> {
-    const { driver, logger } = context;
     return async (req, res) => {
         try {
-            const controller = new ChangePasswordController(driver, logger);
+            const controller = new ChangePasswordController(context);
             const response = await controller.updatePassword(req.body);
             res.status(200).json(response);
         } catch (error) {
@@ -194,12 +188,12 @@ export function profile(context: Context): RequestHandler<any, UserInterface, vo
 }
 
 export function createEssayTheme(context: Context): RequestHandler<any, any, EssayThemeRequest> {
-    const { driver, storage, logger } = context;
+    const { storage } = context;
     return express().use(checkPermission(context, ['admin']), storage.single('themeFile'),
         async (req, res) => {
             try {
                 const data = JSON.parse(req.body.data);
-                const controller = new EssayThemeController(driver, logger);
+                const controller = new EssayThemeController(context);
                 const response = await controller.create({
                     ...data,
                     startDate: new Date(data.startDate),
@@ -217,10 +211,9 @@ export function createEssayTheme(context: Context): RequestHandler<any, any, Ess
 }
 
 export function listEssayThemes(context: Context): RequestHandler {
-    const { driver, logger } = context;
     return express().use(isAuthenticated(context), async (req, res) => {
         try {
-            const controller = new EssayThemeController(driver, logger);
+            const controller = new EssayThemeController(context);
             const themes = await controller.listAll(req.query);
             res.status(200).json(themes);
         } catch (error) {
@@ -232,13 +225,13 @@ export function listEssayThemes(context: Context): RequestHandler {
 }
 
 export function updateEssayThemes(context: Context): RequestHandler<any, EssayThemeResponse, EssayThemeRequest> {
-    const { driver, logger, storage } = context;
+    const { storage } = context;
     const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin']), storage.single('themeFile'));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
             const data = JSON.parse(req.body.data);
-            const controller = new EssayThemeController(driver, logger);
+            const controller = new EssayThemeController(context);
             const response = await controller.update(Number(id), {
                 ...data,
                 startDate: new Date(data.startDate),
@@ -256,11 +249,10 @@ export function updateEssayThemes(context: Context): RequestHandler<any, EssayTh
 }
 
 export function deactivateEssayTheme(context: Context): RequestHandler<any, EssayThemeResponse, undefined> {
-    const { driver, logger } = context;
     const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin']));
     handler.use(async (req, res) => {
         try {
-            const controller = new EssayThemeController(driver, logger);
+            const controller = new EssayThemeController(context);
             const theme = await controller.deactivate(Number(req.params.id));
             res.status(200).json(theme);
         } catch (error) {
@@ -274,12 +266,12 @@ export function deactivateEssayTheme(context: Context): RequestHandler<any, Essa
 
 
 export function createEssay(context: Context): RequestHandler<any, EssayResponse, EssayInput> {
-    const { driver, logger, storage } = context;
+    const { storage } = context;
     const handler = express.Router({ mergeParams: true }).use(isAuthenticated(context), storage.single('file'));
     handler.use(async (req, res) => {
         try {
             if (!req.user) throw { message: 'Não autenticado', status: 401 };
-            const controller = new EssayController(driver, logger);
+            const controller = new EssayController(context);
             const response = await controller.create({
                 course: req.body.course, file: (req.file as Express.MulterS3.File), student: req.user.id
             });
@@ -294,13 +286,12 @@ export function createEssay(context: Context): RequestHandler<any, EssayResponse
 }
 
 export function listEssays(context: Context): RequestHandler<any, EssayResponse[], void> {
-    const { driver, logger } = context;
     const handler = express.Router({ mergeParams: true }).use(isAuthenticated(context));
     handler.use(async (req, res) => {
         try {
             const { user, query } = req;
             if (!user) throw { message: 'Não autenticado', status: 401 };
-            const controller = new EssayController(driver, logger);
+            const controller = new EssayController(context);
             if (['admin', 'corrector'].indexOf(user.permission) > -1) {
                 const response = await controller.allEssays(query);
                 res.status(200).json(response);
@@ -318,12 +309,11 @@ export function listEssays(context: Context): RequestHandler<any, EssayResponse[
 }
 
 export function getEssay(context: Context): RequestHandler<{ id: string }, EssayResponse, void> {
-    const { driver, logger } = context;
     const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
-            const controller = new EssayController(driver, logger);
+            const controller = new EssayController(context);
             const response = await controller.get(Number(id));
             res.status(200).json(response);
         } catch (error) {
@@ -336,13 +326,12 @@ export function getEssay(context: Context): RequestHandler<{ id: string }, Essay
 }
 
 export function createEssayCorrector(context: Context): RequestHandler<{ id: string }, EssayResponse, void> {
-    const { driver, logger } = context;
     const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
             const { user } = req;
-            const controller = new EssayController(driver, logger);
+            const controller = new EssayController(context);
             const response = await controller.partialUpdate(Number(id), { corrector: user?.id, status: 'correcting' });
             res.status(201).json(response);
         } catch (error) {
@@ -356,13 +345,12 @@ export function createEssayCorrector(context: Context): RequestHandler<{ id: str
 
 
 export function deleteEssayCorrector(context: Context): RequestHandler<{ id: string }, EssayResponse, void> {
-    const { driver, logger } = context;
     const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
             const { user } = req;
-            const controller = new EssayController(driver, logger);
+            const controller = new EssayController(context);
             const response = await controller.cancelCorrecting(Number(id), user?.id as number);
             res.status(200).json(response);
         } catch (error) {
@@ -375,13 +363,12 @@ export function deleteEssayCorrector(context: Context): RequestHandler<{ id: str
 }
 
 export function invalidateEssay(context: Context): RequestHandler<{ id: string }, EssayInvalidationInterface, EssayInvalidationRequest> {
-    const { driver, logger, smtp, settings } = context;
     const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
             const { user } = req;
-            const controller = new EssayInvalidationController(driver, smtp, settings.messageConfig, logger);
+            const controller = new EssayInvalidationController(context);
             const response = await controller.create({ ...req.body, essay: Number(id), corrector: Number(user?.id) });
             res.status(201).json(response);
         } catch (error) {
@@ -394,13 +381,12 @@ export function invalidateEssay(context: Context): RequestHandler<{ id: string }
 }
 
 export function correctEssay(context: Context): RequestHandler<{ id: string }, CorrectionInterface, CorrectionRequest> {
-    const { driver, logger, smtp, settings } = context;
     const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin', 'corrector']));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
             const { user } = req;
-            const controller = new CorrectionController(driver, smtp, settings.messageConfig, logger);
+            const controller = new CorrectionController(context);
             const response = await controller.create({ ...req.body, essay: Number(id), corrector: Number(user?.id) });
             res.status(201).json(response);
         } catch (error) {
@@ -413,12 +399,11 @@ export function correctEssay(context: Context): RequestHandler<{ id: string }, C
 }
 
 export function getCorrection(context: Context): RequestHandler<{ id: string }, CorrectionInterface, void> {
-    const { driver, smtp, settings, logger } = context;
     const handler = express.Router({ mergeParams: true }).use(isAuthenticated(context));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
-            const controller = new CorrectionController(driver, smtp, settings.messageConfig, logger);
+            const controller = new CorrectionController(context);
             const response = await controller.get({ essay: Number(id) });
             res.status(200).json(response);
         } catch (error) {
@@ -431,11 +416,10 @@ export function getCorrection(context: Context): RequestHandler<{ id: string }, 
 }
 
 export function listUsers(context: Context) {
-    const { driver, logger } = context;
     const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin']));
     handler.use(async (req, res) => {
         try {
-            const controller = new UserController(driver, logger);
+            const controller = new UserController(context);
             const response = await controller.all(req.query || {});
             res.status(200).json(response);
         } catch (error) {
@@ -449,12 +433,11 @@ export function listUsers(context: Context) {
 
 
 export function getInvalidation(context: Context) {
-    const { driver, smtp, settings, logger } = context;
     const handler = express.Router({ mergeParams: true }).use(isAuthenticated(context));
     handler.use(async (req, res) => {
         try {
             const { id } = req.params;
-            const controller = new EssayInvalidationController(driver, smtp, settings.messageConfig, logger);
+            const controller = new EssayInvalidationController(context);
             const response = await controller.get(Number(id));
             res.status(200).json(response);
         } catch (error) {
@@ -467,16 +450,14 @@ export function getInvalidation(context: Context) {
 }
 
 export function cancelUser(context: Context): RequestHandler<void, void, CancelData> {
-    const { driver, settings, logger } = context;
     return async (req, res) => {
         try {
-            const controller = new UserController(driver, logger, settings.hotmart.hottok);
+            const controller = new UserController(context);
             const { success } = await controller.cancel(req.body);
             if (success) res.status(204).send();
             else res.status(400);
         } catch (error) {
             res.status(error.status || 500).json(error);
-            logger.error(error);
         } finally {
             res.end();
         }

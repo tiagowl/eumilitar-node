@@ -15,6 +15,7 @@ import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
 import { Course } from '../src/entities/EssayTheme';
 import createLogger from '../src/drivers/logger';
 import createTransport from '../src/drivers/smtp';
+import { Context } from '../src/drivers/interfaces';
 
 export const now = new Date();
 export const logger = createLogger(settings.logger);
@@ -137,4 +138,19 @@ export async function createEssay(driver: Knex, id: number) {
         // @ts-ignore
         theme: theme?.id,
     })
+}
+
+export const driver = driverFactory();
+export const hottok = faker.datatype.string();
+
+export async function contextFactory(inject = {}): Promise<Context> {
+    const smtp = await smtpFactory();
+    const storage = createStorage(settings.storage);
+    return Object.assign({
+        driver,
+        smtp,
+        settings: { ...settings, hotmart: { hottok } },
+        logger,
+        storage,
+    }, inject);
 }

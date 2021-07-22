@@ -6,6 +6,7 @@ import { Knex } from "knex";
 import EssayThemeCase, { EssayThemeFilter } from "../../cases/EssayThemeCase";
 import EssayThemeRepository, { EssayThemeModel } from '../models/EssayTheme';
 import { Logger } from 'winston';
+import { Context } from "../interfaces";
 
 interface EssayThemeBaseInterface {
     title: string;
@@ -94,8 +95,9 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
     private repository: EssayThemeRepository;
     private useCase: EssayThemeCase;
 
-    constructor(driver: Knex, logger: Logger) {
-        super(schema, driver, logger);
+    constructor(context: Context) {
+        const { driver, logger } = context;
+        super(context, schema);
         this.repository = new EssayThemeRepository(driver, logger);
         this.useCase = new EssayThemeCase(this.repository);
     }
