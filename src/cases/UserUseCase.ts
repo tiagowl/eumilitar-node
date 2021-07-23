@@ -35,10 +35,9 @@ export interface UserSavingData {
 
 export interface UserRepositoryInterface {
     get: (filter: UserFilter) => Promise<User | null | undefined>;
-    filter: (filter: UserFilter) => Promise<this>;
-    update: (data: UserFilter) => Promise<number>;
+    filter: (filter: UserFilter) => Promise<User[]>;
+    update: (id: number, data: UserFilter) => Promise<number>;
     save: (user: UserSavingData) => Promise<User>;
-    all(): Promise<User[]>;
 }
 
 export default class UserUseCase {
@@ -53,9 +52,10 @@ export default class UserUseCase {
     public async authenticate(email: string, password: string) {
         try {
             const user = await this.repository.get({ email });
-            this.#user = user;
+            const exists = user instanceof User;
+            if(exists) this.#user = user;
             return {
-                email: !!user,
+                email: exists,
                 password: !!user && await user.checkPassword(password, bcrypt.compare)
             };
         } catch (error) {
@@ -78,8 +78,7 @@ export default class UserUseCase {
         if (!!this.#user) {
             const hash = await this.hashPassword(password);
             this.#user.password = hash;
-            const filtered = await this.repository.filter({ id });
-            const amount = await filtered.update({
+            const amount = await this.repository.update(id, {
                 password: hash,
                 lastModified: this.#user.lastModified
             });
@@ -96,15 +95,14 @@ export default class UserUseCase {
     }
 
     public async listAll(filter?: UserFilter) {
-        const filtered = await this.repository.filter(filter || {});
-        return filtered.all();
+        return this.repository.filter(filter || {});
     }
 
     public async cancel(userMail: string) {
         const user = await this.repository.get({ email: userMail });
         if (!user) throw new Error('Usuário não encontrado');
         user.status = 'inactive';
-        const updated = await this.repository.update(user.data);
+        const updated = await this.repository.update(user.id, user.data);
         if (updated === 0) throw new Error('Nenhum usuário atualizado');
         if (updated > 1) throw new Error('Mais de um usuário afetado');
         return updated;

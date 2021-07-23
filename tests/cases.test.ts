@@ -50,18 +50,21 @@ class UserTestRepository implements UserRepositoryInterface {
     async filter(filter: UserFilter) {
         // @ts-ignore
         const fields: [keyof UserFilter, any][] = Object.entries(filter);
-        if (!fields.length) return this;
-        this.database = this.database.filter(item => (
+        if (!fields.length) return this.database;
+        return this.database.filter(item => (
             !!fields.filter(([key, value]) => item[key] === value).length
         ))
-        return this;
     }
-    async update(data: UserFilter) {
+    async update(id: number, data: UserFilter) {
+        let updated = 0;
         this.database = this.database.map(item => {
-            item.update(data);
+            if(id === item.id){
+                item.update(data);
+                updated++;
+            }
             return item;
         })
-        return this.database.length;
+        return updated;
     }
 
     async all() {

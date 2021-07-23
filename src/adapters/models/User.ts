@@ -56,7 +56,7 @@ export interface UserModelFilter {
     date_modified?: Date;
 }
 
-export const UserService = (driver: Knex) => driver<UserModelFilter, UserModel>('users');
+export const UserService = (driver: Knex) => driver<UserModelFilter, UserModel[]>('users');
 
 const fieldsMap: FieldsMap<UserModel, UserData> = [
     [['user_id', Number], ['id', Number],],
@@ -71,7 +71,7 @@ const fieldsMap: FieldsMap<UserModel, UserData> = [
 ];
 
 export default class UserRepository extends Repository<UserModel, UserData> implements UserRepositoryInterface {
-    private service: Knex.QueryBuilder<UserModelFilter, UserModel>;
+    private service: Knex.QueryBuilder<UserModelFilter, UserModel[]>;
 
     constructor(driver: Knex, logger: Logger) {
         super(fieldsMap, logger, driver);
@@ -85,14 +85,18 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     }
 
     public async filter(filter: UserFilter) {
-        this._filter(filter);
-        return this;
+        const parsedFilter = await this.toDb(filter);
+        const filtered = await UserService(this.driver).where(parsedFilter);
+        return Promise.all(filtered.map(async data => {
+            const parsedData = await this.toEntity(data);
+            return new User(parsedData);
+        }));
     }
 
-    public async update(data: UserFilter) {
+    public async update(id: number, data: UserFilter) {
         try {
             const parsedData = await this.toDb(data);
-            return this.service.update(parsedData);
+            return UserService(this.driver).where('id', id).update(parsedData);
         } catch (error) {
             this.logger.error(error);
             throw { message: 'Falha ao gravar no banco de dados', status: 500 };
@@ -100,27 +104,20 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     }
 
     public async get(filter: UserFilter) {
-        const filtered: any = this._filter(filter)
-            .catch((error) => {
-                this.logger.error(error);
-                throw { message: 'Erro ao consultar banco de dados', status: 500 };
-            });
-        return new Promise<User>((accept, reject) => {
-            filtered.then((user: UserModel[]) => {
-                if (!user[0]) return reject({ message: 'Usuário não encontrado' });
-                return accept(new User({
-                    id: user[0].user_id,
-                    firstName: user[0].first_name,
-                    lastName: user[0].last_name,
-                    email: user[0].email,
-                    password: user[0].passwd,
-                    status: parseStatus(user[0].status),
-                    permission: parsePermission(user[0].permission),
-                    creationDate: user[0].date_created,
-                    lastModified: user[0].date_modified
-                }));
-            });
-        });
+        try {
+            const parsedFilter = await this.toDb(filter);
+            const filtered = await UserService(this.driver)
+                .where(parsedFilter).first();
+            if (!!filtered) {
+                const parsed = await this.toEntity(filtered);
+                return new User(parsed);
+            }
+            throw { message: 'Usuário não encontrado', status: 404 };
+        } catch (error) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao consultar banco de dados', status: 500 };
+        }
     }
 
     public async all() {
