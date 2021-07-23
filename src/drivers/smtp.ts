@@ -22,8 +22,6 @@ export default function createTransport(settings: any): Mail {
                     "CustomID": "AppGettingStartedTest"
                 }]
             };
-            // tslint:disable-next-line
-            console.log(JSON.stringify(data));
             return sender
                 .post('send', { 'version': 'v3.1' })
                 .request(data);

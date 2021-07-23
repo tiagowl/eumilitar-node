@@ -37,8 +37,13 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
         this.service = PasswordRecoveryService(driver);
     }
 
-    private async generateConfirmationToken() {
-        return crypto.randomBytes(64).toString('base64').substring(0, 64);
+    private async generateConfirmationToken(): Promise<string> {
+        return new Promise((resolve, reject) => {
+            crypto.randomBytes(32, (error, buffer) => {
+                if (error) reject(error);
+                else resolve(buffer.toString('hex'));
+            });
+        });
     }
 
     private async writeMessage(username: string, link: string) {
@@ -62,8 +67,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
     }
 
     private async sendConfirmationEmail(email: string, username: string) {
-        const token = encodeURIComponent(this.token || "");
-        const link = `${this.config.url}${token}`;
+        const link = `${this.config.url}${this.token}`;
         return this.smtp.sendMail({
             from: this.config.sender,
             to: { email, name: username },
