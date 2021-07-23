@@ -96,7 +96,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     public async update(id: number, data: UserFilter) {
         try {
             const parsedData = await this.toDb(data);
-            return UserService(this.driver).where('id', id).update(parsedData);
+            return UserService(this.driver).where('user_id', id).update(parsedData);
         } catch (error) {
             this.logger.error(error);
             throw { message: 'Falha ao gravar no banco de dados', status: 500 };

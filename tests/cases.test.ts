@@ -44,8 +44,8 @@ class UserTestRepository implements UserRepositoryInterface {
         this.database = [...database]
     }
     async get(filter: UserFilter) {
-        await this.filter(filter);
-        return this.database[0]
+        const filtered = await this.filter(filter);
+        return filtered[0];
     }
     async filter(filter: UserFilter) {
         // @ts-ignore
@@ -58,7 +58,7 @@ class UserTestRepository implements UserRepositoryInterface {
     async update(id: number, data: UserFilter) {
         let updated = 0;
         this.database = this.database.map(item => {
-            if(id === item.id){
+            if (id === item.id) {
                 item.update(data);
                 updated++;
             }
@@ -342,7 +342,7 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
     })
     it('Email errado', async (done) => {
         const useCase = new UserUseCase(new UserTestRepository(await userDatabase));
-        const auth = await useCase.authenticate("wrong__@mail.com", defaultPassword)
+        const auth = await useCase.authenticate("wrong__5@mail.com", defaultPassword)
         expect(auth).toEqual({ email: false, password: false })
         done()
     })

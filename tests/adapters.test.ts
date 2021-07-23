@@ -82,12 +82,11 @@ describe('#1 Testes na autenticação', () => {
     })
     test('Recuperação de senha com email errado', async (done) => {
         const credentials = { email: 'wrong@mail.com' }
-        const smtp = await smtpFactory();
         const controller = new PasswordRecoveryController(await contextFactory());
         try {
             await controller.recover(credentials);
         } catch (error) {
-            expect(error).toEqual({ message: 'Usuário não encontrado' })
+            expect(error).toEqual({ message: 'Usuário não encontrado', status: 404 });
         }
         done()
     })
@@ -120,7 +119,7 @@ describe('#1 Testes na autenticação', () => {
         const token = await generateConfirmationToken();
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date());
+        await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date(Date.now() - 1000));
         const controller = new CheckPasswordToken(await contextFactory());
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeFalsy()
