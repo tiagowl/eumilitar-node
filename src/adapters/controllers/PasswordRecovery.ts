@@ -45,7 +45,8 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
     }
 
     private async generateConfirmationToken() {
-        return crypto.randomBytes(64).toString('base64').substring(0, 64);
+        return crypto.randomBytes(64).toString('base64')
+            .substring(0, 64).replace('/', '');
     }
 
     private async writeMessage(username: string, link: string) {
