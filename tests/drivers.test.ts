@@ -171,7 +171,7 @@ describe('#1 Teste na api do usuário', () => {
         const token = await generateConfirmationToken();
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
-        await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date());
+        await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date(Date.now() - 1000));
         const credentials = {
             token,
             password: 'abda143501',

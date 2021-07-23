@@ -94,7 +94,7 @@ export async function smtpFactory(): Promise<Mail> {
 }
 
 export async function generateConfirmationToken() {
-    return crypto.randomBytes(64).toString('base64').substring(0, 64);
+    return crypto.randomBytes(32).toString('hex');
 }
 
 export async function saveConfirmationToken(token: string, userId: number, driver: Knex, expiration?: Date) {

@@ -210,7 +210,7 @@ describe('#2 Testes nos temas de redação', () => {
         await themeService.delete().del()
         done();
     })
-    test('Teste no modelo', async done => {
+    test('#21 Teste no modelo', async done => {
         const repository = new EssayThemeRepository(driver, logger);
         const data: EssayThemeCreation = {
             title: 'Título',
@@ -226,7 +226,7 @@ describe('#2 Testes nos temas de redação', () => {
         expect(created.id).not.toBeNull();
         done()
     })
-    test('Teste na criação pelo controller', async done => {
+    test('#22 Teste na criação pelo controller', async done => {
         const data: EssayThemeInput = {
             title: 'Título',
             endDate: new Date(Date.now() - 50 * 24 * 60 * 60),
@@ -257,7 +257,7 @@ describe('#2 Testes nos temas de redação', () => {
         expect(created.title).toEqual(data.title);
         done();
     })
-    test('Lista todos os temas', async done => {
+    test('#23 Lista todos os temas', async done => {
         const pagination: EssayThemePagination = {
             page: '1',
             size: '2',
@@ -298,7 +298,7 @@ describe('#2 Testes nos temas de redação', () => {
         }))
         done()
     })
-    test('#3 Atualização dos temas', async done => {
+    test('#24 Atualização dos temas', async done => {
         const data: EssayThemeInput = {
             title: faker.name.title(),
             endDate: new Date(Date.now() + 3700 * 24 * 60 * 60),
