@@ -7,10 +7,8 @@ import Repository, { FieldsMap } from "./Repository";
 const statusMap: AccountStatus[] = ['inactive', 'active', 'pending'];
 const permissionMap: [number, AccountPermission][] = [
     [1, 'admin'],
-    [2, 'esa'],
-    [3, 'espcex'],
-    [4, 'esa&espcex'],
     [5, 'corrector'],
+    [6, 'student'],
 ];
 
 function parseStatus(value: number): AccountStatus {
@@ -59,15 +57,15 @@ export interface UserModelFilter {
 export const UserService = (driver: Knex) => driver<UserModelFilter, UserModel[]>('users');
 
 const fieldsMap: FieldsMap<UserModel, UserData> = [
-    [['user_id', Number], ['id', Number],],
-    [['first_name', String], ['firstName', String],],
-    [['last_name', String], ['lastName', String],],
-    [['email', String], ['email', String],],
-    [['passwd', String], ['password', String],],
-    [['status', parseStatusToDB], ['status', parseStatus],],
-    [['permission', parsePermissionToDB], ['permission', parsePermission],],
-    [['date_created', (value) => new Date(value)], ['creationDate', (value) => new Date(value)],],
-    [['date_modified', (value) => new Date(value)], ['lastModified', (value) => new Date(value)],],
+    [['user_id', Number], ['id', Number]],
+    [['first_name', String], ['firstName', String]],
+    [['last_name', String], ['lastName', String]],
+    [['email', String], ['email', String]],
+    [['passwd', String], ['password', String]],
+    [['status', parseStatusToDB], ['status', parseStatus]],
+    [['permission', parsePermissionToDB], ['permission', parsePermission]],
+    [['date_created', (value) => new Date(value)], ['creationDate', (value) => new Date(value)]],
+    [['date_modified', (value) => new Date(value)], ['lastModified', (value) => new Date(value)]],
 ];
 
 export default class UserRepository extends Repository<UserModel, UserData> implements UserRepositoryInterface {
@@ -79,10 +77,6 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     }
 
     get query() { return this.service; }
-
-    private async _filter(filter: UserFilter): Promise<Knex.QueryBuilder> {
-        return this.service.where(await this.toDb(filter));
-    }
 
     public async filter(filter: UserFilter) {
         const parsedFilter = await this.toDb(filter);

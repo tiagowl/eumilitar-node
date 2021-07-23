@@ -1,6 +1,6 @@
 import Subscription from "../entities/Subscription";
 import { ProductRepositoryInterface } from "./ProductCase";
-import { UserRepositoryInterface } from "./UserUseCase";
+import UserUseCase, { UserRepositoryInterface } from "./UserUseCase";
 import crypto from 'crypto';
 
 export interface SubscriptionRepositoryInterface {
@@ -25,19 +25,21 @@ export default class SubscriptionCase {
         this.repository = repository;
     }
 
-    public async create(data: SubscriptionCreationInterface) {
+    private async checkUser(data: SubscriptionCreationInterface) {
         const user = await this.repository.users.get({ email: data.email });
-        if (!user) {
-            const created = await this.repository.users.save({
-                email: data.email,
-                status: 'active',
-                permission: 'esa&espcex',
-                password: crypto.randomBytes(64).toString('base64').substring(0, 64),
-                firstName: data.firstName,
-                lastName: data.lastName,
-                lastModified: new Date(),
-                creationDate: new Date(),
-            });
-        }
+        if (!!user) return user;
+        const userCase = new UserUseCase(this.repository.users);
+        return userCase.create({
+            email: data.email,
+            status: 'active',
+            permission: 'student',
+            password: crypto.randomBytes(16).toString('base64'),
+            firstName: data.firstName,
+            lastName: data.lastName,
+        });
+    }
+
+    public async create(data: SubscriptionCreationInterface) {
+        const user = await this.checkUser(data);
     }
 }
