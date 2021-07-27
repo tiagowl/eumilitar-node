@@ -52,9 +52,10 @@ export default class CorrectionCase {
         if (!essay) throw new Error('Redação não encontrada');
         if (essay.status !== 'correcting') throw new Error('Redação não está em correção');
         if (correctorData.id !== essay.corrector) throw new Error('Não autorizado');
+        const correction = await this.repository.create({ ...data, correctionDate: new Date() });
         essay.status = 'revised';
         await this.repository.essays.update(essay.id, essay.data);
-        return this.repository.create({ ...data, correctionDate: new Date() });
+        return correction;
     }
 
     public async get(filter: Partial<CorrectionInterface>) {

@@ -105,7 +105,7 @@ export default class CorrectionRepository implements CorrectionRepositoryInterfa
                 this.logger.error(err);
                 throw error;
             });
-        if (typeof id === 'undefined') throw error;
+        if (typeof id !== 'number') throw error;
         const savedData = await CorrectionService(this.driver).where('grading_id', id)
             .first().catch((err) => {
                 this.logger.error(err);
