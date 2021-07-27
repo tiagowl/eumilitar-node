@@ -12,9 +12,11 @@ import Correction, { CorrectionInterface } from '../src/entities/Correction';
 import CorrectionCase, { CorrectionInsertionData, CorrectionRepositoryInterface } from '../src/cases/Correction';
 import ProductCase, { ProductRepositoryInterface } from '../src/cases/ProductCase';
 import Product, { ProductInterface } from '../src/entities/Product';
+import { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from '../src/cases/Subscription';
+import Subscription from '../src/entities/Subscription';
 
 const defaultPassword = 'pass1235'
-const userDatabase = Promise.all(new Array(5).fill(0).map(async (_, id) => await userEntityFactory({ password: await hashPassword(defaultPassword), id })));
+const userDatabase = new Array(5).fill(0).map((_, id) => userEntityFactory({ password: hashPassword(defaultPassword), id }));
 const essayThemeDatabase = new Array(5).fill(0).map((_, index) => new EssayTheme({
     title: 'Título',
     endDate: new Date(Date.now() + 15 * 24 * 60 * 60),
@@ -37,6 +39,12 @@ const essayDatabase = new Array(5).fill(0).map((_, index) => new Essay({
     sendDate: faker.date.past(),
 }));
 const essayInvalidationDatabase = new Array(3).fill(0).map((_, id) => new EssayInvalidation({ id, corrector: 0, essay: id, reason: 'invalid', invalidationDate: new Date() }))
+const productsDatabase = new Array(5).fill(0).map((_, id) => new Product({
+    id,
+    code: id * 10,
+    course: 'esa',
+    name: faker.lorem.sentence(),
+}));
 
 class UserTestRepository implements UserRepositoryInterface {
     database: User[]
@@ -199,8 +207,9 @@ class EssayInvalidationTestRepository implements EssayInvalidationRepositoryInte
 class EssayTestRepository implements EssayRepositoryInterface {
     database: any[]
     themes: EssayThemeRepositoryInterface;
-    // @ts-ignore
     users: UserTestRepository;
+    products: ProductTestRepository;
+    subscriptions: SubscriptionTestRepository;
 
     constructor(database: any[], users: User[]) {
         this.database = [...database];
@@ -219,6 +228,8 @@ class EssayTestRepository implements EssayRepositoryInterface {
         });
         this.themes.get = async (_: EssayThemeFilter) => theme;
         expect(theme.active).toBeTruthy();
+        this.products = new ProductTestRepository();
+        this.subscriptions = new SubscriptionTestRepository();
     }
 
     async create(data: EssayInsertionData) {
@@ -309,12 +320,7 @@ class CorrectionTestRepository implements CorrectionRepositoryInterface {
 
 // tslint:disable-next-line
 class ProductTestRepository implements ProductRepositoryInterface {
-    private database = new Array(5).fill(0).map((_, id) => new Product({
-        id,
-        code: id * 10,
-        course: 'esa',
-        name: faker.lorem.sentence(),
-    }));
+    private database = productsDatabase;
 
     public async get(filter: Partial<ProductInterface>) {
         return this.database.find((correction => (Object.entries(filter) as [keyof ProductInterface, any][])
@@ -323,33 +329,69 @@ class ProductTestRepository implements ProductRepositoryInterface {
     }
 }
 
+// tslint:disable-next-line
+class SubscriptionTestRepository implements SubscriptionRepositoryInterface {
+    private database: Subscription[];
+    public users: UserTestRepository;
+    public products: ProductTestRepository;
+
+    constructor() {
+        this.database = userDatabase.reverse().map((user, id) => new Subscription({
+            id,
+            expiration: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            registrationDate: new Date(),
+            user: user.id,
+            product: faker.datatype.number(5),
+        }));
+        this.users = new UserTestRepository(userDatabase);
+        this.products = new ProductTestRepository();
+    }
+
+    public async create(data: SubscriptionInsertionInterface) {
+        const subscription = new Subscription({
+            id: this.database.length,
+            ...data,
+        });
+        this.database.push(subscription);
+        return subscription;
+    }
+
+    public async filter(filter: Partial<SubscriptionInsertionInterface>) {
+        const fields = Object.entries(filter) as [keyof SubscriptionInsertionInterface, number | Date][];
+        if (!fields.length) return this.database;
+        return this.database.filter(item => (
+            !!fields.filter(([key, value]) => item[key] === value).length
+        ))
+    }
+}
+
 describe('#1 Testes nos casos de uso da entidade User', () => {
     it('Autenticação', async (done) => {
-        const repository = new UserTestRepository(await userDatabase);
+        const repository = new UserTestRepository(userDatabase);
         const user = await repository.get({ status: 'active' })
-        const useCase = new UserUseCase(new UserTestRepository(await userDatabase));
+        const useCase = new UserUseCase(new UserTestRepository(userDatabase));
         const auth = await useCase.authenticate(user?.email || "", defaultPassword)
         expect(auth).toEqual({ email: true, password: true })
         done()
     })
     it('Senha errada', async (done) => {
-        const repository = new UserTestRepository(await userDatabase);
+        const repository = new UserTestRepository(userDatabase);
         const user = await repository.get({ status: 'active' })
-        const useCase = new UserUseCase(new UserTestRepository(await userDatabase));
+        const useCase = new UserUseCase(new UserTestRepository(userDatabase));
         const auth = await useCase.authenticate(user?.email || "", 'wrongPass')
         expect(auth).toEqual({ email: true, password: false })
         done()
     })
     it('Email errado', async (done) => {
-        const useCase = new UserUseCase(new UserTestRepository(await userDatabase));
+        const useCase = new UserUseCase(new UserTestRepository(userDatabase));
         const auth = await useCase.authenticate("wrong__5@mail.com", defaultPassword)
         expect(auth).toEqual({ email: false, password: false })
         done()
     })
     test('Atualização da senha', async (done) => {
-        const repository = new UserTestRepository(await userDatabase);
+        const repository = new UserTestRepository(userDatabase);
         const user = await repository.get({ status: 'active' });
-        const usedRepo = new UserTestRepository(await userDatabase);
+        const usedRepo = new UserTestRepository(userDatabase);
         const useCase = new UserUseCase(usedRepo);
         const changed = await useCase.updatePassword(user?.id || 0, 'newPass');
         expect(changed).toBeTruthy();
@@ -360,14 +402,14 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         done()
     })
     test('Listagem dos usuários', async done => {
-        const usedRepo = new UserTestRepository(await userDatabase);
+        const usedRepo = new UserTestRepository(userDatabase);
         const useCase = new UserUseCase(usedRepo);
         const all = await useCase.listAll();
-        expect(all).toMatchObject(await userDatabase);
+        expect(all).toMatchObject(userDatabase);
         done();
     });
     test('Cancelamento', async done => {
-        const userRepo = new UserTestRepository(await userDatabase);
+        const userRepo = new UserTestRepository(userDatabase);
         const user = await userRepo.get({ id: 0 });
         const useCase = new UserUseCase(userRepo);
         const cancellation = await useCase.cancel(user.email);
@@ -378,7 +420,7 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         done();
     })
     test('Criação', async done => {
-        const userRepo = new UserTestRepository(await userDatabase);
+        const userRepo = new UserTestRepository(userDatabase);
         const useCase = new UserUseCase(userRepo);
         const created = await useCase.create({
             email: faker.internet.email(),
@@ -446,8 +488,8 @@ describe('#3 Redações', () => {
             course: 'esa',
             student: 1,
         }
-        const repository = new EssayTestRepository(essayDatabase, (await userDatabase).map(user => {
-            user.permission = 'esa&espcex';
+        const repository = new EssayTestRepository(essayDatabase, (userDatabase).map(user => {
+            user.permission = 'student';
             return user;
         }));
         const useCase = new EssayCase(repository);
@@ -459,7 +501,7 @@ describe('#3 Redações', () => {
         done();
     })
     test('Listagem', async done => {
-        const repository = new EssayTestRepository(essayDatabase, await userDatabase);
+        const repository = new EssayTestRepository(essayDatabase, userDatabase);
         const useCase = new EssayCase(repository);
         const essays = await useCase.myEssays(6);
         expect(essays.length).not.toBeLessThan(1);
@@ -468,7 +510,7 @@ describe('#3 Redações', () => {
         done();
     })
     test('Listagem de todas', async done => {
-        const repository = new EssayTestRepository(essayDatabase, await userDatabase);
+        const repository = new EssayTestRepository(essayDatabase, userDatabase);
         const useCase = new EssayCase(repository);
         const essays = await useCase.allEssays({});
         expect(essays.length).not.toBeLessThan(1);
@@ -477,7 +519,7 @@ describe('#3 Redações', () => {
         done();
     })
     test('Recuperação de uma redação', async done => {
-        const repository = new EssayTestRepository(essayDatabase, await userDatabase);
+        const repository = new EssayTestRepository(essayDatabase, userDatabase);
         const useCase = new EssayCase(repository);
         const essay = await useCase.get({ id: 2 });
         expect(essay).toBeDefined();
@@ -485,7 +527,7 @@ describe('#3 Redações', () => {
         done();
     })
     test('Atualização da redação', async done => {
-        const repository = new EssayTestRepository(essayDatabase, await (await userDatabase).map(user => {
+        const repository = new EssayTestRepository(essayDatabase, await (userDatabase).map(user => {
             user.permission = 'admin';
             return user;
         }));
@@ -505,7 +547,7 @@ describe('#3 Redações', () => {
 
 describe('#4 Invalidação', () => {
     test('Criação', async done => {
-        const repository = new EssayInvalidationTestRepository(essayInvalidationDatabase, await userDatabase);
+        const repository = new EssayInvalidationTestRepository(essayInvalidationDatabase, userDatabase);
         const useCase = new EssayInvalidationCase(repository);
         const essays = new EssayCase(repository.essays);
         const invalidation = await useCase.create({ reason: 'invalid', corrector: 0, 'essay': 2, 'comment': faker.lorem.lines(5) });
@@ -515,7 +557,7 @@ describe('#4 Invalidação', () => {
         done();
     })
     test('Recuperação', async done => {
-        const repository = new EssayInvalidationTestRepository(essayInvalidationDatabase, await userDatabase);
+        const repository = new EssayInvalidationTestRepository(essayInvalidationDatabase, userDatabase);
         const useCase = new EssayInvalidationCase(repository);
         const invalidation = await useCase.get(0);
         expect(invalidation).toBeDefined();
@@ -526,7 +568,7 @@ describe('#4 Invalidação', () => {
 
 describe('#5 Correção', () => {
     test('Criação', async done => {
-        const repository = new CorrectionTestRepository([], await userDatabase);
+        const repository = new CorrectionTestRepository([], userDatabase);
         const useCase = new CorrectionCase(repository);
         const essays = new EssayCase(repository.essays);
         const correction = await useCase.create({
@@ -577,7 +619,7 @@ describe('#5 Correção', () => {
             'veryShortSentences': "Não",
             'correctionDate': new Date(),
         })
-        const repository = new CorrectionTestRepository([correction], await userDatabase);
+        const repository = new CorrectionTestRepository([correction], userDatabase);
         const useCase = new CorrectionCase(repository);
         const retrieved = await useCase.get({ essay: correction.essay });
         expect(correction).toMatchObject(correction);

@@ -3,6 +3,8 @@ import { Reason, reasons } from "../entities/EssayInvalidation";
 import EssayTheme, { Course } from '../entities/EssayTheme';
 import EssayInvalidationCase, { EssayInvalidationRepositoryInterface } from "./EssayInvalidation";
 import { EssayThemeRepositoryInterface } from './EssayThemeCase';
+import { ProductRepositoryInterface } from "./ProductCase";
+import { SubscriptionRepositoryInterface } from "./Subscription";
 import { UserRepositoryInterface } from "./UserUseCase";
 
 export interface EssayCreationData {
@@ -20,6 +22,8 @@ export interface EssayInsertionData extends EssayCreationData {
 export interface EssayRepositoryInterface {
     themes: EssayThemeRepositoryInterface;
     users: UserRepositoryInterface;
+    subscriptions: SubscriptionRepositoryInterface;
+    products: ProductRepositoryInterface;
     create: (data: EssayInsertionData) => Promise<EssayInterface>;
     exists: (is: EssayFilter[]) => Promise<boolean>;
     filter: (filter: EssayFilter, pagination?: EssayPagination) => Promise<Essay[]>;
@@ -71,14 +75,21 @@ export default class EssayCase {
 
     public async create(data: EssayCreationData) {
         const student = await this.repository.users.get({ id: data.student });
-        if(!student) throw new Error('Estudante não encontrado');
-        if(student.status !== 'active') throw new Error('Não autorizado');
+        if (!student) throw new Error('Aluno não encontrado');
+        if (student.status !== 'active') throw new Error('Aluno inativo');
         const themeData = await this.repository.themes.get({ courses: new Set([data.course]) }, true);
         if (!themeData) throw new Error('Nenhum tema ativo para este curso');
         const theme = new EssayTheme(themeData);
         if (!theme.active) throw new Error('Tema inválido');
-        const hasPermission = theme.courses.has(student.permission as Course) || student.permission === 'esa&espcex';
-        if(!hasPermission) throw new Error('Não autorizado');
+        const subscriptions = await this.repository.subscriptions.filter({ user: student.id });
+        const hasPermission = await subscriptions.reduce(async (value, subscription) => {
+            const permitted = await value;
+            const expired = subscription.expiration <= new Date();
+            const product = await this.repository.products.get({ id: subscription.product });
+            const validCourse = theme.courses.has(product.course);
+            return (!expired && validCourse) || permitted;
+        }, Promise.resolve(false) as Promise<boolean>);
+        if (!hasPermission) throw new Error('Não autorizado');
         const baseFilter = { theme: theme.id, student: data.student };
         const cantSend = (await this.repository.exists([
             { ...baseFilter, status: 'pending' },

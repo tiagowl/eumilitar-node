@@ -4,7 +4,8 @@ import UserUseCase, { UserRepositoryInterface } from "./UserUseCase";
 import crypto from 'crypto';
 
 export interface SubscriptionRepositoryInterface {
-    create: (data: any) => Promise<Subscription>;
+    create: (data: SubscriptionInsertionInterface) => Promise<Subscription>;
+    filter: (filter: Partial<SubscriptionInsertionInterface>) => Promise<Subscription[]>;
     users: UserRepositoryInterface;
     products: ProductRepositoryInterface;
 }
@@ -16,6 +17,13 @@ export interface SubscriptionCreationInterface {
     transaction: string;
     firstName: string;
     lastName: string;
+}
+
+export interface SubscriptionInsertionInterface {
+    user: number;
+    expiration: Date;
+    registrationDate: Date;
+    product: number;
 }
 
 export default class SubscriptionCase {
@@ -41,5 +49,12 @@ export default class SubscriptionCase {
 
     public async create(data: SubscriptionCreationInterface) {
         const user = await this.checkUser(data);
+        const product = await this.repository.products.get({ code: data.product });
+        return this.repository.create({
+            user: user.id,
+            expiration: data.expiration,
+            registrationDate: new Date(),
+            product: product.id,
+        });
     }
 }
