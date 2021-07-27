@@ -37,7 +37,7 @@ export const userFactory = (inject?: Partial<UserModel>) => {
     return data;
 }
 
-export const userEntityFactory = async (inject?: any): Promise<User> => {
+export const userEntityFactory = (inject?: any): User => {
     const data: UserData = {
         id: Math.round(Math.random() * 2000),
         firstName: faker.name.firstName(),
@@ -47,7 +47,7 @@ export const userEntityFactory = async (inject?: any): Promise<User> => {
         creationDate: now,
         lastModified: now,
         permission: 'admin',
-        password: await hashPassword(faker.internet.password()),
+        password: hashPassword(faker.internet.password()),
     }
     Object.assign(data, inject);
     return new User(data)
@@ -70,9 +70,9 @@ export const driverFactory = () => {
     return driver;
 }
 
-export async function hashPassword(password: string) {
-    const salt = await bcrypt.genSalt(0);
-    return bcrypt.hash(password, salt);
+export function hashPassword(password: string) {
+    const salt = bcrypt.genSaltSync(0);
+    return bcrypt.hashSync(password, salt);
 }
 
 export async function saveUser(user: any, service: Knex.QueryBuilder) {
@@ -115,7 +115,7 @@ export async function appFactory(driver: Knex = driverFactory(), customSettings 
     return new Application({ smtp, driver, storage, settings: customSettings, logger })
 }
 
-export async function createEssay(driver: Knex, id: number) {
+export async function createEssay(context: Context, id: number) {
     const themeRepository = new EssayThemeRepository(driver, logger);
     const themeData: EssayThemeCreation = {
         title: 'Título',
@@ -128,7 +128,7 @@ export async function createEssay(driver: Knex, id: number) {
     }
     const exists = await themeRepository.hasActiveTheme(themeData);
     const theme = await (exists ? themeRepository.get({ courses: themeData.courses }, true) : themeRepository.create(themeData));
-    const repository = new EssayRepository(driver, logger);
+    const repository = new EssayRepository(context);
     return repository.create({
         file: '/usr/share/data/theme.png',
         student: id,

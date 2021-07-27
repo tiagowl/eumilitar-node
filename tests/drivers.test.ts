@@ -1,7 +1,7 @@
 import faker from 'faker';
 import supertest from 'supertest';
 import { UserModel, UserService } from '../src/adapters/models/User';
-import { logger, appFactory, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
+import { logger, contextFactory, appFactory, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
 import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { Course } from '../src/entities/EssayTheme';
@@ -14,6 +14,7 @@ beforeAll(async (done) => {
 })
 
 afterAll((done) => driver.destroy().finally(done) || done())
+const context = contextFactory();
 
 async function authenticate(user: UserModel, api: supertest.SuperTest<supertest.Test>) {
     const credentials = {
@@ -505,7 +506,7 @@ describe('#3 Redações', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(driver, user.user_id);
+        const base = await createEssay(await context, user.user_id);
         const response = await api.get(`/essays/${base.id}/`)
             .set('Authorization', header);
         expect(response.status, JSON.stringify(response.body)).toBe(200);
@@ -518,7 +519,7 @@ describe('#3 Redações', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(driver, user.user_id);
+        const base = await createEssay(await context, user.user_id);
         const response = await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
         expect(response.status, JSON.stringify(response.body)).toBe(201);
@@ -532,7 +533,7 @@ describe('#3 Redações', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(driver, user.user_id);
+        const base = await createEssay(await context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
         const response = await api.delete(`/essays/${base.id}/corrector/`)
@@ -582,7 +583,7 @@ describe('#4 Invalidação da redação', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(driver, user.user_id);
+        const base = await createEssay(await context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
         const response = await api.post(`/essays/${base.id}/invalidation/`)
@@ -599,7 +600,7 @@ describe('#4 Invalidação da redação', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(driver, user.user_id);
+        const base = await createEssay(await context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
         const invalidation = await api.post(`/essays/${base.id}/invalidation/`)
@@ -651,7 +652,7 @@ describe('#5 Correção da redação', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(driver, user.user_id);
+        const base = await createEssay(await context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
         const response = await api.post(`/essays/${base.id}/correction/`)
@@ -684,7 +685,7 @@ describe('#5 Correção da redação', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(driver, user.user_id);
+        const base = await createEssay(await context, user.user_id);
         const data = {
             'accentuation': "Sim",
             'agreement': "Sim",

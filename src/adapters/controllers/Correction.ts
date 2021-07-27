@@ -39,9 +39,9 @@ export default class CorrectionController extends Controller<CorrectionData> {
     private config: MessageConfigInterface;
 
     constructor(context: Context) {
-        const { driver, logger, smtp, settings } = context;
+        const { smtp, settings } = context;
         super(context, schema);
-        this.repository = new CorrectionRepository(driver, logger);
+        this.repository = new CorrectionRepository(context);
         this.useCase = new CorrectionCase(this.repository);
         this.smtp = smtp;
         this.config = settings.messageConfig;

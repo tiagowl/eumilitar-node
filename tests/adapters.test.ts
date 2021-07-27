@@ -1,7 +1,7 @@
 import AuthController from '../src/adapters/controllers/Auth';
 import { UserService } from '../src/adapters/models/User';
 import { TokenService } from '../src/adapters/models/Token';
-import { contextFactory, hottok, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
+import { contextFactory, hottok, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, userFactory } from './shortcuts';
 import PasswordRecoveryController from '../src/adapters/controllers/PasswordRecovery';
 import settings from '../src/settings';
 import { PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
@@ -33,6 +33,8 @@ afterAll(async (done) => {
     done();
 })
 
+const context = contextFactory();
+
 describe('#1 Testes na autenticação', () => {
     const user = userFactory()
     const passwordService = PasswordRecoveryService(driver);
@@ -56,7 +58,7 @@ describe('#1 Testes na autenticação', () => {
             email: user.email,
             password: user.passwd
         };
-        const controller = new AuthController(await contextFactory());
+        const controller = new AuthController(await context);
         const token = await controller.auth(credentials);
         expect(token.token).not.toBeNull();
         const tokenService = TokenService(driver);
@@ -69,8 +71,7 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
         const credentials = { email: user.email, }
-        const smtp = await smtpFactory();
-        const controller = new PasswordRecoveryController(await contextFactory());
+        const controller = new PasswordRecoveryController(await context);
         const response = await controller.recover(credentials);
         expect(response).toEqual({ message: "Email enviado! Verifique sua caixa de entrada." });
         const token = await passwordService.where('user_id', userData?.user_id).first();
@@ -82,7 +83,7 @@ describe('#1 Testes na autenticação', () => {
     })
     test('Recuperação de senha com email errado', async (done) => {
         const credentials = { email: 'wrong@mail.com' }
-        const controller = new PasswordRecoveryController(await contextFactory());
+        const controller = new PasswordRecoveryController(await context);
         try {
             await controller.recover(credentials);
         } catch (error) {
@@ -92,8 +93,7 @@ describe('#1 Testes na autenticação', () => {
     })
     test('Recuperação de senha com email inválido', async done => {
         const credentials = { email: 'wrongmail.com' }
-        const smtp = await smtpFactory();
-        const controller = new PasswordRecoveryController(await contextFactory());
+        const controller = new PasswordRecoveryController(await context);
         try {
             await controller.recover(credentials);
         } catch (error) {
@@ -110,7 +110,7 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, driver);
-        const controller = new CheckPasswordToken(await contextFactory());
+        const controller = new CheckPasswordToken(await context);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeTruthy()
         done();
@@ -120,7 +120,7 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date(Date.now() - 1000));
-        const controller = new CheckPasswordToken(await contextFactory());
+        const controller = new CheckPasswordToken(await context);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeFalsy()
         done();
@@ -130,7 +130,7 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date(0));
-        const controller = new CheckPasswordToken(await contextFactory());
+        const controller = new CheckPasswordToken(await context);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeFalsy()
         done();
@@ -141,7 +141,7 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, driver);
-        const controller = new CheckPasswordToken(await contextFactory());
+        const controller = new CheckPasswordToken(await context);
         const { isValid } = await controller.check({ token: invalidToken });
         expect(isValid).toBeFalsy()
         done();
@@ -152,7 +152,7 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, driver);
-        const controller = new CheckPasswordToken(await contextFactory());
+        const controller = new CheckPasswordToken(await context);
         const { isValid } = await controller.check({ token: invalidToken },);
         expect(isValid).toBeFalsy()
         done();
@@ -163,14 +163,14 @@ describe('#1 Testes na autenticação', () => {
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, driver);
         const newPassword = 'newPassword'
-        const controller = new ChangePasswordController(await contextFactory());
+        const controller = new ChangePasswordController(await context);
         const updated = await controller.updatePassword({
             password: newPassword,
             confirmPassword: newPassword,
             token,
         });
         expect(updated).toEqual({ updated: true })
-        const checker = new CheckPasswordToken(await contextFactory());
+        const checker = new CheckPasswordToken(await context);
         const { isValid } = await checker.check({ token },);
         expect(isValid).toBeFalsy()
         done();
@@ -180,9 +180,9 @@ describe('#1 Testes na autenticação', () => {
             email: user.email,
             password: 'newPassword'
         };
-        const auth = new AuthController(await contextFactory());
+        const auth = new AuthController(await context);
         const { token } = await auth.auth(credentials);
-        const controller = new CheckAuthController(await contextFactory());
+        const controller = new CheckAuthController(await context);
         const response = await controller.check({ token: token || '' });
         expect(response.isValid).toBeTruthy();
         expect(response.user).not.toBeNull();
@@ -192,7 +192,7 @@ describe('#1 Testes na autenticação', () => {
     })
     test('Verificar autenticação com token inválido', async (done) => {
         const token = crypto.randomBytes(32).toString('base64');
-        const controller = new CheckAuthController(await contextFactory());
+        const controller = new CheckAuthController(await context);
         const response = await controller.check({ token: token || '' });
         expect(response.isValid).toBeFalsy();
         expect(response.user).toBeUndefined();
@@ -248,7 +248,7 @@ describe('#2 Testes nos temas de redação', () => {
             },
             courses: ['esa', 'espcex'] as Course[]
         }
-        const controller = new EssayThemeController(await contextFactory());
+        const controller = new EssayThemeController(await context);
         const created = await controller.create(data);
         expect(created.id).not.toBeNull();
         expect(created.id).not.toBeUndefined();
@@ -283,7 +283,7 @@ describe('#2 Testes nos temas de redação', () => {
             },
             courses: ['esa', 'espcex'] as Course[],
         }
-        const controller = new EssayThemeController(await contextFactory());
+        const controller = new EssayThemeController(await context);
         await controller.create(data);
         await controller.create({ ...data, startDate: new Date(Date.now() + 790 * 24 * 60 * 60), endDate: new Date(Date.now() + 800 * 24 * 60 * 60) });
         const themes = await controller.listAll(pagination);
@@ -319,7 +319,7 @@ describe('#2 Testes nos temas de redação', () => {
             },
             courses: ['esa'] as Course[],
         }
-        const controller = new EssayThemeController(await contextFactory());
+        const controller = new EssayThemeController(await context);
         const all = await controller.listAll();
         expect(all.pages).not.toBeLessThan(1);
         expect(all.page).toBeInstanceOf(Array);
@@ -388,7 +388,7 @@ describe('#4 Redações', () => {
             student: user.user_id,
             course: 'espcex',
         }
-        const controller = new EssayController(await contextFactory());
+        const controller = new EssayController(await context);
         const created = await controller.create(data);
         expect(created.id, JSON.stringify(created)).not.toBeUndefined();
         expect(created.id, JSON.stringify(created)).not.toBeNaN();
@@ -396,14 +396,14 @@ describe('#4 Redações', () => {
         done();
     }, 10000)
     test('Listagem', async done => {
-        const controller = new EssayController(await contextFactory());
+        const controller = new EssayController(await context);
         const essays = await controller.myEssays(user.user_id);
         expect(essays).not.toBeUndefined();
         expect(essays.length).not.toBeLessThan(1);
         done();
     }, 10000)
     test('Listagem de todos', async (done) => {
-        const controller = new EssayController(await contextFactory());
+        const controller = new EssayController(await context);
         const essays = await controller.allEssays({});
         expect(essays).not.toBeUndefined();
         expect(essays.count).not.toBeLessThan(1);
@@ -411,16 +411,16 @@ describe('#4 Redações', () => {
         done();
     }, 10000)
     test('Recuperação de uma redação', async done => {
-        const controller = new EssayController(await contextFactory());
-        const base = await createEssay(driver, user.user_id);
+        const controller = new EssayController(await context);
+        const base = await createEssay(await context, user.user_id);
         const essay = await controller.get(base.id);
         expect(essay).toMatchObject(base);
         expect(essay).toBeDefined();
         done();
     }, 10000)
     test('Atualização da redação', async done => {
-        const controller = new EssayController(await contextFactory());
-        const base = await createEssay(driver, user.user_id);
+        const controller = new EssayController(await context);
+        const base = await createEssay(await context, user.user_id);
         const essay = await controller.partialUpdate(base.id,
             { corrector: corrector.user_id, status: 'correcting' }
         );
@@ -447,13 +447,12 @@ describe('#5 Invalidações', () => {
         done()
     })
     test('Invalidação da redação', async done => {
-        const essays = new EssayController(await contextFactory());
-        const essay = await createEssay(driver, user.user_id);
+        const essays = new EssayController(await context);
+        const essay = await createEssay(await context, user.user_id);
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
-        const smtp = await smtpFactory();
-        const controller = new EssayInvalidationController(await contextFactory());
+        const controller = new EssayInvalidationController(await context);
         const created = await controller.create({ essay: essay.id, corrector: user.user_id, comment: faker.lorem.lines(7), reason: 'other' });
         expect(created).toBeDefined();
         expect(created.id).toBeDefined();
@@ -461,13 +460,12 @@ describe('#5 Invalidações', () => {
         done();
     }, 10000)
     test('Recuperação da invalidação', async done => {
-        const essays = new EssayController(await contextFactory());
-        const essay = await createEssay(driver, user.user_id);
+        const essays = new EssayController(await context);
+        const essay = await createEssay(await context, user.user_id);
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
-        const smtp = await smtpFactory();
-        const controller = new EssayInvalidationController(await contextFactory());
+        const controller = new EssayInvalidationController(await context);
         const created = await controller.create({ essay: essay.id, corrector: user.user_id, comment: faker.lorem.lines(7), reason: 'other' });
         expect(created).toBeDefined();
         const invalidation = await controller.get(essay.id);
@@ -495,13 +493,12 @@ describe('#6 Correções', () => {
         done()
     })
     test('Correção', async done => {
-        const essays = new EssayController(await contextFactory());
-        const essay = await createEssay(driver, user.user_id);
+        const essays = new EssayController(await context);
+        const essay = await createEssay(await context, user.user_id);
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
-        const smtp = await smtpFactory();
-        const controller = new CorrectionController(await contextFactory());
+        const controller = new CorrectionController(await context);
         const data = {
             'essay': essay.id,
             'corrector': user.user_id,
@@ -533,13 +530,12 @@ describe('#6 Correções', () => {
         done();
     })
     test('Recuperar correção', async (done) => {
-        const essays = new EssayController(await contextFactory());
-        const essay = await createEssay(driver, user.user_id);
+        const essays = new EssayController(await context);
+        const essay = await createEssay(await context, user.user_id);
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
-        const smtp = await smtpFactory();
-        const controller = new CorrectionController(await contextFactory());
+        const controller = new CorrectionController(await context);
         const pre = {
             'essay': essay.id,
             'corrector': user.user_id,
@@ -593,7 +589,7 @@ describe('#7 Testes no usuário', () => {
         done()
     })
     test('#71 Listagem', async done => {
-        const controller = new UserController(await contextFactory());
+        const controller = new UserController(await context);
         const users = await controller.all({ status: 'active' });
         expect(users).toBeDefined();
         expect(users.length).toBeGreaterThan(0);
@@ -604,7 +600,7 @@ describe('#7 Testes no usuário', () => {
         done();
     })
     test('#72 Cancelamento', async done => {
-        const controller = new UserController(await contextFactory());
+        const controller = new UserController(await context);
         const users = await controller.all({ status: 'active' });
         const user = users[0];
         const cancellation = await controller.cancel({

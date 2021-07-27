@@ -6,6 +6,7 @@ import Correction, { CorrectionInterface } from "../../entities/Correction";
 import { EssayRepository } from "./Essay";
 import UserRepository from "./User";
 import { Logger } from 'winston';
+import { Context } from "../interfaces";
 
 
 export interface CorrectionModel extends CorrectionModelInsertionData {
@@ -70,10 +71,11 @@ export default class CorrectionRepository implements CorrectionRepositoryInterfa
     public users: UserRepositoryInterface;
     public essays: EssayRepositoryInterface;
 
-    constructor(driver: Knex, logger: Logger) {
+    constructor(context: Context) {
+        const { driver, logger } = context;
         this.driver = driver;
         this.users = new UserRepository(driver, logger);
-        this.essays = new EssayRepository(driver, logger);
+        this.essays = new EssayRepository(context);
         this.logger = logger;
     }
 
@@ -105,7 +107,7 @@ export default class CorrectionRepository implements CorrectionRepositoryInterfa
                 this.logger.error(err);
                 throw error;
             });
-        if (typeof id === 'undefined') throw error;
+        if (typeof id !== 'number') throw error;
         const savedData = await CorrectionService(this.driver).where('grading_id', id)
             .first().catch((err) => {
                 this.logger.error(err);

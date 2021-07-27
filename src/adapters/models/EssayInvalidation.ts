@@ -4,6 +4,7 @@ import { EssayInvalidationCreationData, EssayInvalidationRepositoryInterface } f
 import EssayInvalidation, { Reason } from "../../entities/EssayInvalidation";
 import { EssayRepository } from "./Essay";
 import { Logger } from 'winston';
+import { Context } from "../interfaces";
 
 export interface EssayInvalidationModel {
     id: number;
@@ -21,9 +22,10 @@ export default class EssayInvalidationRepository implements EssayInvalidationRep
     private logger: Logger;
     public essays: EssayRepositoryInterface;
 
-    constructor(driver: Knex, logger: Logger) {
+    constructor(context: Context) {
+        const { driver, logger } = context;
         this.driver = driver;
-        this.essays = new EssayRepository(driver, logger);
+        this.essays = new EssayRepository(context);
         this.logger = logger;
     }
 

@@ -28,9 +28,9 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
     private config: MessageConfigInterface;
 
     constructor(context: Context) {
-        const { driver, logger, smtp, settings } = context;
+        const { smtp, settings } = context;
         super(context, schema);
-        this.repository = new EssayInvalidationRepository(driver, logger);
+        this.repository = new EssayInvalidationRepository(context);
         this.useCase = new EssayInvalidationCase(this.repository);
         this.smtp = smtp;
         this.config = settings.messageConfig;

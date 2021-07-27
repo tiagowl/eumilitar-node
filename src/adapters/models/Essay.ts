@@ -7,6 +7,11 @@ import { Course } from "../../entities/EssayTheme";
 import EssayThemeRepository from "./EssayTheme";
 import UserRepository, { UserService } from "./User";
 import { Logger } from 'winston';
+import ProductRepository from "./Product";
+import { SubscriptionRepositoryInterface } from "../../cases/Subscription";
+import { ProductRepositoryInterface } from "../../cases/ProductCase";
+import SubscriptionRepository from "./Subscription";
+import { Context } from "../interfaces";
 
 export interface EssayModel extends EssayInsertion {
     essay_id: number;
@@ -65,12 +70,17 @@ export class EssayRepository implements EssayRepositoryInterface {
     private logger: Logger;
     public themes: EssayThemeRepositoryInterface;
     public users: UserRepositoryInterface;
+    public products: ProductRepositoryInterface;
+    public subscriptions: SubscriptionRepositoryInterface;
 
-    constructor(driver: Knex, logger: Logger) {
+    constructor(context: Context) {
+        const { driver, logger } = context;
         this.driver = driver;
         this.themes = new EssayThemeRepository(driver, logger);
         this.users = new UserRepository(driver, logger);
         this.logger = logger;
+        this.products = new ProductRepository(driver, logger);
+        this.subscriptions = new SubscriptionRepository(context);
     }
 
     private async parseToDB(data: EssayFilter): Promise<EssayInsertion | Partial<EssayModel>> {
