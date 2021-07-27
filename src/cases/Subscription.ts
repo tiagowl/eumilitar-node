@@ -1,11 +1,11 @@
-import Subscription from "../entities/Subscription";
+import Subscription, { SubscriptionInterface } from "../entities/Subscription";
 import { ProductRepositoryInterface } from "./ProductCase";
 import UserUseCase, { UserRepositoryInterface } from "./UserUseCase";
 import crypto from 'crypto';
 
 export interface SubscriptionRepositoryInterface {
     create: (data: SubscriptionInsertionInterface) => Promise<Subscription>;
-    filter: (filter: Partial<SubscriptionInsertionInterface>) => Promise<Subscription[]>;
+    filter: (filter: Partial<SubscriptionInterface>) => Promise<Subscription[]>;
     users: UserRepositoryInterface;
     products: ProductRepositoryInterface;
 }
