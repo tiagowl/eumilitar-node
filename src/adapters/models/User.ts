@@ -78,12 +78,14 @@ export default class UserRepository implements UserRepositoryInterface {
         { entity: ['creationDate', (value) => new Date(value)], db: ['date_created', (value) => new Date(value)] },
         { entity: ['lastModified', (value) => new Date(value)], db: ['date_modified', (value) => new Date(value)] },
     ];
+    private driver: Knex;
 
     get query() { return this.service; }
 
     constructor(driver: Knex, logger: Logger) {
         this.service = UserService(driver);
         this.logger = logger;
+        this.driver = driver;
     }
 
     private async toDb(filter: UserFilter) {
@@ -116,7 +118,7 @@ export default class UserRepository implements UserRepositoryInterface {
         return new User(data);
     }
 
-    private async _filter(filter: UserFilter): Promise<Knex.QueryBuilder> {
+    private async _filter(filter: UserFilter) {
         return this.service.where(await this.toDb(filter));
     }
 
@@ -136,27 +138,14 @@ export default class UserRepository implements UserRepositoryInterface {
     }
 
     public async get(filter: UserFilter) {
-        const filtered: any = this._filter(filter)
+        const parsedFilter = await this.toDb(filter);
+        const user = await UserService(this.driver).where(parsedFilter).first()
             .catch((error) => {
                 this.logger.error(error);
                 throw { message: 'Erro ao consultar banco de dados', status: 500 };
             });
-        return new Promise<User>((accept, reject) => {
-            filtered.then((user: UserModel[]) => {
-                if (!user[0]) return reject({ message: 'Usuário não encontrado' });
-                return accept(new User({
-                    id: user[0].user_id,
-                    firstName: user[0].first_name,
-                    lastName: user[0].last_name,
-                    email: user[0].email,
-                    password: user[0].passwd,
-                    status: parseStatus(user[0].status),
-                    permission: parsePermission(user[0].permission),
-                    creationDate: user[0].date_created,
-                    lastModified: user[0].date_modified
-                }));
-            });
-        });
+        if (!user) throw { message: 'Usuário não encontrado' };
+        return this.toEntity(user);
     }
 
     public async all() {
