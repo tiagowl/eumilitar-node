@@ -5,9 +5,7 @@ import { transports, format } from 'winston';
 config();
 
 const errorFormat = format.combine(
-    format.printf((error) => {
-        return `[${new Date().toISOString()}]: ${JSON.stringify(error)};`;
-    })
+    format.printf(error => `[${new Date()}]: ${JSON.stringify(error)};`),
 );
 
 const settings = Object.freeze({
@@ -77,6 +75,7 @@ const settings = Object.freeze({
                 filename: 'error.log',
                 level: 'error',
                 format: errorFormat,
+                dirname: path.resolve(__dirname, '..', '..', 'logs', process.env.NODE_ENV || 'default')
             }),
             new transports.Console({ level: 'error', format: errorFormat }),
             new transports.Console({
