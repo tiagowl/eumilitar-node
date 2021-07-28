@@ -25,6 +25,8 @@ async function authenticate(user: UserModel, api: supertest.SuperTest<supertest.
         .send(credentials)
         .set('User-Agent', faker.internet.userAgent());
     const { token } = auth.body;
+    expect(token).toBeDefined();
+    expect(typeof token).toBe('string');
     return token;
 }
 
@@ -244,7 +246,7 @@ describe('#1 Teste na api do usuário', () => {
         const header = `Bearer ${token}`;
         const response = await api.delete('/tokens/')
             .set('Authorization', header);
-        expect(response.status).toEqual(204);
+        expect(response.status, JSON.stringify(response.body)).toEqual(204);
         const notResponse = await api.delete('/tokens/')
             .set('Authorization', header);
         expect(notResponse.status).toEqual(401);
@@ -257,7 +259,7 @@ describe('#1 Teste na api do usuário', () => {
         const header = `Bearer ${token}`;
         const { body, status, error } = await api.get('/users/')
             .set('Authorization', header);
-        expect(status, JSON.stringify({ body, error })).toBe(200);
+        expect(status, JSON.stringify({ body, error, header })).toBe(200);
         expect(body, JSON.stringify(body)).toBeInstanceOf(Array);
         expect(body.length, JSON.stringify(body)).toBeGreaterThan(0);
         done();
@@ -371,8 +373,8 @@ describe('#2 Testes nos temas', () => {
         const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
         const themes = await api.get('/themes/')
             .set('Authorization', header);
-        expect(themes.status, JSON.stringify(themes.error)).toBe(200);
-        const selected = (themes.body?.page || [])[0];
+        expect(themes.status, JSON.stringify(themes.body)).toBe(200);
+        const [selected] = themes.body.page || [];
         const theme = {
             title: faker.name.title(),
             startDate: new Date(Date.now() - 1500 * 25 * 60 * 60),
@@ -398,9 +400,9 @@ describe('#2 Testes nos temas', () => {
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
         const themes = await api.get('/themes/')
-            .set('Authorization', header)
-        expect(themes.status, JSON.stringify(themes.error)).toBe(200);
-        const selected = themes.body.page[0];
+            .set('Authorization', header);
+        expect(themes.status, JSON.stringify(themes.body)).toBe(200);
+        const [selected] = themes.body.page;
         const response = await api.delete(`/themes/${selected.id}/`)
             .set('Authorization', header)
         expect(response.status, response.body?.message).toBe(200)
@@ -475,7 +477,7 @@ describe('#3 Redações', () => {
         const header = `Bearer ${token}`;
         const { body, status, error } = await api.get('/essays/')
             .set('Authorization', header);
-        expect(body.length, JSON.stringify({ body, error })).not.toBeUndefined();
+        expect(body, JSON.stringify({ body, error, header })).toBeInstanceOf(Array);
         expect(status, JSON.stringify({ body, error })).toBe(200);
         body.forEach((essay: any) => {
             expect(essay.course).toBeDefined();

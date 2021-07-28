@@ -6,9 +6,7 @@ import { Settings } from './drivers/interfaces';
 config({ path: path.resolve(__dirname, "..", ".env") });
 
 const errorFormat = format.combine(
-    format.printf((error) => {
-        return `[${new Date().toISOString()}]: ${JSON.stringify(error)};`;
-    })
+    format.printf(error => `[${new Date()}]: ${JSON.stringify(error)};`),
 );
 
 const settings: Settings = Object.freeze({
@@ -81,6 +79,7 @@ const settings: Settings = Object.freeze({
                 filename: 'error.log',
                 level: 'error',
                 format: errorFormat,
+                dirname: path.resolve(__dirname, '..', '..', 'logs', process.env.NODE_ENV || 'default')
             }),
             new transports.Console({ level: 'error', format: errorFormat }),
             new transports.Console({

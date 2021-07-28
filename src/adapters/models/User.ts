@@ -102,11 +102,9 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
             const parsedFilter = await this.toDb(filter);
             const filtered = await UserService(this.driver)
                 .where(parsedFilter).first();
-            if (!!filtered) {
-                const parsed = await this.toEntity(filtered);
-                return new User(parsed);
-            }
-            throw { message: 'Usuário não encontrado', status: 404 };
+            if (!filtered) throw { message: 'Usuário não encontrado', status: 404 };
+            const parsed = await this.toEntity(filtered);
+            return new User(parsed);
         } catch (error) {
             this.logger.error(error);
             if (error.status) throw error;
