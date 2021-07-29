@@ -29,9 +29,8 @@ export default class AuthController extends Controller<AuthInterface> {
     private repository: UserRepository;
 
     constructor(context: Context) {
-        const { logger, driver } = context;
         super(context, schema);
-        this.repository = new UserRepository(driver, logger);
+        this.repository = new UserRepository(context);
     }
 
     private async generateToken() {

@@ -2,6 +2,7 @@ import { Knex } from "knex";
 import { Logger } from "winston";
 import { ProductRepositoryInterface } from "../../cases/ProductCase";
 import Product, { ProductInterface, Course } from "../../entities/Product";
+import { Context } from "../interfaces";
 import Repository, { FieldsMap } from "./Repository";
 
 export interface ProductModel {
@@ -31,12 +32,12 @@ const parserMap: FieldsMap<ProductModel, ProductInterface> = [
     [['id_hotmart', Number], ['code', Number]],
 ];
 
-export const ProductService = (driver: Knex) => driver<Partial<ProductModel>, ProductModel>('products');
+export const ProductService = (driver: Knex) => driver<Partial<ProductModel>, ProductModel[]>('products');
 
 export default class ProductRepository extends Repository<ProductModel, ProductInterface> implements ProductRepositoryInterface {
 
-    constructor(driver: Knex, logger: Logger) {
-        super(parserMap, logger, driver);
+    constructor(context: Context) {
+        super(parserMap, context, ProductService);
     }
 
     public async get(filter: Partial<ProductInterface>) {

@@ -1,10 +1,10 @@
 import { Knex } from "knex";
 import { EssayRepositoryInterface } from "../../cases/EssayCase";
 import { EssayInvalidationCreationData, EssayInvalidationRepositoryInterface } from "../../cases/EssayInvalidation";
-import EssayInvalidation, { Reason } from "../../entities/EssayInvalidation";
+import EssayInvalidation, { EssayInvalidationInterface, Reason } from "../../entities/EssayInvalidation";
 import { EssayRepository } from "./Essay";
-import { Logger } from 'winston';
 import { Context } from "../interfaces";
+import Repository from "./Repository";
 
 export interface EssayInvalidationModel {
     id: number;
@@ -17,16 +17,12 @@ export interface EssayInvalidationModel {
 
 export const EssayInvalidationService = (driver: Knex) => driver<Partial<EssayInvalidationModel>, EssayInvalidationModel[]>('essay_invalidations');
 
-export default class EssayInvalidationRepository implements EssayInvalidationRepositoryInterface {
-    private driver: Knex;
-    private logger: Logger;
+export default class EssayInvalidationRepository extends Repository<EssayInvalidationModel, EssayInvalidationInterface> implements EssayInvalidationRepositoryInterface {
     public essays: EssayRepositoryInterface;
 
     constructor(context: Context) {
-        const { driver, logger } = context;
-        this.driver = driver;
+        super([], context, EssayInvalidationService);
         this.essays = new EssayRepository(context);
-        this.logger = logger;
     }
 
     public async create(data: EssayInvalidationCreationData) {

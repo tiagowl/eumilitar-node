@@ -96,9 +96,8 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
     private useCase: EssayThemeCase;
 
     constructor(context: Context) {
-        const { driver, logger } = context;
         super(context, schema);
-        this.repository = new EssayThemeRepository(driver, logger);
+        this.repository = new EssayThemeRepository(context);
         this.useCase = new EssayThemeCase(this.repository);
     }
 

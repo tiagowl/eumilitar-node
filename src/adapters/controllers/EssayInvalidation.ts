@@ -64,7 +64,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
     private async notify(essayId: number) {
         try {
             const essay = await this.repository.essays.get({ id: essayId });
-            const users = new UserRepository(this.driver, this.logger);
+            const users = new UserRepository(this.context);
             const user = await users.get({ id: essay?.student });
             return this.smtp.sendMail({
                 from: this.config.sender,

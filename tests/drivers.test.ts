@@ -7,6 +7,8 @@ import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/
 import { Course } from '../src/entities/EssayTheme';
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
 import settings from '../src/settings';
+import SubscriptionRepository from '../src/adapters/models/Subscription';
+import ProductRepository from '../src/adapters/models/Product';
 
 beforeAll(async (done) => {
     await driver.migrate.latest().finally(done)
@@ -426,11 +428,11 @@ describe('#2 Testes nos temas', () => {
 
 describe('#3 Redações', () => {
     const user: UserModel = userFactory();
-    const student: UserModel = userFactory({ permission: 2 });
+    const student: UserModel = userFactory({ permission: 6 });
     beforeAll(async (done) => {
         const themeService = EssayThemeService(driver);
         await themeService.delete().del()
-        const repository = new EssayThemeRepository(driver, logger);
+        const repository = new EssayThemeRepository(await context);
         const themeData: EssayThemeCreation = {
             title: 'Título',
             endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
@@ -457,8 +459,17 @@ describe('#3 Redações', () => {
         done()
     })
     test('Criação', async done => {
-        const app = await appFactory(driver);
+        const app = await appFactory();
         const api = supertest(app.server);
+        const subscriptionRepository = new SubscriptionRepository(await context);
+        const productRepository = new ProductRepository(await context);
+        const product = await productRepository.get({ course: 'esa' });
+        await subscriptionRepository.create({
+            expiration: faker.date.future(),
+            product: product.id,
+            registrationDate: new Date(),
+            user: student.user_id,
+        });
         const token = await authenticate(student, api)
         const header = `Bearer ${token}`;
         const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
@@ -550,11 +561,11 @@ describe('#3 Redações', () => {
 
 describe('#4 Invalidação da redação', () => {
     const user: UserModel = userFactory();
-    const student: UserModel = userFactory({ permission: 2 });
+    const student: UserModel = userFactory({ permission: 6 });
     beforeAll(async (done) => {
         const themeService = EssayThemeService(driver);
         await themeService.delete().del()
-        const repository = new EssayThemeRepository(driver, logger);
+        const repository = new EssayThemeRepository(await context);
         const themeData: EssayThemeCreation = {
             title: 'Título',
             endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
@@ -619,11 +630,11 @@ describe('#4 Invalidação da redação', () => {
 
 describe('#5 Correção da redação', () => {
     const user: UserModel = userFactory();
-    const student: UserModel = userFactory({ permission: 2 });
+    const student: UserModel = userFactory({ permission: 6 });
     beforeAll(async (done) => {
         const themeService = EssayThemeService(driver);
         await themeService.delete().del()
-        const repository = new EssayThemeRepository(driver, logger);
+        const repository = new EssayThemeRepository(await context);
         const themeData: EssayThemeCreation = {
             title: 'Título',
             endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),

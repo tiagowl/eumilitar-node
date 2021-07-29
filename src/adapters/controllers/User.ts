@@ -69,7 +69,7 @@ export default class UserController extends Controller<any> {
             productName: yup.string().required('O campo "productName" é obrigatório'),
             subscriptionPlanName: yup.string().required('O campo "subscriptionPlanName" é obrigatório'),
         });
-        this.repository = new UserRepository(context.driver, context.logger);
+        this.repository = new UserRepository(context);
         this.useCase = new UserUseCase(this.repository);
     }
 
@@ -92,7 +92,7 @@ export default class UserController extends Controller<any> {
             return Promise.all(users.map(async user => this.parseEntity(user)));
         } catch (error) {
             this.logger.error(error);
-            throw { message: 'Erro ao consultar usuários', status: 500 };
+            throw { message: error.message || 'Erro ao consultar usuários', status: 500 };
         }
     }
 

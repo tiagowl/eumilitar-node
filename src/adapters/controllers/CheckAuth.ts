@@ -1,10 +1,8 @@
-import { Knex } from "knex";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import User, { UserInterface } from "../../entities/User";
 import UserRepository from "../models/User";
 import { UserView } from "../views/User";
-import { Logger } from 'winston';
 import { Context } from "../interfaces";
 
 export interface CheckAuthInterface {
@@ -26,7 +24,7 @@ export default class CheckAuthController extends Controller<CheckAuthInterface> 
     }
 
     private async retrieveUser(token: string): Promise<User> {
-        const repository = new UserRepository(this.driver, this.logger);
+        const repository = new UserRepository(this.context);
         const user = await repository.query
             .innerJoin('login_sessions', 'users.user_id', '=', 'login_sessions.user_id')
             .where('login_sessions.session_id', token)

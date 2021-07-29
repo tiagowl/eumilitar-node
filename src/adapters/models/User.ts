@@ -1,8 +1,8 @@
 import { Knex } from "knex";
 import { UserFilter, UserRepositoryInterface, UserSavingData } from "../../cases/UserUseCase";
 import User, { AccountPermission, AccountStatus, UserData, UserInterface } from "../../entities/User";
-import { Logger } from 'winston';
 import Repository, { FieldsMap } from "./Repository";
+import { Context } from "../interfaces";
 
 const statusMap: AccountStatus[] = ['inactive', 'active', 'pending'];
 const permissionMap: [number, AccountPermission][] = [
@@ -20,13 +20,15 @@ function parseStatusToDB(value: AccountStatus): number {
 }
 
 function parsePermission(value: number): AccountPermission {
-    const parsed = permissionMap.filter(item => item[0] === value);
-    return parsed[0][1];
+    const parsed = permissionMap.find(item => item[0] === value);
+    if (!parsed) throw { message: `Permissão '${value}' inválida`, status: 400 };
+    return parsed[1];
 }
 
 function parsePermissionToDB(value: AccountPermission): number | undefined {
     const parsed = permissionMap.find(item => item[1] === value);
-    return !!parsed ? parsed[0] : undefined;
+    if (!parsed) throw { message: `Permissão '${value}' inválida`, status: 400 };
+    return parsed[0];
 }
 
 export interface UserModel {
@@ -41,20 +43,7 @@ export interface UserModel {
     date_modified: Date;
 }
 
-
-export interface UserModelFilter {
-    user_id?: number;
-    first_name?: string;
-    last_name?: string;
-    email?: string;
-    passwd?: string;
-    status?: number;
-    permission?: number;
-    date_created?: Date;
-    date_modified?: Date;
-}
-
-export const UserService = (driver: Knex) => driver<UserModelFilter, UserModel[]>('users');
+export const UserService = (driver: Knex) => driver<Partial<UserModel>, UserModel[]>('users');
 
 const fieldsMap: FieldsMap<UserModel, UserData> = [
     [['user_id', Number], ['id', Number]],
@@ -69,18 +58,20 @@ const fieldsMap: FieldsMap<UserModel, UserData> = [
 ];
 
 export default class UserRepository extends Repository<UserModel, UserData> implements UserRepositoryInterface {
-    private service: Knex.QueryBuilder<UserModelFilter, UserModel[]>;
 
-    constructor(driver: Knex, logger: Logger) {
-        super(fieldsMap, logger, driver);
-        this.service = UserService(driver);
+    constructor(context: Context) {
+        super(fieldsMap, context, UserService);
     }
 
-    get query() { return this.service; }
+    get query() { return UserService(this.driver); }
 
     public async filter(filter: UserFilter) {
         const parsedFilter = await this.toDb(filter);
-        const filtered = await UserService(this.driver).where(parsedFilter);
+        const filtered = await this.query.where(parsedFilter)
+            .catch(async (error) => {
+                this.logger.error(error);
+                throw { message: 'Erro ao consultar banco de dados', status: 400 };
+            });
         return Promise.all(filtered.map(async data => {
             const parsedData = await this.toEntity(data);
             return new User(parsedData);
@@ -90,7 +81,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     public async update(id: number, data: UserFilter) {
         try {
             const parsedData = await this.toDb(data);
-            return UserService(this.driver).where('user_id', id).update(parsedData);
+            return this.query.where('user_id', id).update(parsedData);
         } catch (error) {
             this.logger.error(error);
             throw { message: 'Falha ao gravar no banco de dados', status: 500 };
@@ -100,7 +91,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     public async get(filter: UserFilter) {
         try {
             const parsedFilter = await this.toDb(filter);
-            const filtered = await UserService(this.driver)
+            const filtered = await this.query
                 .where(parsedFilter).first();
             if (!filtered) throw { message: 'Usuário não encontrado', status: 404 };
             const parsed = await this.toEntity(filtered);
@@ -114,8 +105,11 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
 
     public async all() {
         try {
-            const users = await this.service.select('*') as UserModel[];
-            return Promise.all(users.map(async user => new User(await this.toEntity(user))));
+            const users = await this.query.select('*') as UserModel[];
+            return Promise.all(users.map(async user => {
+                const data = await this.toEntity(user);
+                return new User(data);
+            }));
         } catch (error) {
             this.logger.error(error);
             throw { message: 'Erro ao consultar banco de dados', status: 500 };

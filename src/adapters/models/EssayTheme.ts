@@ -2,6 +2,8 @@ import { Knex } from "knex";
 import { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeRepositoryInterface } from "../../cases/EssayThemeCase";
 import EssayTheme, { Course, EssayThemeInterface } from "../../entities/EssayTheme";
 import { Logger } from 'winston';
+import { Context } from "../interfaces";
+import Repository from "./Repository";
 
 export interface EssayThemeModel extends EssayThemeInsertion {
     id: number;
@@ -20,15 +22,12 @@ export interface EssayThemeInsertion {
 
 const divider = ', ';
 
-export const EssayThemeService = (driver: Knex) => driver<EssayThemeInsertion, EssayThemeModel>('essay_themes');
+export const EssayThemeService = (driver: Knex) => driver<Partial<EssayThemeInsertion>, EssayThemeModel[]>('essay_themes');
 
-export default class EssayThemeRepository implements EssayThemeRepositoryInterface {
-    private driver: Knex;
-    private logger: Logger;
+export default class EssayThemeRepository extends Repository<EssayThemeModel, EssayThemeInterface> implements EssayThemeRepositoryInterface {
 
-    constructor(driver: Knex, logger: Logger) {
-        this.driver = driver;
-        this.logger = logger;
+    constructor(context: Context) {
+        super([], context, EssayThemeService);
     }
 
     private async parseToInsert(data: EssayThemeCreation): Promise<EssayThemeInsertion> {

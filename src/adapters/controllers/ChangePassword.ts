@@ -5,7 +5,6 @@ import UserRepository from "../models/User";
 import CheckPasswordToken from "./CheckPasswordToken";
 import UserUseCase from "../../cases/UserUseCase";
 import { PasswordRecoveryService } from "../models/PasswordRecoveries";
-import { Logger } from 'winston';
 import { Context } from "../interfaces";
 
 export interface ChangePasswordInterface {
@@ -35,9 +34,8 @@ export default class ChangePasswordController extends Controller<ChangePasswordI
     private repository: UserRepository;
 
     constructor(context: Context) {
-        const { driver, logger } = context;
         super(context, schema);
-        this.repository = new UserRepository(driver, logger);
+        this.repository = new UserRepository(context);
     }
 
     private async validateToken(token: string) {

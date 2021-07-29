@@ -109,14 +109,13 @@ export async function saveConfirmationToken(token: string, userId: number, drive
     return service.insert(data);
 }
 
-export async function appFactory(driver: Knex = driverFactory(), customSettings = settings) {
-    const smtp = await smtpFactory();
-    const storage = createStorage(settings.storage);
-    return new Application({ smtp, driver, storage, settings: customSettings, logger })
+export async function appFactory(driver?: Knex, customSettings?: any) {
+    const context = await contextFactory();
+    return new Application({ ...context, driver: driver || context.driver, settings: customSettings || context.settings })
 }
 
 export async function createEssay(context: Context, id: number) {
-    const themeRepository = new EssayThemeRepository(driver, logger);
+    const themeRepository = new EssayThemeRepository(context);
     const themeData: EssayThemeCreation = {
         title: 'Título',
         endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
@@ -128,16 +127,16 @@ export async function createEssay(context: Context, id: number) {
     }
     const exists = await themeRepository.hasActiveTheme(themeData);
     const theme = await (exists ? themeRepository.get({ courses: themeData.courses }, true) : themeRepository.create(themeData));
+    if (!theme) throw new Error('Falha ao recuperar tema');
     const repository = new EssayRepository(context);
     return repository.create({
         file: '/usr/share/data/theme.png',
         student: id,
-        course: [...themeData.courses][1],
+        course: [...themeData.courses][0],
         sendDate: new Date(),
         status: 'pending',
-        // @ts-ignore
-        theme: theme?.id,
-    })
+        theme: theme.id,
+    });
 }
 
 export const driver = driverFactory();

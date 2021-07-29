@@ -12,7 +12,7 @@ import Correction, { CorrectionInterface } from '../src/entities/Correction';
 import CorrectionCase, { CorrectionInsertionData, CorrectionRepositoryInterface } from '../src/cases/Correction';
 import ProductCase, { ProductRepositoryInterface } from '../src/cases/ProductCase';
 import Product, { ProductInterface } from '../src/entities/Product';
-import { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from '../src/cases/Subscription';
+import SubscriptionCase, { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from '../src/cases/Subscription';
 import Subscription from '../src/entities/Subscription';
 
 const defaultPassword = 'pass1235'
@@ -341,7 +341,7 @@ class SubscriptionTestRepository implements SubscriptionRepositoryInterface {
             expiration: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             registrationDate: new Date(),
             user: user.id,
-            product: faker.datatype.number(5),
+            product: id,
         }));
         this.users = new UserTestRepository(userDatabase);
         this.products = new ProductTestRepository();
@@ -629,7 +629,7 @@ describe('#5 Correção', () => {
 })
 
 describe('#6 Produtos', () => {
-    test('Criação', async done => {
+    test('Recuperação', async done => {
         const repository = new ProductTestRepository();
         const useCase = new ProductCase(repository);
         const product = await useCase.get(10);
@@ -638,3 +638,20 @@ describe('#6 Produtos', () => {
         done();
     });
 })
+
+describe('#7 Assinaturas', () => {
+    test('Criação', async done => {
+        const repository = new SubscriptionTestRepository();
+        const useCase = new SubscriptionCase(repository);
+        const subscription = await useCase.create({
+            email: faker.internet.email(),
+            expiration: faker.date.future(),
+            firstName: faker.name.firstName(),
+            lastName: faker.name.lastName(),
+            product: 10,
+            transaction: faker.datatype.string(),
+        });
+        expect(subscription).toBeInstanceOf(Subscription);
+        done();
+    });
+});

@@ -1,7 +1,6 @@
 import Essay, { EssayInterface, Status } from "../entities/Essay";
 import { Reason, reasons } from "../entities/EssayInvalidation";
 import EssayTheme, { Course } from '../entities/EssayTheme';
-import EssayInvalidationCase, { EssayInvalidationRepositoryInterface } from "./EssayInvalidation";
 import { EssayThemeRepositoryInterface } from './EssayThemeCase';
 import { ProductRepositoryInterface } from "./ProductCase";
 import { SubscriptionRepositoryInterface } from "./Subscription";
@@ -101,8 +100,8 @@ export default class EssayCase {
         return new Essay(created);
     }
 
-    public async myEssays(userId: number) {
-        return this.repository.filter({ student: userId });
+    public async myEssays(student: number) {
+        return this.repository.filter({ student });
     }
 
     public async allEssays(filter: EssayFilter, pagination?: EssayPagination) {

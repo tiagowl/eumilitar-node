@@ -8,21 +8,16 @@ import ProductRepository from "./Product";
 import Repository from "./Repository";
 import UserRepository from "./User";
 
-export const SubscriptionService = (driver: Knex) => driver<SubscriptionInterface, SubscriptionInterface[]>('subscriptions');
+export const SubscriptionService = (driver: Knex) => driver<Partial<SubscriptionInterface>, SubscriptionInterface[]>('subscriptions');
 
 export default class SubscriptionRepository extends Repository<SubscriptionInterface, SubscriptionInterface> implements SubscriptionRepositoryInterface {
     public users: UserRepositoryInterface;
     public products: ProductRepositoryInterface;
 
     constructor(context: Context) {
-        const { logger, driver } = context;
-        super([], logger, driver);
-        this.users = new UserRepository(driver, logger);
-        this.products = new ProductRepository(driver, logger);
-    }
-
-    get query() {
-        return SubscriptionService(this.driver);
+        super([], context, SubscriptionService);
+        this.users = new UserRepository(context);
+        this.products = new ProductRepository(context);
     }
 
     public async create(data: SubscriptionInsertionInterface) {

@@ -20,6 +20,8 @@ import EssayInvalidationController from '../src/adapters/controllers/EssayInvali
 import CorrectionController from '../src/adapters/controllers/Correction';
 import UserController from '../src/adapters/controllers/User';
 import createLogger from '../src/drivers/logger';
+import SubscriptionRepository from '../src/adapters/models/Subscription';
+import ProductRepository from '../src/adapters/models/Product';
 
 const logger = createLogger(settings.logger);
 
@@ -209,7 +211,7 @@ describe('#2 Testes nos temas de redação', () => {
         done();
     })
     test('#21 Teste no modelo', async done => {
-        const repository = new EssayThemeRepository(driver, logger);
+        const repository = new EssayThemeRepository(await context);
         const data: EssayThemeCreation = {
             title: 'Título',
             endDate: new Date(Date.now() - 150 * 24 * 60 * 60),
@@ -336,7 +338,7 @@ describe('#2 Testes nos temas de redação', () => {
 
 
 describe('#4 Redações', () => {
-    const user = userFactory({ permission: 4 });
+    const user = userFactory({ permission: 6 });
     const corrector = userFactory({ permission: 5 });
     beforeAll(async (done) => {
         const service = UserService(driver)
@@ -354,22 +356,31 @@ describe('#4 Redações', () => {
         await themeService.delete().del();
         done()
     })
-    test('Criação de redações', async done => {
+    test('#41 Criação de redações', async done => {
         const themeService = EssayThemeService(driver);
         await themeService.delete().del()
-        const repository = new EssayThemeRepository(driver, logger);
+        const repository = new EssayThemeRepository(await context);
         const themeData: EssayThemeCreation = {
             title: 'Título',
             endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
             startDate: new Date(Date.now() - 160 * 24 * 60 * 60 * 60),
             helpText: faker.lorem.lines(3),
             file: '/usr/share/data/theme.pdf',
-            courses: new Set(['esa', 'espcex'] as Course[]),
+            courses: new Set(['espcex'] as Course[]),
             deactivated: false,
         }
         const theme = await repository.create(themeData);
         expect(theme.id).not.toBeUndefined();
         expect(theme.id).not.toBeNull();
+        const subscriptionRepository = new SubscriptionRepository(await context);
+        const productRepository = new ProductRepository(await context);
+        const product = await productRepository.get({ course: 'espcex' })
+        await subscriptionRepository.create({
+            expiration: faker.date.future(),
+            product: product.id,
+            registrationDate: new Date(),
+            user: user.user_id,
+        })
         const data: EssayInput = {
             // @ts-ignore
             file: {
@@ -397,9 +408,11 @@ describe('#4 Redações', () => {
     }, 10000)
     test('Listagem', async done => {
         const controller = new EssayController(await context);
+        const base = await createEssay(await context, user.user_id);
         const essays = await controller.myEssays(user.user_id);
         expect(essays).not.toBeUndefined();
         expect(essays.length).not.toBeLessThan(1);
+        expect(essays[0]).toMatchObject(base);
         done();
     }, 10000)
     test('Listagem de todos', async (done) => {

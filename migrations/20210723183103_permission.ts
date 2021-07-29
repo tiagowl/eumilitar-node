@@ -3,7 +3,9 @@ import { Knex } from "knex";
 const permissions = [2, 3, 4];
 export async function up(knex: Knex): Promise<void> {
     await Promise.all(permissions.map(async (permission) => {
-        const users = await knex('users').where('permission', permission);
+        const users = await knex('users')
+            .where('permission', permission)
+            .where('status', 1);
         const expiration = new Date(Date.now() + 360 * 24 * 60 * 60 * 1000);
         if (permission === 4) {
             const esa = await knex('products').where('course_tag', 2).first();
@@ -44,6 +46,9 @@ export async function down(knex: Knex): Promise<void> {
             if (value === 0 || value === product.course_tag) return product.course_tag;
             return 4;
         }, Promise.resolve(0));
+        if (permission === 0) {
+            return knex('users').where('user_id', user.user_id).update({ permission: 4, status: 0 });
+        }
         return knex('users').where('user_id', user.user_id).update({ permission });
     }));
     await knex('subscriptions').truncate();

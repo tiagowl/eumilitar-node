@@ -88,7 +88,7 @@ export default class EssayController extends Controller<EssayData> {
     }
 
     private async getUser(id: number) {
-        const repository = new UserRepository(this.driver, this.logger);
+        const repository = new UserRepository(this.context);
         const userCase = new UserUseCase(repository);
         const user = await userCase.get(id);
         return {
@@ -178,7 +178,7 @@ export default class EssayController extends Controller<EssayData> {
             return this.parseEntity(updated);
         } catch (error) {
             this.logger.error(error);
-            throw { message: error.message || 'Falha ao atualizar', status: error.status || 500 };
+            throw { message: error.message || 'Falha ao atualizar', status: error.status || 400 };
         }
     }
 
@@ -191,7 +191,7 @@ export default class EssayController extends Controller<EssayData> {
             return this.parseEntity(updated);
         } catch (error) {
             this.logger.error(error);
-            throw { message: error.message || 'Falha ao atualizar', status: error.status || 500 };
+            throw { message: error.message || 'Falha ao atualizar', status: error.status || 400 };
         }
     }
 
