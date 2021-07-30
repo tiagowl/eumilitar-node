@@ -26,20 +26,27 @@ export default class Controller<Fields> {
         return this.schema.isValid(data);
     }
 
-    public async validate<Data = any>(rawData: Data): Promise<Data> {
-        return this.schema.validate(rawData, {
-            strict: true,
-            abortEarly: false,
-            stripUnknown: true,
-            recursive: true,
-        }).then(data => this.schema.noUnknown().cast(data, { stripUnknown: true }))
-            .catch(async (errors: ValidationError) => {
+    public async validate<Data = any>(rawData: Data, schema?: ObjectSchema<any>): Promise<Data> {
+        try {
+            const validator = (!!schema ? schema : this.schema);
+            const validated = await validator.validate(rawData, {
+                strict: true,
+                abortEarly: false,
+                stripUnknown: true,
+                recursive: true,
+            });
+            return validator.noUnknown().cast(validated, { stripUnknown: true });
+        } catch (err) {
+            if (err instanceof ValidationError) {
+                const errors: ValidationError = err;
                 throw {
                     message: errors.message,
-                    errors: errors.inner.map(error => ([error.path, error.message])),
+                    errors: errors.inner.map(({ path, message }) => ([path, message])),
                     status: 400,
                 };
-            });
+            }
+            throw { message: 'Erro ao validar dados', status: 500 };
+        }
     }
 
 }

@@ -76,7 +76,7 @@ export function hashPassword(password: string) {
 }
 
 export async function saveUser(user: any, service: Knex.QueryBuilder) {
-    const userDB = { ...user, passwd: await hashPassword(user.passwd) };
+    const userDB = { ...user, passwd: hashPassword(user.passwd) };
     return await service.insert(userDB);
 }
 

@@ -192,18 +192,18 @@ describe('#1 Teste na api do usuário', () => {
         const api = supertest(app.server);
         const credentials = {
             email: user.email,
-            password: 'abda143501',
+            password: user.passwd,
         }
         const auth = await api.post('/tokens/')
             .send(credentials)
             .set('User-Agent', faker.internet.userAgent());
         const { token } = auth.body;
-        expect(token).not.toBeUndefined();
+        expect(token).toBeDefined();
         expect(token).not.toBeNull();
         const header = `Bearer ${token}`
         const response = await api.get('/users/profile/')
             .set('Authorization', header);
-        expect(response.body.message).toBeUndefined();
+        expect(response.body.message, JSON.stringify({ token, body: response.body })).toBeUndefined();
         expect(response.status).toBe(200);
         expect(response.body.email).toEqual(user.email)
         expect(response.body.password).toBeUndefined();

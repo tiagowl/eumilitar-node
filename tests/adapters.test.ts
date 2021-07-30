@@ -7,7 +7,6 @@ import settings from '../src/settings';
 import { PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
 import CheckPasswordToken from '../src/adapters/controllers/CheckPasswordToken';
 import ChangePasswordController from '../src/adapters/controllers/ChangePassword';
-import CheckAuthController from '../src/adapters/controllers/CheckAuth';
 import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
@@ -184,8 +183,8 @@ describe('#1 Testes na autenticação', () => {
         };
         const auth = new AuthController(await context);
         const { token } = await auth.auth(credentials);
-        const controller = new CheckAuthController(await context);
-        const response = await controller.check({ token: token || '' });
+        const controller = new AuthController(await context);
+        const response = await controller.checkToken({ token: token || '' });
         expect(response.isValid).toBeTruthy();
         expect(response.user).not.toBeNull();
         expect(response.user).not.toBeUndefined();
@@ -194,8 +193,8 @@ describe('#1 Testes na autenticação', () => {
     })
     test('Verificar autenticação com token inválido', async (done) => {
         const token = crypto.randomBytes(32).toString('base64');
-        const controller = new CheckAuthController(await context);
-        const response = await controller.check({ token: token || '' });
+        const controller = new AuthController(await context);
+        const response = await controller.checkToken({ token: token || '' });
         expect(response.isValid).toBeFalsy();
         expect(response.user).toBeUndefined();
         done();

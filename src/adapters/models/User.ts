@@ -3,6 +3,7 @@ import { UserFilter, UserRepositoryInterface, UserSavingData } from "../../cases
 import User, { AccountPermission, AccountStatus, UserData, UserInterface } from "../../entities/User";
 import Repository, { FieldsMap } from "./Repository";
 import { Context } from "../interfaces";
+import { TokenService } from "./Token";
 
 const statusMap: AccountStatus[] = ['inactive', 'active', 'pending'];
 const permissionMap: [number, AccountPermission][] = [
@@ -120,15 +121,28 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
         try {
             const error = new Error('Usuário não foi salvo');
             const parsedData = await this.toDb(data);
-            const [saved] = await UserService(this.driver).insert(parsedData);
+            const [saved] = await this.query.insert(parsedData);
             if (saved) throw error;
-            const recovered = await UserService(this.driver).where('user_id', saved).first();
+            const recovered = await this.query.where('user_id', saved).first();
             if (!recovered) throw error;
             const entityData = await this.toEntity(recovered);
             return new User(entityData);
         } catch (error) {
             throw { message: 'Erro ao salvar no banco de dados', status: 500 };
         }
+    }
+
+    public async auth(token: string) {
+        const tokenSubQuery = TokenService(this.driver).select('user_id').where('session_id', token);
+        const user = await this.query
+            .whereIn('user_id', tokenSubQuery)
+            .first().catch(error => {
+                this.logger.error(error);
+                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+            });
+        if (!user) throw new Error('Token inválido');
+        const userData = await this.toEntity(user);
+        return new User(userData);
     }
 
 }

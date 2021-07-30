@@ -2,7 +2,6 @@ import express, { RequestHandler, Request } from "express";
 import { Knex } from "knex";
 import AuthController, { AuthInterface, AuthResponse } from "../../adapters/controllers/Auth";
 import ChangePasswordController, { ChangePasswordInterface, ChangePasswordResponse } from "../../adapters/controllers/ChangePassword";
-import CheckAuthController from "../../adapters/controllers/CheckAuth";
 import CheckPasswordToken, { CheckPasswordInterface, CheckedTokenInterface } from "../../adapters/controllers/CheckPasswordToken";
 import CorrectionController from "../../adapters/controllers/Correction";
 import EssayController, { EssayInput, EssayResponse } from "../../adapters/controllers/Essay";
@@ -56,8 +55,8 @@ async function getToken(header: string | undefined) {
 
 async function checkAuth(req: Request, context: Context) {
     const token = await getToken(req.headers.authorization);
-    const controller = new CheckAuthController(context);
-    const { user, isValid } = await controller.check({ token },);
+    const controller = new AuthController(context);
+    const { user, isValid } = await controller.checkToken({ token },);
     if (!isValid || !user) throw { message: 'Não autorizado', status: 401 };
     return user;
 }

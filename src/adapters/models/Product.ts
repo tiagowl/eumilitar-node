@@ -42,7 +42,7 @@ export default class ProductRepository extends Repository<ProductModel, ProductI
 
     public async get(filter: Partial<ProductInterface>) {
         const parsed = await this.toDb(filter);
-        const product = await ProductService(this.driver)
+        const product = await this.query
             .where(parsed).first()
             .catch((error) => {
                 this.logger.error(error);

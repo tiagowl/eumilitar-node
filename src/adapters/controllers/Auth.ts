@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import * as yup from 'yup';
 import UserUseCase from '../../cases/UserUseCase';
-import User from '../../entities/User';
+import User, { UserInterface } from '../../entities/User';
 import UserRepository from '../models/User';
 import Controller from './Controller';
 import crypto from 'crypto';
@@ -23,6 +23,19 @@ export type AuthResponse = {
 export const schema = yup.object({
     email: yup.string().required('O campo "email" é obrigatório').email('Informe um email válido'),
     password: yup.string().required('O campo "senha" é obrigatório')
+});
+
+export interface CheckAuthInterface {
+    token: string;
+}
+
+export interface CheckAuthResponse {
+    isValid: boolean;
+    user?: UserInterface;
+}
+
+const tokenSchema = yup.object().shape({
+    token: yup.string().required('O token de autenticação é obrigatório'),
 });
 
 export default class AuthController extends Controller<AuthInterface> {
@@ -54,6 +67,19 @@ export default class AuthController extends Controller<AuthInterface> {
         }
     }
 
+    private async parseEntity(user: User): Promise<UserInterface> {
+        return {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            status: user.status,
+            permission: user.permission,
+            creationDate: user.creationDate,
+            lastModified: user.lastModified,
+        };
+    }
+
     public async auth(rawData: AuthInterface, userAgent?: string): Promise<AuthResponse> {
         try {
             const data = await this.validate(rawData);
@@ -82,6 +108,17 @@ export default class AuthController extends Controller<AuthInterface> {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: 'Erro ao deletar token', status: 500 };
+        }
+    }
+
+    public async checkToken(rawData: CheckAuthInterface): Promise<CheckAuthResponse> {
+        try {
+            const { token } = await this.validate(rawData, tokenSchema);
+            const user = await this.repository.auth(token);
+            return { isValid: true, user: await this.parseEntity(user) };
+        } catch (error) {
+            this.logger.error(error);
+            return { isValid: false };
         }
     }
 }

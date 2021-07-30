@@ -69,7 +69,7 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
 
     public async exists(filter: EssayThemeFilter) {
         try {
-            const service = EssayThemeService(this.driver);
+            const service = this.query;
             if ('reduce' in filter) {
                 return filter.reduce((query, item) => {
                     return query.where(...item);
@@ -84,7 +84,7 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
 
     public async get(filter: EssayThemeFilter, active?: boolean) {
         try {
-            const service = this.filterByActive(EssayThemeService(this.driver), active);
+            const service = this.filterByActive(this.query, active);
             const theme = await this.filter(filter, service).first();
             return !!theme ? this.parseFromDB(theme) : undefined;
         } catch (error) {
@@ -96,7 +96,7 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
     public async create(data: EssayThemeCreation) {
         try {
             const parsed = await this.parseToInsert(data);
-            const service = EssayThemeService(this.driver);
+            const service = this.query;
             const ids = await service.insert(parsed);
             const theme = await this.get({ id: ids[0] });
             if (!theme) throw new Error('Falha ao salvar tema');
@@ -109,7 +109,7 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
 
     public async hasActiveTheme(theme: EssayThemeData, idToIgnore?: number) {
         try {
-            const service = EssayThemeService(this.driver);
+            const service = this.query;
             const qr = (typeof idToIgnore === 'number' ? service.andWhereNot('id', idToIgnore) : service)
                 .andWhere(function () {
                     this.orWhere(function () {
@@ -136,7 +136,7 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
 
     public async count() {
         try {
-            const service = EssayThemeService(this.driver);
+            const service = this.query;
             const amount = await service.count<Record<string, { count: number }>>('id as count');
             return amount[0].count;
         } catch (error) {
@@ -147,7 +147,7 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
 
     public async findAll(page?: number, pageSize?: number, ordering?: keyof EssayThemeModel, active?: boolean) {
         try {
-            const service = EssayThemeService(this.driver);
+            const service = this.query;
             const query = this.filterByActive(service, active);
             const themes = await query.orderBy(ordering || 'id', 'desc')
                 .offset(((page || 1) - 1) * (pageSize || 10))
@@ -163,7 +163,7 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
     public async update(id: number, data: EssayThemeCreation) {
         try {
             const parsedData = await this.parseToInsert(data);
-            const service = EssayThemeService(this.driver);
+            const service = this.query;
             const updated = await service.where('id', id).update(parsedData);
             if (updated === 0) throw new Error('Falha ao atualizar tema');
             if (updated > 1) throw new Error(`${updated} temas foram modificados!`);
