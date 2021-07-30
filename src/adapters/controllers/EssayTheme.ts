@@ -151,8 +151,10 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
 
     public async update(id: number, rawData: EssayThemeUpdating) {
         try {
-            this.schema = updatingSchema;
-            const data = await this.validate({ ...rawData, file: rawData.file?.path || rawData.file?.location }) as EssayThemeData;
+            const data = await this.validate({
+                ...rawData,
+                file: rawData.file?.path || rawData.file?.location
+            }, updatingSchema) as EssayThemeData;
             const theme = await this.useCase.update(id, {
                 ...data,
                 courses: new Set(data.courses),
