@@ -21,13 +21,7 @@ import UserController from '../src/adapters/controllers/User';
 import createLogger from '../src/drivers/logger';
 import SubscriptionRepository from '../src/adapters/models/Subscription';
 import ProductRepository from '../src/adapters/models/Product';
-
-const logger = createLogger(settings.logger);
-
-beforeAll(async (done) => {
-    await driver.migrate.latest();
-    done();
-})
+import SubscriptionController from '../src/adapters/controllers/Subscription';
 
 afterAll(async (done) => {
     await driver.destroy();
@@ -379,6 +373,7 @@ describe('#4 Redações', () => {
             product: product.id,
             registrationDate: new Date(),
             user: user.user_id,
+            code: faker.datatype.number(),
         })
         const data: EssayInput = {
             // @ts-ignore
@@ -630,4 +625,40 @@ describe('#7 Testes no usuário', () => {
         expect(cancellation).toMatchObject({ success: true });
         done();
     })
-})
+});
+
+describe('#8 Inscrições', () => {
+    const user = userFactory()
+    beforeAll(async (done) => {
+        const service = UserService(driver)
+            .onConflict(['email', 'user_id'])
+            .merge();
+        await saveUser(user, service)
+        const themeService = EssayThemeService(driver);
+        await themeService.delete().del()
+        done();
+    });
+    afterAll(async (done) => {
+        const service = UserService(driver);
+        await deleteUser(user, service)
+        const themeService = EssayThemeService(driver);
+        await themeService.del().delete();
+        done()
+    });
+    test('#81 Criação', async done => {
+        const controller = new SubscriptionController(await context);
+        const productRepository = new ProductRepository(await context);
+        const product = await productRepository.get({ course: 'espcex' });
+        const created = await controller.create({
+            hottok,
+            'email': faker.internet.email(),
+            'first_name': faker.name.firstName(),
+            'last_name': faker.name.lastName(),
+            'prod': product.code,
+            'status': 'ACTIVE',
+            'transaction': faker.unique(faker.datatype.number),
+        });
+        expect(created).toBeDefined();
+        done();
+    });
+});

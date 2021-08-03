@@ -125,6 +125,7 @@ test('Inscrições', () => {
             expiration: faker.date.future(),
             product: faker.datatype.number(),
             registrationDate: faker.date.past(),
+            code: faker.datatype.number(),
         })
     }).not.toThrowError();
 })

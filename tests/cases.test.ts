@@ -342,6 +342,7 @@ class SubscriptionTestRepository implements SubscriptionRepositoryInterface {
             registrationDate: new Date(),
             user: user.id,
             product: id,
+            code: faker.datatype.number(),
         }));
         this.users = new UserTestRepository(userDatabase);
         this.products = new ProductTestRepository();
@@ -649,7 +650,7 @@ describe('#7 Assinaturas', () => {
             firstName: faker.name.firstName(),
             lastName: faker.name.lastName(),
             product: 10,
-            transaction: faker.datatype.string(),
+            code: faker.datatype.number(),
         });
         expect(subscription).toBeInstanceOf(Subscription);
         done();
