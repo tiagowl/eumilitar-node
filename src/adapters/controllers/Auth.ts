@@ -55,12 +55,13 @@ export default class AuthController extends Controller<AuthInterface> {
     private async saveToken(user: User, token: string, userAgent?: string) {
         try {
             const service = TokenService(this.driver);
-            return service.insert({
+            const [saved] = await service.insert({
                 session_id: token,
                 login_time: new Date(),
                 user_id: user.id,
                 user_agent: userAgent,
             });
+            if (typeof saved !== 'number') throw { message: 'Erro ao salvar token', status: 500 };
         } catch (error) {
             this.logger.error(error);
             throw { message: 'Erro ao salvar token', status: 500 };
@@ -85,13 +86,13 @@ export default class AuthController extends Controller<AuthInterface> {
             const data = await this.validate(rawData);
             const useCase = new UserUseCase(this.repository);
             const auth = await useCase.authenticate(data.email, data.password);
-            if (!!auth.email && !!auth.password) {
+            if (auth.email && auth.password) {
                 const token = await this.generateToken();
-                if (!!useCase.user) this.saveToken(useCase.user, token, userAgent);
+                if (!!useCase.user) await this.saveToken(useCase.user, token, userAgent);
                 return { token };
             }
-            if (!auth.email) throw { errors: [['email', 'Email inválido']] };
-            else throw { errors: [['password', 'Senha inválida']] };
+            if (!auth.email) throw { errors: [['email', 'Email inválido']], status: 400 };
+            else throw { errors: [['password', 'Senha inválida']], status: 400 };
         } catch (error) {
             this.logger.error(error);
             throw error;
