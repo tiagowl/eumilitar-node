@@ -16,6 +16,7 @@ import { Course } from '../src/entities/EssayTheme';
 import createLogger from '../src/drivers/logger';
 import createTransport from '../src/drivers/smtp';
 import { Context } from '../src/drivers/interfaces';
+import axios from 'axios';
 
 export const now = new Date();
 export const logger = createLogger(settings.logger);
@@ -151,5 +152,6 @@ export async function contextFactory(inject = {}): Promise<Context> {
         settings: { ...settings, hotmart: { hottok } },
         logger,
         storage,
+        http: axios.create({}),
     }, inject);
 }

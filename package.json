@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "dependencies": {
     "aws-sdk": "^2.900.0",
+    "axios": "^0.21.1",
     "bcrypt": "^5.0.1",
     "cookie-parser": "^1.4.5",
     "cookie-session": "^1.4.0",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@types/aws-sdk": "^2.7.0",
+    "@types/axios": "^0.14.0",
     "@types/bcrypt": "^3.0.1",
     "@types/cookie-parser": "^1.4.2",
     "@types/cookie-session": "^2.0.42",

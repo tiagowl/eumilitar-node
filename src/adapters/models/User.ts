@@ -94,7 +94,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
             const parsedFilter = await this.toDb(filter);
             const filtered = await this.query
                 .where(parsedFilter).first();
-            if (!filtered) throw { message: 'Usuário não encontrado', status: 404 };
+            if (!filtered) return;
             const parsed = await this.toEntity(filtered);
             return new User(parsed);
         } catch (error) {
@@ -122,12 +122,13 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
             const error = new Error('Usuário não foi salvo');
             const parsedData = await this.toDb(data);
             const [saved] = await this.query.insert(parsedData);
-            if (saved) throw error;
+            if (typeof saved !== 'number') throw error;
             const recovered = await this.query.where('user_id', saved).first();
             if (!recovered) throw error;
             const entityData = await this.toEntity(recovered);
             return new User(entityData);
         } catch (error) {
+            this.logger.error(error);
             throw { message: 'Erro ao salvar no banco de dados', status: 500 };
         }
     }
@@ -140,7 +141,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
                 this.logger.error(error);
                 throw { message: 'Erro ao consultar banco de dados', status: 500 };
             });
-        if (!user) throw new Error('Token inválido');
+        if (!user) throw { message: 'Token inválido', status: 400 };
         const userData = await this.toEntity(user);
         return new User(userData);
     }

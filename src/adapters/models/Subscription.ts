@@ -5,24 +5,38 @@ import { UserRepositoryInterface } from "../../cases/UserUseCase";
 import Subscription, { SubscriptionInterface } from "../../entities/Subscription";
 import { Context } from "../interfaces";
 import ProductRepository from "./Product";
-import Repository from "./Repository";
+import Repository, { FieldsMap } from "./Repository";
 import UserRepository from "./User";
 
-export const SubscriptionService = (driver: Knex) => driver<Partial<SubscriptionInterface>, SubscriptionInterface[]>('subscriptions');
+export const SubscriptionService = (driver: Knex) => driver<Partial<SubscriptionModel>, SubscriptionModel[]>('subscriptions');
 
-export default class SubscriptionRepository extends Repository<SubscriptionInterface, SubscriptionInterface> implements SubscriptionRepositoryInterface {
+export interface SubscriptionModel extends SubscriptionInterface {
+    hotmart_id: number;
+}
+
+const fieldsMap: FieldsMap<SubscriptionModel, SubscriptionInterface> = [
+    [['user', Number], ['user', Number]],
+    [['expiration', val => new Date(val)], ['expiration', val => new Date(val)]],
+    [['id', Number], ['id', Number]],
+    [['hotmart_id', Number], ['code', Number]],
+    [['product', Number], ['product', Number]],
+    [['registrationDate', val => new Date(val)], ['registrationDate', val => new Date(val)]],
+];
+
+export default class SubscriptionRepository extends Repository<SubscriptionModel, SubscriptionInterface> implements SubscriptionRepositoryInterface {
     public users: UserRepositoryInterface;
     public products: ProductRepositoryInterface;
 
     constructor(context: Context) {
-        super([], context, SubscriptionService);
+        super(fieldsMap, context, SubscriptionService);
         this.users = new UserRepository(context);
         this.products = new ProductRepository(context);
     }
 
     public async create(data: SubscriptionInsertionInterface) {
+        const parsed = await this.toDb(data);
         const defaultError = { message: 'Erro ao salvar inscrição', status: 500 };
-        const [id] = await this.query.insert(data).catch(error => {
+        const [id] = await this.query.insert(parsed).catch(error => {
             this.logger.error(error);
             throw { message: 'Erro ao gravar no banco de dados', status: 500 };
         });

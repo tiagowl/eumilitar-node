@@ -14,9 +14,9 @@ export interface SubscriptionCreationInterface {
     email: string;
     product: number;
     expiration: Date;
-    transaction: string;
     firstName: string;
     lastName: string;
+    code: number;
 }
 
 export interface SubscriptionInsertionInterface {
@@ -24,6 +24,7 @@ export interface SubscriptionInsertionInterface {
     expiration: Date;
     registrationDate: Date;
     product: number;
+    code: number;
 }
 
 export default class SubscriptionCase {
@@ -55,6 +56,7 @@ export default class SubscriptionCase {
             expiration: data.expiration,
             registrationDate: new Date(),
             product: product.id,
+            code: data.code,
         });
     }
 }

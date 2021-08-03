@@ -92,6 +92,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
         try {
             const data = await this.validate(rawData);
             const user = await this.repository.get(data);
+            if (!user) throw { message: 'Usuário não encontrado', status: 404 };
             this.token = await this.generateConfirmationToken();
             await this.saveToken(user.id);
             return this.sendConfirmationEmail(user.email, user.fullName)

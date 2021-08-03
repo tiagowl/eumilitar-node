@@ -1,10 +1,8 @@
-import { Knex } from 'knex';
 import * as yup from 'yup';
 import UserUseCase, { UserFilter } from '../../cases/UserUseCase';
 import User, { AccountPermission, AccountStatus } from '../../entities/User';
 import UserRepository from '../models/User';
 import Controller from './Controller';
-import { Logger } from 'winston';
 import { Context } from '../interfaces';
 
 export type UserResponse = {
@@ -31,15 +29,7 @@ export interface CancelData {
     subscriptionPlanName: string;
 }
 
-export interface OrderData {
-    hottok: string;
-    prod: number;
-    first_name: string;
-    last_name: string;
-    email: string;
-    status: string;
-}
-
+const schema = yup.object().shape({});
 
 export default class UserController extends Controller<any> {
     private repository: UserRepository;
@@ -48,14 +38,6 @@ export default class UserController extends Controller<any> {
 
     constructor(context: Context) {
         const { settings: { hotmart: { hottok } } } = context;
-        const schema = yup.object().shape({
-            hottok: yup.string().required('O campo "hottok" é obrigatório').is([hottok], '"hottok" inválido'),
-            prod: yup.number().required(),
-            first_name: yup.string().required(),
-            last_name: yup.string().required(),
-            email: yup.string().required(),
-            status: yup.string().required(),
-        });
         super(context, schema);
         this.cancelSchema = yup.object({
             hottok: yup.string().required('O campo "hottok" é obrigatório').is([hottok], '"hottok" inválido'),
@@ -98,7 +80,7 @@ export default class UserController extends Controller<any> {
 
     public async cancel(data: CancelData) {
         try {
-            const { userEmail } = await this.cancelSchema.validate(data) as CancelData;
+            const { userEmail } = await this.validate(data, this.cancelSchema) as CancelData;
             const success = await this.useCase.cancel(userEmail);
             return { success: !!success };
         } catch (error) {
@@ -107,20 +89,6 @@ export default class UserController extends Controller<any> {
                 message: error.message || "Requisição inválida",
                 status: error.status || 400
             };
-        }
-    }
-
-    public async create(data: OrderData) {
-        try {
-            const validated = await this.validate(data);
-            // const saved = await this.useCase.create({
-            //     email: validated.email,
-            //     firstName: validated.first_name,
-            //     lastName: validated.last_name,
-            //     permission: validated.prod,
-            // })
-        } catch (error) {
-            this.logger.error(error);
         }
     }
 }
