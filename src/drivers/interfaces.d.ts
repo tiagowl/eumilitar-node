@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import { Logger, config } from 'winston';
 import winston from 'winston';
 import { Mail, Context as DefaultContext, Settings as DefaultSettings } from "../adapters/interfaces";
+import { AxiosRequestConfig } from 'axios';
 
 export type Method = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
@@ -62,6 +63,7 @@ export interface Settings extends DefaultSettings {
         }
     };
     logger: winston.LoggerOptions;
+    httpClient: AxiosRequestConfig;
 }
 
 export interface Context extends DefaultContext {

@@ -92,6 +92,7 @@ const settings: Settings = Object.freeze({
             }),
         ]
     },
+    httpClient: {}
 });
 
 export default settings;

@@ -1,3 +1,4 @@
+import { AxiosInstance } from "axios";
 import { Knex } from "knex";
 import { Multer } from "multer";
 import winston from "winston";
@@ -33,6 +34,7 @@ export type Context = {
     storage: Multer;
     settings: Settings;
     logger: winston.Logger;
+    http: AxiosInstance;
 };
 
 
