@@ -1,6 +1,6 @@
 import { Knex } from "knex";
 
-const tableName = 'password_reset'
+const tableName = 'password_reset';
 
 export async function up(knex: Knex): Promise<void> {
     return knex.schema.alterTable(tableName, (table) => {
@@ -15,9 +15,9 @@ export async function up(knex: Knex): Promise<void> {
 
 
 export async function down(knex: Knex): Promise<void> {
-    const emailExits = await knex.schema.hasColumn(tableName, 'email')
-    const idExits = await knex.schema.hasColumn(tableName, 'id')
-    const userIdExits = await knex.schema.hasColumn(tableName, 'user_id')
+    const emailExits = await knex.schema.hasColumn(tableName, 'email');
+    const idExits = await knex.schema.hasColumn(tableName, 'id');
+    const userIdExits = await knex.schema.hasColumn(tableName, 'user_id');
     return knex.schema.alterTable(tableName, (table) => {
         if(userIdExits) {
             table.dropForeign('user_id');
@@ -27,6 +27,6 @@ export async function down(knex: Knex): Promise<void> {
             table.dropColumn('id');
         }
         if(!emailExits) table.string('email', 255).index().notNullable();
-    })
+    });
 }
 

@@ -17,7 +17,7 @@ export async function up(knex: Knex): Promise<void> {
             table.dateTime('invalidationDate').notNullable()
                 .defaultTo(knex.fn.now());
             table.text('comment').nullable();
-        })
+        });
 }
 
 

@@ -9,7 +9,7 @@ export async function up(knex: Knex): Promise<void> {
         table.string('selector', 16).notNullable();
         table.string('token', 64).notNullable();
         table.dateTime('expires').notNullable();
-    })
+    });
 }
 
 

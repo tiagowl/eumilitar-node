@@ -11,7 +11,7 @@ export async function up(knex: Knex): Promise<void> {
         table.dateTime('startDate').notNullable();
         table.dateTime('endDate').notNullable();
         table.dateTime('lastModified').notNullable().defaultTo(knex.fn.now());
-    })
+    });
 }
 
 
