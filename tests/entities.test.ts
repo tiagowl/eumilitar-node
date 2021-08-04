@@ -113,6 +113,7 @@ test('Produtos', () => {
             code: faker.datatype.number(),
             name: faker.lorem.sentence(),
             course: 'esa',
+            expirationTime: 444
         })
     }).not.toThrowError();
 });

@@ -72,6 +72,10 @@ const settings: Settings = Object.freeze({
     },
     hotmart: {
         hottok: process.env.HOTTOK || '',
+        token: process.env.HOTMART_TOKEN || '',
+        id: process.env.HOTMART_ID || '',
+        secret: process.env.HOTMART_SECRET || '',
+        env: (process.env.HOTMART_ENV || 'sandbox') as 'sandbox' | 'developers',
     },
     logger: {
         transports: [

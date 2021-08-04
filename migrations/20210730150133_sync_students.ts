@@ -34,10 +34,11 @@ async function getAccessToken(): Promise<string> {
     return data.access_token;
 }
 
-async function* getPages(token: string): AsyncGenerator<any[], void, unknown> {
+async function* getPages(): AsyncGenerator<any[], void, unknown> {
+    const token = await getAccessToken();
     const url = `https://${apiEnv}.hotmart.com/payments/api/v1/subscriptions`;
     const params = {
-        max_results: 3,
+        max_results: 10000,
     };
     let nextPage: string | null = null;
     do {
@@ -59,8 +60,11 @@ export async function up(knex: Knex): Promise<void> {
             table.integer('hotmart_id').unsigned()
                 .unique().nullable();
         });
-        const token = await getAccessToken();
-        const pages = getPages(token);
+        await knex.schema.alterTable('products', table => {
+            table.bigInteger('expiration_time').defaultTo(360 * 24 * 60 * 60 * 1000)
+                .notNullable().unsigned();
+        });
+        const pages = getPages();
         const trx = await knex.transaction();
         for await (const subscriptions of pages) {
             const data = await Promise.all(subscriptions.map(async subscription => {
@@ -75,7 +79,7 @@ export async function up(knex: Knex): Promise<void> {
                     hotmart_id: subscription.subscription_id,
                 };
             }));
-            await trx('subscriptions').insert(data).debug(true);
+            await trx('subscriptions').insert(data);
         }
         await trx.commit();
     } catch (error) {
@@ -87,6 +91,9 @@ export async function up(knex: Knex): Promise<void> {
 
 export async function down(knex: Knex): Promise<void> {
     await knex('subscriptions').whereNot('hotmart_id', null).del();
+    await knex.schema.alterTable('products', table => {
+        table.dropColumn('expiration_time');
+    });
     await knex.schema.alterTable('subscriptions', table => {
         table.dropColumn('hotmart_id');
     });

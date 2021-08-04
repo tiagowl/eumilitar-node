@@ -13,7 +13,6 @@ export interface SubscriptionRepositoryInterface {
 export interface SubscriptionCreationInterface {
     email: string;
     product: number;
-    expiration: Date;
     firstName: string;
     lastName: string;
     code: number;
@@ -48,12 +47,18 @@ export default class SubscriptionCase {
         });
     }
 
+    public async exists(data: SubscriptionCreationInterface) {
+        const subscription = await this.repository.filter({ code: data.code });
+        return subscription.length > 0;
+    }
+
     public async create(data: SubscriptionCreationInterface) {
+        if (await this.exists(data)) return;
         const user = await this.checkUser(data);
         const product = await this.repository.products.get({ code: data.product });
         return this.repository.create({
             user: user.id,
-            expiration: data.expiration,
+            expiration: new Date(Date.now() + product.expirationTime),
             registrationDate: new Date(),
             product: product.id,
             code: data.code,

@@ -628,21 +628,9 @@ describe('#7 Testes no usuário', () => {
 });
 
 describe('#8 Inscrições', () => {
-    const user = userFactory()
-    beforeAll(async (done) => {
-        const service = UserService(driver)
-            .onConflict(['email', 'user_id'])
-            .merge();
-        await saveUser(user, service)
-        const themeService = EssayThemeService(driver);
-        await themeService.delete().del()
-        done();
-    });
+    const email = 'teste.sandbox@hotmart.com';
     afterAll(async (done) => {
-        const service = UserService(driver);
-        await deleteUser(user, service)
-        const themeService = EssayThemeService(driver);
-        await themeService.del().delete();
+        await UserService(driver).where('email', email).del().delete();
         done()
     });
     test('#81 Criação', async done => {
@@ -650,15 +638,15 @@ describe('#8 Inscrições', () => {
         const productRepository = new ProductRepository(await context);
         const product = await productRepository.get({ course: 'espcex' });
         const created = await controller.create({
-            hottok,
-            'email': faker.internet.email(),
+            hottok, email,
             'first_name': faker.name.firstName(),
             'last_name': faker.name.lastName(),
             'prod': product.code,
             'status': 'ACTIVE',
-            'transaction': faker.unique(faker.datatype.number),
+            'transaction': '4',
         });
         expect(created).toBeDefined();
+        expect(created.length).toBe(1);
         done();
-    });
+    }, 10000);
 });

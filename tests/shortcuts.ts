@@ -149,7 +149,7 @@ export async function contextFactory(inject = {}): Promise<Context> {
     return Object.assign({
         driver,
         smtp,
-        settings: { ...settings, hotmart: { hottok } },
+        settings: { ...settings, hotmart: { ...settings.hotmart, hottok } },
         logger,
         storage,
         http: axios.create({}),

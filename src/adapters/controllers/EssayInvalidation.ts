@@ -66,6 +66,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
             const essay = await this.repository.essays.get({ id: essayId });
             const users = new UserRepository(this.context);
             const user = await users.get({ id: essay?.student });
+            if(!user) throw new Error(`Usuário "${essay?.student}", da redação "${essay?.id}" não encontrado`);
             return this.smtp.sendMail({
                 from: this.config.sender,
                 to: { email: user.email, name: user.firstName },

@@ -12,7 +12,7 @@ export interface OrderData {
     last_name: string;
     email: string;
     status: string;
-    transaction: number;
+    transaction: string;
 }
 
 export default class SubscriptionController extends Controller<OrderData> {
@@ -30,7 +30,7 @@ export default class SubscriptionController extends Controller<OrderData> {
             last_name: yup.string().required(),
             email: yup.string().required(),
             status: yup.string().required(),
-            transaction: yup.number().required(),
+            transaction: yup.string().required(),
         });
         super(context, schema);
         this.repository = new SubscriptionRepository(context);
@@ -38,24 +38,40 @@ export default class SubscriptionController extends Controller<OrderData> {
     }
 
     private async parseEntity(entity: SubscriptionInterface) {
-        return entity;
+        return {
+            ...entity,
+        };
     }
 
     public async create(data: OrderData) {
         try {
             const validated = await this.validate<OrderData>(data);
-            const created = await this.useCase.create({
-                email: validated.email,
-                firstName: validated.first_name,
-                lastName: validated.last_name,
-                product: validated.prod,
-                code: validated.transaction,
-                expiration: new Date(),
+            const subscriptions = this.repository.getFromHotmart({
+                'subscriber_email': validated.email,
+                'transaction': validated.transaction,
+                'status': 'ACTIVE',
             });
-            return this.parseEntity(created);
+            const createdList = [];
+            for await (const subscription of subscriptions) {
+                const created = await this.useCase.create({
+                    email: validated.email,
+                    firstName: validated.first_name,
+                    lastName: validated.last_name,
+                    product: validated.prod,
+                    code: subscription.subscription_id,
+                });
+                if (!!created) {
+                    const parsed = await this.parseEntity(created);
+                    createdList.push(parsed);
+                }
+            }
+            return createdList;
         } catch (error) {
-            this.logger.error(error);
-            throw { message: error.message, status: error.status || 400 };
+            this.logger.error(error, { data: error?.response?.body });
+            throw {
+                message: error.message,
+                status: error.status || 400
+            };
         }
     }
 }

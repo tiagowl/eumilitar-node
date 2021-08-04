@@ -22,6 +22,33 @@ export default class Repository<Model, Entity> {
 
     get query() { return this.service(this.driver); }
 
+    protected async authHotmart() {
+        try {
+            const url = 'https://api-sec-vlc.hotmart.com/security/oauth/token';
+            const params = {
+                grant_type: 'client_credentials',
+                client_id: this.context.settings.hotmart.id,
+                client_secret: this.context.settings.hotmart.secret,
+            };
+            const headers = {
+                'Authorization': `Basic ${this.context.settings.hotmart.token}`,
+                'Content-Type': 'application/json',
+            };
+            const response = await this.context.http({
+                url,
+                headers,
+                params,
+                method: 'POST',
+                maxRedirects: 20
+            });
+            return response.data.access_token;
+        } catch (error) {
+            this.logger.error(error.response?.data);
+            this.logger.error(error);
+            throw { message: 'Erro ao consultar dados', status: 500 };
+        }
+    }
+
     public async toDb(filter: Partial<Entity>): Promise<Partial<Model>> {
         try {
             const args = Object.entries(filter);

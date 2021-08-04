@@ -5,6 +5,7 @@ export interface ProductInterface {
     name: string;
     code: number;
     course: Course;
+    expirationTime: number;
 }
 
 export default class Product implements ProductInterface {
@@ -12,11 +13,13 @@ export default class Product implements ProductInterface {
     public name: string;
     public code: number;
     public course: Course;
+    public expirationTime: number;
 
     constructor(data: ProductInterface) {
         this.id = data.id;
         this.name = data.name;
         this.code = data.code;
         this.course = data.course;
+        this.expirationTime = data.expirationTime;
     }
 }

@@ -25,6 +25,10 @@ export interface Settings {
     messageConfig: MessageConfigInterface;
     hotmart: {
         hottok: string;
+        token: string;
+        id: string;
+        secret: string;
+        env: 'developers' | 'sandbox';
     };
 }
 

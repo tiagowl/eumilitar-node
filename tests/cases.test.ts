@@ -44,6 +44,7 @@ const productsDatabase = new Array(5).fill(0).map((_, id) => new Product({
     code: id * 10,
     course: 'esa',
     name: faker.lorem.sentence(),
+    expirationTime: 360 * 24 * 60 * 60 * 1000,
 }));
 
 class UserTestRepository implements UserRepositoryInterface {
@@ -646,7 +647,6 @@ describe('#7 Assinaturas', () => {
         const useCase = new SubscriptionCase(repository);
         const subscription = await useCase.create({
             email: faker.internet.email(),
-            expiration: faker.date.future(),
             firstName: faker.name.firstName(),
             lastName: faker.name.lastName(),
             product: 10,
