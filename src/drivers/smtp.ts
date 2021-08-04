@@ -1,7 +1,8 @@
 import mailjet from 'node-mailjet';
+import { Logger } from 'winston';
 import { Mail } from '../adapters/interfaces';
 
-export default function createTransport(settings: any): Mail {
+export default function createTransport(settings: any, logger: Logger): Mail {
     const sender = mailjet.connect(settings.auth.key, settings.auth.secret);
     return {
         async sendMail(mail) {
@@ -22,9 +23,15 @@ export default function createTransport(settings: any): Mail {
                     "CustomID": "AppGettingStartedTest"
                 }]
             };
+            logger.log('mail', { to, subject });
             return sender
                 .post('send', { 'version': 'v3.1' })
-                .request(data);
+                .request(data)
+                .catch((error) => {
+                    logger.error(error);
+                    logger.log('mail', { to, subject, error });
+                    throw error;
+                });
         }
     };
 }

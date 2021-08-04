@@ -1,6 +1,6 @@
 import path from 'path';
 import { config } from 'dotenv';
-import { transports, format } from 'winston';
+import { transports, format, Logger } from 'winston';
 import { Settings } from './drivers/interfaces';
 
 config({ path: path.resolve(__dirname, "..", ".env") });
@@ -85,6 +85,12 @@ const settings: Settings = Object.freeze({
                 format: errorFormat,
                 dirname: path.resolve(__dirname, '..', '..', 'logs', process.env.NODE_ENV || 'default')
             }),
+            new transports.File({
+                filename: 'mail.log',
+                level: 'mail',
+                format: errorFormat,
+                dirname: path.resolve(__dirname, '..', '..', 'logs', process.env.NODE_ENV || 'default')
+            }),
             new transports.Console({ level: 'error', format: errorFormat }),
             new transports.Console({
                 level: 'info',
@@ -94,7 +100,8 @@ const settings: Settings = Object.freeze({
                     format.printf(({ message }) => message),
                 ),
             }),
-        ]
+        ],
+        levels: { mail: 0 }
     },
     httpClient: {}
 });

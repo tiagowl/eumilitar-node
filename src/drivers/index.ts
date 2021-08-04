@@ -7,12 +7,13 @@ import createHttpClient from './httpClient';
 import { Settings } from './interfaces';
 
 export default function createServer(settings: Settings) {
+    const logger = createLogger(settings.logger);
     return new Application({
+        logger,
         settings,
         driver: connect(settings.database),
-        smtp: createTransport(settings.smtp),
+        smtp: createTransport(settings.smtp, logger),
         storage: createStorage(settings.storage),
-        logger: createLogger(settings.logger),
         http: createHttpClient(settings.httpClient),
     });
 }

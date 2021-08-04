@@ -4,6 +4,9 @@ import User, { AccountPermission, AccountStatus, UserData, UserInterface } from 
 import Repository, { FieldsMap } from "./Repository";
 import { Context } from "../interfaces";
 import { TokenService } from "./Token";
+import UserCreation, { Props as UserCreationProps } from '../views/UserCreation';
+import crypto from 'crypto';
+import { PasswordRecoveryService } from "./PasswordRecoveries";
 
 const statusMap: AccountStatus[] = ['inactive', 'active', 'pending'];
 const permissionMap: [number, AccountPermission][] = [
@@ -79,6 +82,55 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
         }));
     }
 
+    private async writeMessage(props: UserCreationProps) {
+        return ``;
+    }
+
+    private async renderMessage(props: UserCreationProps) {
+        return UserCreation(props);
+    }
+
+    private async generateConfirmationToken(): Promise<string> {
+        return new Promise((resolve, reject) => {
+            crypto.randomBytes(32, (error, buffer) => {
+                if (error) reject(error);
+                else resolve(buffer.toString('hex'));
+            });
+        });
+    }
+
+    private async saveToken(token: string, user: User) {
+        const [saved] = await PasswordRecoveryService(this.driver).insert({
+            token,
+            expires: new Date(Date.now() + this.context.settings.messageConfig.expirationTime * 60 * 60 * 1000),
+            selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
+            user_id: user.id,
+        });
+        if (typeof saved !== 'number') throw { message: 'Não foi possível salvar token', status: 500 };
+    }
+
+    private async notify(user: User) {
+        try {
+            const token = await this.generateConfirmationToken();
+            await this.saveToken(token, user);
+            const link = `${this.context.settings.messageConfig.url}${token}`;
+            const props: UserCreationProps = {
+                user, link,
+                expirationTime: this.context.settings.messageConfig.expirationTime,
+            };
+            return this.context.smtp.sendMail({
+                from: this.context.settings.messageConfig.sender,
+                subject: 'Instruções de acesso',
+                to: { email: user.email, name: user.firstName },
+                text: await this.writeMessage(props),
+                html: await this.renderMessage(props),
+            });
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: 'Erro ao notificar aluno', status: 500 };
+        }
+    }
+
     public async update(id: number, data: UserFilter) {
         try {
             const parsedData = await this.toDb(data);
@@ -134,7 +186,8 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     }
 
     public async auth(token: string) {
-        const tokenSubQuery = TokenService(this.driver).select('user_id').where('session_id', token);
+        const tokenSubQuery = TokenService(this.driver)
+            .select('user_id').where('session_id', token);
         const user = await this.query
             .whereIn('user_id', tokenSubQuery)
             .first().catch(error => {
@@ -143,7 +196,9 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
             });
         if (!user) throw { message: 'Token inválido', status: 400 };
         const userData = await this.toEntity(user);
-        return new User(userData);
+        const entity = new User(userData);
+        await this.notify(entity);
+        return entity;
     }
 
 }
