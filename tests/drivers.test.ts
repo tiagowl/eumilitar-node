@@ -10,6 +10,7 @@ import settings from '../src/settings';
 import SubscriptionRepository from '../src/adapters/models/Subscription';
 import ProductRepository from '../src/adapters/models/Product';
 import qs from 'querystring';
+import UserRepository from '../src/adapters/models/User';
 
 beforeAll(async (done) => {
     await driver.migrate.latest().finally(done)
@@ -743,6 +744,13 @@ describe('#5 Correção da redação', () => {
 
 describe('#6 Inscrições', () => {
     const email = 'teste.sandbox@hotmart.com';
+    const deleteAll = async (done: any) => {
+        const repository = new UserRepository(await context);
+        await repository.query.where('email', email).del();
+        done();
+    };
+    beforeAll(deleteAll);
+    afterAll(deleteAll);
     test('#61 Criação', async done => {
         const app = await appFactory();
         const api = supertest(app.server);

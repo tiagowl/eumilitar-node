@@ -629,10 +629,12 @@ describe('#7 Testes no usuário', () => {
 
 describe('#8 Inscrições', () => {
     const email = 'teste.sandbox@hotmart.com';
-    afterAll(async (done) => {
+    const deleteAll = async (done: any) => {
         await UserService(driver).where('email', email).del().delete();
         done()
-    });
+    };
+    afterAll(deleteAll);
+    beforeAll(deleteAll);
     test('#81 Criação', async done => {
         const controller = new SubscriptionController(await context);
         const productRepository = new ProductRepository(await context);
