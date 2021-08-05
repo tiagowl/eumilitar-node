@@ -92,6 +92,12 @@ const routes: Route[] = [
         handlers: [
             { handler: handlers.cancelUser, method: 'post' },
         ]
+    },
+    {
+        path: '/subscriptions/',
+        handlers: [
+            { handler: handlers.createSubscription, method: 'post' },
+        ]
     }
 ];
 

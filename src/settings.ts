@@ -2,6 +2,7 @@ import path from 'path';
 import { config } from 'dotenv';
 import { transports, format, Logger } from 'winston';
 import { Settings } from './drivers/interfaces';
+import winston from 'winston/lib/winston/config';
 
 config({ path: path.resolve(__dirname, "..", ".env") });
 
@@ -86,8 +87,8 @@ const settings: Settings = Object.freeze({
                 dirname: path.resolve(__dirname, '..', '..', 'logs', process.env.NODE_ENV || 'default')
             }),
             new transports.File({
-                filename: 'mail.log',
-                level: 'mail',
+                filename: 'info.log',
+                level: 'info',
                 format: errorFormat,
                 dirname: path.resolve(__dirname, '..', '..', 'logs', process.env.NODE_ENV || 'default')
             }),
@@ -101,7 +102,6 @@ const settings: Settings = Object.freeze({
                 ),
             }),
         ],
-        levels: { mail: 0 }
     },
     httpClient: {}
 });

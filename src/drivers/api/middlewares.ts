@@ -11,11 +11,12 @@ import { Context } from "../interfaces";
 function getMiddlewares({ settings }: Context): RequestHandler[] {
     return [
         cors(settings.cors),
-        express.json(),
         cookieParser(),
         cookieSession(settings.session),
         helmet(settings.helmet),
         morgan(settings.logging.format, settings.logging.options),
+        express.json(),
+        express.urlencoded({ 'extended': true, 'type': 'application/x-www-form-urlencoded' }),
     ];
 }
 

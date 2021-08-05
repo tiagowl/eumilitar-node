@@ -1,7 +1,7 @@
 import faker from 'faker';
 import supertest from 'supertest';
 import { UserModel, UserService } from '../src/adapters/models/User';
-import { logger, contextFactory, appFactory, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
+import { hottok, contextFactory, appFactory, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
 import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { Course } from '../src/entities/EssayTheme';
@@ -9,6 +9,7 @@ import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
 import settings from '../src/settings';
 import SubscriptionRepository from '../src/adapters/models/Subscription';
 import ProductRepository from '../src/adapters/models/Product';
+import qs from 'querystring';
 
 beforeAll(async (done) => {
     await driver.migrate.latest().finally(done)
@@ -738,3 +739,27 @@ describe('#5 Correção da redação', () => {
         done();
     }, 100000)
 })
+
+
+describe('#6 Inscrições', () => {
+    const email = 'teste.sandbox@hotmart.com';
+    test('#61 Criação', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const productRepository = new ProductRepository(await context);
+        const product = await productRepository.get({ course: 'espcex' });
+        const response = await api.post('/subscriptions/')
+            .type('application/x-www-form-urlencoded')
+            .send(qs.stringify({
+                hottok, email,
+                'first_name': faker.name.firstName(),
+                'last_name': faker.name.lastName(),
+                'prod': product.code,
+                'status': 'ACTIVE',
+                'transaction': 4,
+            }));
+        expect(response.body, JSON.stringify(response.body)).toBeInstanceOf(Array);
+        expect(response.body.length).toBeGreaterThan(0);
+        done();
+    });
+});
