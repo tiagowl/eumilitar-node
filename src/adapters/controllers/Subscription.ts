@@ -43,6 +43,19 @@ export default class SubscriptionController extends Controller<OrderData> {
         };
     }
 
+    private async writeNotification(data: OrderData, error: any) {
+        return `${JSON.stringify(data)}\n${error.stack || JSON.stringify(error)}`;
+    }
+
+    private async notifyAdmins(data: OrderData, error: any) {
+        return this.context.smtp.sendMail({
+            subject: 'Erro ao criar usuário',
+            to: { email: this.context.settings.messageConfig.adminMail, name: 'Admin' },
+            from: this.context.settings.messageConfig.sender,
+            text: await this.writeNotification(data, error),
+        });
+    }
+
     public async create(data: OrderData) {
         try {
             const validated = await this.validate<OrderData>(data);
@@ -68,6 +81,7 @@ export default class SubscriptionController extends Controller<OrderData> {
             return createdList;
         } catch (error) {
             this.logger.error(error, { data: error?.response?.body });
+            this.notifyAdmins(data, error);
             throw {
                 message: error.message,
                 status: error.status || 400

@@ -49,7 +49,8 @@ const settings: Settings = Object.freeze({
             name: process.env.NAME_SENDER || "",
         },
         url: process.env.PASSWORD_RECOVERY_URL || "",
-        expirationTime: Number(process.env.EXPIRATION_TIME || 4)
+        expirationTime: Number(process.env.EXPIRATION_TIME || 4),
+        adminMail: process.env.ADMIN_MAIL || '',
     },
     storage: {
         bucket: process.env.BUCKET_NAME || '',

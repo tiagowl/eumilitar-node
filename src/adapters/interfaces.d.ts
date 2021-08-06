@@ -14,7 +14,7 @@ export interface MailData {
     };
     subject: string;
     text: string;
-    html: string;
+    html?: string;
 }
 
 export interface Mail {
@@ -49,4 +49,5 @@ export interface MessageConfigInterface {
     };
     url: string;
     expirationTime: number;
+    adminMail: string;
 }
