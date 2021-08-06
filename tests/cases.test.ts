@@ -13,7 +13,7 @@ import CorrectionCase, { CorrectionInsertionData, CorrectionRepositoryInterface 
 import ProductCase, { ProductRepositoryInterface } from '../src/cases/ProductCase';
 import Product, { ProductInterface } from '../src/entities/Product';
 import SubscriptionCase, { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from '../src/cases/Subscription';
-import Subscription from '../src/entities/Subscription';
+import Subscription, { SubscriptionInterface } from '../src/entities/Subscription';
 
 const defaultPassword = 'pass1235'
 const userDatabase = new Array(5).fill(0).map((_, id) => userEntityFactory({ password: hashPassword(defaultPassword), id }));
@@ -343,7 +343,8 @@ class SubscriptionTestRepository implements SubscriptionRepositoryInterface {
             registrationDate: new Date(),
             user: user.id,
             product: id,
-            code: faker.datatype.number(),
+            code: id,
+            active: true,
         }));
         this.users = new UserTestRepository(userDatabase);
         this.products = new ProductTestRepository();
@@ -352,6 +353,7 @@ class SubscriptionTestRepository implements SubscriptionRepositoryInterface {
     public async create(data: SubscriptionInsertionInterface) {
         const subscription = new Subscription({
             id: this.database.length,
+            active: true,
             ...data,
         });
         this.database.push(subscription);
@@ -364,6 +366,18 @@ class SubscriptionTestRepository implements SubscriptionRepositoryInterface {
         return this.database.filter(item => (
             !!fields.filter(([key, value]) => item[key] === value).length
         ))
+    }
+
+    public async update(id: number, data: Partial<SubscriptionInterface>) {
+        let subscription: Subscription;
+        this.database = this.database.map((item) => {
+            if (item.id === id) {
+                Object.assign(item, data);
+                subscription = item;
+            }
+            return item;
+        });
+        return subscription;
     }
 }
 
@@ -410,17 +424,6 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         expect(all).toMatchObject(userDatabase);
         done();
     });
-    test('Cancelamento', async done => {
-        const userRepo = new UserTestRepository(userDatabase);
-        const user = await userRepo.get({ id: 0 });
-        const useCase = new UserUseCase(userRepo);
-        const cancellation = await useCase.cancel(user.email);
-        expect(cancellation).toBe(1);
-        const updatedUser = await userRepo.get({ id: 0 });
-        expect(updatedUser.email).toEqual(user.email);
-        expect(updatedUser.status).toEqual('inactive');
-        done();
-    })
     test('Criação', async done => {
         const userRepo = new UserTestRepository(userDatabase);
         const useCase = new UserUseCase(userRepo);
@@ -653,6 +656,14 @@ describe('#7 Assinaturas', () => {
             code: faker.datatype.number(),
         });
         expect(subscription).toBeInstanceOf(Subscription);
+        done();
+    });
+    test('Cancelamento', async done => {
+        const repository = new SubscriptionTestRepository();
+        const useCase = new SubscriptionCase(repository);
+        const canceled = await useCase.cancel(1);
+        expect(canceled).toBeInstanceOf(Subscription);
+        expect(canceled.active).toBeFalsy();
         done();
     });
 });

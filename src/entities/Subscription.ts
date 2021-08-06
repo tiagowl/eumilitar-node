@@ -5,6 +5,7 @@ export interface SubscriptionInterface {
     expiration: Date;
     registrationDate: Date;
     code: number;
+    active: boolean;
 }
 
 export default class Subscription implements SubscriptionInterface {
@@ -14,6 +15,7 @@ export default class Subscription implements SubscriptionInterface {
     public expiration: Date;
     public registrationDate: Date;
     public code: number;
+    public active: boolean;
 
     constructor(data: SubscriptionInterface) {
         this.id = data.id;
@@ -22,5 +24,6 @@ export default class Subscription implements SubscriptionInterface {
         this.expiration = data.expiration;
         this.registrationDate = data.registrationDate;
         this.code = data.code;
+        this.active = data.active;
     }
 }

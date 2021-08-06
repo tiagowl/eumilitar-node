@@ -6,6 +6,7 @@ import crypto from 'crypto';
 export interface SubscriptionRepositoryInterface {
     create: (data: SubscriptionInsertionInterface) => Promise<Subscription>;
     filter: (filter: Partial<SubscriptionInterface>) => Promise<Subscription[]>;
+    update: (id: number, data: Partial<SubscriptionInterface>) => Promise<Subscription>;
     users: UserRepositoryInterface;
     products: ProductRepositoryInterface;
 }
@@ -63,5 +64,11 @@ export default class SubscriptionCase {
             product: product.id,
             code: data.code,
         });
+    }
+
+    public async cancel(code: number) {
+        const [subscription] = await this.repository.filter({ code });
+        if (!subscription) throw new Error('Inscrição não encontrada');
+        return this.repository.update(subscription.id, { active: false });
     }
 }

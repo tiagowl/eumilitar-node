@@ -606,25 +606,6 @@ describe('#7 Testes no usuário', () => {
         })
         done();
     })
-    test('#72 Cancelamento', async done => {
-        const controller = new UserController(await context);
-        const users = await controller.all({ status: 'active' });
-        const user = users[0];
-        const cancellation = await controller.cancel({
-            hottok,
-            'actualRecurrenceValue': 335.34,
-            'cancellationDate': Date.now(),
-            'dateNextCharge': faker.date.future(3).getTime(),
-            'productName': user.permission,
-            'subscriberCode': faker.random.alphaNumeric(),
-            'subscriptionId': faker.datatype.number(),
-            'subscriptionPlanName': faker.name.title(),
-            'userEmail': user.email,
-            'userName': user.firstName,
-        })
-        expect(cancellation).toMatchObject({ success: true });
-        done();
-    })
 });
 
 describe('#8 Inscrições', () => {
