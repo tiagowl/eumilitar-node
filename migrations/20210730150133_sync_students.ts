@@ -87,7 +87,7 @@ export async function up(knex: Knex): Promise<void> {
                 return {
                     product: product?.course_tag || 1,
                     user: user?.user_id || 1,
-                    expiration: new Date(Date.now() + product.expiration_time),
+                    expiration: new Date(subscription.accession_date + product.expiration_time),
                     registrationDate: new Date(),
                     hotmart_id: subscription.subscription_id,
                 };
