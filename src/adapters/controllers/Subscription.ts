@@ -15,9 +15,23 @@ export interface OrderData {
     transaction: string;
 }
 
+export interface CancelData {
+    hottok: string;
+    subscriptionId: number;
+    subscriberCode: string;
+    cancellationDate: number;
+    dateNextCharge: number;
+    actualRecurrenceValue: number;
+    userName: string;
+    userEmail: string;
+    productName: string;
+    subscriptionPlanName: string;
+}
+
 export default class SubscriptionController extends Controller<OrderData> {
     private repository: SubscriptionRepository;
     private useCase: SubscriptionCase;
+    private cancelSchema: yup.ObjectSchema<any>;
 
     constructor(context: Context) {
         const { settings: { hotmart: { hottok } } } = context;
@@ -33,6 +47,18 @@ export default class SubscriptionController extends Controller<OrderData> {
             transaction: yup.string().required(),
         });
         super(context, schema);
+        this.cancelSchema = yup.object({
+            hottok: yup.string().required('O campo "hottok" é obrigatório').is([hottok], '"hottok" inválido'),
+            subscriptionId: yup.number().required('O campo "subscriptionId" é obrigatório'),
+            subscriberCode: yup.string().required('O campo "subscriberCode" é obrigatório'),
+            cancellationDate: yup.number().required('O campo "cancellationDate" é obrigatório'),
+            dateNextCharge: yup.number().required('O campo "dateNextCharge" é obrigatório'),
+            actualRecurrenceValue: yup.number().required('O campo "actualRecurrenceValue" é obrigatório'),
+            userName: yup.string().required('O campo "userName" é obrigatório'),
+            userEmail: yup.string().required('O campo "userEmail" é obrigatório'),
+            productName: yup.string().required('O campo "productName" é obrigatório'),
+            subscriptionPlanName: yup.string().required('O campo "subscriptionPlanName" é obrigatório'),
+        });
         this.repository = new SubscriptionRepository(context);
         this.useCase = new SubscriptionCase(this.repository);
     }
@@ -86,6 +112,18 @@ export default class SubscriptionController extends Controller<OrderData> {
                 message: error.message,
                 status: error.status || 400
             };
+        }
+    }
+
+    public async cancel(data: CancelData) {
+        try {
+            const validated = await this.validate(data, this.cancelSchema);
+            const subscription = await this.useCase.cancel(validated.subscriptionId);
+            return this.parseEntity(subscription);
+        } catch (error) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao cancelar inscrição', status: 500 };
         }
     }
 }

@@ -97,7 +97,7 @@ export async function up(knex: Knex): Promise<void> {
                 return !!item;
             });
             if (filteredData.length > 0) {
-                await trx('subscriptions').insert(filteredData).onConflict('hotmart_id').ignore().debug(true);
+                await trx('subscriptions').insert(filteredData).onConflict('hotmart_id').ignore();
             }
             bar.increment();
             bar.stop();

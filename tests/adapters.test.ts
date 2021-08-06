@@ -19,7 +19,7 @@ import EssayInvalidationController from '../src/adapters/controllers/EssayInvali
 import CorrectionController from '../src/adapters/controllers/Correction';
 import UserController from '../src/adapters/controllers/User';
 import createLogger from '../src/drivers/logger';
-import SubscriptionRepository from '../src/adapters/models/Subscription';
+import SubscriptionRepository, { SubscriptionService } from '../src/adapters/models/Subscription';
 import ProductRepository from '../src/adapters/models/Product';
 import SubscriptionController from '../src/adapters/controllers/Subscription';
 
@@ -632,4 +632,27 @@ describe('#8 Inscrições', () => {
         expect(created.length).toBe(1);
         done();
     }, 10000);
+    test('#82 Cancelamento', async done => {
+        const [selected] = await SubscriptionService((await context).driver)
+            .whereIn('user',
+                UserService((await context).driver)
+                    .where('email', email).select('user_id as user')
+            );
+        const controller = new SubscriptionController(await context);
+        const canceled = await controller.cancel({
+            hottok,
+            userEmail: email,
+            'actualRecurrenceValue': faker.datatype.number(),
+            'cancellationDate': Date.now(),
+            'dateNextCharge': Date.now(),
+            'productName': faker.name.title(),
+            'subscriberCode': faker.datatype.string(),
+            'subscriptionId': selected.hotmart_id,
+            'subscriptionPlanName': faker.name.title(),
+            'userName': faker.name.findName(),
+        })
+        expect(canceled).toBeDefined();
+        expect(canceled.id).toBeDefined();
+        done();
+    }, 10000)
 });

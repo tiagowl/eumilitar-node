@@ -58,6 +58,7 @@ const fieldsMap: FieldsMap<SubscriptionModel, SubscriptionInterface> = [
     [['hotmart_id', Number], ['code', Number]],
     [['product', Number], ['product', Number]],
     [['registrationDate', val => new Date(val)], ['registrationDate', val => new Date(val)]],
+    [['active', Boolean], ['active', Boolean]],
 ];
 
 export default class SubscriptionRepository extends Repository<SubscriptionModel, SubscriptionInterface> implements SubscriptionRepositoryInterface {
@@ -123,5 +124,25 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
             const parsedData = await this.toEntity(data);
             return new Subscription(parsedData);
         }));
+    }
+
+
+    public async update(id: number, data: Partial<SubscriptionInterface>) {
+        const parsed = await this.toDb(data);
+        const updated = await this.query.where('id', id)
+            .update(parsed).catch(error => {
+                this.logger.error(error);
+                throw { message: 'Erro ao gravar no banco de dados', status: 500 };
+            });
+        if (updated === 0) throw { message: 'Nenhuma inscrição afetada', status: 500 };
+        if (updated > 1) throw { message: 'Mais de um registro afetado', status: 500 };
+        const subscriptionData = await this.query.where('id', id)
+            .first().catch(error => {
+                this.logger.error(error);
+                throw { message: 'Erro ao ler banco de dados', status: 500 };
+            });
+        if (!subscriptionData) throw { message: 'Erro ao ler banco de dados', status: 500 };
+        const parsedData = await this.toEntity(subscriptionData);
+        return new Subscription(parsedData);
     }
 }

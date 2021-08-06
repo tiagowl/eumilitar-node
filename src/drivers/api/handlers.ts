@@ -9,7 +9,7 @@ import EssayInvalidationController from "../../adapters/controllers/EssayInvalid
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
 import SubscriptionController, { OrderData } from "../../adapters/controllers/Subscription";
-import UserController, { CancelData, UserResponse } from "../../adapters/controllers/User";
+import UserController from "../../adapters/controllers/User";
 import { CorrectionInterface } from "../../entities/Correction";
 import { EssayInvalidationInterface, Reason } from "../../entities/EssayInvalidation";
 import { Course } from "../../entities/EssayTheme";
