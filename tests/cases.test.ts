@@ -377,6 +377,7 @@ class SubscriptionTestRepository implements SubscriptionRepositoryInterface {
             }
             return item;
         });
+        // @ts-ignore
         return subscription;
     }
 }

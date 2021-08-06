@@ -64,6 +64,7 @@ const beautyCourse = {
 };
 
 export const allowedUpdateFields = ['corrector', 'status'];
+const correctorPermissions = new Set(['admin', 'corrector']);
 
 export default class EssayCase {
     private repository: EssayRepositoryInterface;
@@ -80,7 +81,7 @@ export default class EssayCase {
         if (!themeData) throw new Error('Nenhum tema ativo para este curso');
         const theme = new EssayTheme(themeData);
         if (!theme.active) throw new Error('Tema inválido');
-        const subscriptions = await this.repository.subscriptions.filter({ user: student.id });
+        const subscriptions = await this.repository.subscriptions.filter({ user: student.id, active: true });
         const hasPermission = await subscriptions.reduce(async (value, subscription) => {
             const permitted = await value;
             const expired = subscription.expiration <= new Date();
@@ -90,11 +91,11 @@ export default class EssayCase {
         }, Promise.resolve(false) as Promise<boolean>);
         if (!hasPermission) throw new Error('Não autorizado');
         const baseFilter = { theme: theme.id, student: data.student };
-        const cantSend = (await this.repository.exists([
+        const cantSend = await this.repository.exists([
             { ...baseFilter, status: 'pending' },
             { ...baseFilter, status: 'revised' },
             { ...baseFilter, status: 'correcting' },
-        ]));
+        ]);
         if (cantSend) throw new Error(`Já foi enviada uma redação do curso "${beautyCourse[data.course]}" para o tema vigente`);
         const created = await this.repository.create({ ...data, theme: theme.id, sendDate: new Date(), status: 'pending' });
         return new Essay(created);
@@ -123,7 +124,7 @@ export default class EssayCase {
         if (typeof data.corrector === 'number') {
             const corrector = await this.repository.users.get({ id: data.corrector });
             if (!corrector) throw new Error('Corretor inválido');
-            if (['admin', 'corrector'].indexOf(corrector.permission) < 0) throw new Error('Não autorizado!');
+            if (!correctorPermissions.has(corrector.permission)) throw new Error('Não autorizado!');
             if (typeof essay.corrector === 'number' && essay.corrector !== data.corrector) {
                 throw new Error('Redação já está em correção');
             }
