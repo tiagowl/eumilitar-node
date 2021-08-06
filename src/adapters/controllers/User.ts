@@ -77,18 +77,4 @@ export default class UserController extends Controller<any> {
             throw { message: error.message || 'Erro ao consultar usuários', status: 500 };
         }
     }
-
-    public async cancel(data: CancelData) {
-        try {
-            const { userEmail } = await this.validate(data, this.cancelSchema) as CancelData;
-            const success = await this.useCase.cancel(userEmail);
-            return { success: !!success };
-        } catch (error) {
-            this.logger.error(error);
-            throw {
-                message: error.message || "Requisição inválida",
-                status: error.status || 400
-            };
-        }
-    }
 }

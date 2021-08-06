@@ -268,32 +268,6 @@ describe('#1 Teste na api do usuário', () => {
         expect(body.length, JSON.stringify(body)).toBeGreaterThan(0);
         done();
     })
-    test('#196 Cancelar usuário', async done => {
-        const hottok = faker.datatype.string();
-        const app = await appFactory(driver, { ...settings, hotmart: { hottok } });
-        const api = supertest(app.server);
-        const token = await authenticate(user, api)
-        const header = `Bearer ${token}`;
-        const { body, status, error } = await api.post('/users/cancellation/')
-            .send({
-                hottok,
-                'actualRecurrenceValue': 335.34,
-                'cancellationDate': Date.now(),
-                'dateNextCharge': faker.date.future(3).getTime(),
-                'productName': user.permission,
-                'subscriberCode': faker.random.alphaNumeric(),
-                'subscriptionId': faker.datatype.number(),
-                'subscriptionPlanName': faker.name.title(),
-                'userEmail': user.email,
-                'userName': user.first_name,
-            });
-        expect(body).toMatchObject({});
-        expect(status, JSON.stringify(error)).toBe(204);
-        const response = await api.get('/users/profile/')
-            .set('Authorization', header);
-        expect(response.body?.status).toBe('inactive');
-        done();
-    })
 })
 
 describe('#2 Testes nos temas', () => {

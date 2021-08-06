@@ -88,12 +88,6 @@ const routes: Route[] = [
         ]
     },
     {
-        path: '/users/cancellation/',
-        handlers: [
-            { handler: handlers.cancelUser, method: 'post' },
-        ]
-    },
-    {
         path: '/subscriptions/',
         handlers: [
             { handler: handlers.createSubscription, method: 'post' },

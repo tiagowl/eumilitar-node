@@ -450,21 +450,6 @@ export function getInvalidation(context: Context) {
     return handler;
 }
 
-export function cancelUser(context: Context): RequestHandler<void, void, CancelData> {
-    return async (req, res) => {
-        try {
-            const controller = new UserController(context);
-            const { success } = await controller.cancel(req.body);
-            if (success) res.status(204).send();
-            else res.status(400);
-        } catch (error) {
-            res.status(error.status || 500).json(error);
-        } finally {
-            res.end();
-        }
-    };
-}
-
 export function createSubscription(context: Context): RequestHandler<void, SubscriptionInterface[], OrderData> {
     return async (req, res) => {
         try {

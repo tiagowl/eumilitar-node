@@ -98,16 +98,6 @@ export default class UserUseCase {
         return this.repository.filter(filter || {});
     }
 
-    public async cancel(userMail: string) {
-        const user = await this.repository.get({ email: userMail });
-        if (!user) throw new Error('Usuário não encontrado');
-        user.status = 'inactive';
-        const updated = await this.repository.update(user.id, user.data);
-        if (updated === 0) throw new Error('Nenhum usuário atualizado');
-        if (updated > 1) throw new Error('Mais de um usuário afetado');
-        return updated;
-    }
-
     public async create(data: UserCreation) {
         return this.repository.save({
             ...data,
