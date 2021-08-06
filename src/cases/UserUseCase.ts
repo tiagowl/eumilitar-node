@@ -111,6 +111,7 @@ export default class UserUseCase {
     public async create(data: UserCreation) {
         return this.repository.save({
             ...data,
+            password: await this.hashPassword(data.password),
             lastModified: new Date(),
             creationDate: new Date(),
         });

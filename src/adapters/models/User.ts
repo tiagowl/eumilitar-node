@@ -173,7 +173,8 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
         try {
             const error = new Error('Usuário não foi salvo');
             const parsedData = await this.toDb(data);
-            const [saved] = await this.query.insert(parsedData);
+            const [saved] = await this.query.insert(parsedData)
+                .onConflict('email').ignore();
             if (typeof saved !== 'number') throw error;
             const recovered = await this.query.where('user_id', saved).first();
             if (!recovered) throw error;
