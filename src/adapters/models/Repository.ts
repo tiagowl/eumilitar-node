@@ -8,7 +8,7 @@ export default class Repository<Model, Entity> {
     protected fieldsMap: FieldsMap<Model, Entity>;
     protected logger: Logger;
     protected driver: Knex;
-    protected context: Context;
+    protected readonly context: Context;
     protected service: (driver: Knex) => Knex.QueryBuilder<Partial<Model>, Model[]>;
 
     constructor(fieldsMap: FieldsMap<Model, Entity>, context: Context, service: (driver: Knex) => Knex.QueryBuilder<Partial<Model>, Model[]>) {

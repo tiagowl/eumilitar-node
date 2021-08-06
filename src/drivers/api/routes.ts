@@ -92,7 +92,13 @@ const routes: Route[] = [
         handlers: [
             { handler: handlers.createSubscription, method: 'post' },
         ]
-    }
+    },
+    {
+        path: '/subscriptions/cancelation/',
+        handlers: [
+            { handler: handlers.cancelSubscription, method: 'post' },
+        ]
+    },
 ];
 
 export default routes;

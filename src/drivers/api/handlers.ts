@@ -8,7 +8,7 @@ import EssayController, { EssayInput, EssayResponse } from "../../adapters/contr
 import EssayInvalidationController from "../../adapters/controllers/EssayInvalidation";
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
-import SubscriptionController, { OrderData } from "../../adapters/controllers/Subscription";
+import SubscriptionController, { CancelData, OrderData } from "../../adapters/controllers/Subscription";
 import UserController from "../../adapters/controllers/User";
 import { CorrectionInterface } from "../../entities/Correction";
 import { EssayInvalidationInterface, Reason } from "../../entities/EssayInvalidation";
@@ -458,9 +458,23 @@ export function createSubscription(context: Context): RequestHandler<void, Subsc
                 ...req.body,
                 'prod': Number(req.body.prod),
             });
-            res.status(200).send(created);
+            res.status(201).json(created);
         } catch (error) {
-            res.status(error.status || 500).send(error);
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    };
+}
+
+export function cancelSubscription(context: Context): RequestHandler<void, SubscriptionInterface, CancelData> {
+    return async (req, res) => {
+        try {
+            const controller = new SubscriptionController(context);
+            const canceled = await controller.cancel(req.body);
+            res.status(200).json(canceled);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
         } finally {
             res.end();
         }

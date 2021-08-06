@@ -7,7 +7,7 @@ import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/
 import { Course } from '../src/entities/EssayTheme';
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
 import settings from '../src/settings';
-import SubscriptionRepository from '../src/adapters/models/Subscription';
+import SubscriptionRepository, { SubscriptionService } from '../src/adapters/models/Subscription';
 import ProductRepository from '../src/adapters/models/Product';
 import qs from 'querystring';
 import UserRepository from '../src/adapters/models/User';
@@ -744,4 +744,31 @@ describe('#6 Inscrições', () => {
         expect(response.body.length).toBeGreaterThan(0);
         done();
     });
+    test('#62 Cancelamento', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const [selected] = await SubscriptionService((await context).driver)
+            .whereIn('user',
+                UserService((await context).driver)
+                    .where('email', email).select('user_id as user')
+            );
+        const response = await api.post('/subscriptions/cancelation/')
+            .type('application/json')
+            .send({
+                hottok,
+                userEmail: email,
+                'actualRecurrenceValue': faker.datatype.number(),
+                'cancellationDate': Date.now(),
+                'dateNextCharge': Date.now(),
+                'productName': faker.name.title(),
+                'subscriberCode': faker.datatype.string(),
+                'subscriptionId': selected.hotmart_id,
+                'subscriptionPlanName': faker.name.title(),
+                'userName': faker.name.findName(),
+            });
+        expect(response.status, JSON.stringify(response.body)).toBe(200);
+        expect(response.body.id).toBe(selected.id);
+        expect(response.body.active).toBeFalsy();
+        done();
+    })
 });
