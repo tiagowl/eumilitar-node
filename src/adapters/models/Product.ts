@@ -42,6 +42,19 @@ export default class ProductRepository extends Repository<ProductModel, ProductI
         super(parserMap, context, ProductService);
     }
 
+    private async writeMessage(filter: Partial<ProductInterface>) {
+        return `Produto não cadastrado: ${JSON.stringify(filter)}`;
+    }
+
+    private async notifyAdmins(filter: Partial<ProductInterface>) {
+        return this.context.smtp.sendMail({
+            to: { email: this.context.settings.messageConfig.adminMail, name: 'Admin' },
+            from: this.context.settings.messageConfig.sender,
+            subject: 'Produto não cadastrado',
+            text: await this.writeMessage(filter),
+        });
+    }
+
     public async get(filter: Partial<ProductInterface>) {
         const parsed = await this.toDb(filter);
         const product = await this.query
@@ -50,7 +63,10 @@ export default class ProductRepository extends Repository<ProductModel, ProductI
                 this.logger.error(error);
                 throw { message: 'Erro ao consultar banco de dados', status: 500 };
             });
-        if (!product) throw { message: 'Produto não encontrado', status: 404 };
+        if (!product) {
+            await this.notifyAdmins(filter);
+            throw { message: 'Produto não encontrado', status: 404 };
+        }
         const entityData = await this.toEntity(product);
         return new Product(entityData);
     }

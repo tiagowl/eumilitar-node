@@ -1,7 +1,7 @@
 import AuthController from '../src/adapters/controllers/Auth';
 import { UserService } from '../src/adapters/models/User';
 import { TokenService } from '../src/adapters/models/Token';
-import { contextFactory, hottok, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, userFactory } from './shortcuts';
+import { contextFactory, hottok, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, userFactory, mails } from './shortcuts';
 import PasswordRecoveryController from '../src/adapters/controllers/PasswordRecovery';
 import settings from '../src/settings';
 import { PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
@@ -654,5 +654,25 @@ describe('#8 Inscrições', () => {
         expect(canceled).toBeDefined();
         expect(canceled.id).toBeDefined();
         done();
-    }, 10000)
+    }, 10000);
+    test('#83 Criação com produto inexistente', async done => {
+        const mailsLength = mails.length;
+        const controller = new SubscriptionController(await context);
+        const productRepository = new ProductRepository(await context);
+        const product = await productRepository.get({ course: 'espcex' });
+        await controller.create({
+            hottok, email,
+            'first_name': faker.name.firstName(),
+            'last_name': faker.name.lastName(),
+            'prod': product.code * 3,
+            'status': 'ACTIVE',
+            'transaction': '4',
+        }).catch((error) => {
+            expect(error).toMatchObject({
+                "message": "Produto não encontrado",
+                "status": 404,
+            });
+        });
+        done();
+    }, 10000);
 });

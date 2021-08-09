@@ -107,7 +107,7 @@ export default class SubscriptionController extends Controller<OrderData> {
             return createdList;
         } catch (error) {
             this.logger.error(error, { data: error?.response?.body });
-            this.notifyAdmins(data, error);
+            await this.notifyAdmins(data, error);
             throw {
                 message: error.message,
                 status: error.status || 400
