@@ -193,7 +193,9 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
             const recovered = await this.query.where('user_id', saved).first();
             if (!recovered) throw error;
             const entityData = await this.toEntity(recovered);
-            return new User(entityData);
+            const entity = new User(entityData);
+            await this.notify(entity);
+            return entity;
         } catch (error) {
             this.logger.error(error);
             throw { message: 'Erro ao salvar no banco de dados', status: 500 };
@@ -211,9 +213,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
             });
         if (!user) throw { message: 'Token inválido', status: 400 };
         const userData = await this.toEntity(user);
-        const entity = new User(userData);
-        await this.notify(entity);
-        return entity;
+        return new User(userData);
     }
 
 }

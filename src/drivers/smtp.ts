@@ -23,13 +23,13 @@ export default function createTransport(settings: any, logger: Logger): Mail {
                     "CustomID": "AppGettingStartedTest"
                 }]
             };
-            logger.info({ to, subject });
+            logger.info(JSON.stringify({ to, subject }));
             return sender
                 .post('send', { 'version': 'v3.1' })
                 .request(data)
                 .catch((error) => {
                     logger.error(error);
-                    logger.info({ to, subject, error });
+                    logger.info(JSON.stringify({ to, subject, error }));
                     throw error;
                 });
         }
