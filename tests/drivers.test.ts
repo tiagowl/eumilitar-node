@@ -8,7 +8,7 @@ import { Course } from '../src/entities/EssayTheme';
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
 import settings from '../src/settings';
 import SubscriptionRepository, { SubscriptionService } from '../src/adapters/models/Subscription';
-import ProductRepository from '../src/adapters/models/Product';
+import ProductRepository, { ProductService } from '../src/adapters/models/Product';
 import qs from 'querystring';
 import UserRepository from '../src/adapters/models/User';
 
@@ -775,6 +775,7 @@ describe('#6 Inscrições', () => {
 
 describe('#7 Produtos', () => {
     const user: UserModel = userFactory();
+    const toDelete: number[] = []
     beforeAll(async (done) => {
         const service = UserService(driver)
             .onConflict('user_id').merge();
@@ -784,6 +785,7 @@ describe('#7 Produtos', () => {
     afterAll(async (done) => {
         const service = UserService(driver);
         await deleteUser(user, service);
+        await ProductService(driver).whereIn('product_id', toDelete).del();
         done();
     });
     test('Criação', async done => {
@@ -803,6 +805,7 @@ describe('#7 Produtos', () => {
         const msg = JSON.stringify(response.body);
         expect(response.status, msg).toBe(201);
         expect(response.body.id, msg).toBeDefined();
+        toDelete.push(response.body.id);
         done();
     });
 });
