@@ -83,7 +83,21 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     }
 
     private async writeMessage(props: UserCreationProps) {
-        return ``;
+        return `Olá ${props.user.firstName}!
+        Aqui estão algumas orientações importantes, a repeito do procedimento para o envio da sua redação:\n
+        ASSISTA AO VÍDEO "COMO ENVIAR SUA REDAÇÃO" QUE ESTÁ POSTADO NO MÓDULO "REDAÇÃO";\n
+        Cadastre sua senha na nossa plataforma de redações
+        Acesse o link para cadastrar: ${props.link}.
+        Nome de usuário: ${props.user.email}
+        Obs.: Este link irá expirar em ${props.expirationTime} horas. Após este prazo você terá que clicar em "Redefinir Senha" nna tela de login.\n
+        Faça o upload do seu texto nos formatos .jpg, .jpeg, .gif, .png
+        Utilize de preferência a aplicativo CAMSCANNER no formato JPG;
+        Só é possível enviar fotos com tamanho máximo de 10 MB;
+        Você conseguirá enviar apenas 2 (dois) arquivos por mês. Não tente enviar o mesmo texto mais de uma vez;
+        Você receberá a correção no mesmo e-mail cadastrado na plataforma num prazo de <strong>ATÉ 2 SEMANAS após o envio</strong>;\n
+        Atenciosamente,
+        Equipe de suporte Eu Militar.
+        `;
     }
 
     private async renderMessage(props: UserCreationProps) {
