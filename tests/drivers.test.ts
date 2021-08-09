@@ -772,3 +772,37 @@ describe('#6 Inscrições', () => {
         done();
     })
 });
+
+describe('#7 Produtos', () => {
+    const user: UserModel = userFactory();
+    beforeAll(async (done) => {
+        const service = UserService(driver)
+            .onConflict('user_id').merge();
+        await saveUser(user, service);
+        done()
+    });
+    afterAll(async (done) => {
+        const service = UserService(driver);
+        await deleteUser(user, service);
+        done();
+    });
+    test('Criação', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const data = {
+            code: faker.datatype.number(),
+            course: 'esa',
+            expirationTime: 30 * 24 * 60 * 60 * 1000,
+            name: faker.company.companyName(),
+        }
+        const token = await authenticate(user, api);
+        const header = `Bearer ${token}`;
+        const response = await api.post('/products/')
+            .set('Authorization', header)
+            .send(data);
+        const msg = JSON.stringify(response.body);
+        expect(response.status, msg).toBe(201);
+        expect(response.body.id, msg).toBeDefined();
+        done();
+    });
+});

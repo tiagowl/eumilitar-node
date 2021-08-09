@@ -8,11 +8,14 @@ import EssayController, { EssayInput, EssayResponse } from "../../adapters/contr
 import EssayInvalidationController from "../../adapters/controllers/EssayInvalidation";
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
+import ProductController from "../../adapters/controllers/Products";
 import SubscriptionController, { CancelData, OrderData } from "../../adapters/controllers/Subscription";
 import UserController from "../../adapters/controllers/User";
+import { ProductCreation } from "../../cases/ProductCase";
 import { CorrectionInterface } from "../../entities/Correction";
 import { EssayInvalidationInterface, Reason } from "../../entities/EssayInvalidation";
 import { Course } from "../../entities/EssayTheme";
+import { ProductInterface } from "../../entities/Product";
 import { SubscriptionInterface } from "../../entities/Subscription";
 import User, { AccountPermission, UserInterface } from "../../entities/User";
 import { Context } from "../interfaces";
@@ -479,4 +482,19 @@ export function cancelSubscription(context: Context): RequestHandler<void, Subsc
             res.end();
         }
     };
+}
+
+export function createProduct(context: Context) {
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin']));
+    return handler.use(async (req, res) => {
+        try {
+            const controller = new ProductController(context);
+            const created = await controller.create(req.body);
+            res.status(201).json(created);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    });
 }

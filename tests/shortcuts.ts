@@ -83,7 +83,7 @@ export async function saveUser(user: any, service: Knex.QueryBuilder) {
 
 export async function deleteUser(user: any, service: Knex.QueryBuilder) {
     await service
-        .where({ user_id: user.user_id })
+        .where('user_id', user.user_id)
         .del().delete();
 }
 
