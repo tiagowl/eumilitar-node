@@ -20,8 +20,9 @@ import CorrectionController from '../src/adapters/controllers/Correction';
 import UserController from '../src/adapters/controllers/User';
 import createLogger from '../src/drivers/logger';
 import SubscriptionRepository, { SubscriptionService } from '../src/adapters/models/Subscription';
-import ProductRepository from '../src/adapters/models/Product';
+import ProductRepository, { ProductService } from '../src/adapters/models/Product';
 import SubscriptionController from '../src/adapters/controllers/Subscription';
+import ProductController from '../src/adapters/controllers/Products';
 
 afterAll(async (done) => {
     await driver.destroy();
@@ -675,4 +676,26 @@ describe('#8 Inscrições', () => {
         });
         done();
     }, 10000);
+});
+
+
+describe('#9 Produtos', () => {
+    const toRemove: number[] = [];
+    beforeAll(async done => {
+        await ProductService((await context).driver)
+            .whereIn('id', toRemove).del();
+        done();
+    });
+    test('Criação', async done => {
+        const controller = new ProductController(await context);
+        const created = await controller.create({
+            code: faker.datatype.number(),
+            course: 'esa',
+            expirationTime: 30 * 24 * 60 * 60 * 1000,
+            name: faker.company.companyName(),
+        });
+        toRemove.push(created.id);
+        expect(created.id).toBeDefined();
+        done();
+    });
 });

@@ -1,6 +1,6 @@
 import { Knex } from "knex";
 import { Logger } from "winston";
-import { ProductRepositoryInterface } from "../../cases/ProductCase";
+import { ProductCreation, ProductRepositoryInterface } from "../../cases/ProductCase";
 import Product, { ProductInterface, Course } from "../../entities/Product";
 import { Context } from "../interfaces";
 import Repository, { FieldsMap } from "./Repository";
@@ -68,6 +68,24 @@ export default class ProductRepository extends Repository<ProductModel, ProductI
             throw { message: 'Produto não encontrado', status: 404 };
         }
         const entityData = await this.toEntity(product);
+        return new Product(entityData);
+    }
+
+    public async create(data: ProductCreation) {
+        const parsed = await this.toDb(data);
+        const err = { message: 'Erro ao salvar produto', status: 500 };
+        const [id] = await this.query.insert(parsed).catch(error => {
+            this.logger.error(error);
+            throw err;
+        });
+        if (typeof id !== 'number') throw err;
+        const productData = await this.query.where('product_id', id).first()
+            .catch((error) => {
+                this.logger.error(error);
+                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+            });
+        if (!productData) throw err;
+        const entityData = await this.toEntity(productData);
         return new Product(entityData);
     }
 }
