@@ -10,7 +10,7 @@ import EssayInvalidation from '../src/entities/EssayInvalidation';
 import EssayInvalidationCase, { EssayInvalidationRepositoryInterface } from '../src/cases/EssayInvalidation';
 import Correction, { CorrectionInterface } from '../src/entities/Correction';
 import CorrectionCase, { CorrectionInsertionData, CorrectionRepositoryInterface } from '../src/cases/Correction';
-import ProductCase, { ProductRepositoryInterface } from '../src/cases/ProductCase';
+import ProductCase, { ProductCreation, ProductRepositoryInterface } from '../src/cases/ProductCase';
 import Product, { ProductInterface } from '../src/entities/Product';
 import SubscriptionCase, { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from '../src/cases/Subscription';
 import Subscription, { SubscriptionInterface } from '../src/entities/Subscription';
@@ -327,6 +327,15 @@ class ProductTestRepository implements ProductRepositoryInterface {
         return this.database.find((correction => (Object.entries(filter) as [keyof ProductInterface, any][])
             .reduce((valid, [key, value]) => valid && (correction[key] === value), true as boolean))
         ) as Product;
+    }
+
+    public async create(data: ProductCreation) {
+        const product = new Product({
+            id: this.database.length,
+            ...data,
+        });
+        this.database.push(product);
+        return product;
     }
 }
 
@@ -665,6 +674,22 @@ describe('#7 Assinaturas', () => {
         const canceled = await useCase.cancel(1);
         expect(canceled).toBeInstanceOf(Subscription);
         expect(canceled.active).toBeFalsy();
+        done();
+    });
+});
+
+describe('#8 Produtos', () => {
+    test('Criação', async done => {
+        const repository = new ProductTestRepository();
+        const useCase = new ProductCase(repository);
+        const product = await useCase.create({
+            code: faker.datatype.number(),
+            course: 'esa',
+            expirationTime: 30 * 24 * 60 * 60 * 1000,
+            name: faker.company.companyName(),
+        });
+        expect(product).toBeInstanceOf(Product);
+        expect(product.id).toBeDefined();
         done();
     });
 });
