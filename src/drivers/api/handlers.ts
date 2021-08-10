@@ -498,3 +498,18 @@ export function createProduct(context: Context) {
         }
     });
 }
+
+export function listProducts(context: Context) {
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin']));
+    return handler.use(async (_req, res) => {
+        try {
+            const controller = new ProductController(context);
+            const products = await controller.list();
+            res.status(200).json(products);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    });
+}

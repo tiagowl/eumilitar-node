@@ -103,6 +103,7 @@ const routes: Route[] = [
         path: '/products/',
         handlers: [
             { handler: handlers.createProduct, method: 'post' },
+            { handler: handlers.listProducts, method: 'get' },
         ]
     }
 ];

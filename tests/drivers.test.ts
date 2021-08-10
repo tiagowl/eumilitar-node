@@ -808,4 +808,16 @@ describe('#7 Produtos', () => {
         toDelete.push(response.body.id);
         done();
     });
+    test('Listagem', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const token = await authenticate(user, api);
+        const header = `Bearer ${token}`;
+        const response = await api.get('/products/')
+            .set('Authorization', header);
+        expect(response.status).toBe(200);
+        expect(response.body).toBeInstanceOf(Array);
+        expect(response.body.length).toBeGreaterThan(0);
+        done();
+    });
 });
