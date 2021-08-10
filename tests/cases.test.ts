@@ -337,6 +337,14 @@ class ProductTestRepository implements ProductRepositoryInterface {
         this.database.push(product);
         return product;
     }
+
+    public async filter(filter: Partial<ProductInterface>) {
+        const fields = Object.entries(filter) as [keyof ProductInterface, any][];
+        if (!fields.length) return this.database;
+        return this.database.filter(item => (
+            !!fields.filter(([key, value]) => item[key] === value).length
+        ))
+    }
 }
 
 // tslint:disable-next-line
@@ -692,4 +700,15 @@ describe('#8 Produtos', () => {
         expect(product.id).toBeDefined();
         done();
     });
+    test('Listagem', async done => {
+        const repository = new ProductTestRepository();
+        const useCase = new ProductCase(repository);
+        const products = await useCase.list({ 'course': 'esa' });
+        expect(products).toBeInstanceOf(Array);
+        products.forEach(product => {
+            expect(product).toBeInstanceOf(Product);
+            expect(product.course).toBe('esa');
+        });
+        done();
+    })
 });

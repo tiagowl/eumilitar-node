@@ -3,12 +3,12 @@ import ProductCase, { ProductCreation } from '../../cases/ProductCase';
 import * as yup from 'yup';
 import { Context } from "../interfaces";
 import ProductRepository from "../models/Product";
-import Product from "../../entities/Product";
+import Product, { courses } from "../../entities/Product";
 
 const schema = yup.object().shape({
     name: yup.string().required('O campo "nome" é obrigatório'),
     code: yup.number().required('O campo "código" é obrigatório'),
-    course: yup.string().required('O campo "curso" é obrigatório').is(['esa', 'espcex']),
+    course: yup.string().required('O campo "curso" é obrigatório').is(courses),
     expirationTime: yup.number().required('O campo "prazo de expiração" é obrigatório'),
 });
 

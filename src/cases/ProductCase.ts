@@ -4,6 +4,7 @@ import Product, { ProductInterface } from "../entities/Product";
 export interface ProductRepositoryInterface {
     get: (filter: Partial<ProductInterface>) => Promise<Product>;
     create: (data: ProductCreation) => Promise<Product>;
+    filter: (filter: Partial<ProductInterface>) => Promise<Product[]>;
 }
 
 export interface ProductCreation {
@@ -26,5 +27,9 @@ export default class ProductCase {
 
     public async create(data: ProductCreation) {
         return this.repository.create(data);
+    }
+
+    public async list(filter: Partial<ProductInterface>) {
+        return this.repository.filter(filter);
     }
 }

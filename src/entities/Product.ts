@@ -8,6 +8,8 @@ export interface ProductInterface {
     expirationTime: number;
 }
 
+export const courses: Course[] = ['esa', 'espcex'];
+
 export default class Product implements ProductInterface {
     readonly id: number;
     public name: string;
