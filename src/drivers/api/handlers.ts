@@ -513,3 +513,19 @@ export function listProducts(context: Context) {
         }
     });
 }
+
+export function updateProduct(context: Context) {
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin']));
+    return handler.use(async (req, res) => {
+        try {
+            const { id } = req.params;
+            const controller = new ProductController(context);
+            const product = await controller.fullUpdate(Number(id), req.body);
+            res.status(200).json(product);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    });
+}

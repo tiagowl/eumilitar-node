@@ -820,4 +820,23 @@ describe('#7 Produtos', () => {
         expect(response.body.length).toBeGreaterThan(0);
         done();
     });
+    test('Atualização', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const token = await authenticate(user, api);
+        const header = `Bearer ${token}`;
+        const [id] = toDelete;
+        const data = {
+            code: faker.datatype.number(),
+            course: 'espcex',
+            expirationTime: 8 * 24 * 60 * 60 * 1000,
+            name: faker.company.companyName(),
+        }
+        const response = await api.put(`/products/${id}/`)
+            .send(data)
+            .set('Authorization', header);
+        expect(response.status, JSON.stringify(response.body)).toBe(200);
+        expect({ ...data, id }).toMatchObject(response.body);
+        done();
+    });
 });
