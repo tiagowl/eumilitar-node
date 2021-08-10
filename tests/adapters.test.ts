@@ -20,9 +20,10 @@ import CorrectionController from '../src/adapters/controllers/Correction';
 import UserController from '../src/adapters/controllers/User';
 import createLogger from '../src/drivers/logger';
 import SubscriptionRepository, { SubscriptionService } from '../src/adapters/models/Subscription';
-import ProductRepository, { ProductService } from '../src/adapters/models/Product';
+import ProductRepository, { ProductModel, ProductService } from '../src/adapters/models/Product';
 import SubscriptionController from '../src/adapters/controllers/Subscription';
 import ProductController from '../src/adapters/controllers/Products';
+import { ProductCreation } from '../src/cases/ProductCase';
 
 afterAll(async (done) => {
     await driver.destroy();
@@ -681,11 +682,22 @@ describe('#8 Inscrições', () => {
 
 describe('#9 Produtos', () => {
     const toRemove: number[] = [];
-    beforeAll(async done => {
-        await ProductService((await context).driver)
-            .whereIn('id', toRemove).del();
+    afterAll(async done => {
+        await ProductService(driver)
+            .whereIn('product_id', toRemove).del();
         done();
-    });
+    }, 10000);
+    beforeAll(async done => {
+        const product = {
+            'course_tag': 2,
+            'expiration_time': faker.datatype.number(),
+            'id_hotmart': faker.datatype.number(),
+            'product_name': faker.name.title(),
+        }
+        const [id] = await ProductService(driver).insert(product);
+        toRemove.push(id);
+        done();
+    }, 10000);
     test('Criação', async done => {
         const controller = new ProductController(await context);
         const created = await controller.create({
@@ -697,7 +709,7 @@ describe('#9 Produtos', () => {
         toRemove.push(created.id);
         expect(created.id).toBeDefined();
         done();
-    });
+    }, 10000);
     test('Listagem', async done => {
         const controller = new ProductController(await context);
         const products = await controller.list();
@@ -707,5 +719,21 @@ describe('#9 Produtos', () => {
         });
         expect(products.length).toBeGreaterThan(0);
         done();
-    })
+    }, 10000);
+    test('Atualização', async done => {
+        const controller = new ProductController(await context);
+        const [product] = await controller.list();
+        const data: ProductCreation = {
+            code: faker.datatype.number(),
+            course: 'esa',
+            expirationTime: 30 * 24 * 60 * 60 * 1000,
+            name: faker.company.companyName(),
+        };
+        const updated = await controller.fullUpdate(product.id, data);
+        expect(updated.id).toBe(product.id);
+        (Object.entries(data) as [keyof typeof updated, any][]).forEach(([key, value]) => {
+            expect(updated[key]).toBe(value);
+        });
+        done();
+    }, 10000);
 });

@@ -48,4 +48,16 @@ export default class ProductController extends Controller<ProductCreation> {
             throw { message: error.message, status: 500 };
         }
     }
+
+    public async fullUpdate(id: number, data: ProductCreation) {
+        try {
+            const validated = await this.validate(data);
+            const product = await this.useCase.update(id, validated);
+            return this.parseEntity(product);
+        } catch (error) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: error.message, status: 500 };
+        }
+    }
 }

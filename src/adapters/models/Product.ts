@@ -101,4 +101,16 @@ export default class ProductRepository extends Repository<ProductModel, ProductI
             return new Product(data);
         }));
     }
+
+    public async update(id: number, data: Partial<ProductInterface>) {
+        const parsed = await this.toDb(data);
+        const updated = await this.query.where('product_id', id).update(parsed)
+            .catch(error => {
+                this.logger.error(error);
+                throw { message: 'Erro ao atualizar produto', status: 500 };
+            });
+        if (updated > 1) throw { message: `${updated} registros afetados`, status: 500 };
+        if (updated === 0) throw { message: 'Erro ao atualizar produto', status: 500 };
+        return this.get({ id: data.id || id });
+    }
 }
