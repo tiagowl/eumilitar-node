@@ -37,4 +37,15 @@ export default class ProductController extends Controller<ProductCreation> {
             throw { message: error.message, status: 400 };
         }
     }
+
+    public async list() {
+        try {
+            const products = await this.useCase.list({});
+            return Promise.all(products.map(async product => this.parseEntity(product)));
+        } catch (error) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: error.message, status: 500 };
+        }
+    }
 }

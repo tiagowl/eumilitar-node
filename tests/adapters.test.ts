@@ -698,4 +698,14 @@ describe('#9 Produtos', () => {
         expect(created.id).toBeDefined();
         done();
     });
+    test('Listagem', async done => {
+        const controller = new ProductController(await context);
+        const products = await controller.list();
+        expect(products).toBeInstanceOf(Array);
+        products.forEach(product => {
+            expect(product).toBeDefined();
+        });
+        expect(products.length).toBeGreaterThan(0);
+        done();
+    })
 });

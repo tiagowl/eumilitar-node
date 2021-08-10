@@ -88,4 +88,17 @@ export default class ProductRepository extends Repository<ProductModel, ProductI
         const entityData = await this.toEntity(productData);
         return new Product(entityData);
     }
+
+    public async filter(filter: Partial<ProductInterface>) {
+        const parsed = await this.toDb(filter);
+        const filtered = await this.query.where(parsed)
+            .catch(error => {
+                this.logger.error(error);
+                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+            });
+        return Promise.all(filtered.map(async item => {
+            const data = await this.toEntity(item);
+            return new Product(data);
+        }));
+    }
 }
