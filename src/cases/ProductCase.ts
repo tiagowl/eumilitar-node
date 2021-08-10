@@ -5,6 +5,7 @@ export interface ProductRepositoryInterface {
     get: (filter: Partial<ProductInterface>) => Promise<Product>;
     create: (data: ProductCreation) => Promise<Product>;
     filter: (filter: Partial<ProductInterface>) => Promise<Product[]>;
+    update: (id: number, data: Partial<ProductInterface>) => Promise<Product>;
 }
 
 export interface ProductCreation {
@@ -31,5 +32,8 @@ export default class ProductCase {
 
     public async list(filter: Partial<ProductInterface>) {
         return this.repository.filter(filter);
+    }
+    public async update(id: number, data: Partial<ProductInterface>) {
+        return this.repository.update(id, data);
     }
 }

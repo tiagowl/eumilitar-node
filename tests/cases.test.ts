@@ -345,6 +345,19 @@ class ProductTestRepository implements ProductRepositoryInterface {
             !!fields.filter(([key, value]) => item[key] === value).length
         ))
     }
+
+    public async update(id: number, data: Partial<ProductInterface>) {
+        let product: Product;
+        this.database = this.database.map((item) => {
+            if (item.id === id) {
+                Object.assign(item, data);
+                product = item;
+            }
+            return item;
+        });
+        // @ts-ignore
+        return product;
+    }
 }
 
 // tslint:disable-next-line
@@ -709,6 +722,16 @@ describe('#8 Produtos', () => {
             expect(product).toBeInstanceOf(Product);
             expect(product.course).toBe('esa');
         });
+        done();
+    });
+    test('Atualização', async done => {
+        const repository = new ProductTestRepository();
+        const useCase = new ProductCase(repository);
+        const [product] = productsDatabase;
+        expect(product).toBeDefined();
+        const updated = await useCase.update(product.id, { expirationTime: 55 });
+        expect(product.id).toBe(updated.id);
+        expect(updated.expirationTime).toBe(55);
         done();
     })
 });
