@@ -29,7 +29,7 @@ async function authenticate(user: UserModel, api: supertest.SuperTest<supertest.
         .send(credentials)
         .set('User-Agent', faker.internet.userAgent());
     const { token } = auth.body;
-    expect(token).toBeDefined();
+    expect(token, JSON.stringify(auth.body)).toBeDefined();
     expect(typeof token).toBe('string');
     return token;
 }
@@ -723,6 +723,13 @@ describe('#6 Inscrições', () => {
         await repository.query.where('email', email).del();
         done();
     };
+    const student: UserModel = userFactory({ permission: 6 });
+    beforeAll(async (done) => {
+        const service = UserService(driver)
+            .onConflict('user_id').merge();
+        await saveUser(student, service);
+        done()
+    }, 100000)
     beforeAll(deleteAll);
     afterAll(deleteAll);
     test('#61 Criação', async done => {
@@ -770,7 +777,19 @@ describe('#6 Inscrições', () => {
         expect(response.body.id).toBe(selected.id);
         expect(response.body.active).toBeFalsy();
         done();
-    })
+    });
+    test('Listagem', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        if(!student) throw new Error('Sem usuário');
+        const token = await authenticate(student, api)
+        const header = `Bearer ${token}`;
+        const response = await api.get('/subscriptions/')
+            .set('Authorization', header);
+        expect(response.status, JSON.stringify(response.body)).toBe(200);
+        expect(response.body).toBeInstanceOf(Array);
+        done();
+    });
 });
 
 describe('#7 Produtos', () => {

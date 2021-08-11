@@ -529,3 +529,18 @@ export function updateProduct(context: Context) {
         }
     });
 }
+
+export function listSubscriptions(context: Context) {
+    const handler = express.Router({ mergeParams: true }).use(isAuthenticated(context));
+    return handler.use(async (req, res) => {
+        try {
+            const controller = new SubscriptionController(context);
+            const subscriptions = await controller.mySubscriptions(req.user?.id || 0);
+            res.status(200).json(subscriptions);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    });
+}

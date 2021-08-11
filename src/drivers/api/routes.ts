@@ -91,6 +91,7 @@ const routes: Route[] = [
         path: '/subscriptions/',
         handlers: [
             { handler: handlers.createSubscription, method: 'post' },
+            { handler: handlers.listSubscriptions, method: 'get' },
         ]
     },
     {
