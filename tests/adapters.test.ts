@@ -677,6 +677,18 @@ describe('#8 Inscrições', () => {
         });
         done();
     }, 10000);
+    test('#84 Listagem', async done => {
+        const controller = new SubscriptionController(await context);
+        const user = await UserService(driver).where('email', email).first();
+        expect(user).toBeDefined();
+        const subscriptions = await controller.mySubscriptions(user?.user_id || 0);
+        expect(subscriptions).toBeInstanceOf(Array);
+        subscriptions.forEach(subscription => {
+            expect(subscription.user).toBe(user?.user_id);
+        });
+        expect(subscriptions.length).toBeGreaterThan(0);
+        done();
+    });
 });
 
 
