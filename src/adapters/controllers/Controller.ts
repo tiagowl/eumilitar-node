@@ -9,10 +9,10 @@ export interface ResponseError {
 }
 
 export default class Controller<Fields> {
-    protected schema: ObjectSchema<any>;
-    protected driver: Knex;
-    protected logger: Logger;
-    protected context: Context;
+    protected readonly schema: ObjectSchema<any>;
+    protected readonly driver: Knex;
+    protected readonly logger: Logger;
+    protected readonly context: Context;
 
     constructor(context: Context, schema: ObjectSchema<any>) {
         const { driver, logger } = context;

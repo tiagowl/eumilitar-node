@@ -5,11 +5,11 @@ import { Context } from "../interfaces";
 export type FieldsMap<Model = any, Entity = any> = [[keyof Model, (val: any) => any], [keyof Entity, (val: any) => any]][];
 
 export default class Repository<Model, Entity> {
-    protected fieldsMap: FieldsMap<Model, Entity>;
-    protected logger: Logger;
-    protected driver: Knex;
+    protected readonly fieldsMap: FieldsMap<Model, Entity>;
+    protected readonly logger: Logger;
+    protected readonly driver: Knex;
     protected readonly context: Context;
-    protected service: (driver: Knex) => Knex.QueryBuilder<Partial<Model>, Model[]>;
+    protected readonly service: (driver: Knex) => Knex.QueryBuilder<Partial<Model>, Model[]>;
 
     constructor(fieldsMap: FieldsMap<Model, Entity>, context: Context, service: (driver: Knex) => Knex.QueryBuilder<Partial<Model>, Model[]>) {
         const { logger, driver } = context;
