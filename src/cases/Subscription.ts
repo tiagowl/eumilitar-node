@@ -71,4 +71,8 @@ export default class SubscriptionCase {
         if (!subscription) throw new Error('Inscrição não encontrada');
         return this.repository.update(subscription.id, { active: false });
     }
+
+    public async filter(filter: Partial<SubscriptionInterface>) {
+        return this.repository.filter(filter);
+    }
 }

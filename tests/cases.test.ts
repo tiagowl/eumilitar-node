@@ -697,6 +697,16 @@ describe('#7 Assinaturas', () => {
         expect(canceled.active).toBeFalsy();
         done();
     });
+    test('Listagem', async done => {
+        const repository = new SubscriptionTestRepository();
+        const useCase = new SubscriptionCase(repository);
+        const subscriptions = await useCase.filter({ 'active': true });
+        expect(subscriptions).toBeInstanceOf(Array);
+        subscriptions.forEach(subscription => {
+            expect(subscription).toBeInstanceOf(Subscription);
+        });
+        done();
+    })
 });
 
 describe('#8 Produtos', () => {
