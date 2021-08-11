@@ -29,9 +29,9 @@ export interface CancelData {
 }
 
 export default class SubscriptionController extends Controller<OrderData> {
-    private repository: SubscriptionRepository;
-    private useCase: SubscriptionCase;
-    private cancelSchema: yup.ObjectSchema<any>;
+    private readonly repository: SubscriptionRepository;
+    private readonly useCase: SubscriptionCase;
+    private readonly cancelSchema: yup.ObjectSchema<any>;
 
     constructor(context: Context) {
         const { settings: { hotmart: { hottok } } } = context;
@@ -124,6 +124,18 @@ export default class SubscriptionController extends Controller<OrderData> {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: 'Erro ao cancelar inscrição', status: 500 };
+        }
+    }
+
+    public async mySubscriptions(userId: number) {
+        try {
+            await yup.number().required('É preciso informar o usuário')
+                .positive().min(0).validate(userId);
+            const subscriptions = await this.useCase.filter({ user: userId });
+            return Promise.all(subscriptions.map(async subscription => this.parseEntity(subscription)));
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: error.message, status: error.status || 400 };
         }
     }
 }
