@@ -16,7 +16,7 @@ export interface ProductCreation {
 }
 
 export default class ProductCase {
-    private repository: ProductRepositoryInterface;
+    private readonly repository: ProductRepositoryInterface;
 
     constructor(repository: ProductRepositoryInterface) {
         this.repository = repository;

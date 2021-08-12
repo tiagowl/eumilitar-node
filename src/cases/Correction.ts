@@ -38,7 +38,7 @@ export interface CorrectionRepositoryInterface {
 }
 
 export default class CorrectionCase {
-    private repository: CorrectionRepositoryInterface;
+    private readonly repository: CorrectionRepositoryInterface;
 
     constructor(repository: CorrectionRepositoryInterface) {
         this.repository = repository;

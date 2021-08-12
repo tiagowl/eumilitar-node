@@ -19,7 +19,7 @@ export interface EssayInvalidationRepositoryInterface {
 }
 
 export default class EssayInvalidationCase {
-    private repository: EssayInvalidationRepositoryInterface;
+    private readonly repository: EssayInvalidationRepositoryInterface;
 
     constructor(repository: EssayInvalidationRepositoryInterface) {
         this.repository = repository;

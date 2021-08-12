@@ -1,5 +1,4 @@
 import express, { RequestHandler, Request } from "express";
-import { Knex } from "knex";
 import AuthController, { AuthInterface, AuthResponse } from "../../adapters/controllers/Auth";
 import ChangePasswordController, { ChangePasswordInterface, ChangePasswordResponse } from "../../adapters/controllers/ChangePassword";
 import CheckPasswordToken, { CheckPasswordInterface, CheckedTokenInterface } from "../../adapters/controllers/CheckPasswordToken";
@@ -11,13 +10,11 @@ import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecovery
 import ProductController from "../../adapters/controllers/Products";
 import SubscriptionController, { CancelData, OrderData } from "../../adapters/controllers/Subscription";
 import UserController from "../../adapters/controllers/User";
-import { ProductCreation } from "../../cases/ProductCase";
 import { CorrectionInterface } from "../../entities/Correction";
 import { EssayInvalidationInterface, Reason } from "../../entities/EssayInvalidation";
 import { Course } from "../../entities/EssayTheme";
-import { ProductInterface } from "../../entities/Product";
 import { SubscriptionInterface } from "../../entities/Subscription";
-import User, { AccountPermission, UserInterface } from "../../entities/User";
+import { AccountPermission, UserInterface } from "../../entities/User";
 import { Context } from "../interfaces";
 
 interface EssayThemeRequest {

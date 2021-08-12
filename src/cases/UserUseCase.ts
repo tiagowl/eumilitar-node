@@ -43,7 +43,7 @@ export interface UserRepositoryInterface {
 export default class UserUseCase {
     #saltRounds: number = 10;
     #user: User | undefined | null;
-    private repository: UserRepositoryInterface;
+    private readonly repository: UserRepositoryInterface;
 
     constructor(repository: UserRepositoryInterface) {
         this.repository = repository;

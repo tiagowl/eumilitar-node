@@ -30,7 +30,7 @@ export interface SubscriptionInsertionInterface {
 }
 
 export default class SubscriptionCase {
-    private repository: SubscriptionRepositoryInterface;
+    private readonly repository: SubscriptionRepositoryInterface;
 
     constructor(repository: SubscriptionRepositoryInterface) {
         this.repository = repository;

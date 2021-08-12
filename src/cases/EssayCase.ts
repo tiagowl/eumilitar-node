@@ -67,7 +67,7 @@ export const allowedUpdateFields = ['corrector', 'status'];
 const correctorPermissions = new Set(['admin', 'corrector']);
 
 export default class EssayCase {
-    private repository: EssayRepositoryInterface;
+    private readonly repository: EssayRepositoryInterface;
 
     constructor(repository: EssayRepositoryInterface) {
         this.repository = repository;

@@ -37,7 +37,7 @@ export interface EssayThemeRepositoryInterface {
 }
 
 export default class EssayThemeCase {
-    private repository: EssayThemeRepositoryInterface;
+    private readonly repository: EssayThemeRepositoryInterface;
 
     constructor(repository: EssayThemeRepositoryInterface) {
         this.repository = repository;
