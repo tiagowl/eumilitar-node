@@ -376,6 +376,7 @@ describe('#4 Redações', () => {
             registrationDate: new Date(),
             user: user.user_id,
             code: faker.datatype.number(),
+            course: 'esa',
         })
         const data: EssayInput = {
             // @ts-ignore

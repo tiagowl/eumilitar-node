@@ -446,6 +446,7 @@ describe('#3 Redações', () => {
             registrationDate: new Date(),
             user: student.user_id,
             code: faker.datatype.number(),
+            course: 'espcex',
         });
         const token = await authenticate(student, api)
         const header = `Bearer ${token}`;
