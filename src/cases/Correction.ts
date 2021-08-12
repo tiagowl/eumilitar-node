@@ -1,4 +1,5 @@
 import Correction, { CorrectionInterface } from "../entities/Correction";
+import Essay from "../entities/Essay";
 import { EssayRepositoryInterface } from "./EssayCase";
 import { UserRepositoryInterface } from "./UserUseCase";
 
@@ -44,17 +45,32 @@ export default class CorrectionCase {
         this.repository = repository;
     }
 
-    public async create({ corrector, ...data }: CorrectionData) {
+    private async checkCorrector(corrector: number) {
         const correctorData = await this.repository.users.get({ id: corrector });
         if (!correctorData) throw new Error('Corretor não encontrado');
-        if (['admin', 'corrector'].indexOf(correctorData.permission) < 0) throw new Error('Não autorizado');
-        const essay = await this.repository.essays.get({ id: data.essay });
+        const permissions = new Set(['admin', 'corrector']);
+        if (!permissions.has(correctorData.permission)) throw new Error('Não autorizado');
+        return correctorData;
+    }
+
+    private async getEssay(id: number) {
+        const essay = await this.repository.essays.get({ id });
         if (!essay) throw new Error('Redação não encontrada');
         if (essay.status !== 'correcting') throw new Error('Redação não está em correção');
+        return essay;
+    }
+
+    private async updateEssayState(essay: Essay) {
+        essay.status = 'revised';
+        return this.repository.essays.update(essay.id, essay.data);
+    }
+
+    public async create({ corrector, ...data }: CorrectionData) {
+        const correctorData = await this.checkCorrector(corrector);
+        const essay = await this.getEssay(data.essay);
         if (correctorData.id !== essay.corrector) throw new Error('Não autorizado');
         const correction = await this.repository.create({ ...data, correctionDate: new Date() });
-        essay.status = 'revised';
-        await this.repository.essays.update(essay.id, essay.data);
+        await this.updateEssayState(essay);
         return correction;
     }
 
