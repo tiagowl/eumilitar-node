@@ -5,10 +5,10 @@ import getMiddlewares from './middlewares';
 
 
 export default class Application {
-    private _server: Express;
-    private routes: Route[];
-    private middlewares: RequestHandler[];
-    private context: Context;
+    private readonly _server: Express;
+    private readonly routes: Route[];
+    private readonly middlewares: RequestHandler[];
+    private readonly context: Context;
 
     constructor(context: Context) {
         this._server = express();

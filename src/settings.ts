@@ -1,8 +1,7 @@
 import path from 'path';
 import { config } from 'dotenv';
-import { transports, format, Logger } from 'winston';
+import { transports, format } from 'winston';
 import { Settings } from './drivers/interfaces';
-import winston from 'winston/lib/winston/config';
 
 config({ path: path.resolve(__dirname, "..", ".env") });
 
