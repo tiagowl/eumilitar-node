@@ -2,6 +2,7 @@ import Subscription, { SubscriptionInterface } from "../entities/Subscription";
 import { ProductRepositoryInterface } from "./ProductCase";
 import UserUseCase, { UserRepositoryInterface } from "./UserUseCase";
 import crypto from 'crypto';
+import { Course } from "../entities/Product";
 
 export interface SubscriptionRepositoryInterface {
     create: (data: SubscriptionInsertionInterface) => Promise<Subscription>;
@@ -25,6 +26,7 @@ export interface SubscriptionInsertionInterface {
     registrationDate: Date;
     product: number;
     code: number;
+    course: Course;
 }
 
 export default class SubscriptionCase {
@@ -63,6 +65,7 @@ export default class SubscriptionCase {
             registrationDate: new Date(),
             product: product.id,
             code: data.code,
+            course: product.course,
         });
     }
 

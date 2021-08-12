@@ -128,6 +128,7 @@ test('Inscrições', () => {
             registrationDate: faker.date.past(),
             code: faker.datatype.number(),
             active: true,
+            course: 'esa',
         })
     }).not.toThrowError();
 })

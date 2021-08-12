@@ -17,19 +17,20 @@ const courseMap: [Course, number][] = [
     ['esa', 2],
     ['espcex', 3],
 ];
+
+export const courseTagParser = (val: Course) => (
+    Object.fromEntries(courseMap)[val]
+);
+export const courseParser = (val: 2 | 3) => {
+    const parsed = courseMap.find(([_, item]) => item === val);
+    if (!parsed) return 'blank';
+    return parsed[0];
+};
+
 const parserMap: FieldsMap<ProductModel, ProductInterface> = [
     [['product_id', Number], ['id', Number]],
     [['product_name', String], ['name', String]],
-    [
-        ['course_tag', val => (
-            Object.fromEntries(courseMap)[val]
-        )],
-        ['course', val => {
-            const parsed = courseMap.find(([_, item]) => item === val);
-            if (!parsed) return 'blank';
-            return parsed[0];
-        }]
-    ],
+    [['course_tag', courseTagParser], ['course', courseParser]],
     [['id_hotmart', Number], ['code', Number]],
     [['expiration_time', Number], ['expirationTime', Number]]
 ];

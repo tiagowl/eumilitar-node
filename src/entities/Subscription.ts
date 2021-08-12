@@ -1,3 +1,5 @@
+import { Course } from "./Product";
+
 export interface SubscriptionInterface {
     id: number;
     product: number;
@@ -6,6 +8,7 @@ export interface SubscriptionInterface {
     registrationDate: Date;
     code: number;
     active: boolean;
+    course: Course;
 }
 
 export default class Subscription implements SubscriptionInterface {
@@ -16,6 +19,7 @@ export default class Subscription implements SubscriptionInterface {
     public registrationDate: Date;
     public code: number;
     public active: boolean;
+    public course: Course;
 
     constructor(data: SubscriptionInterface) {
         this.id = data.id;
@@ -25,5 +29,6 @@ export default class Subscription implements SubscriptionInterface {
         this.registrationDate = data.registrationDate;
         this.code = data.code;
         this.active = data.active;
+        this.course = data.course;
     }
 }

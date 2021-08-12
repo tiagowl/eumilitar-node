@@ -375,6 +375,7 @@ class SubscriptionTestRepository implements SubscriptionRepositoryInterface {
             product: id,
             code: id,
             active: true,
+            course: 'esa'
         }));
         this.users = new UserTestRepository(userDatabase);
         this.products = new ProductTestRepository();

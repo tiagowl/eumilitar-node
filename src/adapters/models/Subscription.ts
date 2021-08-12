@@ -4,14 +4,21 @@ import { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from 
 import { UserRepositoryInterface } from "../../cases/UserUseCase";
 import Subscription, { SubscriptionInterface } from "../../entities/Subscription";
 import { Context } from "../interfaces";
-import ProductRepository from "./Product";
+import ProductRepository, { courseParser, courseTagParser } from "./Product";
 import Repository, { FieldsMap } from "./Repository";
 import UserRepository from "./User";
 
 export const SubscriptionService = (driver: Knex) => driver<Partial<SubscriptionModel>, SubscriptionModel[]>('subscriptions');
 
-export interface SubscriptionModel extends SubscriptionInterface {
+export interface SubscriptionModel {
     hotmart_id: number;
+    id: number;
+    product: number;
+    user: number;
+    expiration: Date;
+    registrationDate: Date;
+    active: boolean;
+    course_tag: 2 | 3;
 }
 
 type HotmartStatus = 'ACTIVE' | 'INACTIVE' | 'DELAYED' | 'CANCELLED_BY_CUSTOMER' | 'CANCELLED_BY_SELLER' | 'CANCELLED_BY_ADMIN' | 'STARTED' | 'OVERDUE';
@@ -59,6 +66,7 @@ const fieldsMap: FieldsMap<SubscriptionModel, SubscriptionInterface> = [
     [['product', Number], ['product', Number]],
     [['registrationDate', val => new Date(val)], ['registrationDate', val => new Date(val)]],
     [['active', Boolean], ['active', Boolean]],
+    [['course_tag', courseTagParser], ['course', courseParser]],
 ];
 
 export default class SubscriptionRepository extends Repository<SubscriptionModel, SubscriptionInterface> implements SubscriptionRepositoryInterface {
