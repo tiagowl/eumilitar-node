@@ -1,5 +1,4 @@
 import { Knex } from "knex";
-import { Logger } from "winston";
 import { ProductCreation, ProductRepositoryInterface } from "../../cases/ProductCase";
 import Product, { ProductInterface, Course } from "../../entities/Product";
 import { Context } from "../interfaces";

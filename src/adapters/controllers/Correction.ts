@@ -33,10 +33,10 @@ const schema = yup.object().shape({
 });
 
 export default class CorrectionController extends Controller<CorrectionData> {
-    private repository: CorrectionRepositoryInterface;
-    private useCase: CorrectionCase;
-    private smtp: Mail;
-    private config: MessageConfigInterface;
+    private readonly repository: CorrectionRepositoryInterface;
+    private readonly useCase: CorrectionCase;
+    private readonly smtp: Mail;
+    private readonly config: MessageConfigInterface;
 
     constructor(context: Context) {
         const { smtp, settings } = context;

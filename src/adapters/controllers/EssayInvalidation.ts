@@ -22,10 +22,10 @@ const schema = yup.object().shape({
 });
 
 export default class EssayInvalidationController extends Controller<EssayInvalidationCreationData> {
-    private useCase: EssayInvalidationCase;
-    private repository: EssayInvalidationRepositoryInterface;
-    private smtp: Mail;
-    private config: MessageConfigInterface;
+    private readonly useCase: EssayInvalidationCase;
+    private readonly repository: EssayInvalidationRepositoryInterface;
+    private readonly smtp: Mail;
+    private readonly config: MessageConfigInterface;
 
     constructor(context: Context) {
         const { smtp, settings } = context;

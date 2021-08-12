@@ -31,7 +31,7 @@ export const schema = yup.object().shape({
 });
 
 export default class ChangePasswordController extends Controller<ChangePasswordInterface> {
-    private repository: UserRepository;
+    private readonly repository: UserRepository;
 
     constructor(context: Context) {
         super(context, schema);

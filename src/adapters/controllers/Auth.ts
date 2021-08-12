@@ -39,7 +39,7 @@ const tokenSchema = yup.object().shape({
 });
 
 export default class AuthController extends Controller<AuthInterface> {
-    private repository: UserRepository;
+    private readonly repository: UserRepository;
 
     constructor(context: Context) {
         super(context, schema);

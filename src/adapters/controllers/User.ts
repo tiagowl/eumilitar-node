@@ -19,8 +19,8 @@ export type UserResponse = {
 const schema = yup.object().shape({});
 
 export default class UserController extends Controller<any> {
-    private repository: UserRepository;
-    private useCase: UserUseCase;
+    private readonly repository: UserRepository;
+    private readonly useCase: UserUseCase;
 
     constructor(context: Context) {
         super(context, schema);

@@ -22,32 +22,32 @@ export interface Mail {
 }
 
 export interface Settings {
-    messageConfig: MessageConfigInterface;
-    hotmart: {
-        hottok: string;
-        token: string;
-        id: string;
-        secret: string;
-        env: 'developers' | 'sandbox';
+    readonly messageConfig: MessageConfigInterface;
+    readonly hotmart: {
+        readonly hottok: string;
+        readonly token: string;
+        readonly id: string;
+        readonly secret: string;
+        readonly env: 'developers' | 'sandbox';
     };
 }
 
 export type Context = {
-    driver: Knex;
-    smtp: Mail;
-    storage: Multer;
-    settings: Settings;
-    logger: winston.Logger;
-    http: AxiosInstance;
+    readonly driver: Knex;
+    readonly smtp: Mail;
+    readonly storage: Multer;
+    readonly settings: Settings;
+    readonly logger: winston.Logger;
+    readonly http: AxiosInstance;
 };
 
 
 export interface MessageConfigInterface {
-    sender: {
-        email: string;
-        name: string;
+    readonly sender: {
+        readonly email: string;
+        readonly name: string;
     };
-    url: string;
-    expirationTime: number;
-    adminMail: string;
+    readonly url: string;
+    readonly expirationTime: number;
+    readonly adminMail: string;
 }

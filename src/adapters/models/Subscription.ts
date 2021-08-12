@@ -70,8 +70,8 @@ const fieldsMap: FieldsMap<SubscriptionModel, SubscriptionInterface> = [
 ];
 
 export default class SubscriptionRepository extends Repository<SubscriptionModel, SubscriptionInterface> implements SubscriptionRepositoryInterface {
-    public users: UserRepositoryInterface;
-    public products: ProductRepositoryInterface;
+    public readonly users: UserRepositoryInterface;
+    public readonly products: ProductRepositoryInterface;
 
     constructor(context: Context) {
         super(fieldsMap, context, SubscriptionService);

@@ -17,11 +17,11 @@ export type PasswordRecoveryResponse = {
 };
 
 export default class PasswordRecoveryController extends Controller<PasswordRecoveryInterface> {
-    private smtp: Mail;
-    private repository: UserRepository;
-    private config: MessageConfigInterface;
+    private readonly smtp: Mail;
+    private readonly repository: UserRepository;
+    private readonly config: MessageConfigInterface;
     private token?: string;
-    private service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
+    private readonly service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
 
     constructor(context: Context) {
         const { smtp, driver, settings } = context;

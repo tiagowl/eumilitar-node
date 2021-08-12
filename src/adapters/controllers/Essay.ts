@@ -78,8 +78,8 @@ const filterSchema = yup.object().shape({
 });
 
 export default class EssayController extends Controller<EssayData> {
-    private repository: EssayRepository;
-    private useCase: EssayCase;
+    private readonly repository: EssayRepository;
+    private readonly useCase: EssayCase;
 
     constructor(context: Context) {
         super(context, schema);

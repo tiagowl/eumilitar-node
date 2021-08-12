@@ -13,8 +13,8 @@ const schema = yup.object().shape({
 });
 
 export default class ProductController extends Controller<ProductCreation> {
-    private useCase: ProductCase;
-    private repository: ProductRepository;
+    private readonly useCase: ProductCase;
+    private readonly repository: ProductRepository;
 
     constructor(context: Context) {
         super(context, schema);

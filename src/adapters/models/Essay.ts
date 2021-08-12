@@ -66,10 +66,10 @@ const fieldParserDB: FieldsMap<EssayModel, EssayInterface> = [
 ];
 
 export class EssayRepository extends Repository<EssayModel, EssayInterface> implements EssayRepositoryInterface {
-    public themes: EssayThemeRepositoryInterface;
-    public users: UserRepositoryInterface;
-    public products: ProductRepositoryInterface;
-    public subscriptions: SubscriptionRepositoryInterface;
+    public readonly themes: EssayThemeRepositoryInterface;
+    public readonly users: UserRepositoryInterface;
+    public readonly products: ProductRepositoryInterface;
+    public readonly subscriptions: SubscriptionRepositoryInterface;
 
     constructor(context: Context) {
         super(fieldParserDB, context, EssayService);

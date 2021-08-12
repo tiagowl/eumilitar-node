@@ -17,7 +17,7 @@ export const schema = yup.object({
 });
 
 export default class CheckPasswordToken extends Controller<CheckPasswordInterface> {
-    private service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
+    private readonly service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
     private _tokenData?: PasswordRecoveryModel;
 
     constructor(context: Context) {
