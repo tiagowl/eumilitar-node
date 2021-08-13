@@ -2,10 +2,8 @@ import EssayTheme, { EssayThemeInterface } from "../../entities/EssayTheme";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import { Course } from '../../entities/EssayTheme';
-import { Knex } from "knex";
 import EssayThemeCase, { EssayThemeFilter } from "../../cases/EssayThemeCase";
 import EssayThemeRepository, { EssayThemeModel } from '../models/EssayTheme';
-import { Logger } from 'winston';
 import { Context } from "../interfaces";
 
 interface EssayThemeBaseInterface {

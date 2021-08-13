@@ -1,13 +1,11 @@
 import EssayInvalidation, { EssayInvalidationInterface, Reason, reasons } from "../../entities/EssayInvalidation";
 import Controller from "./Controller";
 import * as yup from 'yup';
-import { Knex } from "knex";
 import EssayInvalidationCase, { EssayInvalidationCreationData, EssayInvalidationRepositoryInterface } from "../../cases/EssayInvalidation";
 import EssayInvalidationRepository from "../models/EssayInvalidation";
 import message from '../views/CorrectionNotification';
 import { Mail, MessageConfigInterface } from '../interfaces';
 import UserRepository from "../models/User";
-import { Logger } from 'winston';
 import { Context } from "../interfaces";
 
 const schema = yup.object().shape({

@@ -2,7 +2,6 @@ import { Knex } from "knex";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import { PasswordRecoveryInsert, PasswordRecoveryModel, PasswordRecoveryService } from '../models/PasswordRecoveries';
-import { Logger } from 'winston';
 import { Context } from "../interfaces";
 
 export interface CheckPasswordInterface {

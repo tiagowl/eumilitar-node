@@ -34,10 +34,10 @@ export interface UserSavingData {
 }
 
 export interface UserRepositoryInterface {
-    get: (filter: UserFilter) => Promise<User | null | undefined>;
-    filter: (filter: UserFilter) => Promise<User[]>;
-    update: (id: number, data: UserFilter) => Promise<number>;
-    save: (user: UserSavingData) => Promise<User>;
+    readonly get: (filter: UserFilter) => Promise<User | null | undefined>;
+    readonly filter: (filter: UserFilter) => Promise<User[]>;
+    readonly update: (id: number, data: UserFilter) => Promise<number>;
+    readonly save: (user: UserSavingData) => Promise<User>;
 }
 
 export default class UserUseCase {
@@ -53,7 +53,7 @@ export default class UserUseCase {
         try {
             const user = await this.repository.get({ email });
             const exists = user instanceof User;
-            if(exists) this.#user = user;
+            if (exists) this.#user = user;
             return {
                 email: exists,
                 password: !!user && await user.checkPassword(password, bcrypt.compare)

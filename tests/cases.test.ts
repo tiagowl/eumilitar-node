@@ -227,6 +227,7 @@ class EssayTestRepository implements EssayRepositoryInterface {
             id: faker.datatype.number(),
             deactivated: false,
         });
+        // @ts-ignore
         this.themes.get = async (_: EssayThemeFilter) => theme;
         expect(theme.active).toBeTruthy();
         this.products = new ProductTestRepository();

@@ -1,4 +1,3 @@
-import { Knex } from 'knex';
 import * as yup from 'yup';
 import UserUseCase from '../../cases/UserUseCase';
 import User, { UserInterface } from '../../entities/User';
@@ -6,8 +5,6 @@ import UserRepository from '../models/User';
 import Controller from './Controller';
 import crypto from 'crypto';
 import { TokenService } from '../models/Token';
-import { ValidationError } from 'yup';
-import { Logger } from 'winston';
 import { Context } from '../interfaces';
 
 export interface AuthInterface {

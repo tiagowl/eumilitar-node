@@ -5,11 +5,11 @@ import crypto from 'crypto';
 import { Course } from "../entities/Product";
 
 export interface SubscriptionRepositoryInterface {
-    create: (data: SubscriptionInsertionInterface) => Promise<Subscription>;
-    filter: (filter: Partial<SubscriptionInterface>) => Promise<Subscription[]>;
-    update: (id: number, data: Partial<SubscriptionInterface>) => Promise<Subscription>;
-    users: UserRepositoryInterface;
-    products: ProductRepositoryInterface;
+    readonly create: (data: SubscriptionInsertionInterface) => Promise<Subscription>;
+    readonly filter: (filter: Partial<SubscriptionInterface>) => Promise<Subscription[]>;
+    readonly update: (id: number, data: Partial<SubscriptionInterface>) => Promise<Subscription>;
+    readonly users: UserRepositoryInterface;
+    readonly products: ProductRepositoryInterface;
 }
 
 export interface SubscriptionCreationInterface {

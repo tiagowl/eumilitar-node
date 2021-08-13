@@ -1,5 +1,4 @@
-import { Knex } from "knex";
-import Essay, { EssayInterface, status, Status } from "../../entities/Essay";
+import Essay, { status, Status } from "../../entities/Essay";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import { EssayRepository } from "../models/Essay";
@@ -9,7 +8,6 @@ import EssayThemeController, { EssayThemeResponse } from "./EssayTheme";
 import UserRepository from "../models/User";
 import UserUseCase from "../../cases/UserUseCase";
 import { AccountPermission } from "../../entities/User";
-import { Logger } from 'winston';
 import { Context } from "../interfaces";
 
 export interface EssayInput {

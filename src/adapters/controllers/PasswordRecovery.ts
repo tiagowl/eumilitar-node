@@ -58,7 +58,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
     }
 
     private async renderMessage(username: string, link: string) {
-        return await PasswordRecoveryRender({
+        return PasswordRecoveryRender({
             link, username,
             expirationTime: this.config.expirationTime
         });

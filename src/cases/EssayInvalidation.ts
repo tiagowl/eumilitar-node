@@ -13,9 +13,9 @@ export interface EssayInvalidationInsertionData extends EssayInvalidationCreatio
 }
 
 export interface EssayInvalidationRepositoryInterface {
-    create: (data: EssayInvalidationInsertionData) => Promise<EssayInvalidation>;
-    essays: EssayRepositoryInterface;
-    get: (essay: number) => Promise<EssayInvalidation>;
+    readonly create: (data: EssayInvalidationInsertionData) => Promise<EssayInvalidation>;
+    readonly essays: EssayRepositoryInterface;
+    readonly get: (essay: number) => Promise<EssayInvalidation>;
 }
 
 export default class EssayInvalidationCase {

@@ -1,4 +1,3 @@
-import { Knex } from "knex";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import UserRepository from "../models/User";

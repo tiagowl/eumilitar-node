@@ -32,10 +32,10 @@ export interface CorrectionInsertionData extends CorrectionBase {
 }
 
 export interface CorrectionRepositoryInterface {
-    essays: EssayRepositoryInterface;
-    users: UserRepositoryInterface;
-    create: (data: CorrectionInsertionData) => Promise<Correction>;
-    get: (filter: Partial<CorrectionInterface>) => Promise<Correction>;
+    readonly essays: EssayRepositoryInterface;
+    readonly users: UserRepositoryInterface;
+    readonly create: (data: CorrectionInsertionData) => Promise<Correction>;
+    readonly get: (filter: Partial<CorrectionInterface>) => Promise<Correction>;
 }
 
 export default class CorrectionCase {

@@ -27,13 +27,13 @@ export interface EssayThemeCreation extends EssayThemeData {
 }
 
 export interface EssayThemeRepositoryInterface {
-    create: (data: EssayThemeCreation) => Promise<EssayThemeInterface>;
-    exists: (filter: EssayThemeFilter) => Promise<boolean> | ((filter: EssayThemeFilter) => Promise<boolean>);
-    hasActiveTheme: (data: EssayThemeData, notCheckId?: number) => Promise<boolean>;
-    findAll: (page?: number, pageSize?: number, ordering?: keyof EssayThemeInterface, active?: boolean) => Promise<EssayTheme[]>;
-    count: () => Promise<number>;
-    update: (id: number, data: EssayThemeCreation) => Promise<EssayTheme>;
-    get: (filter: EssayThemeFilter, active?: boolean) => Promise<EssayThemeInterface | undefined>;
+    readonly create: (data: EssayThemeCreation) => Promise<EssayThemeInterface>;
+    readonly exists: (filter: EssayThemeFilter) => Promise<boolean> | ((filter: EssayThemeFilter) => Promise<boolean>);
+    readonly hasActiveTheme: (data: EssayThemeData, notCheckId?: number) => Promise<boolean>;
+    readonly findAll: (page?: number, pageSize?: number, ordering?: keyof EssayThemeInterface, active?: boolean) => Promise<EssayTheme[]>;
+    readonly count: () => Promise<number>;
+    readonly update: (id: number, data: EssayThemeCreation) => Promise<EssayTheme>;
+    readonly get: (filter: EssayThemeFilter, active?: boolean) => Promise<EssayThemeInterface | undefined>;
 }
 
 export default class EssayThemeCase {

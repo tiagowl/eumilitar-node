@@ -2,10 +2,10 @@ import { Course } from "../entities/Product";
 import Product, { ProductInterface } from "../entities/Product";
 
 export interface ProductRepositoryInterface {
-    get: (filter: Partial<ProductInterface>) => Promise<Product>;
-    create: (data: ProductCreation) => Promise<Product>;
-    filter: (filter: Partial<ProductInterface>) => Promise<Product[]>;
-    update: (id: number, data: Partial<ProductInterface>) => Promise<Product>;
+    readonly get: (filter: Partial<ProductInterface>) => Promise<Product>;
+    readonly create: (data: ProductCreation) => Promise<Product>;
+    readonly filter: (filter: Partial<ProductInterface>) => Promise<Product[]>;
+    readonly update: (id: number, data: Partial<ProductInterface>) => Promise<Product>;
 }
 
 export interface ProductCreation {

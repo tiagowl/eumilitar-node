@@ -1,12 +1,10 @@
 import CorrectionCase, { CorrectionData, CorrectionRepositoryInterface } from "../../cases/Correction";
 import Controller from "./Controller";
 import * as yup from 'yup';
-import { Knex } from "knex";
 import CorrectionRepository from "../models/Correction";
 import Correction, { CorrectionInterface } from "../../entities/Correction";
 import { Mail, MessageConfigInterface } from "../interfaces";
 import message from '../views/CorrectionNotification';
-import { Logger } from 'winston';
 import { Context } from '../interfaces';
 
 const schema = yup.object().shape({

@@ -19,16 +19,16 @@ export interface EssayInsertionData extends EssayCreationData {
 }
 
 export interface EssayRepositoryInterface {
-    themes: EssayThemeRepositoryInterface;
-    users: UserRepositoryInterface;
-    subscriptions: SubscriptionRepositoryInterface;
-    products: ProductRepositoryInterface;
-    create: (data: EssayInsertionData) => Promise<EssayInterface>;
-    exists: (is: EssayFilter[]) => Promise<boolean>;
-    filter: (filter: EssayFilter, pagination?: EssayPagination) => Promise<Essay[]>;
-    count: (filter: EssayFilter) => Promise<number>;
-    get: (filter: EssayFilter) => Promise<Essay | undefined>;
-    update: (id: number, data: Partial<EssayInsertionData>) => Promise<Essay>;
+    readonly themes: EssayThemeRepositoryInterface;
+    readonly users: UserRepositoryInterface;
+    readonly subscriptions: SubscriptionRepositoryInterface;
+    readonly products: ProductRepositoryInterface;
+    readonly create: (data: EssayInsertionData) => Promise<EssayInterface>;
+    readonly exists: (is: EssayFilter[]) => Promise<boolean>;
+    readonly filter: (filter: EssayFilter, pagination?: EssayPagination) => Promise<Essay[]>;
+    readonly count: (filter: EssayFilter) => Promise<number>;
+    readonly get: (filter: EssayFilter) => Promise<Essay | undefined>;
+    readonly update: (id: number, data: Partial<EssayInsertionData>) => Promise<Essay>;
 }
 
 export interface EssayPagination {
