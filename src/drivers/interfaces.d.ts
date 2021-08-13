@@ -21,6 +21,32 @@ export interface Route {
     handlers: HTTPHandler[];
 }
 
+export interface StorageSettings {
+    bucket: string;
+    destination: string;
+    permission: string;
+    allowedMimes: string[];
+    type: 's3' | 'local';
+    maxSize: number;
+    credentials: {
+        accessKeyId: string;
+        secretAccessKey: string;
+    };
+    local: {
+        destination: string;
+    };
+}
+
+export interface SMTPSettings {
+    host: string;
+    port: number;
+    secure: boolean;
+    auth: {
+        key: string;
+        secret: string;
+    };
+}
+
 export interface Settings extends DefaultSettings {
     database: Knex.Config;
     server: {
@@ -36,32 +62,10 @@ export interface Settings extends DefaultSettings {
         origin: string;
     };
     session: {
-        keys: string[]
+        keys: string[];
     };
-    smtp: {
-        host: string;
-        port: number;
-        secure: boolean;
-        auth: {
-            key: string;
-            secret: string;
-        }
-    };
-    storage: {
-        bucket: string;
-        destination: string;
-        permission: string;
-        allowedMimes: string[];
-        type: 's3' | 'local';
-        maxSize: number;
-        credentials: {
-            accessKeyId: string;
-            secretAccessKey: string;
-        };
-        local: {
-            destination: string;
-        }
-    };
+    smtp: SMTPSettings;
+    storage: StorageSettings;
     logger: winston.LoggerOptions;
     httpClient: AxiosRequestConfig;
 }

@@ -3,13 +3,14 @@ import multer from 'multer';
 import multerS3 from 'multer-s3';
 import { v4 } from 'uuid';
 import mime from 'mime';
+import { StorageSettings } from './interfaces';
 
 interface StorageTypes {
     [s: string]: multer.StorageEngine;
 }
 
 
-export default function createStorage(settings: any) {
+export default function createStorage(settings: StorageSettings) {
     const { credentials, bucket, destination, permission } = settings;
     function createFileName(_: any, file: Express.MulterS3.File, cb: (error: Error | null, filename: string) => void) {
         try {

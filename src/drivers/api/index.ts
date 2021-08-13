@@ -36,7 +36,8 @@ export default class Application {
         });
     }
 
-    public serve(port: number, host: string) {
+    public serve() {
+        const { server: { port, host } } = this.context.settings;
         this._server.listen({ port, host }, () => {
             this.context.logger.info(`RUNNING AT http://${host}:${port}/`);
         });
