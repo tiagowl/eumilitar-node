@@ -33,8 +33,12 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
     }
 
     private async deleteToken(token: string) {
-        const service = PasswordRecoveryService(this.driver);
-        return await service.where('token', token).del();
+        try {
+            const service = PasswordRecoveryService(this.driver);
+            return await service.where('token', token).del();
+        } catch (error) {
+            this.logger.error(error);
+        }
     }
 
     public async check(data: CheckPasswordInterface,): Promise<CheckedTokenInterface> {
