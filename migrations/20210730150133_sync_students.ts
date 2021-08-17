@@ -37,7 +37,7 @@ async function getAccessToken(): Promise<string> {
     return data.access_token;
 }
 
-async function* getPages(): AsyncGenerator<any[], void, unknown> {
+async function* getPages(): AsyncGenerator<any, void, unknown> {
     const token = await getAccessToken();
     const url = `https://${apiEnv}.hotmart.com/payments/api/v1/subscriptions`;
     const params = {
@@ -53,7 +53,7 @@ async function* getPages(): AsyncGenerator<any[], void, unknown> {
                 'Authorization': `Bearer ${token}`,
             }
         }).catch(onError);
-        yield response.data.items;
+        yield response.data;
         nextPage = response.data.page_info.next_page_token;
     } while (!!nextPage);
 }
@@ -70,20 +70,24 @@ export async function up(knex: Knex): Promise<void> {
         });
         const pages = getPages();
         const trx = await knex.transaction();
-        for await (const subscriptions of pages) {
+        let pageNumber = 0;
+        for await (const page of pages) {
+            pageNumber++;
+            const subscriptions: any[] = page.items;
             const bar = new SingleBar({}, Presets.shades_classic);
-            console.info('Processando página:');
+            console.info(`Processando página ${pageNumber} de ${Math.ceil(page.page_info.total_results / page.page_info.results_per_page)}`);
             bar.start(1 + subscriptions.length * 2, 0);
             const data = await Promise.all(subscriptions.map(async subscription => {
                 const { subscriber } = subscription;
-                const product = await knex('products').where('id_hotmart', subscription.product.id).select('course_tag').first();
-                if (!product) throw new Error(`Produto "#${subscription.product.id} - ${subscription.product.name}" não cadastrado`);
+                const product = await knex('products').where('id_hotmart', subscription.product.id)
+                    .select('course_tag', 'expiration_time').first();
+                if (!product) return bar.increment();
                 const user = await knex('users')
                     .where('status', 1)
                     .where('email', subscriber.email)
                     .select('user_id').first();
+                if (!user) return bar.increment();
                 bar.increment();
-                if (!user) return;
                 return {
                     product: product?.course_tag || 1,
                     user: user?.user_id || 1,
