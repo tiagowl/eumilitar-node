@@ -1,12 +1,11 @@
 import faker from 'faker';
 import supertest from 'supertest';
 import { UserModel, UserService } from '../src/adapters/models/User';
-import { hottok, contextFactory, appFactory, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory } from './shortcuts';
+import { hottok, contextFactory, appFactory, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory, jp } from './shortcuts';
 import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { Course } from '../src/entities/EssayTheme';
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
-import settings from '../src/settings';
 import SubscriptionRepository, { SubscriptionService } from '../src/adapters/models/Subscription';
 import ProductRepository, { ProductService } from '../src/adapters/models/Product';
 import qs from 'querystring';
@@ -15,7 +14,7 @@ import UserRepository from '../src/adapters/models/User';
 beforeAll(async (done) => {
     await driver.migrate.latest().finally(done)
     done()
-})
+});
 
 afterAll((done) => driver.destroy().finally(done) || done())
 const context = contextFactory();
@@ -29,7 +28,7 @@ async function authenticate(user: UserModel, api: supertest.SuperTest<supertest.
         .send(credentials)
         .set('User-Agent', faker.internet.userAgent());
     const { token } = auth.body;
-    expect(token, JSON.stringify(auth.body)).toBeDefined();
+    expect(token, jp(auth.body)).toBeDefined();
     expect(typeof token).toBe('string');
     return token;
 }
@@ -149,7 +148,7 @@ describe('#1 Teste na api do usuário', () => {
         }
         const response = await api.put('/users/profile/password/')
             .send(credentials);
-        expect(response.status, JSON.stringify(response.body)).toBe(200);
+        expect(response.status, jp(response.body)).toBe(200);
         expect(response.body).toEqual({ updated: true });
         const checkResponse = await api.get(`/password-recoveries/${encodeURIComponent(token)}/`);
         expect(checkResponse.status).toBe(200)
@@ -205,7 +204,7 @@ describe('#1 Teste na api do usuário', () => {
         const header = `Bearer ${token}`
         const response = await api.get('/users/profile/')
             .set('Authorization', header);
-        expect(response.body.message, JSON.stringify({ token, body: response.body })).toBeUndefined();
+        expect(response.body.message, jp({ token, body: response.body })).toBeUndefined();
         expect(response.status).toBe(200);
         expect(response.body.email).toEqual(user.email)
         expect(response.body.password).toBeUndefined();
@@ -250,7 +249,7 @@ describe('#1 Teste na api do usuário', () => {
         const header = `Bearer ${token}`;
         const response = await api.delete('/tokens/')
             .set('Authorization', header);
-        expect(response.status, JSON.stringify(response.body)).toEqual(204);
+        expect(response.status, jp(response.body)).toEqual(204);
         const notResponse = await api.delete('/tokens/')
             .set('Authorization', header);
         expect(notResponse.status).toEqual(401);
@@ -263,9 +262,9 @@ describe('#1 Teste na api do usuário', () => {
         const header = `Bearer ${token}`;
         const { body, status, error } = await api.get('/users/')
             .set('Authorization', header);
-        expect(status, JSON.stringify({ body, error, header })).toBe(200);
-        expect(body, JSON.stringify(body)).toBeInstanceOf(Array);
-        expect(body.length, JSON.stringify(body)).toBeGreaterThan(0);
+        expect(status, jp({ body, error, header })).toBe(200);
+        expect(body, jp(body)).toBeInstanceOf(Array);
+        expect(body.length, jp(body)).toBeGreaterThan(0);
         done();
     })
 })
@@ -276,8 +275,7 @@ describe('#2 Testes nos temas', () => {
         const service = UserService(driver)
             .onConflict('user_id').merge();
         await saveUser(user, service);
-        const themeService = EssayThemeService(driver);
-        await themeService.del().delete()
+        await EssayThemeService(driver).del().delete()
         done()
     })
     afterAll(async (done) => {
@@ -351,8 +349,9 @@ describe('#2 Testes nos temas', () => {
         const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
         const themes = await api.get('/themes/')
             .set('Authorization', header);
-        expect(themes.status, JSON.stringify(themes.body)).toBe(200);
+        expect(themes.status, jp(themes.body)).toBe(200);
         const [selected] = themes.body.page || [];
+        expect(selected).toBeDefined();
         const theme = {
             title: faker.name.title(),
             startDate: new Date(Date.now() - 1500 * 25 * 60 * 60),
@@ -364,7 +363,7 @@ describe('#2 Testes nos temas', () => {
             .set('Authorization', header)
             .field('data', JSON.stringify(theme))
             .attach('themeFile', buffer, { filename: 'field.pdf', contentType: 'application/pdf' })
-        expect(response.status, JSON.stringify(response.body)).toEqual(200);
+        expect(response.status, jp(response.body)).toEqual(200);
         expect(response.body.title).toEqual(theme.title)
         expect(response.body.title).not.toEqual(selected.title)
         expect(response.body.id).not.toBeUndefined()
@@ -379,7 +378,7 @@ describe('#2 Testes nos temas', () => {
         const header = `Bearer ${token}`;
         const themes = await api.get('/themes/')
             .set('Authorization', header);
-        expect(themes.status, JSON.stringify(themes.body)).toBe(200);
+        expect(themes.status, jp(themes.body)).toBe(200);
         const [selected] = themes.body.page;
         const response = await api.delete(`/themes/${selected.id}/`)
             .set('Authorization', header)
@@ -396,7 +395,7 @@ describe('#2 Testes nos temas', () => {
             .set('Authorization', header);
         expect(themes.body.page).toBeInstanceOf(Array);
         themes.body.page.forEach((theme: any) => {
-            expect(theme.active, JSON.stringify(theme)).toBeTruthy();
+            expect(theme.active, jp(theme)).toBeTruthy();
         })
         done()
     })
@@ -455,8 +454,8 @@ describe('#3 Redações', () => {
             .set('Authorization', header)
             .field('course', 'esa')
             .attach('file', buffer, { filename: 'file.png', contentType: 'image/png' })
-        expect(body.id, JSON.stringify({ body, error })).not.toBeUndefined();
-        expect(status, JSON.stringify({ body, error })).toBe(201);
+        expect(body.id, jp({ body, error })).not.toBeUndefined();
+        expect(status, jp({ body, error })).toBe(201);
         done();
     })
     test('Listagem', async done => {
@@ -466,8 +465,8 @@ describe('#3 Redações', () => {
         const header = `Bearer ${token}`;
         const { body, status, error } = await api.get('/essays/')
             .set('Authorization', header);
-        expect(body, JSON.stringify({ body, error, header })).toBeInstanceOf(Array);
-        expect(status, JSON.stringify({ body, error })).toBe(200);
+        expect(body, jp({ body, error, header })).toBeInstanceOf(Array);
+        expect(status, jp({ body, error })).toBe(200);
         body.forEach((essay: any) => {
             expect(essay.course).toBeDefined();
             expect(essay.id).toBeDefined();
@@ -482,9 +481,9 @@ describe('#3 Redações', () => {
         const header = `Bearer ${token}`;
         const { body, status, error } = await api.get('/essays/')
             .set('Authorization', header);
-        expect(body.page, JSON.stringify({ body, error })).not.toBeUndefined();
-        expect(body.page, JSON.stringify({ body, error })).toBeInstanceOf(Array);
-        expect(status, JSON.stringify({ body, error })).toBe(200);
+        expect(body.page, jp({ body, error })).not.toBeUndefined();
+        expect(body.page, jp({ body, error })).toBeInstanceOf(Array);
+        expect(status, jp({ body, error })).toBe(200);
         body.page.forEach((essay: any) => {
             expect(essay.course).toBeDefined();
             expect(essay.id).toBeDefined();
@@ -500,7 +499,7 @@ describe('#3 Redações', () => {
         const base = await createEssay(await context, user.user_id);
         const response = await api.get(`/essays/${base.id}/`)
             .set('Authorization', header);
-        expect(response.status, JSON.stringify(response.body)).toBe(200);
+        expect(response.status, jp(response.body)).toBe(200);
         expect(response.body).toBeDefined();
         expect(response.body).toMatchObject(base);
         done();
@@ -513,7 +512,7 @@ describe('#3 Redações', () => {
         const base = await createEssay(await context, user.user_id);
         const response = await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
-        expect(response.status, JSON.stringify(response.body)).toBe(201);
+        expect(response.status, jp(response.body)).toBe(201);
         expect(response.body).toBeDefined();
         expect(response.body).toMatchObject(base);
         expect(response.body.corrector.id).toEqual(user.user_id)
@@ -529,10 +528,10 @@ describe('#3 Redações', () => {
             .set('Authorization', header);
         const response = await api.delete(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
-        expect(response.status, JSON.stringify(response.body)).toBe(200);
-        expect(response.body, JSON.stringify(response.body)).toBeDefined();
-        expect(response.body, JSON.stringify(response.body)).toMatchObject(base);
-        expect(response.body.corrector, JSON.stringify(response.body)).toBeNull();
+        expect(response.status, jp(response.body)).toBe(200);
+        expect(response.body, jp(response.body)).toBeDefined();
+        expect(response.body, jp(response.body)).toMatchObject(base);
+        expect(response.body.corrector, jp(response.body)).toBeNull();
         done();
     })
 })
@@ -580,8 +579,8 @@ describe('#4 Invalidação da redação', () => {
         const response = await api.post(`/essays/${base.id}/invalidation/`)
             .send({ reason: 'invalid', comment: faker.lorem.lines(3) })
             .set('Authorization', header);
-        expect(response.status, JSON.stringify(response.body)).toBe(201);
-        expect(response.body, JSON.stringify(response.body)).toBeDefined();
+        expect(response.status, jp(response.body)).toBe(201);
+        expect(response.body, jp(response.body)).toBeDefined();
         expect(response.body.essay).toBe(base.id);
         expect(response.body.corrector).toBe(user.user_id);
         done();
@@ -666,8 +665,8 @@ describe('#5 Correção da redação', () => {
                 'veryShortSentences': "Não",
             })
             .set('Authorization', header);
-        expect(response.status, JSON.stringify(response.body)).toBe(201);
-        expect(response.body, JSON.stringify(response.body)).toBeDefined();
+        expect(response.status, jp(response.body)).toBe(201);
+        expect(response.body, jp(response.body)).toBeDefined();
         expect(response.body.essay).toBe(base.id);
         done();
     }, 100000)
@@ -700,12 +699,12 @@ describe('#5 Correção da redação', () => {
         const created = await api.post(`/essays/${base.id}/correction/`)
             .send(data)
             .set('Authorization', header);
-        expect(created.status, JSON.stringify(created.body)).toBe(201);
-        expect(created.body, JSON.stringify(created.body)).toBeDefined();
+        expect(created.status, jp(created.body)).toBe(201);
+        expect(created.body, jp(created.body)).toBeDefined();
         const response = await api.get(`/essays/${base.id}/correction/`)
             .set('Authorization', header);
-        expect(response.status, JSON.stringify(response.body)).toBe(200);
-        expect(response.body, JSON.stringify(response.body)).toBeDefined();
+        expect(response.status, jp(response.body)).toBe(200);
+        expect(response.body, jp(response.body)).toBeDefined();
         expect(response.body.essay).toBe(base.id);
         (Object.entries(data) as [keyof typeof data, any][])
             .forEach(([key, value]) => {
@@ -748,7 +747,7 @@ describe('#6 Inscrições', () => {
                 'status': 'ACTIVE',
                 'transaction': 4,
             }));
-        expect(response.body, JSON.stringify(response.body)).toBeInstanceOf(Array);
+        expect(response.body, jp(response.body)).toBeInstanceOf(Array);
         expect(response.body.length).toBeGreaterThan(0);
         done();
     });
@@ -774,7 +773,7 @@ describe('#6 Inscrições', () => {
                 'subscriptionPlanName': faker.name.title(),
                 'userName': faker.name.findName(),
             });
-        expect(response.status, JSON.stringify(response.body)).toBe(200);
+        expect(response.status, jp(response.body)).toBe(200);
         expect(response.body.id).toBe(selected.id);
         expect(response.body.active).toBeFalsy();
         done();
@@ -787,7 +786,7 @@ describe('#6 Inscrições', () => {
         const header = `Bearer ${token}`;
         const response = await api.get('/subscriptions/')
             .set('Authorization', header);
-        expect(response.status, JSON.stringify(response.body)).toBe(200);
+        expect(response.status, jp(response.body)).toBe(200);
         expect(response.body).toBeInstanceOf(Array);
         done();
     });
@@ -822,7 +821,7 @@ describe('#7 Produtos', () => {
         const response = await api.post('/products/')
             .set('Authorization', header)
             .send(data);
-        const msg = JSON.stringify(response.body);
+        const msg = jp(response.body);
         expect(response.status, msg).toBe(201);
         expect(response.body.id, msg).toBeDefined();
         toDelete.push(response.body.id);
@@ -855,7 +854,7 @@ describe('#7 Produtos', () => {
         const response = await api.put(`/products/${id}/`)
             .send(data)
             .set('Authorization', header);
-        expect(response.status, JSON.stringify(response.body)).toBe(200);
+        expect(response.status, jp(response.body)).toBe(200);
         expect({ ...data, id }).toMatchObject(response.body);
         done();
     });

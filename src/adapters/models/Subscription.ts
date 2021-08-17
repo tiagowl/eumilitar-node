@@ -114,9 +114,7 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
                 });
                 nextPage = response.data.page_info.next_page_token;
                 if (!response.data?.items) return;
-                for (const item of response.data.items) {
-                    yield item;
-                }
+                yield* response.data.items;
             } while (!!nextPage);
         } catch (error) {
             this.logger.error(error);

@@ -155,3 +155,5 @@ export async function contextFactory(inject = {}): Promise<Context> {
         http: axios.create({}),
     }, inject);
 }
+
+export const jp = (data: any, ...args: any[]) => JSON.parse(JSON.stringify({ ...data, ...args }));

@@ -41,7 +41,7 @@ async function* getPages(): AsyncGenerator<any, void, unknown> {
     const token = await getAccessToken();
     const url = `https://${apiEnv}.hotmart.com/payments/api/v1/subscriptions`;
     const params = {
-        max_results: 10000,
+        max_results: 500,
         status: 'ACTIVE',
     };
     let nextPage: string | null = null;
@@ -71,11 +71,13 @@ export async function up(knex: Knex): Promise<void> {
         const pages = getPages();
         const trx = await knex.transaction();
         let pageNumber = 0;
+        let pagesAmount = 0;
         for await (const page of pages) {
             pageNumber++;
+            if(!pagesAmount) pagesAmount = Math.ceil(page.page_info.total_results / page.page_info.results_per_page);
             const subscriptions: any[] = page.items;
             const bar = new SingleBar({}, Presets.shades_classic);
-            console.info(`Processando página ${pageNumber} de ${Math.ceil(page.page_info.total_results / page.page_info.results_per_page)}`);
+            console.info(`Processando página ${pageNumber} de ${pagesAmount}`);
             bar.start(1 + subscriptions.length * 2, 0);
             const data = await Promise.all(subscriptions.map(async subscription => {
                 const { subscriber } = subscription;

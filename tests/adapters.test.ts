@@ -613,12 +613,28 @@ describe('#7 Testes no usuário', () => {
 
 describe('#8 Inscrições', () => {
     const email = 'teste.sandbox@hotmart.com';
+    const user = userFactory({ email });
     const deleteAll = async (done: any) => {
-        await UserService(driver).where('email', email).del().delete();
+        await UserService(driver).where('email', email).del();
         done()
     };
     afterAll(deleteAll);
     beforeAll(deleteAll);
+    beforeAll(async done => {
+        const productRepository = new ProductRepository(await context);
+        const product = await productRepository.get({ course: 'espcex' });
+        await SubscriptionService(driver).insert({
+            hotmart_id: faker.datatype.number(),
+            product: product.id,
+            user: user.user_id,
+            expiration: new Date(Date.now() + 10000),
+            registrationDate: new Date(),
+            active: true,
+            course_tag: 2,
+        }).onConflict().ignore();
+        await saveUser(user, UserService(driver));
+        done();
+    }, 100000);
     test('#81 Criação', async done => {
         const controller = new SubscriptionController(await context);
         const productRepository = new ProductRepository(await context);
@@ -634,7 +650,7 @@ describe('#8 Inscrições', () => {
         expect(created).toBeDefined();
         expect(created.length).toBe(1);
         done();
-    }, 10000);
+    }, 100000);
     test('#82 Cancelamento', async done => {
         const [selected] = await SubscriptionService((await context).driver)
             .whereIn('user',
@@ -657,7 +673,7 @@ describe('#8 Inscrições', () => {
         expect(canceled).toBeDefined();
         expect(canceled.id).toBeDefined();
         done();
-    }, 10000);
+    }, 100000);
     test('#83 Criação com produto inexistente', async done => {
         const mailsLength = mails.length;
         const controller = new SubscriptionController(await context);
@@ -677,10 +693,9 @@ describe('#8 Inscrições', () => {
             });
         });
         done();
-    }, 10000);
+    }, 100000);
     test('#84 Listagem', async done => {
         const controller = new SubscriptionController(await context);
-        const user = await UserService(driver).where('email', email).first();
         expect(user).toBeDefined();
         const subscriptions = await controller.mySubscriptions(user?.user_id || 0);
         expect(subscriptions).toBeInstanceOf(Array);
@@ -689,7 +704,7 @@ describe('#8 Inscrições', () => {
         });
         expect(subscriptions.length).toBeGreaterThan(0);
         done();
-    });
+    }, 100000);
 });
 
 
