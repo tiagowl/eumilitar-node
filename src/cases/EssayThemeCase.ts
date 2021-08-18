@@ -1,4 +1,5 @@
 import EssayTheme, { Course, EssayThemeInterface } from "../entities/EssayTheme";
+import CaseError from "./Error";
 
 export type Operator = '=' | '<=' | '>=' | '>' | '<';
 
@@ -44,9 +45,9 @@ export default class EssayThemeCase {
     }
 
     public async create(data: EssayThemeData) {
-        if (data.startDate >= data.endDate) throw new Error('A data de início deve ser anterior a data final');
+        if (data.startDate >= data.endDate) throw new CaseError('A data de início deve ser anterior a data final');
         const hasActive = await this.repository.hasActiveTheme(data);
-        if (hasActive) throw new Error(`Já existe um tema ativo neste período.`);
+        if (hasActive) throw new CaseError(`Já existe um tema ativo neste período.`);
         return this.repository.create({ ...data, deactivated: false });
     }
 
@@ -60,10 +61,10 @@ export default class EssayThemeCase {
 
     public async update(id: number, data: EssayThemeData) {
         const themeData = await this.repository.get({ id });
-        if (!themeData) throw new Error('Tema não encontrado');
-        if (data.startDate >= data.endDate) throw new Error('A data de início deve ser anterior a data final');
+        if (!themeData) throw new CaseError('Tema não encontrado');
+        if (data.startDate >= data.endDate) throw new CaseError('A data de início deve ser anterior a data final');
         const hasActive = await this.repository.hasActiveTheme(data, id);
-        if (hasActive) throw new Error(`Já existe um tema ativo neste período.`);
+        if (hasActive) throw new CaseError(`Já existe um tema ativo neste período.`);
         const theme = new EssayTheme(themeData);
         theme.update({ ...data, file: !!data.file ? data.file : themeData.file });
         return this.repository.update(id, theme.data);
@@ -71,7 +72,7 @@ export default class EssayThemeCase {
 
     public async deactivate(id: number) {
         const themeData = await this.repository.get({ id });
-        if (!themeData) throw new Error('Tema não encontrado');
+        if (!themeData) throw new CaseError('Tema não encontrado');
         const theme = new EssayTheme(themeData);
         theme.deactivated = true;
         return this.repository.update(id, theme.data);

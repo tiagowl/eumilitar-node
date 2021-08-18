@@ -3,6 +3,7 @@ import { ProductRepositoryInterface } from "./ProductCase";
 import UserUseCase, { UserRepositoryInterface } from "./UserUseCase";
 import crypto from 'crypto';
 import { Course } from "../entities/Product";
+import CaseError from "./Error";
 
 export interface SubscriptionRepositoryInterface {
     readonly create: (data: SubscriptionInsertionInterface) => Promise<Subscription>;
@@ -71,7 +72,7 @@ export default class SubscriptionCase {
 
     public async cancel(code: number) {
         const [subscription] = await this.repository.filter({ code });
-        if (!subscription) throw new Error('Inscrição não encontrada');
+        if (!subscription) throw new CaseError('Inscrição não encontrada', 'not_found');
         return this.repository.update(subscription.id, { active: false });
     }
 

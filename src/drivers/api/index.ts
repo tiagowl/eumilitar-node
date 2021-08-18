@@ -23,8 +23,8 @@ export default class Application {
 
     private setUpRoutes() {
         this.routes.forEach(route => {
-            const { path } = route;
-            route.handlers.forEach(({ handler, method }) => {
+            const { path, handlers } = route;
+            handlers.forEach(({ handler, method }) => {
                 this._server[method](path, handler(this.context));
             });
         });

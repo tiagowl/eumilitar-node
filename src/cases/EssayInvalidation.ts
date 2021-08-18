@@ -1,4 +1,5 @@
 import EssayInvalidation, { Reason, reasons } from "../entities/EssayInvalidation";
+import CaseError from "./Error";
 import { EssayRepositoryInterface } from "./EssayCase";
 
 export interface EssayInvalidationCreationData {
@@ -27,10 +28,10 @@ export default class EssayInvalidationCase {
 
     public async create(data: EssayInvalidationCreationData) {
         const essay = await this.repository.essays.get({ id: data.essay });
-        if (!essay) throw new Error('Redação não encontrada');
-        if (essay.status !== 'correcting') throw new Error('Redação não está em correção');
-        if (data.corrector !== essay.corrector) throw new Error('Não autorizado');
-        if (reasons.indexOf(data.reason) < 0) throw new Error('Razão inválida');
+        if (!essay) throw new CaseError('Redação não encontrada');
+        if (essay.status !== 'correcting') throw new CaseError('Redação não está em correção');
+        if (data.corrector !== essay.corrector) throw new CaseError('Não autorizado');
+        if (reasons.indexOf(data.reason) < 0) throw new CaseError('Razão inválida');
         essay.status = 'invalid';
         await this.repository.essays.update(essay.id, essay.data);
         return this.repository.create({ ...data, invalidationDate: new Date() });

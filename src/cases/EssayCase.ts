@@ -1,6 +1,8 @@
 import Essay, { EssayInterface, Status } from "../entities/Essay";
 import { Reason, reasons } from "../entities/EssayInvalidation";
 import EssayTheme, { Course } from '../entities/EssayTheme';
+import User from "../entities/User";
+import CaseError from "./Error";
 import { EssayThemeRepositoryInterface } from './EssayThemeCase';
 import { ProductRepositoryInterface } from "./ProductCase";
 import { SubscriptionRepositoryInterface } from "./Subscription";
@@ -23,7 +25,7 @@ export interface EssayRepositoryInterface {
     readonly users: UserRepositoryInterface;
     readonly subscriptions: SubscriptionRepositoryInterface;
     readonly products: ProductRepositoryInterface;
-    readonly create: (data: EssayInsertionData) => Promise<EssayInterface>;
+    readonly create: (data: EssayInsertionData) => Promise<Essay>;
     readonly exists: (is: EssayFilter[]) => Promise<boolean>;
     readonly filter: (filter: EssayFilter, pagination?: EssayPagination) => Promise<Essay[]>;
     readonly count: (filter: EssayFilter) => Promise<number>;
@@ -73,15 +75,23 @@ export default class EssayCase {
         this.repository = repository;
     }
 
-    public async create(data: EssayCreationData) {
-        const student = await this.repository.users.get({ id: data.student });
-        if (!student) throw new Error('Aluno não encontrado');
-        if (student.status !== 'active') throw new Error('Aluno inativo');
-        const themeData = await this.repository.themes.get({ courses: new Set([data.course]) }, true);
-        if (!themeData) throw new Error('Nenhum tema ativo para este curso');
+    private async getStudent(id: number) {
+        const student = await this.repository.users.get({ id });
+        if (!student) throw new CaseError('Aluno não encontrado');
+        if (student.status !== 'active') throw new CaseError('Aluno inativo');
+        return student;
+    }
+
+    private async getTheme(course: Course) {
+        const themeData = await this.repository.themes.get({ courses: new Set([course]) }, true);
+        if (!themeData) throw new CaseError('Nenhum tema ativo para este curso');
         const theme = new EssayTheme(themeData);
-        if (!theme.active) throw new Error('Tema inválido');
-        const subscriptions = await this.repository.subscriptions.filter({ user: student.id, active: true });
+        if (!theme.active) throw new CaseError('Tema inválido');
+        return theme;
+    }
+
+    private async checkSubscriptions(userID: number, theme: EssayTheme) {
+        const subscriptions = await this.repository.subscriptions.filter({ user: userID, active: true });
         const hasPermission = await subscriptions.reduce(async (value, subscription) => {
             const permitted = await value;
             const expired = subscription.expiration <= new Date();
@@ -89,16 +99,28 @@ export default class EssayCase {
             const validCourse = theme.courses.has(product.course);
             return (!expired && validCourse) || permitted;
         }, Promise.resolve(false) as Promise<boolean>);
-        if (!hasPermission) throw new Error('Não autorizado');
-        const baseFilter = { theme: theme.id, student: data.student };
+        if (!hasPermission) throw new CaseError('Não autorizado');
+    }
+
+    private async checkPermission(theme: EssayTheme, student: User, course: Course) {
+        const baseFilter = { theme: theme.id, student: student.id };
         const cantSend = await this.repository.exists([
             { ...baseFilter, status: 'pending' },
             { ...baseFilter, status: 'revised' },
             { ...baseFilter, status: 'correcting' },
         ]);
-        if (cantSend) throw new Error(`Já foi enviada uma redação do curso "${beautyCourse[data.course]}" para o tema vigente`);
-        const created = await this.repository.create({ ...data, theme: theme.id, sendDate: new Date(), status: 'pending' });
-        return new Essay(created);
+        if (cantSend) throw new CaseError(`Já foi enviada uma redação do curso "${beautyCourse[course]}" para o tema vigente`);
+
+    }
+
+    public async create(data: EssayCreationData) {
+        const student = await this.getStudent(data.student);
+        const theme = await this.getTheme(data.course);
+        await this.checkSubscriptions(student.id, theme);
+        await this.checkPermission(theme, student, data.course);
+        return this.repository.create({
+            ...data, theme: theme.id, sendDate: new Date(), status: 'pending'
+        });
     }
 
     public async myEssays(student: number) {
@@ -115,7 +137,7 @@ export default class EssayCase {
 
     public async get(filter: EssayFilter) {
         const essay = await this.repository.get(filter);
-        if (!essay) throw new Error('Redação não encontrada');
+        if (!essay) throw new CaseError('Redação não encontrada');
         return essay;
     }
 
@@ -123,14 +145,14 @@ export default class EssayCase {
         const essay = await this.get({ id });
         if (typeof data.corrector === 'number') {
             const corrector = await this.repository.users.get({ id: data.corrector });
-            if (!corrector) throw new Error('Corretor inválido');
-            if (!correctorPermissions.has(corrector.permission)) throw new Error('Não autorizado!');
+            if (!corrector) throw new CaseError('Corretor inválido');
+            if (!correctorPermissions.has(corrector.permission)) throw new CaseError('Não autorizado!');
             if (typeof essay.corrector === 'number' && essay.corrector !== data.corrector) {
-                throw new Error('Redação já está em correção');
+                throw new CaseError('Redação já está em correção');
             }
         }
         if (typeof changingCorrector === 'number' && changingCorrector !== essay.corrector) {
-            throw new Error('Não autorizado');
+            throw new CaseError('Não autorizado');
         }
         const fields = Object.entries(data) as [keyof EssayPartialUpdate, never][];
         fields.forEach(([field, value]) => {

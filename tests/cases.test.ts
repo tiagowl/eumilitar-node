@@ -242,7 +242,7 @@ class EssayTestRepository implements EssayRepositoryInterface {
             status: 'pending',
         })
         this.database.push(essay);
-        return essay;
+        return new Essay(essay);
     }
 
     async exists(filters: Partial<EssayInterface>[]) {

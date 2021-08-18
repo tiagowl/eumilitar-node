@@ -4,21 +4,21 @@ import { Multer } from "multer";
 import winston from "winston";
 
 export interface MailData {
-    from: {
-        email: string;
-        name: string;
+    readonly from: {
+        readonly email: string;
+        readonly name: string;
     };
-    to: {
-        email: string;
-        name: string;
+    readonly to: {
+        readonly email: string;
+        readonly name: string;
     };
-    subject: string;
-    text: string;
-    html?: string;
+    readonly subject: string;
+    readonly text: string;
+    readonly html?: string;
 }
 
 export interface Mail {
-    sendMail(data: MailData): Promise<any>;
+    readonly sendMail: (data: MailData) => Promise<any>;
 }
 
 export interface Settings {

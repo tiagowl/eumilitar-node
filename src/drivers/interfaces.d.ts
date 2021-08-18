@@ -12,64 +12,64 @@ export type Method = 'get' | 'post' | 'put' | 'patch' | 'delete';
 export type Handler = (props: Context) => RequestHandler<any, any, any>;
 
 export interface HTTPHandler {
-    method: Method;
-    handler: Handler;
+    readonly method: Method;
+    readonly handler: Handler;
 }
 
 export interface Route {
-    path: string;
-    handlers: HTTPHandler[];
+    readonly path: string;
+    readonly handlers: HTTPHandler[];
 }
 
 export interface StorageSettings {
-    bucket: string;
-    destination: string;
-    permission: string;
-    allowedMimes: string[];
-    type: 's3' | 'local';
-    maxSize: number;
-    credentials: {
-        accessKeyId: string;
-        secretAccessKey: string;
+    readonly bucket: string;
+    readonly destination: string;
+    readonly permission: string;
+    readonly allowedMimes: string[];
+    readonly type: 's3' | 'local';
+    readonly maxSize: number;
+    readonly credentials: {
+        readonly accessKeyId: string;
+        readonly secretAccessKey: string;
     };
-    local: {
-        destination: string;
+    readonly local: {
+        readonly destination: string;
     };
 }
 
 export interface SMTPSettings {
-    host: string;
-    port: number;
-    secure: boolean;
-    auth: {
-        key: string;
-        secret: string;
+    readonly host: string;
+    readonly port: number;
+    readonly secure: boolean;
+    readonly auth: {
+        readonly key: string;
+        readonly secret: string;
     };
 }
 
 export interface Settings extends DefaultSettings {
-    database: Knex.Config;
-    server: {
-        port: number;
-        host: string;
+    readonly database: Knex.Config;
+    readonly server: {
+        readonly port: number;
+        readonly host: string;
     };
-    helmet: Parameters<typeof helmet>[0];
-    logging: {
-        format: string;
-        options: morgan.Options<any, any>;
+    readonly helmet: Parameters<typeof helmet>[0];
+    readonly logging: {
+        readonly format: string;
+        readonly options: morgan.Options<any, any>;
     };
-    cors: {
-        origin: string;
+    readonly cors: {
+        readonly origin: string;
     };
-    session: {
-        keys: string[];
+    readonly session: {
+        readonly keys: string[];
     };
-    smtp: SMTPSettings;
-    storage: StorageSettings;
-    logger: winston.LoggerOptions;
-    httpClient: AxiosRequestConfig;
+    readonly smtp: SMTPSettings;
+    readonly storage: StorageSettings;
+    readonly logger: winston.LoggerOptions;
+    readonly httpClient: AxiosRequestConfig;
 }
 
 export interface Context extends DefaultContext {
-    settings: Settings;
+    readonly settings: Settings;
 }

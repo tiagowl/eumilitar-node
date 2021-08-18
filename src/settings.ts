@@ -9,7 +9,7 @@ const errorFormat = format.combine(
     format.printf(error => `[${new Date()}]: ${JSON.stringify(error)};`),
 );
 
-const settings: Settings = Object.freeze({
+const settings = Object.freeze<Settings>({
     database: {
         client: 'mysql',
         connection: process.env.DATABASE_URL || {

@@ -1,5 +1,6 @@
 import User, { AccountStatus, AccountPermission, UserInterface, UserData } from "../entities/User";
 import bcrypt from 'bcrypt';
+import CaseError from "./Error";
 
 export interface UserFilter {
     id?: number;
@@ -82,7 +83,7 @@ export default class UserUseCase {
                 password: hash,
                 lastModified: this.#user.lastModified
             });
-            if (amount > 1) throw new Error('Mais de um usuário afetado');
+            if (amount > 1) throw new CaseError('Mais de um usuário afetado');
             return !!amount;
         }
         return false;
@@ -90,7 +91,7 @@ export default class UserUseCase {
 
     public async get(id: number) {
         this.#user = await this.repository.get({ id });
-        if (!this.#user) throw new Error('Usuário não encontrado');
+        if (!this.#user) throw new CaseError('Usuário não encontrado');
         return this.#user;
     }
 

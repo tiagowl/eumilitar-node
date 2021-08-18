@@ -4,6 +4,7 @@ import SubscriptionRepository from '../models/Subscription';
 import Controller from './Controller';
 import SubscriptionCase from '../../cases/Subscription';
 import { SubscriptionInterface } from '../../entities/Subscription';
+import CaseError from '../../cases/Error';
 
 export interface OrderData {
     hottok: string;
@@ -122,6 +123,9 @@ export default class SubscriptionController extends Controller<OrderData> {
             return this.parseEntity(subscription);
         } catch (error) {
             this.logger.error(error);
+            if (error instanceof CaseError && error.code === 'not_found') {
+                throw { message: 'Inscrição inexistente', status: 202 };
+            }
             if (error.status) throw error;
             throw { message: 'Erro ao cancelar inscrição', status: 500 };
         }

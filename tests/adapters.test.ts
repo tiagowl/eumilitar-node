@@ -652,9 +652,9 @@ describe('#8 Inscrições', () => {
         done();
     }, 100000);
     test('#82 Cancelamento', async done => {
-        const [selected] = await SubscriptionService((await context).driver)
+        const [selected] = await SubscriptionService(driver)
             .whereIn('user',
-                UserService((await context).driver)
+                UserService(driver)
                     .where('email', email).select('user_id as user')
             );
         const controller = new SubscriptionController(await context);
@@ -703,6 +703,26 @@ describe('#8 Inscrições', () => {
             expect(subscription.user).toBe(user?.user_id);
         });
         expect(subscriptions.length).toBeGreaterThan(0);
+        done();
+    }, 100000);
+    test('#85 Cancelamento com assinatura inexistente', async done => {
+        const controller = new SubscriptionController(await context);
+        try {
+            await controller.cancel({
+                hottok,
+                userEmail: email,
+                'actualRecurrenceValue': faker.datatype.number(),
+                'cancellationDate': Date.now(),
+                'dateNextCharge': Date.now(),
+                'productName': faker.name.title(),
+                'subscriberCode': faker.datatype.string(),
+                'subscriptionId': 234,
+                'subscriptionPlanName': faker.name.title(),
+                'userName': faker.name.findName(),
+            })
+        } catch (error) {
+            expect(error).toMatchObject({ message: 'Inscrição inexistente', status: 202 });
+        }
         done();
     }, 100000);
 });
