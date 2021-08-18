@@ -84,9 +84,9 @@ export default class EssayCase {
 
     private async getTheme(course: Course) {
         const themeData = await this.repository.themes.get({ courses: new Set([course]) }, true);
-        if (!themeData) throw new CaseError('Nenhum tema ativo para este curso');
+        if (!themeData) throw new CaseError('Nenhum tema ativo para este curso', 'invalid_theme');
         const theme = new EssayTheme(themeData);
-        if (!theme.active) throw new CaseError('Tema inválido');
+        if (!theme.active) throw new CaseError('Tema inválido', 'invalid_theme');
         return theme;
     }
 
@@ -99,7 +99,7 @@ export default class EssayCase {
             const validCourse = theme.courses.has(product.course);
             return (!expired && validCourse) || permitted;
         }, Promise.resolve(false) as Promise<boolean>);
-        if (!hasPermission) throw new CaseError('Não autorizado');
+        if (!hasPermission) throw new CaseError('Não autorizado', 'expired');
     }
 
     private async checkPermission(theme: EssayTheme, student: User, course: Course) {
