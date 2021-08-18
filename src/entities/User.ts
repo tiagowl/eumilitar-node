@@ -2,6 +2,9 @@
 export type AccountStatus = 'active' | 'inactive' | 'pending';
 export type AccountPermission = 'admin' | 'corrector' | 'student';
 
+export const accountStatus: AccountStatus[] = ['active', 'inactive', 'pending'];
+export const accountPermissions: AccountPermission[] = ['admin', 'corrector', 'student'];
+
 export interface UserInterface {
     id: number;
     firstName: string;

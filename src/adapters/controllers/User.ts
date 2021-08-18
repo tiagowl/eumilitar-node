@@ -1,6 +1,6 @@
 import * as yup from 'yup';
-import UserUseCase, { UserFilter } from '../../cases/UserUseCase';
-import User, { AccountPermission, AccountStatus } from '../../entities/User';
+import UserUseCase, { UserCreation, UserFilter } from '../../cases/UserUseCase';
+import User, { AccountPermission, accountPermissions, accountStatus, AccountStatus } from '../../entities/User';
 import UserRepository from '../models/User';
 import Controller from './Controller';
 import { Context } from '../interfaces';
@@ -16,7 +16,14 @@ export type UserResponse = {
     lastModified: Date;
 };
 
-const schema = yup.object().shape({});
+const schema = yup.object().shape({
+    firstName: yup.string().required('O campo "Nome" é obrigatório'),
+    lastName: yup.string().required('O campo "Sobrenome" é obrigatório'),
+    email: yup.string().required('O campo "Email" é obrigatório'),
+    status: yup.string().required('O campo "Status" é obrigatório').is(accountStatus, 'Status inválido'),
+    permission: yup.string().required('O campo "Permissão" é obrigatório').is(accountPermissions, 'Permissão inválida'),
+    password: yup.string().required('O campo "Senha" é obrigatório'),
+});
 
 export default class UserController extends Controller<any> {
     private readonly repository: UserRepository;
@@ -48,6 +55,18 @@ export default class UserController extends Controller<any> {
         } catch (error) {
             this.logger.error(error);
             throw { message: error.message || 'Erro ao consultar usuários', status: 500 };
+        }
+    }
+
+    public async create(data: UserCreation) {
+        try {
+            const validated = await this.validate(data);
+            const created = await this.useCase.create(validated);
+            return this.parseEntity(created);
+        } catch (error) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: error.message, status: 500 };
         }
     }
 }

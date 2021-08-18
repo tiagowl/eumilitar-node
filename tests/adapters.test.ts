@@ -608,7 +608,21 @@ describe('#7 Testes no usuário', () => {
             expect(user.id).toBeDefined();
         })
         done();
-    })
+    });
+    test('#71 Criação', async done => {
+        const controller = new UserController(await context);
+        const user = await controller.create({
+            email: faker.internet.email(),
+            firstName: faker.name.firstName(),
+            lastName: faker.name.lastName(),
+            password: faker.internet.password(),
+            permission: 'admin',
+            status: 'active',
+        });
+        expect(user).toBeDefined();
+        expect(user.id).toBeDefined();
+        done();
+    });
 });
 
 describe('#8 Inscrições', () => {
