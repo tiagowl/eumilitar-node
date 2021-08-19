@@ -156,4 +156,4 @@ export async function contextFactory(inject = {}): Promise<Context> {
     }, inject);
 }
 
-export const jp = (data: any, ...args: any[]) => JSON.parse(JSON.stringify({ ...data, ...args }));
+export const jp = (data: any, ...args: any[]) => JSON.stringify({ ...data, ...args });

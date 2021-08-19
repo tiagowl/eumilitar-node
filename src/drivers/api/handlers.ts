@@ -541,3 +541,18 @@ export function listSubscriptions(context: Context) {
         }
     });
 }
+
+export function createUser(context: Context) {
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin']));
+    const controller = new UserController(context);
+    return handler.use(async (req, res) => {
+        try {
+            const created = await controller.create(req.body);
+            res.status(201).json(created);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    });
+}

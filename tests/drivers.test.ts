@@ -34,7 +34,7 @@ async function authenticate(user: UserModel, api: supertest.SuperTest<supertest.
 }
 
 describe('#1 Teste na api do usuário', () => {
-    const user = userFactory();
+    const user = userFactory({ permission: 1 });
     beforeAll(async (done) => {
         const service = UserService(driver)
             .onConflict('user_id').merge();
@@ -266,7 +266,28 @@ describe('#1 Teste na api do usuário', () => {
         expect(body, jp(body)).toBeInstanceOf(Array);
         expect(body.length, jp(body)).toBeGreaterThan(0);
         done();
-    })
+    });
+    test('#196 Criar usuários', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const { body, status, error } = await api.post('/users/')
+            .set('Authorization', header)
+            .send({
+                email: faker.internet.email(),
+                firstName: faker.name.firstName(),
+                lastName: faker.name.lastName(),
+                password: faker.internet.password(),
+                permission: 'admin',
+                status: 'active',
+            });
+        expect(status, jp({ body, error, header })).toBe(201);
+        expect(body.email).toBeDefined();
+        expect(body.id).toBeDefined();
+        expect(body.password).toBeUndefined();
+        done();
+    });
 })
 
 describe('#2 Testes nos temas', () => {
@@ -781,7 +802,7 @@ describe('#6 Inscrições', () => {
     test('Listagem', async done => {
         const app = await appFactory();
         const api = supertest(app.server);
-        if(!student) throw new Error('Sem usuário');
+        if (!student) throw new Error('Sem usuário');
         const token = await authenticate(student, api)
         const header = `Bearer ${token}`;
         const response = await api.get('/subscriptions/')

@@ -84,7 +84,8 @@ const routes: Route[] = [
     {
         path: '/users/',
         handlers: [
-            { handler: handlers.listUsers, method: 'get' }
+            { handler: handlers.listUsers, method: 'get' },
+            { handler: handlers.createUser, method: 'post' },
         ]
     },
     {
