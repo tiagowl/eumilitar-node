@@ -624,6 +624,21 @@ describe('#7 Testes no usuário', () => {
         expect(user.id).toBeDefined();
         done();
     });
+    test('#71 Listagem', async done => {
+        const controller = new UserController(await context);
+        const page = await controller.all({ status: 'active', pagination: { 'page': 1, pageSize: 20, ordering: 'id' } });
+        expect(page).toBeDefined();
+        if ((page instanceof Array)) throw new Error();
+        const users = page.page;
+        expect(typeof page.count).toBe('number');
+        expect(typeof page.pages).toBe('number');
+        expect(users.length).toBeGreaterThan(0);
+        users.forEach(user => {
+            expect(user.status).toBe('active');
+            expect(user.id).toBeDefined();
+        })
+        done();
+    });
 });
 
 describe('#8 Inscrições', () => {

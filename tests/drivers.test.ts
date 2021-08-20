@@ -288,6 +288,22 @@ describe('#1 Teste na api do usuário', () => {
         expect(body.password).toBeUndefined();
         done();
     });
+    test('#197 Listar usuários com paginação', async (done) => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const { body, status, error } = await api.get(`/users/`)
+            .query({
+                pagination: { pageSize: 5, ordering: 'id' }
+            })
+            .set('Authorization', header);
+        expect(status, jp({ body, error, header })).toBe(200);
+        expect(body.page, jp(body)).toBeInstanceOf(Array);
+        expect(body.page.length, jp(body)).toBeGreaterThan(0);
+        expect(body.page.length, jp(body)).toBe(5);
+        done();
+    });
 })
 
 describe('#2 Testes nos temas', () => {
