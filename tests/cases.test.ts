@@ -57,8 +57,9 @@ class UserTestRepository implements UserRepositoryInterface {
         return filtered[0];
     }
     async filter(filter: UserFilter) {
+        const { pagination, ...params } = filter;
         // @ts-ignore
-        const fields: [keyof UserFilter, any][] = Object.entries(filter);
+        const fields: [keyof typeof params, any][] = Object.entries(params);
         if (!fields.length) return this.database;
         return this.database.filter(item => (
             !!fields.filter(([key, value]) => item[key] === value).length

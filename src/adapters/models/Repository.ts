@@ -1,5 +1,6 @@
 import { Knex } from "knex";
 import { Logger } from "winston";
+import { Pagination } from "../../cases/interfaces";
 import { Context } from "../interfaces";
 
 export type FieldsMap<Model = any, Entity = any> = [[keyof Model, (val: any) => any], [keyof Entity, (val: any) => any]][];
@@ -49,6 +50,22 @@ export default class Repository<Model, Entity> {
         }
     }
 
+    protected async getDbField(field: keyof Entity): Promise<keyof Model> {
+        const parsed = this.fieldsMap.find(([_, [key]]) => key === field);
+        if (!parsed) throw { message: `Campo "${field}" não encontrado`, status: 400 };
+        return parsed[0][0];
+    }
+
+    protected async paginate(service: Knex.QueryBuilder<Partial<Model>, Model[]>, pagination?: Pagination<Entity> | undefined) {
+        if (!!pagination) {
+            const { page = 1, pageSize = 10, ordering } = pagination;
+            service
+                .offset(((page - 1) * (pageSize)))
+                .limit(pageSize);
+            if (!!ordering) service.orderBy(await this.getDbField(ordering));
+        }
+    }
+
     public async toDb(filter: Partial<Entity>): Promise<Partial<Model>> {
         try {
             const args = Object.entries(filter);
@@ -88,9 +105,4 @@ export default class Repository<Model, Entity> {
         }
     }
 
-    protected async getDbField(field: keyof Entity): Promise<keyof Model> {
-        const parsed = this.fieldsMap.find(([_, [key]]) => key === field);
-        if (!parsed) throw { message: `Campo "${field}" não encontrado`, status: 400 };
-        return parsed[0][0];
-    }
 }

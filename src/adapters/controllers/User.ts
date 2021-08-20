@@ -4,6 +4,7 @@ import User, { AccountPermission, accountPermissions, accountStatus, AccountStat
 import UserRepository from '../models/User';
 import Controller from './Controller';
 import { Context } from '../interfaces';
+import { Paginated } from '../../cases/interfaces';
 
 export type UserResponse = {
     id: number;
@@ -48,10 +49,16 @@ export default class UserController extends Controller<any> {
         };
     }
 
-    public async all(filter: UserFilter): Promise<UserResponse[]> {
+    public async all(filter: UserFilter): Promise<UserResponse[] | Paginated<UserResponse>> {
         try {
             const users = await this.useCase.listAll(filter);
-            return Promise.all(users.map(async user => this.parseEntity(user)));
+            if (users instanceof Array) {
+                return Promise.all(users.map(async user => this.parseEntity(user)));
+            }
+            return {
+                ...users,
+                page: await Promise.all(users.page.map(async user => this.parseEntity(user)))
+            };
         } catch (error) {
             this.logger.error(error);
             throw { message: error.message || 'Erro ao consultar usuários', status: 500 };

@@ -602,6 +602,7 @@ describe('#7 Testes no usuário', () => {
         const controller = new UserController(await context);
         const users = await controller.all({ status: 'active' });
         expect(users).toBeDefined();
+        if (!(users instanceof Array)) throw new Error();
         expect(users.length).toBeGreaterThan(0);
         users.forEach(user => {
             expect(user.status).toBe('active');

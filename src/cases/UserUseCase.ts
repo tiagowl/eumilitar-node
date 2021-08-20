@@ -1,6 +1,9 @@
 import User, { AccountStatus, AccountPermission, UserInterface, UserData } from "../entities/User";
 import bcrypt from 'bcrypt';
 import CaseError from "./Error";
+import { Paginated, Pagination } from "./interfaces";
+
+export type UserPagination = Pagination<User>;
 
 export interface UserFilter {
     id?: number;
@@ -12,7 +15,10 @@ export interface UserFilter {
     creationDate?: Date;
     lastModified?: Date;
     permission?: AccountPermission;
+    pagination?: UserPagination;
 }
+
+export type UserPaginated = Paginated<User>;
 
 export interface UserCreation {
     firstName: string;
@@ -36,7 +42,7 @@ export interface UserSavingData {
 
 export interface UserRepositoryInterface {
     readonly get: (filter: UserFilter) => Promise<User | null | undefined>;
-    readonly filter: (filter: UserFilter) => Promise<User[]>;
+    readonly filter: (filter: UserFilter) => Promise<User[] | UserPaginated>;
     readonly update: (id: number, data: UserFilter) => Promise<number>;
     readonly save: (user: UserSavingData) => Promise<User>;
 }
@@ -95,7 +101,7 @@ export default class UserUseCase {
         return this.#user;
     }
 
-    public async listAll(filter?: UserFilter) {
+    public async listAll(filter: UserFilter = {}) {
         return this.repository.filter(filter || {});
     }
 

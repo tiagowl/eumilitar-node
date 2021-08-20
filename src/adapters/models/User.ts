@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import { UserFilter, UserRepositoryInterface, UserSavingData } from "../../cases/UserUseCase";
+import { UserFilter, UserPaginated, UserRepositoryInterface, UserSavingData } from "../../cases/UserUseCase";
 import User, { AccountPermission, AccountStatus, UserData, UserInterface } from "../../entities/User";
 import Repository, { FieldsMap } from "./Repository";
 import { Context } from "../interfaces";
@@ -7,6 +7,7 @@ import { TokenService } from "./Token";
 import UserCreation, { Props as UserCreationProps } from '../views/UserCreation';
 import crypto from 'crypto';
 import { PasswordRecoveryService } from "./PasswordRecoveries";
+import { Pagination } from "../../cases/interfaces";
 
 const statusMap: AccountStatus[] = ['inactive', 'active', 'pending'];
 const permissionMap: [number, AccountPermission][] = [
@@ -70,16 +71,27 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     get query() { return UserService(this.driver); }
 
     public async filter(filter: UserFilter) {
-        const parsedFilter = await this.toDb(filter);
-        const filtered = await this.query.where(parsedFilter)
+        const { pagination, ...params } = filter;
+        const parsedFilter = await this.toDb(params);
+        const service = this.query;
+        await this.paginate(service, pagination as Pagination<UserData>);
+        const filtered = await service.where(parsedFilter)
             .catch(async (error) => {
                 this.logger.error(error);
                 throw { message: 'Erro ao consultar banco de dados', status: 400 };
             });
-        return Promise.all(filtered.map(async data => {
+        const users = await Promise.all(filtered.map(async data => {
             const parsedData = await this.toEntity(data);
             return new User(parsedData);
         }));
+        if (!pagination) return users;
+        const [{ count }] = await this.query.where(parsedFilter).count({ count: '*' });
+        const counted = Number(count);
+        return {
+            page: users,
+            pages: Math.ceil(counted / (pagination.pageSize || 10)),
+            count: counted
+        };
     }
 
     private async writeMessage(props: UserCreationProps) {
