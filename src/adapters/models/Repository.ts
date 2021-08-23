@@ -59,8 +59,7 @@ export default class Repository<Model, Entity> {
     protected async paginate(service: Knex.QueryBuilder<Partial<Model>, Model[]>, pagination?: Pagination<Entity> | undefined) {
         if (!!pagination) {
             const { page = 1, pageSize = 10, ordering } = pagination;
-            service
-                .offset(((page - 1) * (pageSize)))
+            service.offset(((page - 1) * (pageSize)))
                 .limit(pageSize);
             if (!!ordering) service.orderBy(await this.getDbField(ordering));
         }

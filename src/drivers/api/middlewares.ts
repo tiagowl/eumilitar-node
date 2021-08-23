@@ -8,7 +8,7 @@ import cookieSession from 'cookie-session';
 import { Context } from "../interfaces";
 
 
-function getMiddlewares({ settings }: Context): RequestHandler[] {
+export default function getMiddlewares({ settings }: Context): RequestHandler[] {
     return [
         cors(settings.cors),
         cookieParser(),
@@ -19,6 +19,3 @@ function getMiddlewares({ settings }: Context): RequestHandler[] {
         express.urlencoded({ 'extended': true, 'type': 'application/x-www-form-urlencoded' }),
     ];
 }
-
-
-export default getMiddlewares;
