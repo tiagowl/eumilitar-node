@@ -5,6 +5,7 @@ import UserRepository from '../models/User';
 import Controller from './Controller';
 import { Context } from '../interfaces';
 import { Paginated } from '../../cases/interfaces';
+import _ from 'lodash';
 
 export type UserResponse = {
     id: number;
@@ -39,9 +40,9 @@ const filterSchema = yup.object().shape({
         page: yup.number(),
         pageSize: yup.number(),
         ordering: yup.string(),
-    }),
+    }).noUnknown(),
     search: yup.string(),
-});
+}).noUnknown();
 
 export default class UserController extends Controller<any> {
     private readonly repository: UserRepository;
@@ -66,11 +67,25 @@ export default class UserController extends Controller<any> {
         };
     }
 
+    private async removeVoidValues(obj: any) {
+        return Object.entries(obj)
+            .reduce(async (promiseResult, [key, val]) => {
+                const result = await promiseResult;
+                if (typeof val === 'object') {
+                    val = await this.removeVoidValues(val);
+                }
+                if (_.isEmpty(val) || !val) {
+                    return result;
+                }
+                return { ...result, [key]: val };
+            }, Promise.resolve({}) as Promise<any>);
+    }
+
     public async all(filter: UserFilter): Promise<UserResponse[] | Paginated<UserResponse>> {
         try {
-            const parsedFilter = filterSchema.noUnknown().cast(filter);
-            Object.keys(parsedFilter).forEach(key => !parsedFilter[key] && delete parsedFilter[key]);
-            const users = await this.useCase.listAll(parsedFilter as UserFilter);
+            const parsedFilter = filterSchema.cast(filter);
+            const stripedFilter = await this.removeVoidValues(parsedFilter);
+            const users = await this.useCase.listAll(stripedFilter as UserFilter);
             if (users instanceof Array) {
                 return Promise.all(users.map(async user => this.parseEntity(user)));
             }
