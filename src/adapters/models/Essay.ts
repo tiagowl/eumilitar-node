@@ -81,12 +81,26 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
 
 
     private search(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, search?: string) {
-        if (!!search) service.whereIn('user_id', UserService(this.driver)
-            .orWhere('first_name', 'like', `%${search}%`)
-            .orWhere('last_name', 'like', `%${search}%`)
-            .orWhere('email', 'like', `%${search}%`)
-            .select('user_id')
-        );
+        if (!!search) {
+            const userSubQuery = UserService(this.driver)
+                .orWhere('first_name', 'like', `%${search}%`)
+                .orWhere('last_name', 'like', `%${search}%`)
+                .orWhere('email', 'like', `%${search}%`)
+                .select('user_id');
+            const terms = search.split(' ');
+            if (terms.length > 1) {
+                userSubQuery.orWhere(function () {
+                    terms.forEach(val => {
+                        this.andWhere(function () {
+                            this.orWhere('first_name', 'like', `%${val}%`)
+                                .orWhere('last_name', 'like', `%${val}%`)
+                                .orWhere('email', 'like', `%${val}%`);
+                        });
+                    });
+                });
+            }
+            service.whereIn('user_id', userSubQuery);
+        }
         return service;
     }
 
