@@ -107,7 +107,9 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
             return new User(parsedData);
         }));
         if (!pagination) return users;
-        const [{ count }] = await this.query.where(parsedFilter).count({ count: '*' });
+        const counting = this.query;
+        await this.search(counting, search);
+        const [{ count }] = await counting.where(parsedFilter).count({ count: '*' });
         const counted = Number(count);
         return {
             page: users,
