@@ -28,7 +28,7 @@ const schema = yup.object().shape({
 });
 
 const filterSchema = yup.object().shape({
-    id: yup.number(),
+    id: yup.string(),
     firstName: yup.string(),
     lastName: yup.string(),
     email: yup.string(),
@@ -37,8 +37,8 @@ const filterSchema = yup.object().shape({
     creationDate: yup.date(),
     lastModified: yup.date(),
     pagination: yup.object().shape({
-        page: yup.number(),
-        pageSize: yup.number(),
+        page: yup.string(),
+        pageSize: yup.string(),
         ordering: yup.string(),
     }).noUnknown(),
     search: yup.string(),
