@@ -67,7 +67,7 @@ export default class UserController extends Controller<any> {
         };
     }
 
-    private async removeVoidValues(obj: any) {
+    private async removeVoidValues<T>(obj: any) {
         return Object.entries(obj)
             .reduce(async (promiseResult, [key, val]) => {
                 const result = await promiseResult;
@@ -78,14 +78,14 @@ export default class UserController extends Controller<any> {
                     return result;
                 }
                 return { ...result, [key]: val };
-            }, Promise.resolve({}) as Promise<any>);
+            }, Promise.resolve({}) as Promise<T>);
     }
 
     public async all(filter: UserFilter): Promise<UserResponse[] | Paginated<UserResponse>> {
         try {
             const parsedFilter = filterSchema.cast(filter);
-            const stripedFilter = await this.removeVoidValues(parsedFilter);
-            const users = await this.useCase.listAll(stripedFilter as UserFilter);
+            const stripedFilter = await this.removeVoidValues<UserFilter>(parsedFilter);
+            const users = await this.useCase.listAll(stripedFilter);
             if (users instanceof Array) {
                 return Promise.all(users.map(async user => this.parseEntity(user)));
             }
