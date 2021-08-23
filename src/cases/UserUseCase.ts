@@ -16,6 +16,7 @@ export interface UserFilter {
     lastModified?: Date;
     permission?: AccountPermission;
     pagination?: UserPagination;
+    search?: string;
 }
 
 export type UserPaginated = Paginated<User>;

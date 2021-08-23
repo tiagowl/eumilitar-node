@@ -70,11 +70,33 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
 
     get query() { return UserService(this.driver); }
 
+    private async search(service: Knex.QueryBuilder<Partial<UserModel>, UserModel[]>, search?: string) {
+        if (!!search) {
+            service
+                .orWhere('first_name', 'like', `%${search}%`)
+                .orWhere('last_name', 'like', `%${search}%`)
+                .orWhere('email', 'like', `%${search}%`);
+            const terms = search.split(' ');
+            if (terms.length > 1) {
+                service.orWhere(function () {
+                    terms.forEach(val => {
+                        this.andWhere(function () {
+                            this.orWhere('first_name', 'like', `%${val}%`)
+                                .orWhere('last_name', 'like', `%${val}%`)
+                                .orWhere('email', 'like', `%${val}%`);
+                        });
+                    });
+                });
+            }
+        }
+    }
+
     public async filter(filter: UserFilter) {
-        const { pagination, ...params } = filter;
+        const { pagination, search, ...params } = filter;
         const parsedFilter = await this.toDb(params);
         const service = this.query;
         await this.paginate(service, pagination as Pagination<UserData>);
+        await this.search(service, search);
         const filtered = await service.where(parsedFilter)
             .catch(async (error) => {
                 this.logger.error(error);

@@ -26,6 +26,23 @@ const schema = yup.object().shape({
     password: yup.string().required('O campo "Senha" é obrigatório'),
 });
 
+const filterSchema = yup.object().shape({
+    id: yup.number(),
+    firstName: yup.string(),
+    lastName: yup.string(),
+    email: yup.string(),
+    status: yup.string(),
+    permission: yup.string(),
+    creationDate: yup.date(),
+    lastModified: yup.date(),
+    pagination: yup.object().shape({
+        page: yup.number(),
+        pageSize: yup.number(),
+        ordering: yup.string(),
+    }),
+    search: yup.string(),
+});
+
 export default class UserController extends Controller<any> {
     private readonly repository: UserRepository;
     private readonly useCase: UserUseCase;
@@ -51,7 +68,9 @@ export default class UserController extends Controller<any> {
 
     public async all(filter: UserFilter): Promise<UserResponse[] | Paginated<UserResponse>> {
         try {
-            const users = await this.useCase.listAll(filter);
+            const parsedFilter = filterSchema.noUnknown().cast(filter);
+            Object.keys(parsedFilter).forEach(key => !parsedFilter[key] && delete parsedFilter[key]);
+            const users = await this.useCase.listAll(parsedFilter as UserFilter);
             if (users instanceof Array) {
                 return Promise.all(users.map(async user => this.parseEntity(user)));
             }
