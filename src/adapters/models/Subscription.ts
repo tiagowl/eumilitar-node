@@ -7,6 +7,7 @@ import { Context } from "../interfaces";
 import ProductRepository, { courseParser, courseTagParser } from "./Product";
 import Repository, { FieldsMap } from "./Repository";
 import UserRepository from "./User";
+import qs from 'querystring';
 
 export const SubscriptionService = (driver: Knex) => driver<Partial<SubscriptionModel>, SubscriptionModel[]>('subscriptions');
 
@@ -28,7 +29,6 @@ export interface HotmartFilter {
     product_id?: number;
     plan?: string[];
     status?: HotmartStatus;
-    transaction?: string;
     subscriber_email?: string;
 }
 

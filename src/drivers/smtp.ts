@@ -31,7 +31,7 @@ export default function createTransport(settings: SMTPSettings, logger: Logger):
                 .catch((error) => {
                     logger.error(error);
                     logger.info(JSON.stringify({ to, subject, error }));
-                    throw error;
+                    throw { message: 'Erro ao enviar email', status: 500 };
                 });
         }
     };

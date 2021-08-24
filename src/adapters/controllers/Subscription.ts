@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 import { Context } from '../interfaces';
-import SubscriptionRepository from '../models/Subscription';
+import SubscriptionRepository, { HotmartFilter } from '../models/Subscription';
 import Controller from './Controller';
 import SubscriptionCase from '../../cases/Subscription';
 import { SubscriptionInterface } from '../../entities/Subscription';
@@ -86,11 +86,11 @@ export default class SubscriptionController extends Controller<OrderData> {
     public async create(data: OrderData) {
         try {
             const validated = await this.validate<OrderData>(data);
-            const subscriptions = this.repository.getFromHotmart({
+            const payload: HotmartFilter = {
                 'subscriber_email': validated.email,
-                'transaction': validated.transaction,
                 'status': 'ACTIVE',
-            });
+            };
+            const subscriptions = this.repository.getFromHotmart(payload);
             const createdList = [];
             for await (const subscription of subscriptions) {
                 const created = await this.useCase.create({
