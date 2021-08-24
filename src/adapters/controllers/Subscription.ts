@@ -13,7 +13,6 @@ export interface OrderData {
     last_name: string;
     email: string;
     status: string;
-    transaction: string;
 }
 
 export interface CancelData {
@@ -45,7 +44,6 @@ export default class SubscriptionController extends Controller<OrderData> {
             last_name: yup.string().required(),
             email: yup.string().required(),
             status: yup.string().required(),
-            transaction: yup.string().required(),
         });
         super(context, schema);
         this.cancelSchema = yup.object({

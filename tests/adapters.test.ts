@@ -675,10 +675,9 @@ describe('#8 Inscrições', () => {
             'last_name': faker.name.lastName(),
             'prod': product.code,
             'status': 'ACTIVE',
-            'transaction': '4',
         });
         expect(created).toBeDefined();
-        expect(created.length).toBe(1);
+        expect(created.length).toBeGreaterThan(0);
         done();
     }, 100000);
     test('#82 Cancelamento', async done => {
@@ -687,6 +686,7 @@ describe('#8 Inscrições', () => {
                 UserService(driver)
                     .where('email', email).select('user_id as user')
             );
+        expect(selected).toBeDefined();
         const controller = new SubscriptionController(await context);
         const canceled = await controller.cancel({
             hottok,
@@ -715,7 +715,6 @@ describe('#8 Inscrições', () => {
             'last_name': faker.name.lastName(),
             'prod': product.code * 3,
             'status': 'ACTIVE',
-            'transaction': '4',
         }).catch((error) => {
             expect(error).toMatchObject({
                 "message": "Produto não encontrado",
