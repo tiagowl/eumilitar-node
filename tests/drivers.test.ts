@@ -10,6 +10,7 @@ import SubscriptionRepository, { SubscriptionService } from '../src/adapters/mod
 import ProductRepository, { ProductService } from '../src/adapters/models/Product';
 import qs from 'querystring';
 import UserRepository from '../src/adapters/models/User';
+import { UserCreation } from '../src/cases/UserUseCase';
 
 beforeAll(async (done) => {
     await driver.migrate.latest().finally(done)
@@ -302,6 +303,31 @@ describe('#1 Teste na api do usuário', () => {
         expect(body.page, jp(body)).toBeInstanceOf(Array);
         expect(body.page.length, jp(body)).toBeGreaterThan(0);
         expect(body.page.length, jp(body)).toBe(5);
+        done();
+    });
+    test('#198 Atualização', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const data: UserCreation = {
+            email: faker.internet.email(),
+            firstName: faker.name.firstName(),
+            lastName: faker.name.lastName(),
+            password: faker.internet.password(),
+            permission: 'student',
+            status: 'active',
+        };
+        const { body, status } = await api.put(`/users/${user.user_id}/`)
+            .send(data)
+            .set('Authorization', header);
+        expect(body.message, jp({ token, body: body })).toBeUndefined();
+        expect(status).toBe(200);
+        expect(body.password).toBeUndefined();
+        Object.entries(data).forEach(([key, val]) => {
+            if(key === 'password') expect(body[key as keyof typeof body]).toBeUndefined();
+            else expect(body[(key as keyof typeof body)]).toBe(val);
+        });
         done();
     });
 })

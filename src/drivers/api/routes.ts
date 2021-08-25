@@ -89,6 +89,12 @@ const routes: Route[] = [
         ]
     },
     {
+        path: '/users/:id/',
+        handlers: [
+            { handler: handlers.updateUser, method: 'put' }
+        ]
+    },
+    {
         path: '/subscriptions/',
         handlers: [
             { handler: handlers.createSubscription, method: 'post' },
