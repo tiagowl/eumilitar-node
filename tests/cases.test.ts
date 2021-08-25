@@ -471,8 +471,24 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         });
         expect(created).toBeInstanceOf(User);
         done();
-    })
-})
+    });
+    test('Atualização', async done => {
+        const repository = new UserTestRepository(userDatabase);
+        const useCase = new UserUseCase(repository);
+        const updated = await useCase.update(0, {
+            email: faker.internet.email(),
+            firstName: faker.name.firstName(),
+            lastName: faker.name.lastName(),
+            password: faker.internet.password(),
+            permission: 'admin',
+            status: 'active',
+        });
+        expect(updated).toBeInstanceOf(User);
+        const recovered = await useCase.get(0);
+        expect(updated).toMatchObject(recovered);
+        done();
+    });
+});
 
 describe('#2 Testes nos temas da redação', () => {
     test('Teste na criação de temas de redação', async done => {

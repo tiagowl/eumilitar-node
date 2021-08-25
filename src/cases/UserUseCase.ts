@@ -41,16 +41,6 @@ export interface UserSavingData {
     password: string;
 }
 
-export interface UpdateUser {
-    firstName: string;
-    lastName: string;
-    email: string;
-    status: AccountStatus;
-    permission: AccountPermission;
-    creationDate: Date;
-    lastModified: Date;
-}
-
 export interface UserRepositoryInterface {
     readonly get: (filter: UserFilter) => Promise<User | null | undefined>;
     readonly filter: (filter: UserFilter) => Promise<User[] | UserPaginated>;
@@ -92,7 +82,7 @@ export default class UserUseCase {
     }
 
     public async updatePassword(id: number, password: string) {
-        this.#user = await this.repository.get({ id });
+        this.#user = await this.get(id);
         if (!!this.#user) {
             const hash = await this.hashPassword(password);
             this.#user.password = hash;
@@ -123,6 +113,16 @@ export default class UserUseCase {
             lastModified: new Date(),
             creationDate: new Date(),
         });
+    }
+
+    public async update(id: number, data: UserCreation) {
+        const user = await this.get(id);
+        await user.update({
+            ...data,
+            password: await this.hashPassword(data.password),
+        });
+        await this.repository.update(id, user.data);
+        return user;
     }
 
 }

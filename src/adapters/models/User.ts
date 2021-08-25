@@ -184,7 +184,14 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     public async update(id: number, data: UserFilter) {
         try {
             const parsedData = await this.toDb(data);
-            return this.query.where('user_id', id).update(parsedData);
+            const updated = await this.query.where('user_id', id).update(parsedData)
+                .catch(error => {
+                    this.logger.error(error);
+                    throw { message: 'Erro ao gravar no banco de dados', status: 500 };
+                });
+            if (updated === 0) throw { message: 'Nenhum usuário atualizado', status: 500 };
+            if (updated > 1) throw { message: 'Mais de um registro afetado', status: 500 };
+            return updated;
         } catch (error) {
             this.logger.error(error);
             throw { message: 'Falha ao gravar no banco de dados', status: 500 };
