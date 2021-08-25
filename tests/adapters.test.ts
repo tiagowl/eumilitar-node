@@ -25,7 +25,7 @@ import SubscriptionController from '../src/adapters/controllers/Subscription';
 import ProductController from '../src/adapters/controllers/Products';
 import { ProductCreation } from '../src/cases/ProductCase';
 import User from '../src/entities/User';
-import { UserCreation } from '../src/cases/UserUseCase';
+import { UserCreation, UserUpdate } from '../src/cases/UserUseCase';
 
 afterAll(async (done) => {
     await driver.destroy();
@@ -643,11 +643,10 @@ describe('#7 Testes no usuário', () => {
     });
     test('#72 Atualização', async done => {
         const controller = new UserController(await context);
-        const data: UserCreation = {
+        const data: UserUpdate = {
             email: faker.internet.email(),
             firstName: faker.name.firstName(),
             lastName: faker.name.lastName(),
-            password: faker.internet.password(),
             permission: 'student',
             status: 'active',
         };

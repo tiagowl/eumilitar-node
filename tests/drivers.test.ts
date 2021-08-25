@@ -10,7 +10,7 @@ import SubscriptionRepository, { SubscriptionService } from '../src/adapters/mod
 import ProductRepository, { ProductService } from '../src/adapters/models/Product';
 import qs from 'querystring';
 import UserRepository from '../src/adapters/models/User';
-import { UserCreation } from '../src/cases/UserUseCase';
+import { UserCreation, UserUpdate } from '../src/cases/UserUseCase';
 
 beforeAll(async (done) => {
     await driver.migrate.latest().finally(done)
@@ -310,11 +310,10 @@ describe('#1 Teste na api do usuário', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const data: UserCreation = {
+        const data: UserUpdate = {
             email: faker.internet.email(),
             firstName: faker.name.firstName(),
             lastName: faker.name.lastName(),
-            password: faker.internet.password(),
             permission: 'student',
             status: 'active',
         };

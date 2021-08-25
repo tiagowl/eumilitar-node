@@ -30,6 +30,15 @@ export interface UserCreation {
     password: string;
 }
 
+export interface UserUpdate {
+    firstName: string;
+    lastName: string;
+    email: string;
+    status: AccountStatus;
+    permission: AccountPermission;
+    password?: string;
+}
+
 export interface UserSavingData {
     firstName: string;
     lastName: string;
@@ -115,12 +124,13 @@ export default class UserUseCase {
         });
     }
 
-    public async update(id: number, data: UserCreation) {
+    public async update(id: number, data: UserUpdate) {
         const user = await this.get(id);
-        await user.update({
+        const insertion = !!data.password ? {
             ...data,
             password: await this.hashPassword(data.password),
-        });
+        } : data;
+        await user.update(insertion);
         await this.repository.update(id, user.data);
         return user;
     }

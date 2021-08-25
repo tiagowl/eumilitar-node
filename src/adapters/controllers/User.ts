@@ -1,5 +1,5 @@
 import * as yup from 'yup';
-import UserUseCase, { UserCreation, UserFilter } from '../../cases/UserUseCase';
+import UserUseCase, { UserCreation, UserFilter, UserUpdate } from '../../cases/UserUseCase';
 import User, { AccountPermission, accountPermissions, accountStatus, AccountStatus } from '../../entities/User';
 import UserRepository from '../models/User';
 import Controller from './Controller';
@@ -18,14 +18,21 @@ export type UserResponse = {
     lastModified: Date;
 };
 
-const schema = yup.object().shape({
+const updateSchemaBase = {
     firstName: yup.string().required('O campo "Nome" é obrigatório'),
     lastName: yup.string().required('O campo "Sobrenome" é obrigatório'),
     email: yup.string().required('O campo "Email" é obrigatório'),
     status: yup.string().required('O campo "Status" é obrigatório').is(accountStatus, 'Status inválido'),
     permission: yup.string().required('O campo "Permissão" é obrigatório').is(accountPermissions, 'Permissão inválida'),
+};
+
+const updateSchema = yup.object().shape(updateSchemaBase);
+
+const schema = yup.object().shape({
+    ...updateSchemaBase,
     password: yup.string().required('O campo "Senha" é obrigatório'),
 });
+
 
 const filterSchema = yup.object().shape({
     id: yup.string(),
@@ -111,9 +118,9 @@ export default class UserController extends Controller<any> {
         }
     }
 
-    public async update(id: number, data: UserCreation) {
+    public async update(id: number, data: UserUpdate) {
         try {
-            const validated = await this.validate(data);
+            const validated = await this.validate(data, updateSchema);
             const updated = await this.useCase.update(id, validated);
             return this.parseEntity(updated);
         } catch (error) {
