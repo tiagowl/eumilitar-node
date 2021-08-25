@@ -24,6 +24,8 @@ import ProductRepository, { ProductModel, ProductService } from '../src/adapters
 import SubscriptionController from '../src/adapters/controllers/Subscription';
 import ProductController from '../src/adapters/controllers/Products';
 import { ProductCreation } from '../src/cases/ProductCase';
+import User from '../src/entities/User';
+import { UserCreation } from '../src/cases/UserUseCase';
 
 afterAll(async (done) => {
     await driver.destroy();
@@ -639,6 +641,23 @@ describe('#7 Testes no usuário', () => {
         })
         done();
     });
+    test('#72 Atualização', async done => {
+        const controller = new UserController(await context);
+        const data: UserCreation = {
+            email: faker.internet.email(),
+            firstName: faker.name.firstName(),
+            lastName: faker.name.lastName(),
+            password: faker.internet.password(),
+            permission: 'student',
+            status: 'active',
+        };
+        const updated = await controller.update(user.user_id, data);
+        Object.entries(data).forEach(([key, val]) => {
+            if(key === 'password') expect(updated[key as keyof typeof updated]).toBeUndefined();
+            else expect(updated[(key as keyof typeof updated)]).toBe(val);
+        });
+        done();
+    })
 });
 
 describe('#8 Inscrições', () => {

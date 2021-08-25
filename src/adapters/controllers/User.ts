@@ -110,4 +110,16 @@ export default class UserController extends Controller<any> {
             throw { message: error.message, status: 500 };
         }
     }
+
+    public async update(id: number, data: UserCreation) {
+        try {
+            const validated = await this.validate(data);
+            const updated = await this.useCase.update(id, validated);
+            return this.parseEntity(updated);
+        } catch (error) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: error.message, status: 500 };
+        }
+    }
 }
