@@ -41,6 +41,16 @@ export interface UserSavingData {
     password: string;
 }
 
+export interface UpdateUser {
+    firstName: string;
+    lastName: string;
+    email: string;
+    status: AccountStatus;
+    permission: AccountPermission;
+    creationDate: Date;
+    lastModified: Date;
+}
+
 export interface UserRepositoryInterface {
     readonly get: (filter: UserFilter) => Promise<User | null | undefined>;
     readonly filter: (filter: UserFilter) => Promise<User[] | UserPaginated>;
@@ -55,6 +65,13 @@ export default class UserUseCase {
 
     constructor(repository: UserRepositoryInterface) {
         this.repository = repository;
+    }
+
+    get user() { return this.#user; }
+
+    private async hashPassword(password: string) {
+        const salt = await bcrypt.genSalt(this.#saltRounds);
+        return bcrypt.hash(password, salt);
     }
 
     public async authenticate(email: string, password: string) {
@@ -72,13 +89,6 @@ export default class UserUseCase {
                 password: false,
             };
         }
-    }
-
-    get user() { return this.#user; }
-
-    private async hashPassword(password: string) {
-        const salt = await bcrypt.genSalt(this.#saltRounds);
-        return bcrypt.hash(password, salt);
     }
 
     public async updatePassword(id: number, password: string) {

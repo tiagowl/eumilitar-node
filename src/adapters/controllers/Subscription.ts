@@ -86,6 +86,7 @@ export default class SubscriptionController extends Controller<OrderData> {
             const validated = await this.validate<OrderData>(data);
             const payload: HotmartFilter = {
                 'subscriber_email': validated.email,
+                'product_id': data.prod,
                 'status': 'ACTIVE',
             };
             const subscriptions = this.repository.getFromHotmart(payload);

@@ -668,16 +668,16 @@ describe('#8 Inscrições', () => {
     test('#81 Criação', async done => {
         const controller = new SubscriptionController(await context);
         const productRepository = new ProductRepository(await context);
-        const product = await productRepository.get({ course: 'espcex' });
+        const product = await productRepository.get({ course: 'esa' });
         const created = await controller.create({
             hottok, email,
             'first_name': faker.name.firstName(),
             'last_name': faker.name.lastName(),
-            'prod': product.code,
+            'prod': 2,
             'status': 'ACTIVE',
         });
         expect(created).toBeDefined();
-        expect(created.length).toBeGreaterThan(0);
+        expect(created.length).toBe(1);
         done();
     }, 100000);
     test('#82 Cancelamento', async done => {
