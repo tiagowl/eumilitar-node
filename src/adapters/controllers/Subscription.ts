@@ -6,6 +6,7 @@ import SubscriptionCase, { SubscriptionFilter } from '../../cases/Subscription';
 import Subscription, { SubscriptionInterface } from '../../entities/Subscription';
 import CaseError from '../../cases/Error';
 import ProductCase from '../../cases/ProductCase';
+import { courses } from '../../entities/Product';
 
 export interface OrderData {
     hottok: string;
@@ -31,7 +32,15 @@ export interface CancelData {
 
 const filterSchema = yup.object().shape({
     pagination: paginationSchema,
-});
+    id: yup.number(),
+    product: yup.number(),
+    user: yup.number(),
+    expiration: yup.date(),
+    registrationDate: yup.date(),
+    code: yup.number(),
+    active: yup.boolean(),
+    course: yup.string(),
+}).noUnknown();
 
 export default class SubscriptionController extends Controller<OrderData> {
     private readonly repository: SubscriptionRepository;
