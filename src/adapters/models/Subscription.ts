@@ -122,6 +122,18 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
         }
     }
 
+    public async count(filter: SubscriptionFilter) {
+        const { search, pagination, ...params } = filter;
+        const parsed = await this.toDb(params);
+        const counting = this.query;
+        const [{ count }] = await counting.where(parsed).count({ count: '*' })
+            .catch(error => {
+                this.logger.error(error);
+                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+            });
+        return Number(count);
+    }
+
     public async filter(filter: SubscriptionFilter) {
         const { search, pagination, ...params } = filter;
         const parsed = await this.toDb(params);
@@ -136,19 +148,7 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
             const parsedData = await this.toEntity(data);
             return new Subscription(parsedData);
         }));
-        if (!pagination) return page;
-        const counting = this.query;
-        const [{ count }] = await counting.where(parsed).count({ count: '*' })
-            .catch(error => {
-                this.logger.error(error);
-                throw { message: 'Erro ao consultar banco de dados', status: 500 };
-            });
-        const counted = Number(count);
-        return {
-            page,
-            pages: Math.ceil(counted / (pagination.pageSize || 10)),
-            count: counted,
-        };
+        return page;
     }
 
 

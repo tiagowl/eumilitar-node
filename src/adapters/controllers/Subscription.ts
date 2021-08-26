@@ -5,6 +5,7 @@ import Controller, { paginationSchema } from './Controller';
 import SubscriptionCase, { SubscriptionFilter } from '../../cases/Subscription';
 import Subscription, { SubscriptionInterface } from '../../entities/Subscription';
 import CaseError from '../../cases/Error';
+import ProductCase from '../../cases/ProductCase';
 
 export interface OrderData {
     hottok: string;
@@ -67,8 +68,11 @@ export default class SubscriptionController extends Controller<OrderData> {
     }
 
     private async parseEntity(entity: SubscriptionInterface) {
+        const products = new ProductCase(this.repository.products);
+        const product = await products.get(entity.product);
         return {
             ...entity,
+            product: { ...product },
         };
     }
 
@@ -152,12 +156,14 @@ export default class SubscriptionController extends Controller<OrderData> {
             const filtered = await this.useCase.filter(parsed);
             const page = await Promise.all(
                 (filtered instanceof Array ? filtered : filtered.page)
-                    .map(this.parseEntity)
+                    .map(async subscription => this.parseEntity(subscription))
             );
-            if (filtered instanceof Array) return page;
+            if (!parsed.pagination) return page;
+            const count = await this.useCase.count(parsed);
             return {
-                ...filtered,
                 page,
+                count,
+                pages: Math.ceil(count / (parsed.pagination.pageSize || 10)),
             };
         } catch (error) {
             this.logger.error(error);

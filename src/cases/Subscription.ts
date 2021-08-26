@@ -15,6 +15,7 @@ export interface SubscriptionRepositoryInterface {
     readonly create: (data: SubscriptionInsertionInterface) => Promise<Subscription>;
     readonly filter: (filter: SubscriptionFilter) => Promise<Subscription[] | Paginated<Subscription>>;
     readonly update: (id: number, data: Partial<SubscriptionInterface>) => Promise<Subscription>;
+    readonly count: (filter: SubscriptionFilter) => Promise<number>;
     readonly users: UserRepositoryInterface;
     readonly products: ProductRepositoryInterface;
 }
@@ -82,7 +83,11 @@ export default class SubscriptionCase {
         return this.repository.update(subscription.id, { active: false });
     }
 
-    public async filter(filter: Partial<SubscriptionInterface>) {
+    public async filter(filter: SubscriptionFilter) {
         return this.repository.filter(filter);
+    }
+
+    public async count(filter: SubscriptionFilter) {
+        return this.repository.count(filter);
     }
 }

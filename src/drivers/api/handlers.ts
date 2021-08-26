@@ -450,7 +450,7 @@ export function getInvalidation(context: Context) {
     return handler;
 }
 
-export function createSubscription(context: Context): RequestHandler<void, SubscriptionInterface[], OrderData> {
+export function createSubscription(context: Context): RequestHandler<void, any[], OrderData> {
     const controller = new SubscriptionController(context);
     return async (req, res) => {
         try {
@@ -467,7 +467,7 @@ export function createSubscription(context: Context): RequestHandler<void, Subsc
     };
 }
 
-export function cancelSubscription(context: Context): RequestHandler<void, SubscriptionInterface, CancelData> {
+export function cancelSubscription(context: Context): RequestHandler<void, any, CancelData> {
     const controller = new SubscriptionController(context);
     return async (req, res) => {
         try {
