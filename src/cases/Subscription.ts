@@ -4,10 +4,16 @@ import UserUseCase, { UserRepositoryInterface } from "./UserUseCase";
 import crypto from 'crypto';
 import { Course } from "../entities/Product";
 import CaseError from "./Error";
+import { Paginated, Pagination } from "./interfaces";
+
+export interface SubscriptionFilter extends Partial<SubscriptionInterface> {
+    pagination?: Pagination<SubscriptionInterface>;
+    search?: string;
+}
 
 export interface SubscriptionRepositoryInterface {
     readonly create: (data: SubscriptionInsertionInterface) => Promise<Subscription>;
-    readonly filter: (filter: Partial<SubscriptionInterface>) => Promise<Subscription[]>;
+    readonly filter: (filter: SubscriptionFilter) => Promise<Subscription[] | Paginated<Subscription>>;
     readonly update: (id: number, data: Partial<SubscriptionInterface>) => Promise<Subscription>;
     readonly users: UserRepositoryInterface;
     readonly products: ProductRepositoryInterface;
@@ -52,7 +58,7 @@ export default class SubscriptionCase {
     }
 
     public async exists(data: SubscriptionCreationInterface) {
-        const subscription = await this.repository.filter({ code: data.code });
+        const subscription = (await this.repository.filter(data)) as Subscription[];
         return subscription.length > 0;
     }
 
@@ -71,7 +77,7 @@ export default class SubscriptionCase {
     }
 
     public async cancel(code: number) {
-        const [subscription] = await this.repository.filter({ code });
+        const [subscription] = (await this.repository.filter({ code })) as Subscription[];
         if (!subscription) throw new CaseError('Inscrição não encontrada', 'not_found');
         return this.repository.update(subscription.id, { active: false });
     }

@@ -1,9 +1,9 @@
 import * as yup from 'yup';
 import { Context } from '../interfaces';
 import SubscriptionRepository, { HotmartFilter } from '../models/Subscription';
-import Controller from './Controller';
-import SubscriptionCase from '../../cases/Subscription';
-import { SubscriptionInterface } from '../../entities/Subscription';
+import Controller, { paginationSchema } from './Controller';
+import SubscriptionCase, { SubscriptionFilter } from '../../cases/Subscription';
+import Subscription, { SubscriptionInterface } from '../../entities/Subscription';
 import CaseError from '../../cases/Error';
 
 export interface OrderData {
@@ -27,6 +27,10 @@ export interface CancelData {
     productName: string;
     subscriptionPlanName: string;
 }
+
+const filterSchema = yup.object().shape({
+    pagination: paginationSchema,
+});
 
 export default class SubscriptionController extends Controller<OrderData> {
     private readonly repository: SubscriptionRepository;
@@ -134,11 +138,31 @@ export default class SubscriptionController extends Controller<OrderData> {
         try {
             await yup.number().required('É preciso informar o usuário')
                 .positive().min(0).validate(userId);
-            const subscriptions = await this.useCase.filter({ user: userId });
+            const subscriptions = (await this.useCase.filter({ user: userId })) as Subscription[];
             return Promise.all(subscriptions.map(async subscription => this.parseEntity(subscription)));
         } catch (error) {
             this.logger.error(error);
             throw { message: error.message, status: error.status || 400 };
+        }
+    }
+
+    public async list(filter: SubscriptionFilter) {
+        try {
+            const parsed = await this.castFilter<SubscriptionFilter>(filter, filterSchema);
+            const filtered = await this.useCase.filter(parsed);
+            const page = await Promise.all(
+                (filtered instanceof Array ? filtered : filtered.page)
+                    .map(this.parseEntity)
+            );
+            if (filtered instanceof Array) return page;
+            return {
+                ...filtered,
+                page,
+            };
+        } catch (error) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: error.message, status: 500 };
         }
     }
 }

@@ -2,7 +2,7 @@ import * as yup from 'yup';
 import UserUseCase, { UserCreation, UserFilter, UserUpdate } from '../../cases/UserUseCase';
 import User, { AccountPermission, accountPermissions, accountStatus, AccountStatus } from '../../entities/User';
 import UserRepository from '../models/User';
-import Controller from './Controller';
+import Controller, { paginationSchema } from './Controller';
 import { Context } from '../interfaces';
 import { Paginated } from '../../cases/interfaces';
 import _ from 'lodash';
@@ -43,11 +43,7 @@ const filterSchema = yup.object().shape({
     permission: yup.string(),
     creationDate: yup.date(),
     lastModified: yup.date(),
-    pagination: yup.object().shape({
-        page: yup.string(),
-        pageSize: yup.string(),
-        ordering: yup.string(),
-    }).noUnknown(),
+    pagination: paginationSchema,
     search: yup.string(),
 }).noUnknown();
 
@@ -74,25 +70,11 @@ export default class UserController extends Controller<any> {
         };
     }
 
-    private async removeVoidValues<T>(obj: any) {
-        return Object.entries(obj)
-            .reduce(async (promiseResult, [key, val]) => {
-                const result = await promiseResult;
-                if (typeof val === 'object') {
-                    val = await this.removeVoidValues(val);
-                }
-                if (_.isEmpty(val) || !val) {
-                    return result;
-                }
-                return { ...result, [key]: val };
-            }, Promise.resolve({}) as Promise<T>);
-    }
 
     public async all(filter: UserFilter): Promise<UserResponse[] | Paginated<UserResponse>> {
         try {
-            const parsedFilter = filterSchema.cast(filter);
-            const stripedFilter = await this.removeVoidValues<UserFilter>(parsedFilter);
-            const users = await this.useCase.listAll(stripedFilter);
+            const parsedFilter = await this.castFilter(filter, filterSchema);
+            const users = await this.useCase.listAll(parsedFilter);
             if (users instanceof Array) {
                 return Promise.all(users.map(async user => this.parseEntity(user)));
             }

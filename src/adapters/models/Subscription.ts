@@ -1,6 +1,6 @@
 import { Knex } from "knex";
 import { ProductRepositoryInterface } from "../../cases/ProductCase";
-import { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from "../../cases/Subscription";
+import { SubscriptionFilter, SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from "../../cases/Subscription";
 import { UserRepositoryInterface } from "../../cases/UserUseCase";
 import Subscription, { SubscriptionInterface } from "../../entities/Subscription";
 import { Context } from "../interfaces";
@@ -122,13 +122,33 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
         }
     }
 
-    public async filter(filter: Partial<SubscriptionInterface>) {
-        const parsed = await this.toDb(filter);
-        const subscriptions = await this.query.where(parsed);
-        return Promise.all(subscriptions.map(async data => {
+    public async filter(filter: SubscriptionFilter) {
+        const { search, pagination, ...params } = filter;
+        const parsed = await this.toDb(params);
+        const service = this.query;
+        await this.paginate(service, pagination);
+        const subscriptions = await service.where(parsed)
+            .catch(error => {
+                this.logger.error(error);
+                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+            });
+        const page = await Promise.all(subscriptions.map(async data => {
             const parsedData = await this.toEntity(data);
             return new Subscription(parsedData);
         }));
+        if (!pagination) return page;
+        const counting = this.query;
+        const [{ count }] = await counting.where(parsed).count({ count: '*' })
+            .catch(error => {
+                this.logger.error(error);
+                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+            });
+        const counted = Number(count);
+        return {
+            page,
+            pages: Math.ceil(counted / (pagination.pageSize || 10)),
+            count: counted,
+        };
     }
 
 

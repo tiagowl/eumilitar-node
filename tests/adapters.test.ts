@@ -652,7 +652,7 @@ describe('#7 Testes no usuário', () => {
         };
         const updated = await controller.update(user.user_id, data);
         Object.entries(data).forEach(([key, val]) => {
-            if(key === 'password') expect(updated[key as keyof typeof updated]).toBeUndefined();
+            if (key === 'password') expect(updated[key as keyof typeof updated]).toBeUndefined();
             else expect(updated[(key as keyof typeof updated)]).toBe(val);
         });
         done();
@@ -741,7 +741,7 @@ describe('#8 Inscrições', () => {
         });
         done();
     }, 100000);
-    test('#84 Listagem', async done => {
+    test('#84 Listagem do usuário', async done => {
         const controller = new SubscriptionController(await context);
         expect(user).toBeDefined();
         const subscriptions = await controller.mySubscriptions(user?.user_id || 0);
@@ -772,6 +772,16 @@ describe('#8 Inscrições', () => {
         }
         done();
     }, 100000);
+    test('#86 Listagem de todas', async done => {
+        const controller = new SubscriptionController(await context);
+        const list = await controller.list({ pagination: { 'ordering': 'id', 'page': 1, 'pageSize': 10 } });
+        expect(list).not.toBeInstanceOf(Array);
+        if (list instanceof Array) throw new Error();
+        expect(list.page).toBeInstanceOf(Array);
+        expect(list.page.length).toBe(10);
+        expect(list.pages).toBe(Math.ceil(list.count / 10));
+        done();
+    });
 });
 
 

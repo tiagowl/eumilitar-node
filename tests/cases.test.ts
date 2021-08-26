@@ -721,6 +721,7 @@ describe('#7 Assinaturas', () => {
         const useCase = new SubscriptionCase(repository);
         const subscriptions = await useCase.filter({ 'active': true });
         expect(subscriptions).toBeInstanceOf(Array);
+        if (!(subscriptions instanceof Array)) throw new Error();
         subscriptions.forEach(subscription => {
             expect(subscription).toBeInstanceOf(Subscription);
         });

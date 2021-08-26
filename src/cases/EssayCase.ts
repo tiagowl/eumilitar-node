@@ -1,6 +1,7 @@
 import Essay, { EssayInterface, Status } from "../entities/Essay";
 import { Reason, reasons } from "../entities/EssayInvalidation";
 import EssayTheme, { Course } from '../entities/EssayTheme';
+import Subscription from "../entities/Subscription";
 import User from "../entities/User";
 import CaseError from "./Error";
 import { EssayThemeRepositoryInterface } from './EssayThemeCase';
@@ -91,7 +92,7 @@ export default class EssayCase {
     }
 
     private async checkSubscriptions(userID: number, theme: EssayTheme) {
-        const subscriptions = await this.repository.subscriptions.filter({ user: userID, active: true });
+        const subscriptions = (await this.repository.subscriptions.filter({ user: userID, active: true })) as Subscription[];
         const hasPermission = await subscriptions.reduce(async (value, subscription) => {
             const permitted = await value;
             const expired = subscription.expiration <= new Date();

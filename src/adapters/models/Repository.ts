@@ -23,6 +23,11 @@ export default class Repository<Model, Entity> {
 
     get query() { return this.service(this.driver); }
 
+    protected async processError(error: any) {
+        this.logger.error(error);
+        throw { message: 'Erro ao acessar banco de dados', status: 500 };
+    }
+
     protected async authHotmart() {
         try {
             const url = 'https://api-sec-vlc.hotmart.com/security/oauth/token';
