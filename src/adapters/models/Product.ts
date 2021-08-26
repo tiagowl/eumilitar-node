@@ -64,7 +64,7 @@ export default class ProductRepository extends Repository<ProductModel, ProductI
                 throw { message: 'Erro ao consultar banco de dados', status: 500 };
             });
         if (!product) {
-            await this.notifyAdmins(filter);
+            if (typeof filter.code === 'number') await this.notifyAdmins(filter);
             throw { message: 'Produto não encontrado', status: 404 };
         }
         const entityData = await this.toEntity(product);

@@ -1,5 +1,5 @@
 import Subscription, { SubscriptionInterface } from "../entities/Subscription";
-import { ProductRepositoryInterface } from "./ProductCase";
+import ProductCase, { ProductRepositoryInterface } from "./ProductCase";
 import UserUseCase, { UserRepositoryInterface } from "./UserUseCase";
 import crypto from 'crypto';
 import { Course } from "../entities/Product";
@@ -13,7 +13,7 @@ export interface SubscriptionFilter extends Partial<SubscriptionInterface> {
 
 export interface SubscriptionRepositoryInterface {
     readonly create: (data: SubscriptionInsertionInterface) => Promise<Subscription>;
-    readonly filter: (filter: SubscriptionFilter) => Promise<Subscription[] | Paginated<Subscription>>;
+    readonly filter: (filter: SubscriptionFilter) => Promise<Subscription[]>;
     readonly update: (id: number, data: Partial<SubscriptionInterface>) => Promise<Subscription>;
     readonly count: (filter: SubscriptionFilter) => Promise<number>;
     readonly users: UserRepositoryInterface;
@@ -66,7 +66,8 @@ export default class SubscriptionCase {
     public async create(data: SubscriptionCreationInterface) {
         if (await this.exists(data)) return;
         const user = await this.checkUser(data);
-        const product = await this.repository.products.get({ code: data.product });
+        const products = new ProductCase(this.repository.products);
+        const product = await products.get({ code: data.product });
         return this.repository.create({
             user: user.id,
             expiration: new Date(Date.now() + product.expirationTime),

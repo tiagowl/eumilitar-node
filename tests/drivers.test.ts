@@ -324,7 +324,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(status).toBe(200);
         expect(body.password).toBeUndefined();
         Object.entries(data).forEach(([key, val]) => {
-            if(key === 'password') expect(body[key as keyof typeof body]).toBeUndefined();
+            if (key === 'password') expect(body[key as keyof typeof body]).toBeUndefined();
             else expect(body[(key as keyof typeof body)]).toBe(val);
         });
         done();
@@ -780,16 +780,18 @@ describe('#5 Correção da redação', () => {
 
 describe('#6 Inscrições', () => {
     const email = 'teste.sandbox@hotmart.com';
+    const student: UserModel = userFactory({ permission: 6 });
+    const admin: UserModel = userFactory({ permission: 1 });
     const deleteAll = async (done: any) => {
         const repository = new UserRepository(await context);
-        await repository.query.where('email', email).del();
+        await repository.query.whereIn('email', [email]).del();
         done();
     };
-    const student: UserModel = userFactory({ permission: 6 });
     beforeAll(async (done) => {
-        const service = UserService(driver)
+        const service = () => UserService(driver)
             .onConflict('user_id').merge();
-        await saveUser(student, service);
+        await saveUser(student, service());
+        await saveUser(admin, service());
         done()
     }, 100000)
     beforeAll(deleteAll);
@@ -878,16 +880,30 @@ describe('#6 Inscrições', () => {
         expect(response.body.active).toBeFalsy();
         done();
     });
-    test('Listagem', async done => {
+    test('Listagem ', async done => {
         const app = await appFactory();
         const api = supertest(app.server);
         if (!student) throw new Error('Sem usuário');
         const token = await authenticate(student, api)
         const header = `Bearer ${token}`;
-        const response = await api.get('/subscriptions/')
+        const response = await api.get('/users/profile/subscriptions/')
             .set('Authorization', header);
         expect(response.status, jp(response.body)).toBe(200);
         expect(response.body).toBeInstanceOf(Array);
+        done();
+    });
+    test('Listagem ', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        if (!admin) throw new Error('Sem usuário');
+        const token = await authenticate(admin, api)
+        const header = `Bearer ${token}`;
+        const response = await api.get('/subscriptions/')
+            .query({ pagination: { page: 1, pageSize: 10, ordering: 'id' } })
+            .set('Authorization', header);
+        expect(response.status, jp(response.body)).toBe(200);
+        expect(response.body.page).toBeInstanceOf(Array);
+        expect(response.body.page.length).toBe(10);
         done();
     });
 });

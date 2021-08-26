@@ -34,6 +34,12 @@ const routes: Route[] = [
         ]
     },
     {
+        path: '/users/profile/subscriptions/',
+        handlers: [
+            { handler: handlers.mySubscriptions, method: 'get' },
+        ]
+    },
+    {
         path: '/themes/',
         handlers: [
             { handler: handlers.createEssayTheme, method: 'post' },

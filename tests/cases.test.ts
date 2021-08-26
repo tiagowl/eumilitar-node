@@ -413,6 +413,11 @@ class SubscriptionTestRepository implements SubscriptionRepositoryInterface {
         // @ts-ignore
         return subscription;
     }
+
+    public async count(filter: Partial<SubscriptionInsertionInterface>) {
+        const data = await this.filter(filter);
+        return data.length;
+    }
 }
 
 describe('#1 Testes nos casos de uso da entidade User', () => {
@@ -687,7 +692,7 @@ describe('#6 Produtos', () => {
     test('Recuperação', async done => {
         const repository = new ProductTestRepository();
         const useCase = new ProductCase(repository);
-        const product = await useCase.get(10);
+        const product = await useCase.get({ code: 10 });
         expect(product).toBeInstanceOf(Product);
         expect(product.id).toBe(1);
         done();

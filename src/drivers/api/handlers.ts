@@ -527,7 +527,7 @@ export function updateProduct(context: Context) {
     });
 }
 
-export function listSubscriptions(context: Context) {
+export function mySubscriptions(context: Context) {
     const handler = express.Router({ mergeParams: true }).use(isAuthenticated(context));
     const controller = new SubscriptionController(context);
     return handler.use(async (req, res) => {
@@ -565,6 +565,21 @@ export function updateUser(context: Context) {
             const { id } = req.params;
             const created = await controller.update(Number(id), req.body);
             res.status(200).json(created);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    });
+}
+
+export function listSubscriptions(context: Context) {
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin']));
+    const controller = new SubscriptionController(context);
+    return handler.use(async (req, res) => {
+        try {
+            const subscriptions = await controller.list(req.query);
+            res.status(200).json(subscriptions);
         } catch (error) {
             res.status(error.status || 500).json(error);
         } finally {

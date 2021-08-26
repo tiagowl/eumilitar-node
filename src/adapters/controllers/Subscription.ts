@@ -68,12 +68,7 @@ export default class SubscriptionController extends Controller<OrderData> {
     }
 
     private async parseEntity(entity: SubscriptionInterface) {
-        const products = new ProductCase(this.repository.products);
-        const product = await products.get(entity.product);
-        return {
-            ...entity,
-            product: { ...product },
-        };
+        return { ...entity, };
     }
 
     private async writeNotification(data: OrderData, error: any) {
@@ -154,10 +149,14 @@ export default class SubscriptionController extends Controller<OrderData> {
         try {
             const parsed = await this.castFilter<SubscriptionFilter>(filter, filterSchema);
             const filtered = await this.useCase.filter(parsed);
-            const page = await Promise.all(
-                (filtered instanceof Array ? filtered : filtered.page)
-                    .map(async subscription => this.parseEntity(subscription))
-            );
+            const productCase = new ProductCase(this.repository.products);
+            const products = await productCase.list({});
+            const page = await Promise.all(filtered.map(async subscription => {
+                const data = await this.parseEntity(subscription);
+                const product = products.find(({ id }) => id === data.product);
+                if (!product) throw { message: `Produto "${data.product}" não encontrado`, status: 500 };
+                return { ...data, product: { ...product } };
+            }));
             if (!parsed.pagination) return page;
             const count = await this.useCase.count(parsed);
             return {

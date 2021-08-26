@@ -22,8 +22,8 @@ export default class ProductCase {
         this.repository = repository;
     }
 
-    public async get(code: number) {
-        return this.repository.get({ code });
+    public async get(filter: Partial<ProductInterface>) {
+        return this.repository.get(filter);
     }
 
     public async create(data: ProductCreation) {
