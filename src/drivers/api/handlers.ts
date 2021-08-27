@@ -432,6 +432,23 @@ export function listUsers(context: Context) {
     return handler;
 }
 
+export function getUser(context: Context) {
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin']));
+    const controller = new UserController(context);
+    handler.use(async (req, res) => {
+        try {
+            const { id } = req.params;
+            const user = await controller.get(Number(id));
+            res.status(200).json(user);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    });
+    return handler;
+}
+
 
 export function getInvalidation(context: Context) {
     const handler = express.Router({ mergeParams: true }).use(isAuthenticated(context));
@@ -563,8 +580,8 @@ export function updateUser(context: Context) {
     return handler.use(async (req, res) => {
         try {
             const { id } = req.params;
-            const created = await controller.update(Number(id), req.body);
-            res.status(200).json(created);
+            const updated = await controller.update(Number(id), req.body);
+            res.status(200).json(updated);
         } catch (error) {
             res.status(error.status || 500).json(error);
         } finally {

@@ -31,7 +31,6 @@ export interface CancelData {
 }
 
 const filterSchema = yup.object().shape({
-    pagination: paginationSchema,
     id: yup.number(),
     product: yup.number(),
     user: yup.number(),
@@ -40,6 +39,7 @@ const filterSchema = yup.object().shape({
     code: yup.number(),
     active: yup.boolean(),
     course: yup.string(),
+    pagination: paginationSchema,
 }).noUnknown();
 
 export default class SubscriptionController extends Controller<OrderData> {
@@ -157,6 +157,8 @@ export default class SubscriptionController extends Controller<OrderData> {
     public async list(filter: SubscriptionFilter) {
         try {
             const parsed = await this.castFilter<SubscriptionFilter>(filter, filterSchema);
+            // tslint:disable-next-line
+            console.log(JSON.stringify(parsed), JSON.stringify(filter))
             const filtered = await this.useCase.filter(parsed);
             const productCase = new ProductCase(this.repository.products);
             const products = await productCase.list({});

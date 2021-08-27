@@ -656,7 +656,13 @@ describe('#7 Testes no usuário', () => {
             else expect(updated[(key as keyof typeof updated)]).toBe(val);
         });
         done();
-    })
+    });
+    test('#73 recuperação', async done => {
+        const controller = new UserController(await context);
+        const recovered = await controller.get(user.user_id);
+        expect(recovered).toBeDefined();
+        done();
+    });
 });
 
 describe('#8 Inscrições', () => {

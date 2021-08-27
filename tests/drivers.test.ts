@@ -327,6 +327,20 @@ describe('#1 Teste na api do usuário', () => {
             if (key === 'password') expect(body[key as keyof typeof body]).toBeUndefined();
             else expect(body[(key as keyof typeof body)]).toBe(val);
         });
+        user.email = data.email;
+        done();
+    });
+    test('#199', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const { body, status } = await api.get(`/users/${user.user_id}/`)
+            .set('Authorization', header);
+        expect(body.message, jp({ token, body: body })).toBeUndefined();
+        expect(status).toBe(200);
+        expect(body.id).toBeDefined();
+        expect(body.password).toBeUndefined();
         done();
     });
 })
@@ -904,6 +918,23 @@ describe('#6 Inscrições', () => {
         expect(response.status, jp(response.body)).toBe(200);
         expect(response.body.page).toBeInstanceOf(Array);
         expect(response.body.page.length).toBe(10);
+        done();
+    });
+    test('Filtragem', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        if (!admin) throw new Error('Sem usuário');
+        const token = await authenticate(admin, api)
+        const header = `Bearer ${token}`;
+        const response = await api.get('/subscriptions/')
+            .query({ user: student.user_id })
+            .set('Authorization', header);
+        expect(response.status, jp(response.body)).toBe(200);
+        expect(response.body).toBeInstanceOf(Array);
+        expect(response.body.length).toBeGreaterThan(0);
+        response.body.forEach((item: any) => {
+            expect(item.user).toBe(student.user_id);
+        })
         done();
     });
 });

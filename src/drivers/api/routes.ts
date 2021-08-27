@@ -97,7 +97,8 @@ const routes: Route[] = [
     {
         path: '/users/:id/',
         handlers: [
-            { handler: handlers.updateUser, method: 'put' }
+            { handler: handlers.updateUser, method: 'put' },
+            { handler: handlers.getUser, method: 'get' },
         ]
     },
     {

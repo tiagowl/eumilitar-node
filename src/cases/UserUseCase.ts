@@ -107,7 +107,7 @@ export default class UserUseCase {
 
     public async get(id: number) {
         this.#user = await this.repository.get({ id });
-        if (!this.#user) throw new CaseError('Usuário não encontrado');
+        if (!this.#user) throw new CaseError('Usuário não encontrado', 'not_found');
         return this.#user;
     }
 

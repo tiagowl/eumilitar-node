@@ -67,6 +67,7 @@ export default class UserController extends Controller<any> {
             permission: entity.permission,
             creationDate: entity.creationDate,
             lastModified: entity.lastModified,
+            fullName: entity.fullName,
         };
     }
 
@@ -108,6 +109,17 @@ export default class UserController extends Controller<any> {
         } catch (error) {
             this.logger.error(error);
             if (error.status) throw error;
+            throw { message: error.message, status: 500 };
+        }
+    }
+
+    public async get(id: number) {
+        try {
+            const user = await this.useCase.get(id);
+            return this.parseEntity(user);
+        } catch (error) {
+            this.logger.error(error);
+            if (error.code === 'not_found') throw { message: 'Usuário não encontrado', status: 404 };
             throw { message: error.message, status: 500 };
         }
     }
