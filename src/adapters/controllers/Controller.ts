@@ -30,18 +30,18 @@ export default class Controller<Fields> {
     }
 
     protected async removeVoidValues<T>(obj: any) {
-        return Object.entries(obj)
-            .reduce(async (promiseResult, [key, val]) => {
-                const result = await promiseResult;
-                const value: any = typeof val === 'object' ? await this.removeVoidValues(val) : val;
-                return (_.isEmpty(value) || !value) ? result : { ...result, [key]: value };
-            }, Promise.resolve({}) as Promise<T>);
+        const entries = Object.entries(obj);
+        const defaultValue = Promise.resolve({}) as Promise<T>;
+        return entries.reduce(async (promiseResult, [key, val]) => {
+            const result = await promiseResult;
+            const isObject = typeof val === 'object';
+            const value: any = isObject ? await this.removeVoidValues<any>(val) : val;
+            return ((isObject && _.isEmpty(value)) || !value) ? result : { ...result, [key]: value };
+        }, defaultValue);
     }
 
     protected async castFilter<T = any>(filter: T, schema: yup.ObjectSchema<any>) {
         const parsedFilter = schema.cast(filter);
-        // tslint:disable-next-line
-        console.log(JSON.stringify(parsedFilter), JSON.stringify(filter))
         return this.removeVoidValues<T>(parsedFilter);
     }
 

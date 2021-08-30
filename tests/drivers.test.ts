@@ -314,7 +314,7 @@ describe('#1 Teste na api do usuário', () => {
             email: faker.internet.email(),
             firstName: faker.name.firstName(),
             lastName: faker.name.lastName(),
-            permission: 'student',
+            permission: 'admin',
             status: 'active',
         };
         const { body, status } = await api.put(`/users/${user.user_id}/`)
@@ -330,7 +330,7 @@ describe('#1 Teste na api do usuário', () => {
         user.email = data.email;
         done();
     });
-    test('#199', async done => {
+    test('#199 recuperação do usuário', async done => {
         const app = await appFactory();
         const api = supertest(app.server);
         const token = await authenticate(user, api)
@@ -806,6 +806,15 @@ describe('#6 Inscrições', () => {
             .onConflict('user_id').merge();
         await saveUser(student, service());
         await saveUser(admin, service());
+        await SubscriptionService(driver).insert({
+            user: student.user_id,
+            hotmart_id: faker.datatype.number(),
+            product: 2,
+            expiration: faker.date.future(),
+            registrationDate: new Date(),
+            active: true,
+            course_tag: 2,
+        });
         done()
     }, 100000)
     beforeAll(deleteAll);
@@ -930,8 +939,8 @@ describe('#6 Inscrições', () => {
             .query({ user: student.user_id })
             .set('Authorization', header);
         expect(response.status, jp(response.body)).toBe(200);
-        expect(response.body).toBeInstanceOf(Array);
-        expect(response.body.length).toBeGreaterThan(0);
+        expect(response.body, jp(response.body)).toBeInstanceOf(Array);
+        expect(response.body.length, jp(response.body)).toBeGreaterThan(0);
         response.body.forEach((item: any) => {
             expect(item.user).toBe(student.user_id);
         })
