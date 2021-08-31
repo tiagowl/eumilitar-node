@@ -42,6 +42,7 @@ const filterSchema = yup.object().shape({
     pagination: paginationSchema,
 }).noUnknown();
 
+
 export default class SubscriptionController extends Controller<OrderData> {
     private readonly repository: SubscriptionRepository;
     private readonly useCase: SubscriptionCase;
@@ -93,7 +94,7 @@ export default class SubscriptionController extends Controller<OrderData> {
         });
     }
 
-    public async create(data: OrderData) {
+    public async createFromHotmart(data: OrderData) {
         try {
             const validated = await this.validate<OrderData>(data);
             const payload: HotmartFilter = {
@@ -104,7 +105,7 @@ export default class SubscriptionController extends Controller<OrderData> {
             const subscriptions = this.repository.getFromHotmart(payload);
             const createdList = [];
             for await (const subscription of subscriptions) {
-                const created = await this.useCase.create({
+                const created = await this.useCase.autoCreate({
                     email: validated.email,
                     firstName: validated.first_name,
                     lastName: validated.last_name,
@@ -177,6 +178,14 @@ export default class SubscriptionController extends Controller<OrderData> {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message, status: 500 };
+        }
+    }
+
+    public async create(data: SubscriptionCreation) {
+        try {
+
+        } catch (error) {
+
         }
     }
 }

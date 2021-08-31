@@ -37,6 +37,10 @@ export interface SubscriptionInsertionInterface {
     course: Course;
 }
 
+export interface SubscriptionCreation {
+
+}
+
 export default class SubscriptionCase {
     private readonly repository: SubscriptionRepositoryInterface;
 
@@ -63,7 +67,7 @@ export default class SubscriptionCase {
         return subscription.length > 0;
     }
 
-    public async create(data: SubscriptionCreationInterface) {
+    public async autoCreate(data: SubscriptionCreationInterface) {
         if (await this.exists(data)) return;
         const user = await this.checkUser(data);
         const products = new ProductCase(this.repository.products);
@@ -91,4 +95,6 @@ export default class SubscriptionCase {
     public async count(filter: SubscriptionFilter) {
         return this.repository.count(filter);
     }
+
+    public async create(data: )
 }

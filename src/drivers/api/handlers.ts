@@ -471,7 +471,7 @@ export function createSubscription(context: Context): RequestHandler<void, any[]
     const controller = new SubscriptionController(context);
     return async (req, res) => {
         try {
-            const created = await controller.create({
+            const created = await controller.createFromHotmart({
                 ...req.body,
                 'prod': Number(req.body.prod),
             });
