@@ -662,6 +662,7 @@ describe('#8 Inscrições', () => {
             active: true,
             course_tag: 2,
         }).onConflict().ignore();
+
         await saveUser(user, UserService(driver));
         done();
     }, 100000);
@@ -681,27 +682,36 @@ describe('#8 Inscrições', () => {
         done();
     }, 100000);
     test('#82 Cancelamento', async done => {
+        const productRepository = new ProductRepository(await context);
+        const product = await productRepository.get({ course: 'espcex' });
+        const [inserted] = await SubscriptionService(driver).insert({
+            hotmart_id: 18,
+            product: product.id,
+            user: user.user_id,
+            expiration: new Date(Date.now() + 10000),
+            registrationDate: new Date(),
+            active: true,
+            course_tag: 2,
+        }).onConflict().ignore();
+        expect(inserted).toBeDefined()
         const [selected] = await SubscriptionService(driver)
-            .whereIn('user',
-                UserService(driver)
-                    .where('email', email).select('user_id as user')
-            );
+            .where('hotmart_id', 18)
         expect(selected).toBeDefined();
         const controller = new SubscriptionController(await context);
-        const canceled = await controller.cancel({
+        expect(selected.user).toBe(user.user_id);
+        const canceleds = await controller.cancel({
             hottok,
-            userEmail: email,
-            'actualRecurrenceValue': faker.datatype.number(),
-            'cancellationDate': Date.now(),
-            'dateNextCharge': Date.now(),
-            'productName': faker.name.title(),
-            'subscriberCode': faker.datatype.string(),
-            'subscriptionId': selected.hotmart_id,
-            'subscriptionPlanName': faker.name.title(),
-            'userName': faker.name.findName(),
-        })
-        expect(canceled).toBeDefined();
-        expect(canceled.id).toBeDefined();
+            email,
+            first_name: 'Teste',
+            last_name: 'Comprador',
+            prod: selected.product,
+            status: 'canceled',
+        });
+        expect(canceleds.length).toBeGreaterThan(0);
+        canceleds.forEach(canceled => {
+            expect(canceled).toBeDefined();
+            expect(canceled.id).toBeDefined();
+        });
         done();
     }, 100000);
     test('#83 Criação com produto inexistente', async done => {
@@ -736,22 +746,16 @@ describe('#8 Inscrições', () => {
     }, 100000);
     test('#85 Cancelamento com assinatura inexistente', async done => {
         const controller = new SubscriptionController(await context);
-        try {
-            await controller.cancel({
-                hottok,
-                userEmail: email,
-                'actualRecurrenceValue': faker.datatype.number(),
-                'cancellationDate': Date.now(),
-                'dateNextCharge': Date.now(),
-                'productName': faker.name.title(),
-                'subscriberCode': faker.datatype.string(),
-                'subscriptionId': 234,
-                'subscriptionPlanName': faker.name.title(),
-                'userName': faker.name.findName(),
-            })
-        } catch (error) {
-            expect(error).toMatchObject({ message: 'Inscrição inexistente', status: 202 });
-        }
+        const notCanceled = await controller.cancel({
+            hottok,
+            email: faker.internet.email(),
+            first_name: 'Teste',
+            last_name: 'Comprador',
+            prod: 0,
+            status: 'canceled',
+        })
+        expect(notCanceled).toBeInstanceOf(Array);
+        expect(notCanceled.length).toBe(0);
         done();
     }, 100000);
 });

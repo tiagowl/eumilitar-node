@@ -8,7 +8,7 @@ import EssayInvalidationController from "../../adapters/controllers/EssayInvalid
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
 import ProductController from "../../adapters/controllers/Products";
-import SubscriptionController, { CancelData, OrderData } from "../../adapters/controllers/Subscription";
+import SubscriptionController, { OrderData } from "../../adapters/controllers/Subscription";
 import UserController from "../../adapters/controllers/User";
 import { CorrectionInterface } from "../../entities/Correction";
 import { EssayInvalidationInterface, Reason } from "../../entities/EssayInvalidation";
@@ -467,7 +467,7 @@ export function createSubscription(context: Context): RequestHandler<void, Subsc
     };
 }
 
-export function cancelSubscription(context: Context): RequestHandler<void, SubscriptionInterface, CancelData> {
+export function cancelSubscription(context: Context): RequestHandler<void, SubscriptionInterface[], OrderData> {
     const controller = new SubscriptionController(context);
     return async (req, res) => {
         try {
