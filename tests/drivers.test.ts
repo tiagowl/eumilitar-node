@@ -755,6 +755,7 @@ describe('#5 Correção da redação', () => {
 
 describe('#6 Inscrições', () => {
     const email = 'teste.sandbox@hotmart.com';
+    const user = userFactory({ email });
     const deleteAll = async (done: any) => {
         const repository = new UserRepository(await context);
         await repository.query.where('email', email).del();
@@ -762,6 +763,7 @@ describe('#6 Inscrições', () => {
     };
     const student: UserModel = userFactory({ permission: 6 });
     beforeAll(async (done) => {
+        await saveUser(user, UserService(driver));
         const service = UserService(driver)
             .onConflict('user_id').merge();
         await saveUser(student, service);
@@ -829,28 +831,37 @@ describe('#6 Inscrições', () => {
     test('#62 Cancelamento', async done => {
         const app = await appFactory();
         const api = supertest(app.server);
-        const [selected] = await SubscriptionService((await context).driver)
-            .whereIn('user',
-                UserService((await context).driver)
-                    .where('email', email).select('user_id as user')
-            );
+        const productRepository = new ProductRepository(await context);
+        const product = await productRepository.get({ course: 'espcex' });
+        const [inserted] = await SubscriptionService(driver).insert({
+            hotmart_id: 18,
+            product: product.id,
+            user: user.user_id,
+            expiration: new Date(Date.now() + 10000),
+            registrationDate: new Date(),
+            active: true,
+            course_tag: 2,
+        }).onConflict().ignore();
+        expect(inserted).toBeDefined()
+        const [selected] = await SubscriptionService(driver)
+            .where('hotmart_id', 18)
+        expect(selected).toBeDefined();
         const response = await api.post('/subscriptions/cancelation/')
             .type('application/json')
             .send({
                 hottok,
-                userEmail: email,
-                'actualRecurrenceValue': faker.datatype.number(),
-                'cancellationDate': Date.now(),
-                'dateNextCharge': Date.now(),
-                'productName': faker.name.title(),
-                'subscriberCode': faker.datatype.string(),
-                'subscriptionId': selected.hotmart_id,
-                'subscriptionPlanName': faker.name.title(),
-                'userName': faker.name.findName(),
+                email,
+                first_name: 'Teste',
+                last_name: 'Comprador',
+                prod: selected.product,
+                status: 'canceled',
             });
         expect(response.status, jp(response.body)).toBe(200);
-        expect(response.body.id).toBe(selected.id);
-        expect(response.body.active).toBeFalsy();
+        expect(response.body).toBeInstanceOf(Array);
+        expect(response.body.length).toBeGreaterThan(0);
+        response.body.forEach((item: any) => {
+            expect(item.active).toBeFalsy();
+        })
         done();
     });
     test('Listagem', async done => {

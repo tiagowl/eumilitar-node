@@ -662,7 +662,6 @@ describe('#8 Inscrições', () => {
             active: true,
             course_tag: 2,
         }).onConflict().ignore();
-
         await saveUser(user, UserService(driver));
         done();
     }, 100000);
