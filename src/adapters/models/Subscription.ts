@@ -103,7 +103,7 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
             const url = `https://${this.context.settings.hotmart.env}.hotmart.com/payments/api/v1/subscriptions`;
             let nextPage;
             do {
-                const params: any = { ...filter, page_token: nextPage || '' };
+                const params: any = !!nextPage ? { ...filter, page_token: nextPage || '' } : filter;
                 const response = await this.context.http.get(url, {
                     params,
                     headers: {
