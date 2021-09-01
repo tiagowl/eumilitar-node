@@ -80,7 +80,7 @@ export default class SubscriptionController extends Controller<OrderData> {
             return createdList;
         } catch (error) {
             this.logger.error(error, { data: error?.response?.body });
-            await this.notifyAdmins(data, error);
+            this.notifyAdmins(data, error).catch(this.logger.error);
             throw {
                 message: error.message,
                 status: error.status || 400
@@ -97,8 +97,6 @@ export default class SubscriptionController extends Controller<OrderData> {
             });
             const canceledList = [];
             for await (const subscription of subscriptions) {
-                // tslint:disable-next-line
-                console.log(JSON.stringify(subscription))
                 const canceled = await this.useCase.cancel(subscription.subscription_id)
                     .catch(error => {
                         if (!(error instanceof CaseError && error.code === 'not_found')) {
@@ -113,6 +111,7 @@ export default class SubscriptionController extends Controller<OrderData> {
             return canceledList;
         } catch (error) {
             this.logger.error(error);
+            this.notifyAdmins(data, error).catch(this.logger.error);
             if (error.status) throw error;
             throw { message: 'Erro ao cancelar inscrição', status: 500 };
         }
