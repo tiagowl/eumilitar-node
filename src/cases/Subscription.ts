@@ -20,11 +20,18 @@ export interface SubscriptionRepositoryInterface {
     readonly products: ProductRepositoryInterface;
 }
 
-export interface SubscriptionCreationInterface {
+export interface SubscriptionAutoCreationInterface {
     email: string;
     product: number;
     firstName: string;
     lastName: string;
+    code: number;
+}
+
+export interface SubscriptionCreation {
+    user: number;
+    expiration: Date;
+    product: number;
     code: number;
 }
 
@@ -37,10 +44,6 @@ export interface SubscriptionInsertionInterface {
     course: Course;
 }
 
-export interface SubscriptionCreation {
-
-}
-
 export default class SubscriptionCase {
     private readonly repository: SubscriptionRepositoryInterface;
 
@@ -48,7 +51,7 @@ export default class SubscriptionCase {
         this.repository = repository;
     }
 
-    private async checkUser(data: SubscriptionCreationInterface) {
+    private async checkUser(data: SubscriptionAutoCreationInterface) {
         const user = await this.repository.users.get({ email: data.email });
         if (!!user) return user;
         const userCase = new UserUseCase(this.repository.users);
@@ -62,12 +65,12 @@ export default class SubscriptionCase {
         });
     }
 
-    public async exists(data: SubscriptionCreationInterface) {
+    public async exists(data: SubscriptionAutoCreationInterface) {
         const subscription = (await this.repository.filter(data)) as Subscription[];
         return subscription.length > 0;
     }
 
-    public async autoCreate(data: SubscriptionCreationInterface) {
+    public async autoCreate(data: SubscriptionAutoCreationInterface) {
         if (await this.exists(data)) return;
         const user = await this.checkUser(data);
         const products = new ProductCase(this.repository.products);
@@ -96,5 +99,12 @@ export default class SubscriptionCase {
         return this.repository.count(filter);
     }
 
-    public async create(data: )
+    public async create(data: SubscriptionCreation) {
+        const product = await this.repository.products.get({ id: data.product });
+        return this.repository.create({
+            ...data,
+            registrationDate: new Date(),
+            course: product.course,
+        });
+    }
 }

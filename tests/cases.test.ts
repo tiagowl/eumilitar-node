@@ -700,10 +700,10 @@ describe('#6 Produtos', () => {
 })
 
 describe('#7 Assinaturas', () => {
-    test('Criação', async done => {
+    test('Criação automática', async done => {
         const repository = new SubscriptionTestRepository();
         const useCase = new SubscriptionCase(repository);
-        const subscription = await useCase.create({
+        const subscription = await useCase.autoCreate({
             email: faker.internet.email(),
             firstName: faker.name.firstName(),
             lastName: faker.name.lastName(),
@@ -732,6 +732,18 @@ describe('#7 Assinaturas', () => {
         });
         done();
     })
+    test('Criação manual', async done => {
+        const repository = new SubscriptionTestRepository();
+        const useCase = new SubscriptionCase(repository);
+        const subscription = await useCase.create({
+            product: 1,
+            code: faker.datatype.number(),
+            user: 0,
+            expiration: new Date(Date.now() + 1000),
+        });
+        expect(subscription).toBeInstanceOf(Subscription);
+        done();
+    });
 });
 
 describe('#8 Produtos', () => {

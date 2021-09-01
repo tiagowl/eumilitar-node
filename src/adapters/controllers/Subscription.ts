@@ -182,11 +182,11 @@ export default class SubscriptionController extends Controller<OrderData> {
         }
     }
 
-    public async create(data: SubscriptionCreation) {
+    public async create(data: any) {
         try {
-
+            return;
         } catch (error) {
-
+            return error;
         }
     }
 }
