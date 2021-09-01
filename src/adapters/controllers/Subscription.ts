@@ -47,7 +47,7 @@ const manualCreationSchema = yup.object().shape({
     user: yup.number().required('O campo "usuário" é obrigatório'),
     expiration: yup.date().required('O campo "expiração" é obrigatório'),
     product: yup.number().required('O campo "produto" é obrigatório'),
-    code: yup.number(),
+    code: yup.mixed().transform(data => typeof data === 'string' ? Number(data) : undefined),
 });
 
 export default class SubscriptionController extends Controller<OrderData> {

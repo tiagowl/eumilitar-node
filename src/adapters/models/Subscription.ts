@@ -58,11 +58,13 @@ export interface HotmartSubscription {
     };
 }
 
+const parseCode = (code?: number | null | string) => (!!code || code === 0) ? Number(code) : null;
+
 const fieldsMap: FieldsMap<SubscriptionModel, SubscriptionInterface> = [
     [['user', Number], ['user', Number]],
     [['expiration', val => new Date(val)], ['expiration', val => new Date(val)]],
     [['id', Number], ['id', Number]],
-    [['hotmart_id', Number], ['code', Number]],
+    [['hotmart_id', parseCode], ['code', parseCode]],
     [['product', Number], ['product', Number]],
     [['registrationDate', val => new Date(val)], ['registrationDate', val => new Date(val)]],
     [['active', Boolean], ['active', Boolean]],
@@ -83,9 +85,12 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
         const parsed = await this.toDb(data);
         const defaultError = { message: 'Erro ao salvar inscrição', status: 500 };
         const [id] = await this.query.insert(parsed)
-            .onConflict('hotmart_id').ignore()
             .catch(error => {
                 this.logger.error(error);
+                if (error.code === 'ER_DUP_ENTRY') throw {
+                    message: `Código "${parsed.hotmart_id}" já está atribuido a outra assinatura`,
+                    status: 400,
+                };
                 throw { message: 'Erro ao gravar no banco de dados', status: 500 };
             });
         if (typeof id !== 'number') throw defaultError;

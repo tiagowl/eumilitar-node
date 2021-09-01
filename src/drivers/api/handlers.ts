@@ -477,7 +477,11 @@ export function createSubscription(context: Context): RequestHandler<void, any[]
                 throw error;
             });
             if (user && user.permission === 'admin') {
-                const created = await controller.create(req.body as SubscriptionCreation);
+                const body = {
+                    ...req.body as SubscriptionCreation,
+                    expiration: new Date((req.body as SubscriptionCreation).expiration)
+                };
+                const created = await controller.create(body);
                 res.status(201).json(created);
             } else {
                 const body = req.body as OrderData;
