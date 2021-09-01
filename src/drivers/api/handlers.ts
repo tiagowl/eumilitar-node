@@ -10,6 +10,7 @@ import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecovery
 import ProductController from "../../adapters/controllers/Products";
 import SubscriptionController, { OrderData } from "../../adapters/controllers/Subscription";
 import UserController from "../../adapters/controllers/User";
+import { SubscriptionCreation } from "../../cases/Subscription";
 import { CorrectionInterface } from "../../entities/Correction";
 import { EssayInvalidationInterface, Reason } from "../../entities/EssayInvalidation";
 import { Course } from "../../entities/EssayTheme";
@@ -55,7 +56,7 @@ async function getToken(header: string | undefined) {
 }
 
 
-async function checkAuth(req: Request, context: Context) {
+async function checkAuth(req: Request<any>, context: Context) {
     const token = await getToken(req.headers.authorization);
     const controller = new AuthController(context);
     const { user, isValid } = await controller.checkToken({ token },);
@@ -467,15 +468,25 @@ export function getInvalidation(context: Context) {
     return handler;
 }
 
-export function createSubscription(context: Context): RequestHandler<void, any[], OrderData> {
+export function createSubscription(context: Context): RequestHandler<void, any[] | any, OrderData | SubscriptionCreation> {
     const controller = new SubscriptionController(context);
     return async (req, res) => {
         try {
-            const created = await controller.createFromHotmart({
-                ...req.body,
-                'prod': Number(req.body.prod),
+            const user = await checkAuth(req, context).catch(error => {
+                if (error.status === 401) return;
+                throw error;
             });
-            res.status(201).json(created);
+            if (user && user.permission === 'admin') {
+                const created = await controller.create(req.body as SubscriptionCreation);
+                res.status(201).json(created);
+            } else {
+                const body = req.body as OrderData;
+                const created = await controller.createFromHotmart({
+                    ...body as OrderData,
+                    'prod': Number(body.prod),
+                });
+                res.status(201).json(created);
+            }
         } catch (error) {
             res.status(error.status || 500).json(error);
         } finally {

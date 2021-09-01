@@ -960,6 +960,26 @@ describe('#6 Inscrições', () => {
         })
         done();
     });
+    test('Criação manual', async done => {
+        const productRepository = new ProductRepository(await context);
+        const product = await productRepository.get({ course: 'esa' });
+        const app = await appFactory();
+        const api = supertest(app.server);
+        if (!admin) throw new Error('Sem usuário');
+        const token = await authenticate(admin, api)
+        const header = `Bearer ${token}`;
+        const response = await api.get('/subscriptions/')
+            .send({
+                'expiration': new Date(Date.now() + 10000),
+                'product': product.id,
+                'user': user.user_id,
+            })
+            .set('Authorization', header);
+        expect(response.status, jp(response.body)).toBe(200);
+        expect(response.body, jp(response.body)).toBeDefined();
+        expect(response.body, jp(response.body)).not.toBeNull();
+        done();
+    });
 });
 
 describe('#7 Produtos', () => {
