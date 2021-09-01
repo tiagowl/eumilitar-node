@@ -7,6 +7,7 @@ import { Context } from "../interfaces";
 import ProductRepository, { courseParser, courseTagParser } from "./Product";
 import Repository, { FieldsMap } from "./Repository";
 import UserRepository from "./User";
+import qs from 'querystring';
 
 export const SubscriptionService = (driver: Knex) => driver<Partial<SubscriptionModel>, SubscriptionModel[]>('subscriptions');
 
@@ -21,14 +22,14 @@ export interface SubscriptionModel {
     course_tag: 2 | 3;
 }
 
-type HotmartStatus = 'ACTIVE' | 'INACTIVE' | 'DELAYED' | 'CANCELLED_BY_CUSTOMER' | 'CANCELLED_BY_SELLER' | 'CANCELLED_BY_ADMIN' | 'STARTED' | 'OVERDUE';
+export type HotmartStatus = 'ACTIVE' | 'INACTIVE' | 'DELAYED' | 'CANCELLED_BY_CUSTOMER' | 'CANCELLED_BY_SELLER' | 'CANCELLED_BY_ADMIN' | 'STARTED' | 'OVERDUE';
 
 export interface HotmartFilter {
-    max_results?: number;
-    product_id?: number;
-    plan?: string[];
-    status?: HotmartStatus;
-    subscriber_email?: string;
+    max_results?: number | number[];
+    product_id?: number | number[];
+    plan?: string | string[];
+    status?: HotmartStatus | HotmartStatus[];
+    subscriber_email?: string | string[];
 }
 
 export interface HotmartSubscription {
@@ -109,7 +110,8 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${authToken}`,
-                    }
+                    },
+                    paramsSerializer: qs.stringify,
                 });
                 nextPage = response.data.page_info.next_page_token;
                 if (!response.data?.items) return;

@@ -46,7 +46,6 @@ const filterSchema = yup.object().shape({
 export default class SubscriptionController extends Controller<OrderData> {
     private readonly repository: SubscriptionRepository;
     private readonly useCase: SubscriptionCase;
-    private readonly cancelSchema: yup.ObjectSchema<any>;
 
     constructor(context: Context) {
         const { settings: { hotmart: { hottok } } } = context;
@@ -61,18 +60,6 @@ export default class SubscriptionController extends Controller<OrderData> {
             status: yup.string().required(),
         });
         super(context, schema);
-        this.cancelSchema = yup.object({
-            hottok: yup.string().required('O campo "hottok" é obrigatório').is([hottok], '"hottok" inválido'),
-            subscriptionId: yup.number().required('O campo "subscriptionId" é obrigatório'),
-            subscriberCode: yup.string().required('O campo "subscriberCode" é obrigatório'),
-            cancellationDate: yup.number().required('O campo "cancellationDate" é obrigatório'),
-            dateNextCharge: yup.number().required('O campo "dateNextCharge" é obrigatório'),
-            actualRecurrenceValue: yup.number().required('O campo "actualRecurrenceValue" é obrigatório'),
-            userName: yup.string().required('O campo "userName" é obrigatório'),
-            userEmail: yup.string().required('O campo "userEmail" é obrigatório'),
-            productName: yup.string().required('O campo "productName" é obrigatório'),
-            subscriptionPlanName: yup.string().required('O campo "subscriptionPlanName" é obrigatório'),
-        });
         this.repository = new SubscriptionRepository(context);
         this.useCase = new SubscriptionCase(this.repository);
     }
@@ -120,7 +107,7 @@ export default class SubscriptionController extends Controller<OrderData> {
             return createdList;
         } catch (error) {
             this.logger.error(error, { data: error?.response?.body });
-            this.notifyAdmins(data, error);
+            this.notifyAdmins(data, error).catch(this.logger.error);
             throw {
                 message: error.message,
                 status: error.status || 400
@@ -128,16 +115,30 @@ export default class SubscriptionController extends Controller<OrderData> {
         }
     }
 
-    public async cancel(data: CancelData) {
+    public async cancel(data: OrderData) {
         try {
-            const validated = await this.validate(data, this.cancelSchema);
-            const subscription = await this.useCase.cancel(validated.subscriptionId);
-            return this.parseEntity(subscription);
+            const validated = await this.validate(data);
+            const subscriptions = this.repository.getFromHotmart({
+                subscriber_email: validated.email,
+                status: ['INACTIVE', 'CANCELLED_BY_CUSTOMER', 'CANCELLED_BY_SELLER', 'CANCELLED_BY_ADMIN'],
+            });
+            const canceledList = [];
+            for await (const subscription of subscriptions) {
+                const canceled = await this.useCase.cancel(subscription.subscription_id)
+                    .catch(error => {
+                        if (!(error instanceof CaseError && error.code === 'not_found')) {
+                            throw error;
+                        }
+                    });
+                if (!!canceled) {
+                    const parsed = await this.parseEntity(canceled);
+                    canceledList.push(parsed);
+                }
+            }
+            return canceledList;
         } catch (error) {
             this.logger.error(error);
-            if (error instanceof CaseError && error.code === 'not_found') {
-                throw { message: 'Inscrição inexistente', status: 202 };
-            }
+            this.notifyAdmins(data, error).catch(this.logger.error);
             if (error.status) throw error;
             throw { message: 'Erro ao cancelar inscrição', status: 500 };
         }
