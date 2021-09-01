@@ -32,7 +32,7 @@ export interface SubscriptionCreation {
     user: number;
     expiration: Date;
     product: number;
-    code: number;
+    code?: number;
 }
 
 export interface SubscriptionInsertionInterface {
@@ -40,7 +40,7 @@ export interface SubscriptionInsertionInterface {
     expiration: Date;
     registrationDate: Date;
     product: number;
-    code: number;
+    code?: number;
     course: Course;
 }
 

@@ -2,11 +2,12 @@ import * as yup from 'yup';
 import { Context } from '../interfaces';
 import SubscriptionRepository, { HotmartFilter } from '../models/Subscription';
 import Controller, { paginationSchema } from './Controller';
-import SubscriptionCase, { SubscriptionFilter } from '../../cases/Subscription';
+import SubscriptionCase, { SubscriptionCreation, SubscriptionFilter } from '../../cases/Subscription';
 import Subscription, { SubscriptionInterface } from '../../entities/Subscription';
 import CaseError from '../../cases/Error';
 import ProductCase from '../../cases/ProductCase';
 import { courses } from '../../entities/Product';
+import { number } from 'yup/lib/locale';
 
 export interface OrderData {
     hottok: string;
@@ -42,6 +43,12 @@ const filterSchema = yup.object().shape({
     pagination: paginationSchema,
 }).noUnknown();
 
+const manualCreationSchema = yup.object().shape({
+    user: yup.number().required('O campo "usuário" é obrigatório'),
+    expiration: yup.date().required('O campo "expiração" é obrigatório'),
+    product: yup.number().required('O campo "produto" é obrigatório'),
+    code: yup.number(),
+});
 
 export default class SubscriptionController extends Controller<OrderData> {
     private readonly repository: SubscriptionRepository;
@@ -182,11 +189,15 @@ export default class SubscriptionController extends Controller<OrderData> {
         }
     }
 
-    public async create(data: any) {
+    public async create(data: SubscriptionCreation) {
         try {
-            return;
+            const validated = await this.validate(data, manualCreationSchema);
+            const created = await this.useCase.create(validated);
+            return this.parseEntity(created);
         } catch (error) {
-            return error;
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: error.message, status: 500 };
         }
     }
 }

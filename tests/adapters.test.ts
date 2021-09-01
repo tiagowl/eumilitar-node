@@ -738,7 +738,7 @@ describe('#8 Inscrições', () => {
         const controller = new SubscriptionController(await context);
         const productRepository = new ProductRepository(await context);
         const product = await productRepository.get({ course: 'espcex' });
-        await controller.create({
+        await controller.createFromHotmart({
             hottok, email,
             'first_name': faker.name.firstName(),
             'last_name': faker.name.lastName(),
@@ -787,6 +787,18 @@ describe('#8 Inscrições', () => {
         expect(list.pages).toBe(Math.ceil(list.count / 10));
         done();
     });
+    test('#87 Criação manual', async done => {
+        const controller = new SubscriptionController(await context);
+        const productRepository = new ProductRepository(await context);
+        const product = await productRepository.get({ course: 'esa' });
+        const created = await controller.create({
+            'expiration': new Date(Date.now() + 10000),
+            'product': product.id,
+            'user': user.user_id,
+        });
+        expect(created).toBeDefined();
+        done();
+    })
 });
 
 

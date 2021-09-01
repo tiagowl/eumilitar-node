@@ -6,7 +6,7 @@ export interface SubscriptionInterface {
     user: number;
     expiration: Date;
     registrationDate: Date;
-    code: number;
+    code?: number;
     active: boolean;
     course: Course;
 }
@@ -17,7 +17,7 @@ export default class Subscription implements SubscriptionInterface {
     public user: number;
     public expiration: Date;
     public registrationDate: Date;
-    public code: number;
+    public code?: number;
     public active: boolean;
     public course: Course;
 
