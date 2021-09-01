@@ -664,7 +664,7 @@ describe('#8 Inscrições', () => {
         }).onConflict().ignore();
         await saveUser(user, UserService(driver));
         done();
-    }, 100000);
+    }, 10000);
     test('#81 Criação', async done => {
         const controller = new SubscriptionController(await context);
         const productRepository = new ProductRepository(await context);
@@ -679,7 +679,7 @@ describe('#8 Inscrições', () => {
         expect(created).toBeDefined();
         expect(created.length).toBeGreaterThan(0);
         done();
-    }, 100000);
+    }, 10000);
     test('#82 Cancelamento', async done => {
         const productRepository = new ProductRepository(await context);
         const product = await productRepository.get({ course: 'espcex' });
@@ -691,19 +691,15 @@ describe('#8 Inscrições', () => {
             registrationDate: new Date(),
             active: true,
             course_tag: 2,
-        }).onConflict().ignore();
+        }).onConflict().merge();
         expect(inserted).toBeDefined()
-        const [selected] = await SubscriptionService(driver)
-            .where('hotmart_id', 18)
-        expect(selected).toBeDefined();
         const controller = new SubscriptionController(await context);
-        expect(selected.user).toBe(user.user_id);
         const canceleds = await controller.cancel({
             hottok,
             email,
             first_name: 'Teste',
             last_name: 'Comprador',
-            prod: selected.product,
+            prod: 0,
             status: 'canceled',
         });
         expect(canceleds.length).toBeGreaterThan(0);
@@ -712,7 +708,7 @@ describe('#8 Inscrições', () => {
             expect(canceled.id).toBeDefined();
         });
         done();
-    }, 100000);
+    }, 10000);
     test('#83 Criação com produto inexistente', async done => {
         const mailsLength = mails.length;
         const controller = new SubscriptionController(await context);
@@ -731,7 +727,7 @@ describe('#8 Inscrições', () => {
             });
         });
         done();
-    }, 100000);
+    }, 10000);
     test('#84 Listagem', async done => {
         const controller = new SubscriptionController(await context);
         expect(user).toBeDefined();
@@ -742,7 +738,7 @@ describe('#8 Inscrições', () => {
         });
         expect(subscriptions.length).toBeGreaterThan(0);
         done();
-    }, 100000);
+    }, 10000);
     test('#85 Cancelamento com assinatura inexistente', async done => {
         const controller = new SubscriptionController(await context);
         const notCanceled = await controller.cancel({
@@ -756,7 +752,7 @@ describe('#8 Inscrições', () => {
         expect(notCanceled).toBeInstanceOf(Array);
         expect(notCanceled.length).toBe(0);
         done();
-    }, 100000);
+    }, 10000);
 });
 
 

@@ -763,10 +763,11 @@ describe('#6 Inscrições', () => {
     };
     const student: UserModel = userFactory({ permission: 6 });
     beforeAll(async (done) => {
-        await saveUser(user, UserService(driver));
+        await saveUser(user, UserService(driver).onConflict('user_id').merge());
         const service = UserService(driver)
             .onConflict('user_id').merge();
         await saveUser(student, service);
+        await SubscriptionService(driver).where('hotmart_id', 18).del();
         done()
     }, 100000)
     beforeAll(deleteAll);
@@ -829,10 +830,12 @@ describe('#6 Inscrições', () => {
         done();
     });
     test('#62 Cancelamento', async done => {
+        await saveUser(user, UserService(driver).onConflict('user_id').merge());
         const app = await appFactory();
         const api = supertest(app.server);
         const productRepository = new ProductRepository(await context);
         const product = await productRepository.get({ course: 'espcex' });
+        await SubscriptionService(driver).where('hotmart_id', 18).del();
         const [inserted] = await SubscriptionService(driver).insert({
             hotmart_id: 18,
             product: product.id,
@@ -841,10 +844,10 @@ describe('#6 Inscrições', () => {
             registrationDate: new Date(),
             active: true,
             course_tag: 2,
-        }).onConflict().ignore();
-        expect(inserted).toBeDefined()
-        const [selected] = await SubscriptionService(driver)
-            .where('hotmart_id', 18)
+        });
+        expect(inserted).toBeDefined();
+        const selected = await SubscriptionService(driver)
+            .where('hotmart_id', 18).first();
         expect(selected).toBeDefined();
         const response = await api.post('/subscriptions/cancelation/')
             .type('application/json')
@@ -853,7 +856,7 @@ describe('#6 Inscrições', () => {
                 email,
                 first_name: 'Teste',
                 last_name: 'Comprador',
-                prod: selected.product,
+                prod: 0,
                 status: 'canceled',
             });
         expect(response.status, jp(response.body)).toBe(200);
