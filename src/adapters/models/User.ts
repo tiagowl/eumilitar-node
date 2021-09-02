@@ -230,8 +230,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
         try {
             const error = new Error('Usuário não foi salvo');
             const parsedData = await this.toDb(data);
-            const [saved] = await this.query.insert(parsedData)
-                .onConflict('email').ignore();
+            const [saved] = await this.query.insert(parsedData);
             if (typeof saved !== 'number') throw error;
             const recovered = await this.query.where('user_id', saved).first();
             if (!recovered) throw error;
@@ -241,6 +240,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
             return entity;
         } catch (error) {
             this.logger.error(error);
+            if (error.code === 'ER_DUP_ENTRY') throw { message: 'Email já está sendo utilizado', status: 400 };
             throw { message: 'Erro ao salvar no banco de dados', status: 500 };
         }
     }
