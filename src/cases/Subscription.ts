@@ -107,4 +107,12 @@ export default class SubscriptionCase {
             course: product.course,
         });
     }
+
+    public async update(id: number, data: SubscriptionCreation) {
+        const product = await this.repository.products.get({ id: data.product });
+        return this.repository.update(id, {
+            ...data,
+            course: product.course,
+        });
+    }
 }

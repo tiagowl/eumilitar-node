@@ -744,6 +744,18 @@ describe('#7 Assinaturas', () => {
         expect(subscription).toBeInstanceOf(Subscription);
         done();
     });
+    test('Atualização manual', async done => {
+        const repository = new SubscriptionTestRepository();
+        const useCase = new SubscriptionCase(repository);
+        const subscription = await useCase.update(0, {
+            product: 1,
+            code: faker.datatype.number(),
+            user: 0,
+            expiration: new Date(Date.now() + 1000),
+        });
+        expect(subscription).toBeInstanceOf(Subscription);
+        done();
+    })
 });
 
 describe('#8 Produtos', () => {
