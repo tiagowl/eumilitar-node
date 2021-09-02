@@ -201,4 +201,16 @@ export default class SubscriptionController extends Controller<OrderData> {
             throw { message: error.message, status: 500 };
         }
     }
+
+    public async update(id: number, data: SubscriptionCreation) {
+        try {
+            const validated = await this.validate(data, manualCreationSchema);
+            const updated = await this.useCase.update(id, validated);
+            return this.parseEntity(updated);
+        } catch (error) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: error.message, status: 500 };
+        }
+    }
 }

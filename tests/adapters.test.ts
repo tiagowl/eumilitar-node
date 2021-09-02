@@ -800,6 +800,22 @@ describe('#8 Inscrições', () => {
         });
         expect(created).toBeDefined();
         done();
+    });
+    test('#88 atualização manual', async done => {
+        const selected = await SubscriptionService(driver).first();
+        expect(selected).toBeDefined();
+        if(!selected) throw new Error();
+        const controller = new SubscriptionController(await context);
+        const productRepository = new ProductRepository(await context);
+        const product = await productRepository.get({ course: 'esa' });
+        const updated = await controller.update(selected?.id, {
+            'expiration': new Date(Date.now() + 10000),
+            'product': product.id,
+            'user': user.user_id,
+            active: true,
+        });
+        expect(updated).toBeDefined();
+        done();
     })
 });
 
