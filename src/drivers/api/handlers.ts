@@ -503,7 +503,10 @@ export function cancelSubscription(context: Context): RequestHandler<void, Subsc
     const controller = new SubscriptionController(context);
     return async (req, res) => {
         try {
-            const canceled = await controller.cancel(req.body);
+            const canceled = await controller.cancel({
+                ...req.body,
+                'prod': Number(req.body.prod),
+            });
             res.status(200).json(canceled);
         } catch (error) {
             res.status(error.status || 500).json(error);
