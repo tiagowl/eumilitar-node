@@ -974,6 +974,7 @@ describe('#6 Inscrições', () => {
                 'expiration': new Date(Date.now() + 10000),
                 'product': product.id,
                 'user': user.user_id,
+                'active': true,
             })
             .set('Authorization', header);
         expect(response.status, jp(response.body)).toBe(200);
@@ -981,6 +982,30 @@ describe('#6 Inscrições', () => {
         expect(response.body, jp(response.body)).not.toBeNull();
         done();
     });
+    test('Atualização manual', async done => {
+        const productRepository = new ProductRepository(await context);
+        const product = await productRepository.get({ course: 'espcex' });
+        const subscriptionRepository = new SubscriptionRepository(await context);
+        const [selected] = await subscriptionRepository.filter({ course: 'esa' });
+        const app = await appFactory();
+        const api = supertest(app.server);
+        if (!admin) throw new Error('Sem usuário');
+        const token = await authenticate(admin, api)
+        const header = `Bearer ${token}`;
+        const response = await api.put(`/subscriptions/${selected.id}/`)
+            .send({
+                'expiration': new Date(Date.now() + 1000000),
+                'product': product.id,
+                'user': user.user_id,
+                'active': true,
+            })
+            .set('Authorization', header);
+        expect(response.status, jp(response.body)).toBe(200);
+        expect(response.body, jp(response.body)).toBeDefined();
+        expect(response.body.product, jp(response.body)).toBe(product.id);
+        expect(response.body, jp(response.body)).not.toBeNull();
+        done();
+    })
 });
 
 describe('#7 Produtos', () => {
