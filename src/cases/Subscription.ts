@@ -33,12 +33,14 @@ export interface SubscriptionCreation {
     expiration: Date;
     product: number;
     code?: number;
+    active: boolean;
 }
 
 export interface SubscriptionInsertionInterface {
     user: number;
     expiration: Date;
     registrationDate: Date;
+    active: boolean;
     product: number;
     code?: number;
     course: Course;
@@ -82,6 +84,7 @@ export default class SubscriptionCase {
             product: product.id,
             code: data.code,
             course: product.course,
+            active: true,
         });
     }
 

@@ -379,6 +379,7 @@ describe('#4 Redações', () => {
             user: user.user_id,
             code: faker.datatype.number(),
             course: 'esa',
+            active: true,
         })
         const data: EssayInput = {
             // @ts-ignore
@@ -795,6 +796,7 @@ describe('#8 Inscrições', () => {
             'expiration': new Date(Date.now() + 10000),
             'product': product.id,
             'user': user.user_id,
+            active: true,
         });
         expect(created).toBeDefined();
         done();

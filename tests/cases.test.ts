@@ -386,7 +386,6 @@ class SubscriptionTestRepository implements SubscriptionRepositoryInterface {
     public async create(data: SubscriptionInsertionInterface) {
         const subscription = new Subscription({
             id: this.database.length,
-            active: true,
             ...data,
         });
         this.database.push(subscription);
@@ -740,6 +739,7 @@ describe('#7 Assinaturas', () => {
             code: faker.datatype.number(),
             user: 0,
             expiration: new Date(Date.now() + 1000),
+            active: true,
         });
         expect(subscription).toBeInstanceOf(Subscription);
         done();
@@ -752,6 +752,7 @@ describe('#7 Assinaturas', () => {
             code: faker.datatype.number(),
             user: 0,
             expiration: new Date(Date.now() + 1000),
+            active: true,
         });
         expect(subscription).toBeInstanceOf(Subscription);
         done();

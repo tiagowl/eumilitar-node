@@ -98,7 +98,7 @@ export default class EssayCase {
             const expired = subscription.expiration <= new Date();
             const product = await this.repository.products.get({ id: subscription.product });
             const validCourse = theme.courses.has(product.course);
-            return (!expired && validCourse) || permitted;
+            return (!expired && validCourse && subscription.active) || permitted;
         }, Promise.resolve(false) as Promise<boolean>);
         if (!hasPermission) throw new CaseError('Não autorizado', 'expired');
     }
