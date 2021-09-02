@@ -126,6 +126,12 @@ const routes: Route[] = [
         handlers: [
             { handler: handlers.updateProduct, method: 'put' }
         ]
+    },
+    {
+        path: '/subscriptions/:id/',
+        handlers: [
+            { handler: handlers.updateSubscriptions, method: 'put' }
+        ]
     }
 ];
 

@@ -622,3 +622,22 @@ export function listSubscriptions(context: Context) {
         }
     });
 }
+
+export function updateSubscriptions(context: Context) {
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin']));
+    const controller = new SubscriptionController(context);
+    return handler.use(async (req, res) => {
+        try {
+            const { id } = req.params;
+            const subscriptions = await controller.update(Number(id), {
+                ...req.body,
+                expiration: new Date(req.body.expiration),
+            });
+            res.status(200).json(subscriptions);
+        } catch (error) {
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    });
+}
