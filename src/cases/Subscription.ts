@@ -145,12 +145,12 @@ export default class SubscriptionCase {
                 date.setFullYear(year);
                 date.setMonth(month);
                 const value = subscriptions.filter(({ expiration, registrationDate }) => {
-                    const notExpired = expiration.getFullYear() <= year && expiration.getMonth() <= month;
-                    const awreadyCreated = registrationDate.getFullYear() >= year && registrationDate.getMonth() >= month;
+                    const notExpired = expiration.getFullYear() <= date.getFullYear() && expiration.getMonth() <= date.getMonth();
+                    const awreadyCreated = registrationDate.getFullYear() >= date.getFullYear() && registrationDate.getMonth() >= date.getMonth();
                     return notExpired && awreadyCreated;
                 }).length;
                 return {
-                    key: `${month}-${year}`,
+                    key: `${date.getMonth() + 1}-${date.getFullYear()}`,
                     value,
                 };
             });
