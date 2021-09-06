@@ -756,7 +756,19 @@ describe('#7 Assinaturas', () => {
         });
         expect(subscription).toBeInstanceOf(Subscription);
         done();
-    })
+    });
+    test('Gráfico ativos', async done => {
+        const repository = new SubscriptionTestRepository();
+        const useCase = new SubscriptionCase(repository);
+        const chart = await useCase.activeChart({});
+        expect(chart).toBeInstanceOf(Array);
+        chart.forEach(item => {
+            expect(item, JSON.stringify(chart)).toBeDefined();
+            expect(typeof item.key).toBe('string');
+            expect(typeof item.value).toBe('number');
+        });
+        done();
+    });
 });
 
 describe('#8 Produtos', () => {

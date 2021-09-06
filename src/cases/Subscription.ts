@@ -46,6 +46,18 @@ export interface SubscriptionInsertionInterface {
     course: Course;
 }
 
+export type Chart = {
+    key: string;
+    value: number;
+}[];
+
+export interface ChartFilter extends Partial<SubscriptionInterface> {
+    period?: {
+        start?: Date;
+        end?: Date;
+    };
+}
+
 export default class SubscriptionCase {
     private readonly repository: SubscriptionRepositoryInterface;
 
@@ -117,5 +129,31 @@ export default class SubscriptionCase {
             ...data,
             course: product.course,
         });
+    }
+
+    public async activeChart(filter: ChartFilter): Promise<Chart> {
+        const { period, ...filterData } = filter;
+        const start = period?.start || new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000);
+        const end = period?.end || new Date();
+        const months = (end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000);
+        const subscriptions = await this.repository.filter(filterData);
+        const data = new Array(months).fill(0)
+            .map(async (_, index) => {
+                const month = start.getMonth() + index;
+                const year = start.getFullYear();
+                const date = new Date(0);
+                date.setFullYear(year);
+                date.setMonth(month);
+                const value = subscriptions.filter(({ expiration, registrationDate }) => {
+                    const notExpired = expiration.getFullYear() <= year && expiration.getMonth() <= month;
+                    const awreadyCreated = registrationDate.getFullYear() >= year && registrationDate.getMonth() >= month;
+                    return notExpired && awreadyCreated;
+                }).length;
+                return {
+                    key: `${month}-${year}`,
+                    value,
+                };
+            });
+        return Promise.all(data);
     }
 }
