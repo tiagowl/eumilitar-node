@@ -2,7 +2,7 @@ import * as yup from 'yup';
 import { Context } from '../interfaces';
 import SubscriptionRepository, { HotmartFilter } from '../models/Subscription';
 import Controller, { paginationSchema } from './Controller';
-import SubscriptionCase, { SubscriptionCreation, SubscriptionFilter } from '../../cases/Subscription';
+import SubscriptionCase, { ChartFilter, SubscriptionCreation, SubscriptionFilter } from '../../cases/Subscription';
 import Subscription, { SubscriptionInterface } from '../../entities/Subscription';
 import CaseError from '../../cases/Error';
 import ProductCase from '../../cases/ProductCase';
@@ -49,6 +49,18 @@ const manualCreationSchema = yup.object().shape({
     product: yup.number().required('O campo "produto" é obrigatório'),
     code: yup.number().positive().nullable(true),
     active: yup.boolean().required('O campo "ativo" é obrigatório'),
+});
+
+const chartFilterSchema = yup.object().shape({
+    product: yup.number(),
+    user: yup.number(),
+    expiration: yup.date(),
+    registrationDate: yup.date(),
+    course: yup.string(),
+    period: yup.object({
+        start: yup.date(),
+        end: yup.date(),
+    }),
 });
 
 export default class SubscriptionController extends Controller<OrderData> {
@@ -207,6 +219,18 @@ export default class SubscriptionController extends Controller<OrderData> {
             const validated = await this.validate(data, manualCreationSchema);
             const updated = await this.useCase.update(id, validated);
             return this.parseEntity(updated);
+        } catch (error) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: error.message, status: 500 };
+        }
+    }
+
+    public async activeChart(filter: ChartFilter) {
+        try {
+            const parsed = await this.castFilter(filter, chartFilterSchema);
+            const chart = await this.useCase.activeChart(parsed);
+            return chart;
         } catch (error) {
             this.logger.error(error);
             if (error.status) throw error;

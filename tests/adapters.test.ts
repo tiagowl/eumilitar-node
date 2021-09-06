@@ -816,7 +816,18 @@ describe('#8 Inscrições', () => {
         });
         expect(updated).toBeDefined();
         done();
-    })
+    });
+    test('#89 gráfico das ativas', async done => {
+        const controller = new SubscriptionController(await context);
+        const chart = await controller.activeChart({});
+        expect(chart).toBeInstanceOf(Array);
+        chart.forEach(item => {
+            expect(item, JSON.stringify(chart)).toBeDefined();
+            expect(typeof item.key).toBe('string');
+            expect(typeof item.value).toBe('number');
+        });
+        done();
+    });
 });
 
 
