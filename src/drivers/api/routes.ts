@@ -132,6 +132,12 @@ const routes: Route[] = [
         handlers: [
             { handler: handlers.updateSubscriptions, method: 'put' }
         ]
+    },
+    {
+        path: '/subscriptions/charts/actives/',
+        handlers: [
+            { handler: handlers.activeSubscriptionsChart, method: 'get' }
+        ]
     }
 ];
 
