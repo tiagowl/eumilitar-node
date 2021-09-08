@@ -34,7 +34,7 @@ export default function createStorage(settings: StorageSettings) {
             destination: (_req, _file, cb) => {
                 try {
                     cb(null, settings.local.destination);
-                } catch (error) {
+                } catch (error: any) {
                     cb(new Error('Erro ao salvar arquivo'), '');
                 }
             },

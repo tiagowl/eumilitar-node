@@ -175,7 +175,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
                 text: await this.writeMessage(props),
                 html: await this.renderMessage(props),
             });
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: 'Erro ao notificar aluno', status: 500 };
         }
@@ -192,7 +192,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
             if (updated === 0) throw { message: 'Nenhum usuário atualizado', status: 500 };
             if (updated > 1) throw { message: 'Mais de um registro afetado', status: 500 };
             return updated;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: 'Falha ao gravar no banco de dados', status: 500 };
         }
@@ -206,7 +206,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
             if (!filtered) return;
             const parsed = await this.toEntity(filtered);
             return new User(parsed);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: 'Erro ao consultar banco de dados', status: 500 };
@@ -220,7 +220,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
                 const data = await this.toEntity(user);
                 return new User(data);
             }));
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: 'Erro ao consultar banco de dados', status: 500 };
         }
@@ -238,7 +238,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
             const entity = new User(entityData);
             await this.notify(entity);
             return entity;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.code === 'ER_DUP_ENTRY') throw { message: 'Email já está sendo utilizado', status: 400 };
             throw { message: 'Erro ao salvar no banco de dados', status: 500 };

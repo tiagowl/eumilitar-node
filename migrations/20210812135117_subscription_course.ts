@@ -12,7 +12,7 @@ export async function up(knex: Knex): Promise<void> {
                 .whereIn('product', knex('products').where('course_tag', course).select('product_id'))
                 .update('course_tag', course);
         }));
-    } catch (error) {
+    } catch (error: any) {
         await down(knex);
         throw error;
     }

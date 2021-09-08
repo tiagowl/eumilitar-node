@@ -75,7 +75,7 @@ function checkPermission(context: Context, permissions: AccountPermission[]): Re
                 res.status(403).json({ message: 'Não autorizado', status: 403 });
                 res.end();
             }
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 400).json(error);
             res.end();
         }
@@ -93,7 +93,7 @@ function isAuthenticated(context: Context): RequestHandler {
                 req.user = user;
                 next();
             }
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 400).json(error);
             res.end();
         }
@@ -107,7 +107,7 @@ export function createToken(context: Context): RequestHandler<any, AuthResponse,
             const response = await controller.auth(req.body, req.get('User-Agent'));
             res.status(!!response.token ? 201 : 400);
             res.json(response);
-        } catch (error) {
+        } catch (error: any) {
             res.status(400);
             res.json(error);
         } finally {
@@ -124,7 +124,7 @@ export function logOut(context: Context): RequestHandler<any, void, void> {
             const token = await getToken(req.headers.authorization);
             await controller.logOut(token);
             res.status(204);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 400).json(error);
         } finally {
             res.end();
@@ -138,7 +138,7 @@ export function passwordRecoveries(context: Context): RequestHandler<any, Passwo
         try {
             const response = await controller.recover(req.body);
             res.status(201).json(response);
-        } catch (error) {
+        } catch (error: any) {
             res.status(400).json(error);
         } finally {
             res.end();
@@ -153,7 +153,7 @@ export function checkChangePasswordToken(context: Context): RequestHandler<any, 
         try {
             const response = await controller.check(req.params);
             res.status(200).json(response);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json(error);
         } finally {
             res.end();
@@ -167,7 +167,7 @@ export function changePassword(context: Context): RequestHandler<any, ChangePass
         try {
             const response = await controller.updatePassword(req.body);
             res.status(200).json(response);
-        } catch (error) {
+        } catch (error: any) {
             res.status(400).json(error);
         } finally {
             res.end();
@@ -181,7 +181,7 @@ export function profile(context: Context): RequestHandler<any, UserInterface, vo
         try {
             const user = await checkAuth(req, context);
             res.status(200).json(user);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -203,7 +203,7 @@ export function createEssayTheme(context: Context): RequestHandler<any, any, Ess
                     file: req.file
                 });
                 res.status(201).json(response);
-            } catch (error) {
+            } catch (error: any) {
                 res.status(error.status || 400).send(error);
             } finally {
                 res.end();
@@ -218,7 +218,7 @@ export function listEssayThemes(context: Context): RequestHandler {
         try {
             const themes = await controller.listAll(req.query);
             res.status(200).json(themes);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json(error);
         } finally {
             res.end();
@@ -241,7 +241,7 @@ export function updateEssayThemes(context: Context): RequestHandler<any, EssayTh
                 file: req.file
             });
             res.status(200).json(response);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 400).send(error);
         } finally {
             res.end();
@@ -257,7 +257,7 @@ export function deactivateEssayTheme(context: Context): RequestHandler<any, Essa
         try {
             const theme = await controller.deactivate(Number(req.params.id));
             res.status(200).json(theme);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 400).json(error);
         } finally {
             res.end();
@@ -278,7 +278,7 @@ export function createEssay(context: Context): RequestHandler<any, EssayResponse
                 course: req.body.course, file: (req.file as Express.MulterS3.File), student: req.user.id
             });
             res.status(201).json(response);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 400).json(error);
         } finally {
             res.end();
@@ -301,7 +301,7 @@ export function listEssays(context: Context): RequestHandler<any, EssayResponse[
                 const response = await controller.myEssays(user.id);
                 res.status(200).json(response);
             }
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 400).json(error);
         } finally {
             res.end();
@@ -318,7 +318,7 @@ export function getEssay(context: Context): RequestHandler<{ id: string }, Essay
             const { id } = req.params;
             const response = await controller.get(Number(id));
             res.status(200).json(response);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 400).json(error);
         } finally {
             res.end();
@@ -336,7 +336,7 @@ export function createEssayCorrector(context: Context): RequestHandler<{ id: str
             const { user } = req;
             const response = await controller.partialUpdate(Number(id), { corrector: user?.id, status: 'correcting' });
             res.status(201).json(response);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 400).json(error);
         } finally {
             res.end();
@@ -355,7 +355,7 @@ export function deleteEssayCorrector(context: Context): RequestHandler<{ id: str
             const { user } = req;
             const response = await controller.cancelCorrecting(Number(id), user?.id as number);
             res.status(200).json(response);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 400).json(error);
         } finally {
             res.end();
@@ -373,7 +373,7 @@ export function invalidateEssay(context: Context): RequestHandler<{ id: string }
             const { user } = req;
             const response = await controller.create({ ...req.body, essay: Number(id), corrector: Number(user?.id) });
             res.status(201).json(response);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -391,7 +391,7 @@ export function correctEssay(context: Context): RequestHandler<{ id: string }, C
             const { user } = req;
             const response = await controller.create({ ...req.body, essay: Number(id), corrector: Number(user?.id) });
             res.status(201).json(response);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -408,7 +408,7 @@ export function getCorrection(context: Context): RequestHandler<{ id: string }, 
             const { id } = req.params;
             const response = await controller.get({ essay: Number(id) });
             res.status(200).json(response);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -424,7 +424,7 @@ export function listUsers(context: Context) {
         try {
             const response = await controller.all(req.query || {});
             res.status(200).json(response);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -441,7 +441,7 @@ export function getUser(context: Context) {
             const { id } = req.params;
             const user = await controller.get(Number(id));
             res.status(200).json(user);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -459,7 +459,7 @@ export function getInvalidation(context: Context) {
             const { id } = req.params;
             const response = await controller.get(Number(id));
             res.status(200).json(response);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -491,7 +491,7 @@ export function createSubscription(context: Context): RequestHandler<void, any[]
                 });
                 res.status(201).json(created);
             }
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -508,7 +508,7 @@ export function cancelSubscription(context: Context): RequestHandler<void, Subsc
                 'prod': Number(req.body.prod),
             });
             res.status(200).json(canceled);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -523,7 +523,7 @@ export function createProduct(context: Context) {
         try {
             const created = await controller.create(req.body);
             res.status(201).json(created);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -538,7 +538,7 @@ export function listProducts(context: Context) {
         try {
             const products = await controller.list();
             res.status(200).json(products);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -554,7 +554,7 @@ export function updateProduct(context: Context) {
             const { id } = req.params;
             const product = await controller.fullUpdate(Number(id), req.body);
             res.status(200).json(product);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -569,7 +569,7 @@ export function mySubscriptions(context: Context) {
         try {
             const subscriptions = await controller.mySubscriptions(req.user?.id || 0);
             res.status(200).json(subscriptions);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -584,7 +584,7 @@ export function createUser(context: Context) {
         try {
             const created = await controller.create(req.body);
             res.status(201).json(created);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -600,7 +600,7 @@ export function updateUser(context: Context) {
             const { id } = req.params;
             const updated = await controller.update(Number(id), req.body);
             res.status(200).json(updated);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -615,7 +615,7 @@ export function listSubscriptions(context: Context) {
         try {
             const subscriptions = await controller.list(req.query);
             res.status(200).json(subscriptions);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();
@@ -634,7 +634,7 @@ export function updateSubscriptions(context: Context) {
                 expiration: new Date(req.body.expiration),
             });
             res.status(200).json(subscriptions);
-        } catch (error) {
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();

@@ -125,7 +125,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                 ...theme,
                 courses: [...theme.courses]
             } as EssayThemeResponse;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: error.message || 'Erro ao salvar o tema', status: 500 };
         }
@@ -141,7 +141,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                 count: page.length,
                 pages: Math.ceil(amount / data.size),
             } as EssayThemeList;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: 'Erro ao consultar temas' };
         }
@@ -158,7 +158,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                 courses: new Set(data.courses),
             });
             return this.parseEntity(theme);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: error.message || 'Erro ao atualizar tema' };
         }
@@ -168,7 +168,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
         try {
             const theme = await this.useCase.deactivate(id);
             return this.parseEntity(theme);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: error.message || 'Erro ao desativar tema' };
         }
@@ -181,7 +181,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
             if (!theme) return undefined;
             const entity = new EssayTheme(theme);
             return this.parseEntity(entity);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: 'Erro ao consultar tema', status: error.status || 500 };
         }

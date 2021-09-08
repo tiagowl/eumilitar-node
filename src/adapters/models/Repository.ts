@@ -48,7 +48,7 @@ export default class Repository<Model, Entity> {
                 maxRedirects: 20
             });
             return response.data.access_token;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error.response?.data);
             this.logger.error(error);
             throw { message: 'Erro ao consultar dados', status: 500 };
@@ -84,7 +84,7 @@ export default class Repository<Model, Entity> {
                 }
                 return params;
             }, parsedParams);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: 'Erro ao processar dados', status: 500 };
@@ -102,7 +102,7 @@ export default class Repository<Model, Entity> {
                 }
                 return previous;
             }, {} as Entity);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: 'Erro ao processar dados', status: 500 };

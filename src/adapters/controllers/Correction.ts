@@ -79,7 +79,7 @@ export default class CorrectionController extends Controller<CorrectionData> {
                 text: await this.writeNotification(user.firstName),
                 html: await this.renderNotification(user.firstName),
             });
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
         }
     }
@@ -90,7 +90,7 @@ export default class CorrectionController extends Controller<CorrectionData> {
             const created = await this.useCase.create(validated);
             this.notify(created.essay).catch(this.logger.error);
             return this.parseEntity(created);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message || "Falha ao salvar correção", status: 400 };
@@ -101,7 +101,7 @@ export default class CorrectionController extends Controller<CorrectionData> {
         try {
             const data = await this.useCase.get(filter);
             return this.parseEntity(data);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message || "Falha ao encontrar correção", status: 500 };

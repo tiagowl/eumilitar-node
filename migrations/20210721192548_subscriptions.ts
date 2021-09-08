@@ -19,7 +19,7 @@ export async function up(knex: Knex): Promise<void> {
                 .defaultTo(knex.fn.now())
                 .notNullable();
         });
-    } catch (error) {
+    } catch (error: any) {
         await down(knex);
         throw error;
     }

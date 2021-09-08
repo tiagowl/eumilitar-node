@@ -85,7 +85,7 @@ describe('#1 Testes na autenticação', () => {
         const controller = new PasswordRecoveryController(await context);
         try {
             await controller.recover(credentials);
-        } catch (error) {
+        } catch (error: any) {
             expect(error).toEqual({ message: 'Usuário não encontrado', status: 404 });
         }
         done()
@@ -95,7 +95,7 @@ describe('#1 Testes na autenticação', () => {
         const controller = new PasswordRecoveryController(await context);
         try {
             await controller.recover(credentials);
-        } catch (error) {
+        } catch (error: any) {
             expect(error).toMatchObject({
                 message: "Email inválido",
                 errors: [["email", "Email inválido",]],

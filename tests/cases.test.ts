@@ -280,7 +280,7 @@ class EssayTestRepository implements EssayRepositoryInterface {
                 return Object.entries(data).reduce((previous, [key, value]) => {
                     try {
                         previous[key] = value;
-                    } catch (error) {
+                    } catch (error: any) {
                         return previous
                     }
                     return previous
