@@ -59,7 +59,7 @@ export default class AuthController extends Controller<AuthInterface> {
                 user_agent: userAgent,
             });
             if (typeof saved !== 'number') throw { message: 'Erro ao salvar token', status: 500 };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: 'Erro ao salvar token', status: 500 };
         }
@@ -90,7 +90,7 @@ export default class AuthController extends Controller<AuthInterface> {
             }
             if (!auth.email) throw { errors: [['email', 'Email inválido']], status: 400 };
             else throw { errors: [['password', 'Senha inválida']], status: 400 };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw error;
         }
@@ -102,7 +102,7 @@ export default class AuthController extends Controller<AuthInterface> {
             const deleted = await service.where('session_id', token).del();
             if (deleted === 0) throw { message: "Nenhum token encontrado", status: 400 };
             if (deleted > 1) throw { message: "Mais de um registro afetado", status: 500 };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: 'Erro ao deletar token', status: 500 };
@@ -114,7 +114,7 @@ export default class AuthController extends Controller<AuthInterface> {
             const { token } = await this.validate(rawData, tokenSchema);
             const user = await this.repository.auth(token);
             return { isValid: true, user: await this.parseEntity(user) };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             return { isValid: false };
         }

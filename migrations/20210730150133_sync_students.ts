@@ -109,7 +109,7 @@ export async function up(knex: Knex): Promise<void> {
             bar.stop();
         }
         await trx.commit();
-    } catch (error) {
+    } catch (error: any) {
         await down(knex);
         throw error;
     }

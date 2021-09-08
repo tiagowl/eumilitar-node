@@ -12,7 +12,7 @@ export interface SubscriptionFilter extends Partial<SubscriptionInterface> {
 }
 
 export interface SubscriptionRepositoryInterface {
-    readonly create: (data: SubscriptionInsertionInterface) => Promise<Subscription>;
+    readonly create: (data: SubscriptionInsertionInterface, acceptDuplicates?: boolean) => Promise<Subscription>;
     readonly filter: (filter: SubscriptionFilter) => Promise<Subscription[]>;
     readonly update: (id: number, data: Partial<SubscriptionInterface>) => Promise<Subscription>;
     readonly count: (filter: SubscriptionFilter) => Promise<number>;
@@ -97,7 +97,7 @@ export default class SubscriptionCase {
             code: data.code,
             course: product.course,
             active: true,
-        });
+        }, true);
     }
 
     public async cancel(code: number) {

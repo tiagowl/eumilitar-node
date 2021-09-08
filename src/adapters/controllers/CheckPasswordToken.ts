@@ -35,7 +35,7 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
         try {
             const service = PasswordRecoveryService(this.driver);
             return await service.where('token', token).del();
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
         }
     }
@@ -49,7 +49,7 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
             if (isValid) this._tokenData = info;
             else this.deleteToken(data.token);
             return { isValid };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { isValid: false };
         }

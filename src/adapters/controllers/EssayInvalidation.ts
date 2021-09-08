@@ -72,7 +72,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
                 text: await this.writeNotification(user.firstName),
                 html: await this.renderNotification(user.firstName),
             });
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
         }
     }
@@ -84,7 +84,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
             const created = await this.useCase.create(validated);
             this.notify(created.essay);
             return this.parseEntity(created);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message || 'Falha ao invalidar redação', status: 400 };
@@ -95,7 +95,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
         try {
             const invalidation = await this.useCase.get(essayId);
             return this.parseEntity(invalidation);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: error.message || 'Falha ao invalidar redação', status: 500 };
         }

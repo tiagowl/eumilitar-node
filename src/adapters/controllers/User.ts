@@ -83,7 +83,7 @@ export default class UserController extends Controller<any> {
                 ...users,
                 page: await Promise.all(users.page.map(async user => this.parseEntity(user)))
             };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: error.message || 'Erro ao consultar usuários', status: 500 };
         }
@@ -94,7 +94,7 @@ export default class UserController extends Controller<any> {
             const validated = await this.validate(data);
             const created = await this.useCase.create(validated);
             return this.parseEntity(created);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message, status: 500 };
@@ -106,7 +106,7 @@ export default class UserController extends Controller<any> {
             const validated = await this.validate(data, updateSchema);
             const updated = await this.useCase.update(id, validated);
             return this.parseEntity(updated);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message, status: 500 };
@@ -117,7 +117,7 @@ export default class UserController extends Controller<any> {
         try {
             const user = await this.useCase.get(id);
             return this.parseEntity(user);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.code === 'not_found') throw { message: 'Usuário não encontrado', status: 404 };
             throw { message: error.message, status: 500 };

@@ -43,7 +43,7 @@ export default class ChangePasswordController extends Controller<ChangePasswordI
             const { isValid } = await checker.check({ token });
             if (!isValid || !checker.tokenData) throw { message: 'Token inválido' };
             return checker.tokenData;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: error.message || 'Erro ao validar token', status: 400 };
         }
@@ -53,7 +53,7 @@ export default class ChangePasswordController extends Controller<ChangePasswordI
         try {
             const service = PasswordRecoveryService(this.driver);
             return await service.where('token', token).del();
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: 'Erro ao deletar token', status: 500 };
         }
@@ -68,7 +68,7 @@ export default class ChangePasswordController extends Controller<ChangePasswordI
             if (updated) await this.deleteToken(data.token);
             else throw { message: 'Senha não atualizada' };
             return { updated };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: error.message || "Erro ao atualizar senha", status: 400 };
         }

@@ -82,7 +82,7 @@ export default class UserUseCase {
                 email: exists,
                 password: !!user && await user.checkPassword(password, bcrypt.compare)
             };
-        } catch (error) {
+        } catch (error: any) {
             return {
                 email: false,
                 password: false,

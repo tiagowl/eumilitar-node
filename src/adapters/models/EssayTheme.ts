@@ -76,7 +76,7 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
                 }, service).then(data => !!data);
             }
             return this.filter(filter, service).first().then(data => !!data);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw new Error('Falha ao consultar o banco de dados');
         }
@@ -87,7 +87,7 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
             const service = this.filterByActive(this.query, active);
             const theme = await this.filter(filter, service).first();
             return !!theme ? this.parseFromDB(theme) : undefined;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw new Error('Falha ao consultar o banco de dados');
         }
@@ -101,7 +101,7 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
             const theme = await this.get({ id: ids[0] });
             if (!theme) throw new Error('Falha ao salvar tema');
             return theme;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw new Error('Falha ao gravar no banco de dados');
         }
@@ -128,7 +128,7 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
                 })
                 .andWhere('deactivated', false);
             return qr.first().then(data => !!data);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw new Error('Falha ao consultar o banco de dados');
         }
@@ -139,7 +139,7 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
             const service = this.query;
             const amount = await service.count<Record<string, { count: number }>>('id as count');
             return amount[0].count;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw new Error('Falha ao consultar banco de dados');
         }
@@ -154,7 +154,7 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
                 .limit((pageSize || 10))
                 .select<EssayThemeModel[]>('*');
             return Promise.all(themes.map(async theme => new EssayTheme(await this.parseFromDB(theme))));
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw new Error('Falha ao consultar o banco de dados');
         }
@@ -170,7 +170,7 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
             const theme = await this.get({ id });
             if (!theme) throw new Error('Falha ao recuperar tema');
             return new EssayTheme(theme);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw new Error('Falha ao atualizar no banco de dados');
         }

@@ -125,7 +125,7 @@ export default class SubscriptionController extends Controller<OrderData> {
                 }
             }
             return createdList;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error, { data: error?.response?.body });
             this.notifyAdmins(data, error).catch(this.logger.error);
             throw {
@@ -156,7 +156,7 @@ export default class SubscriptionController extends Controller<OrderData> {
                 }
             }
             return canceledList;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             this.notifyAdmins(data, error).catch(this.logger.error);
             if (error.status) throw error;
@@ -170,7 +170,7 @@ export default class SubscriptionController extends Controller<OrderData> {
                 .positive().min(0).validate(userId);
             const subscriptions = (await this.useCase.filter({ user: userId })) as Subscription[];
             return Promise.all(subscriptions.map(async subscription => this.parseEntity(subscription)));
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: error.message, status: error.status || 400 };
         }
@@ -195,7 +195,7 @@ export default class SubscriptionController extends Controller<OrderData> {
                 count,
                 pages: Math.ceil(count / (parsed.pagination.pageSize || 10)),
             };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message, status: 500 };
@@ -207,7 +207,7 @@ export default class SubscriptionController extends Controller<OrderData> {
             const validated = await this.validate(data, manualCreationSchema);
             const created = await this.useCase.create(validated);
             return this.parseEntity(created);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message, status: 500 };
@@ -219,7 +219,7 @@ export default class SubscriptionController extends Controller<OrderData> {
             const validated = await this.validate(data, manualCreationSchema);
             const updated = await this.useCase.update(id, validated);
             return this.parseEntity(updated);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message, status: 500 };

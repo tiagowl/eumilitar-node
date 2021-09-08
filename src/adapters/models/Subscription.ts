@@ -81,20 +81,23 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
         this.products = new ProductRepository(context);
     }
 
-    public async create(data: SubscriptionInsertionInterface) {
+    public async create(data: SubscriptionInsertionInterface, acceptDuplicate: boolean = false) {
         const parsed = await this.toDb(data);
         const defaultError = { message: 'Erro ao salvar inscrição', status: 500 };
         const [id] = await this.query.insert(parsed)
             .catch(error => {
                 this.logger.error(error);
-                if (error.code === 'ER_DUP_ENTRY') throw {
-                    message: `Código "${parsed.hotmart_id}" já está atribuido a outra assinatura`,
-                    status: 400,
-                };
+                if (error.code === 'ER_DUP_ENTRY') {
+                    if (!acceptDuplicate) throw {
+                        message: `Código '${parsed.hotmart_id}' já está atribuido a outra assinatura`,
+                        status: 400,
+                    };
+                    return [];
+                }
                 throw { message: 'Erro ao gravar no banco de dados', status: 500 };
             });
-        if (typeof id !== 'number') throw defaultError;
-        const created = await this.query.where('id', id)
+        if (typeof id !== 'number' && !acceptDuplicate) throw defaultError;
+        const created = await ((acceptDuplicate && !id) ? this.query.where('hotmart_id', parsed.hotmart_id) : this.query.where('id', id))
             .first().catch((error) => {
                 this.logger.error(error);
                 throw { message: 'Erro ao consultar banco de dados', status: 500 };
@@ -122,7 +125,7 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
                 if (!response.data?.items) return;
                 yield* response.data.items;
             } while (!!nextPage);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             this.logger.error(error.response?.data);
             throw error;

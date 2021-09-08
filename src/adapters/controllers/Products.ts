@@ -31,7 +31,7 @@ export default class ProductController extends Controller<ProductCreation> {
             const validated = await this.validate(data);
             const created = await this.useCase.create(validated);
             return this.parseEntity(created);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message, status: 400 };
@@ -42,7 +42,7 @@ export default class ProductController extends Controller<ProductCreation> {
         try {
             const products = await this.useCase.list({});
             return Promise.all(products.map(async product => this.parseEntity(product)));
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message, status: 500 };
@@ -54,7 +54,7 @@ export default class ProductController extends Controller<ProductCreation> {
             const validated = await this.validate(data);
             const product = await this.useCase.update(id, validated);
             return this.parseEntity(product);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message, status: 500 };
