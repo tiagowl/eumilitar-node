@@ -10,6 +10,7 @@ import UserUseCase from "../../cases/UserUseCase";
 import { AccountPermission } from "../../entities/User";
 import { Context } from "../interfaces";
 import CaseError from "../../cases/Error";
+import { ChartFilter } from "../../cases/Subscription";
 
 export interface EssayInput {
     file: Express.MulterS3.File;
@@ -192,6 +193,18 @@ export default class EssayController extends Controller<EssayData> {
         } catch (error: any) {
             this.logger.error(error);
             throw { message: error.message || 'Falha ao atualizar', status: error.status || 400 };
+        }
+    }
+
+    public async sentChart(filter: ChartFilter) {
+        try {
+            const parsed = await this.castFilter(filter, filterSchema);
+            const chart = await this.useCase.sentChart(parsed);
+            return chart;
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: error.message, status: 500 };
         }
     }
 

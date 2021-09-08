@@ -441,7 +441,18 @@ describe('#4 Redações', () => {
         expect(essay.status).toBe('correcting');
         expect(corrector.user_id).toBe(essay?.corrector?.id);
         done();
-    }, 10000)
+    }, 10000);
+    test('gráfico das enviadas', async done => {
+        const controller = new EssayController(await context);
+        const chart = await controller.sentChart({});
+        expect(chart).toBeInstanceOf(Array);
+        chart.forEach(item => {
+            expect(item, JSON.stringify(chart)).toBeDefined();
+            expect(typeof item.key).toBe('string');
+            expect(typeof item.value).toBe('number');
+        });
+        done();
+    });
 })
 
 describe('#5 Invalidações', () => {
