@@ -135,22 +135,22 @@ export default class SubscriptionCase {
         const { period, ...filterData } = filter;
         const start = period?.start || new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000);
         const end = period?.end || new Date();
-        const months = (end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000);
+        const months = Math.round((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000));
         const subscriptions = await this.repository.filter(filterData);
         const data = new Array(months).fill(0)
             .map(async (_, index) => {
-                const month = start.getMonth() + index;
-                const year = start.getFullYear();
                 const date = new Date(0);
-                date.setFullYear(year);
-                date.setMonth(month);
+                date.setFullYear(start.getFullYear());
+                date.setMonth(start.getMonth() + index);
+                const month = date.getMonth();
+                const year = date.getFullYear();
                 const value = subscriptions.filter(({ expiration, registrationDate }) => {
-                    const notExpired = expiration.getFullYear() <= date.getFullYear() && expiration.getMonth() <= date.getMonth();
-                    const awreadyCreated = registrationDate.getFullYear() >= date.getFullYear() && registrationDate.getMonth() >= date.getMonth();
-                    return notExpired && awreadyCreated;
+                    const notExpired = expiration.getFullYear() > year || (expiration.getFullYear() === year && expiration.getMonth() >= month);
+                    const alreadyCreated = registrationDate.getFullYear() < year || (registrationDate.getFullYear() === year && registrationDate.getMonth() <= month);
+                    return notExpired && alreadyCreated;
                 }).length;
                 return {
-                    key: `${date.getMonth() + 1}-${date.getFullYear()}`,
+                    key: `${month + 1}-${year}`,
                     value,
                 };
             });
