@@ -60,6 +60,13 @@ export interface EssayFilter extends Partial<EssayInterface> {
     };
 }
 
+export interface EssayChartFilter extends Partial<EssayInterface> {
+    period?: {
+        start?: Date;
+        end?: Date;
+    };
+}
+
 const beautyCourse = {
     'esa': 'ESA',
     'espcex': 'EsPCEX',
@@ -169,6 +176,30 @@ export default class EssayCase {
 
     public async cancelCorrecting(id: number, corrector: number) {
         return this.partialUpdate(id, { status: 'pending', corrector: null }, corrector);
+    }
+
+    public async sentChart(filter: EssayChartFilter) {
+        const { period, ...filterData } = filter;
+        const start = period?.start || new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000);
+        const end = period?.end || new Date();
+        const months = Math.round((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000));
+        const essays = await this.repository.filter(filterData);
+        const chart = new Array(months).fill(0)
+            .map(async (_, index) => {
+                const date = new Date(0);
+                date.setFullYear(start.getFullYear());
+                date.setMonth(start.getMonth() + index);
+                const month = date.getMonth();
+                const year = date.getFullYear();
+                const value = essays.filter(({ sendDate }) => {
+                    return sendDate.getFullYear() === year && sendDate.getMonth() === month;
+                }).length;
+                return {
+                    key: `${month + 1}-${year}`,
+                    value,
+                };
+            });
+        return Promise.all(chart);
     }
 
 }

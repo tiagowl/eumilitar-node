@@ -231,7 +231,7 @@ export default class SubscriptionController extends Controller<OrderData> {
             const parsed = await this.castFilter(filter, chartFilterSchema);
             const chart = await this.useCase.activeChart(parsed);
             return chart;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message, status: 500 };

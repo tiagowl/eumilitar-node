@@ -586,7 +586,7 @@ describe('#3 Redações', () => {
         done();
     })
     test('Atualização da redação', async done => {
-        const repository = new EssayTestRepository(essayDatabase, await (userDatabase).map(user => {
+        const repository = new EssayTestRepository(essayDatabase, (userDatabase).map(user => {
             user.permission = 'admin';
             return user;
         }));
@@ -600,6 +600,18 @@ describe('#3 Redações', () => {
         expect(updated?.id).toEqual(essay?.id);
         expect(updated?.corrector).toEqual(essay?.corrector);
         expect(updated?.status).toEqual(essay?.status);
+        done();
+    })
+    test('Gráfico de envios', async done => {
+        const repository = new EssayTestRepository(essayDatabase, userDatabase);
+        const useCase = new EssayCase(repository);
+        const chart = await useCase.sentChart({});
+        expect(chart).toBeInstanceOf(Array);
+        chart.forEach(item => {
+            expect(item, JSON.stringify(chart)).toBeDefined();
+            expect(typeof item.key).toBe('string');
+            expect(typeof item.value).toBe('number');
+        });
         done();
     })
 })
