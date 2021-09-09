@@ -9,7 +9,7 @@ import UserRepository from "../models/User";
 import UserUseCase from "../../cases/UserUseCase";
 import { AccountPermission } from "../../entities/User";
 import { Context } from "../interfaces";
-import CaseError from "../../cases/Error";
+import CaseError, { Errors } from "../../cases/Error";
 
 export interface EssayInput {
     file: Express.MulterS3.File;
@@ -123,7 +123,7 @@ export default class EssayController extends Controller<EssayData> {
             return this.parseEntity(created);
         } catch (error: any) {
             this.logger.error(error);
-            if (error instanceof CaseError && error.code === 'expired') {
+            if (error instanceof CaseError && error.code === Errors.EXPIRED) {
                 throw { message: error.message, status: 403 };
             }
             throw { message: error.message || 'Falha ao salvar redação' };

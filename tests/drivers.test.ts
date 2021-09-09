@@ -61,7 +61,7 @@ describe('#1 Teste na api do usuário', () => {
         const response = await api.post('/tokens/')
             .send(credentials)
             .set('User-Agent', faker.internet.userAgent());
-        expect(response.status).toBe(201);
+        expect(response.status, JSON.stringify(response.body)).toBe(201);
         expect(response.body.token).not.toBeNull()
         done()
     })
@@ -75,7 +75,7 @@ describe('#1 Teste na api do usuário', () => {
         const response = await api.post('/tokens/')
             .send(wrongCredentials)
             .set('User-Agent', faker.internet.userAgent())
-        expect(response.status).toBe(400)
+        expect(response.status, jp(response.body)).toBe(400)
         expect(response.body.token).toBeUndefined()
         expect(response.body.errors.length).toBe(1)
         expect(response.body.errors).toEqual([['email', 'Email inválido']])
@@ -91,7 +91,7 @@ describe('#1 Teste na api do usuário', () => {
         const response = await api.post('/tokens/')
             .send(wrongPassword)
             .set('User-Agent', faker.internet.userAgent())
-        expect(response.status).toBe(400)
+        expect(response.status, jp(response.body)).toBe(400)
         expect(response.body.errors.length).toBe(1)
         expect(response.body.token).toBeUndefined()
         expect(response.body.errors).toEqual([['password', 'Senha inválida']])
@@ -107,7 +107,7 @@ describe('#1 Teste na api do usuário', () => {
         const response = await api.post('/tokens/')
             .send(wrongPassword)
             .set('User-Agent', faker.internet.userAgent())
-        expect(response.status).toBe(400)
+        expect(response.status, jp(response.body)).toBe(400)
         expect(response.body.errors.length).toBe(1)
         expect(response.body.token).toBeUndefined()
         expect(response.body.errors).toEqual([['email', 'Informe um email válido']])

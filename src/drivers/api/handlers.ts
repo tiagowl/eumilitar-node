@@ -8,6 +8,7 @@ import EssayInvalidationController from "../../adapters/controllers/EssayInvalid
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
 import ProductController from "../../adapters/controllers/Products";
+import SessionController from "../../adapters/controllers/Session";
 import SubscriptionController, { OrderData } from "../../adapters/controllers/Subscription";
 import UserController from "../../adapters/controllers/User";
 import { SubscriptionCreation } from "../../cases/Subscription";
@@ -101,15 +102,16 @@ function isAuthenticated(context: Context): RequestHandler {
 }
 
 export function createToken(context: Context): RequestHandler<any, AuthResponse, AuthInterface> {
-    const controller = new AuthController(context);
+    const controller = new SessionController(context);
     return async (req, res) => {
         try {
-            const response = await controller.auth(req.body, req.get('User-Agent'));
-            res.status(!!response.token ? 201 : 400);
-            res.json(response);
+            const response = await controller.auth({
+                ...req.body,
+                agent: req.get('User-Agent')
+            });
+            res.status(201).json(response);
         } catch (error: any) {
-            res.status(400);
-            res.json(error);
+            res.status(error.status || 500).json(error);
         } finally {
             res.end();
         }

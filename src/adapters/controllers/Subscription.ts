@@ -4,7 +4,7 @@ import SubscriptionRepository, { HotmartFilter } from '../models/Subscription';
 import Controller, { paginationSchema } from './Controller';
 import SubscriptionCase, { SubscriptionCreation, SubscriptionFilter } from '../../cases/Subscription';
 import Subscription, { SubscriptionInterface } from '../../entities/Subscription';
-import CaseError from '../../cases/Error';
+import CaseError, { Errors } from '../../cases/Error';
 import ProductCase from '../../cases/ProductCase';
 import { courses } from '../../entities/Product';
 import { number } from 'yup/lib/locale';
@@ -134,7 +134,7 @@ export default class SubscriptionController extends Controller<OrderData> {
             for await (const subscription of subscriptions) {
                 const canceled = await this.useCase.cancel(subscription.subscription_id)
                     .catch(error => {
-                        if (!(error instanceof CaseError && error.code === 'not_found')) {
+                        if (!(error instanceof CaseError && error.code === Errors.NOT_FOUND)) {
                             throw error;
                         }
                     });
