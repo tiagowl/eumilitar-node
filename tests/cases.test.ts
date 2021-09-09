@@ -14,7 +14,8 @@ import ProductCase, { ProductCreation, ProductRepositoryInterface } from '../src
 import Product, { ProductInterface } from '../src/entities/Product';
 import SubscriptionCase, { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from '../src/cases/Subscription';
 import Subscription, { SubscriptionInterface } from '../src/entities/Subscription';
-import SessionCase, { SessionRepositoryInterface } from '../src/cases/Session';
+import SessionCase, { SessionInsertionInterface, SessionRepositoryInterface } from '../src/cases/Session';
+import Session, { SessionInterface } from '../src/entities/Session';
 
 const defaultPassword = 'pass1235'
 const userDatabase = new Array(5).fill(0).map((_, id) => userEntityFactory({ password: hashPassword(defaultPassword), id }));
@@ -423,9 +424,19 @@ class SubscriptionTestRepository implements SubscriptionRepositoryInterface {
 // tslint:disable-next-line
 class SessionTestRepository implements SessionRepositoryInterface {
     public readonly users: UserRepositoryInterface;
+    private database: Session[] = [];
 
     constructor() {
         this.users = new UserTestRepository(userDatabase);
+    }
+
+    async create(data: SessionInsertionInterface) {
+        const session = new Session({
+            ...data,
+            id: this.database.length,
+        });
+        this.database.push(session);
+        return session;
     }
 }
 
@@ -816,8 +827,7 @@ describe('Sessões', () => {
         const repository = new SessionTestRepository();
         const useCase = new SessionCase(repository);
         const auth = await useCase.auth({ email: user.email, password: defaultPassword });
-        expect(auth).toBeInstanceOf(User);
-        expect(user).toMatchObject(auth);
+        expect(auth).toBeInstanceOf(Session);
         done();
     });
     test('Senha errada', async done => {

@@ -1,13 +1,25 @@
+import Session, { SessionInterface } from "../entities/Session";
+import User from "../entities/User";
 import CaseError, { Errors } from "./Error";
 import { UserRepositoryInterface } from "./UserUseCase";
+import crypto from 'crypto';
 
 export interface SessionRepositoryInterface {
     readonly users: UserRepositoryInterface;
+    readonly create: (data: SessionInsertionInterface) => Promise<Session>;
+}
+
+export interface SessionInsertionInterface {
+    token: string;
+    loginTime: Date;
+    user: number;
+    agent: string | undefined;
 }
 
 export interface AuthDataInteface {
     email: string;
     password: string;
+    agent?: string;
 }
 
 export default class SessionCase {
@@ -17,12 +29,27 @@ export default class SessionCase {
         this.repository = repository;
     }
 
+    private async generateToken() {
+        const head = Math.random().toString(32).substr(2);
+        const body = crypto.randomBytes(128).toString('base64');
+        return `${head}.${body}`;
+    }
+
+    private async create(user: User, agent?: string) {
+        return this.repository.create({
+            agent,
+            token: await this.generateToken(),
+            user: user.id,
+            loginTime: new Date(),
+        });
+    }
+
     public async auth(data: AuthDataInteface) {
-        const { email, password } = data;
+        const { email, password, agent } = data;
         const user = await this.repository.users.get({ email });
         if (!user) throw new CaseError('Email inválido', Errors.NOT_FOUND);
         const validPassword = await user.checkPassword(password);
         if (!validPassword) throw new CaseError('Senha inválida', Errors.WRONG_PASSWORD);
-        return user;
+        return this.create(user, agent);
     }
 }

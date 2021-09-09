@@ -26,6 +26,7 @@ import ProductController from '../src/adapters/controllers/Products';
 import { ProductCreation } from '../src/cases/ProductCase';
 import User from '../src/entities/User';
 import { UserCreation, UserUpdate } from '../src/cases/UserUseCase';
+import SessionController from '../src/adapters/controllers/Session';
 
 afterAll(async (done) => {
     await driver.destroy();
@@ -57,7 +58,7 @@ describe('#1 Testes na autenticação', () => {
             email: user.email,
             password: user.passwd
         };
-        const controller = new AuthController(await context);
+        const controller = new SessionController(await context);
         const token = await controller.auth(credentials);
         expect(token.token).not.toBeNull();
         const tokenService = TokenService(driver);
