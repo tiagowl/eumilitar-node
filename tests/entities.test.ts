@@ -7,6 +7,7 @@ import Correction from '../src/entities/Correction';
 import faker from 'faker';
 import Product from '../src/entities/Product';
 import Subscription from '../src/entities/Subscription';
+import Session from '../src/entities/Session';
 
 test('Testes na entidade User', async (done) => {
     const password = 'l23jlk234';
@@ -130,5 +131,16 @@ test('Inscrições', () => {
             active: true,
             course: 'esa',
         })
+    }).not.toThrowError();
+})
+
+test('Sessões', () => {
+    expect(() => {
+        new Session({
+            id: faker.datatype.string(),
+            loginTime: new Date(),
+            user: faker.datatype.number(),
+            agent: faker.internet.userAgent(),
+        });
     }).not.toThrowError();
 })
