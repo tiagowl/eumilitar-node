@@ -11,8 +11,8 @@ import Session from '../src/entities/Session';
 
 test('Testes na entidade User', async (done) => {
     const password = 'l23jlk234';
-    const user = await userEntityFactory({ password: await hashPassword(password) });
-    expect(user.checkPassword(password, bcrypt.compare)).toBeTruthy()
+    const user = userEntityFactory({ password: await hashPassword(password) });
+    expect(user.checkPassword(password)).toBeTruthy()
     user.update({
         firstName: 'Denis',
         lastName: 'Antonio',

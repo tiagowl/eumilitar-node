@@ -1,6 +1,6 @@
 import User, { AccountStatus, AccountPermission, UserInterface, UserData } from "../entities/User";
 import bcrypt from 'bcrypt';
-import CaseError from "./Error";
+import CaseError, { Errors } from "./Error";
 import { Paginated, Pagination } from "./interfaces";
 
 export type UserPagination = Pagination<User>;
@@ -81,7 +81,7 @@ export default class UserUseCase {
             const exists = user instanceof User;
             const auth = {
                 email: exists,
-                password: !!user && await user.checkPassword(password, bcrypt.compare)
+                password: !!user && await user.checkPassword(password),
             };
             return [auth, auth.password && auth.email ? user || null : null];
         } catch (error: any) {
@@ -109,7 +109,7 @@ export default class UserUseCase {
 
     public async get(id: number) {
         const user = await this.repository.get({ id });
-        if (!user) throw new CaseError('Usuário não encontrado', 'not_found');
+        if (!user) throw new CaseError('Usuário não encontrado', Errors.NOT_FOUND);
         return user;
     }
 

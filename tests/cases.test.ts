@@ -14,6 +14,7 @@ import ProductCase, { ProductCreation, ProductRepositoryInterface } from '../src
 import Product, { ProductInterface } from '../src/entities/Product';
 import SubscriptionCase, { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from '../src/cases/Subscription';
 import Subscription, { SubscriptionInterface } from '../src/entities/Subscription';
+import SessionCase, { SessionRepositoryInterface } from '../src/cases/Session';
 
 const defaultPassword = 'pass1235'
 const userDatabase = new Array(5).fill(0).map((_, id) => userEntityFactory({ password: hashPassword(defaultPassword), id }));
@@ -419,6 +420,15 @@ class SubscriptionTestRepository implements SubscriptionRepositoryInterface {
     }
 }
 
+// tslint:disable-next-line
+class SessionTestRepository implements SessionRepositoryInterface {
+    public readonly users: UserRepositoryInterface;
+
+    constructor() {
+        this.users = new UserTestRepository(userDatabase);
+    }
+}
+
 describe('#1 Testes nos casos de uso da entidade User', () => {
     it('Autenticação', async (done) => {
         const repository = new UserTestRepository(userDatabase);
@@ -435,7 +445,7 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         const user = await repository.get({ status: 'active' })
         const useCase = new UserUseCase(new UserTestRepository(userDatabase));
         const auth = await useCase.authenticate(user?.email || "", 'wrongPass')
-        expect(auth).toEqual([{"email": true, "password": false}, null])
+        expect(auth).toEqual([{ "email": true, "password": false }, null])
         done()
     })
     it('Email errado', async (done) => {
@@ -798,4 +808,33 @@ describe('#8 Produtos', () => {
         expect(updated.expirationTime).toBe(55);
         done();
     })
+});
+
+describe('Sessões', () => {
+    test('Autenticação', async done => {
+        const [user] = userDatabase.reverse();
+        const repository = new SessionTestRepository();
+        const useCase = new SessionCase(repository);
+        const auth = await useCase.auth({ email: user.email, password: defaultPassword });
+        expect(auth).toBeInstanceOf(User);
+        expect(user).toMatchObject(auth);
+        done();
+    });
+    test('Senha errada', async done => {
+        const [user] = userDatabase;
+        const repository = new SessionTestRepository();
+        const useCase = new SessionCase(repository);
+        await expect(async () => {
+            return useCase.auth({ email: user.email, password: faker.random.alpha() });
+        }).rejects.toThrow('Senha inválida')
+        done();
+    });
+    test('Email inválido', async done => {
+        const repository = new SessionTestRepository();
+        const useCase = new SessionCase(repository);
+        await expect(async () => {
+            await useCase.auth({ email: faker.internet.email(), password: defaultPassword });
+        }).rejects.toThrow('Email inválido')
+        done();
+    });
 });

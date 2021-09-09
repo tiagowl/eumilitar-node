@@ -1,3 +1,4 @@
+import { compare } from 'bcrypt';
 
 export type AccountStatus = 'active' | 'inactive' | 'pending';
 export type AccountPermission = 'admin' | 'corrector' | 'student';
@@ -109,8 +110,8 @@ export default class User implements UserInterface {
     }
     get permission() { return this.#permission; }
 
-    public async checkPassword(password: string, checker: (password: string, hash: string) => Promise<boolean>) {
-        return await checker(password, this.#password.replace(/^\$2y(.+)$/i, '$2a$1'));
+    public async checkPassword(password: string) {
+        return compare(password, this.#password.replace(/^\$2y(.+)$/i, '$2a$1'));
     }
 
     public async update(data: UserUpdateData) {
