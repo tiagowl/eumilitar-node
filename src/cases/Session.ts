@@ -7,6 +7,7 @@ import crypto from 'crypto';
 export interface SessionRepositoryInterface {
     readonly users: UserRepositoryInterface;
     readonly create: (data: SessionInsertionInterface) => Promise<Session>;
+    readonly delete: (filter: Partial<SessionInterface>) => Promise<number>;
 }
 
 export interface SessionInsertionInterface {
@@ -51,5 +52,10 @@ export default class SessionCase {
         const validPassword = await user.checkPassword(password);
         if (!validPassword) throw new CaseError('Senha inválida', Errors.WRONG_PASSWORD);
         return this.create(user, agent);
+    }
+
+    public async delete(token: string) {
+        const deleted = await this.repository.delete({ token });
+        if (deleted === 0) throw new CaseError('Nenhum token deletado');
     }
 }

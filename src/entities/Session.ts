@@ -3,7 +3,7 @@ export interface SessionInterface {
     token: string;
     loginTime: Date;
     user: number;
-    agent: string | undefined;
+    agent?: string;
 }
 
 export default class Session implements SessionInterface {
@@ -11,7 +11,7 @@ export default class Session implements SessionInterface {
     token: string;
     loginTime: Date;
     user: number;
-    agent: string | undefined;
+    agent?: string;
 
     constructor(data: SessionInterface) {
         this.id = data.id;
