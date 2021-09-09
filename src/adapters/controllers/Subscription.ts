@@ -63,22 +63,24 @@ const chartFilterSchema = yup.object().shape({
     }),
 });
 
+const getSchema = (hottok: string) => yup.object().shape({
+    hottok: yup.string()
+        .required('O campo "hottok" é obrigatório')
+        .is([hottok], '"hottok" inválido'),
+    prod: yup.number().required(),
+    first_name: yup.string().required(),
+    last_name: yup.string().required(),
+    email: yup.string().required(),
+    status: yup.string().required(),
+});
+
 export default class SubscriptionController extends Controller<OrderData> {
     private readonly repository: SubscriptionRepository;
     private readonly useCase: SubscriptionCase;
 
     constructor(context: Context) {
         const { settings: { hotmart: { hottok } } } = context;
-        const schema = yup.object().shape({
-            hottok: yup.string()
-                .required('O campo "hottok" é obrigatório')
-                .is([hottok], '"hottok" inválido'),
-            prod: yup.number().required(),
-            first_name: yup.string().required(),
-            last_name: yup.string().required(),
-            email: yup.string().required(),
-            status: yup.string().required(),
-        });
+        const schema = getSchema(hottok);
         super(context, schema);
         this.repository = new SubscriptionRepository(context);
         this.useCase = new SubscriptionCase(this.repository);

@@ -444,8 +444,14 @@ describe('#4 Redações', () => {
     }, 10000);
     test('gráfico das enviadas', async done => {
         const controller = new EssayController(await context);
-        const chart = await controller.sentChart({});
+        const chart = await controller.sentChart({
+            period: {
+                start: new Date(Date.now() - 2 * 360 * 24 * 60 * 60 * 1000),
+                end: new Date()
+            }
+        });
         expect(chart).toBeInstanceOf(Array);
+        expect(chart.length).toBe(24);
         chart.forEach(item => {
             expect(item, JSON.stringify(chart)).toBeDefined();
             expect(typeof item.key).toBe('string');
@@ -815,7 +821,7 @@ describe('#8 Inscrições', () => {
     test('#88 atualização manual', async done => {
         const selected = await SubscriptionService(driver).first();
         expect(selected).toBeDefined();
-        if(!selected) throw new Error();
+        if (!selected) throw new Error();
         const controller = new SubscriptionController(await context);
         const productRepository = new ProductRepository(await context);
         const product = await productRepository.get({ course: 'esa' });

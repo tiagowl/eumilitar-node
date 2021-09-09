@@ -480,9 +480,13 @@ describe('#2 Testes nos temas', () => {
 describe('#3 Redações', () => {
     const user: UserModel = userFactory();
     const student: UserModel = userFactory({ permission: 6 });
+    const admin: UserModel = userFactory({ permission: 1 });
     beforeAll(async (done) => {
         const themeService = EssayThemeService(driver);
-        await themeService.delete().del()
+        await themeService.delete().del();
+        const service = () => UserService(driver)
+            .onConflict('user_id').merge();
+        await saveUser(admin, service());
         const repository = new EssayThemeRepository(await context);
         const themeData: EssayThemeCreation = {
             title: 'Título',
@@ -496,10 +500,8 @@ describe('#3 Redações', () => {
         const theme = await repository.create(themeData);
         expect(theme.id).not.toBeUndefined();
         expect(theme.id).not.toBeNull();
-        const service = UserService(driver)
-            .onConflict('user_id').merge();
-        await saveUser(user, service);
-        await saveUser(student, service);
+        await saveUser(user, service());
+        await saveUser(student, service());
         done()
     })
     afterAll(async (done) => {
@@ -610,13 +612,42 @@ describe('#3 Redações', () => {
         expect(response.body, jp(response.body)).toMatchObject(base);
         expect(response.body.corrector, jp(response.body)).toBeNull();
         done();
-    })
+    });
+    test('Gráfico de enviadas', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        if (!admin) throw new Error('Sem usuário');
+        const token = await authenticate(admin, api)
+        const header = `Bearer ${token}`;
+        const response = await api.get('/essays/charts/sent/')
+            .query({
+                period: {
+                    start: new Date(Date.now() - (2 * 360 * 24 * 60 * 60 * 1000)),
+                    end: new Date(),
+                }
+            })
+            .set('Authorization', header);
+        expect(response.status, jp(response.body)).toBe(200);
+        expect(response.body).toBeInstanceOf(Array);
+        expect(response.body.length).toBe(24);
+        response.body.forEach((item: any) => {
+            expect(item, JSON.stringify(response.body)).toBeDefined();
+            expect(typeof item.key).toBe('string');
+            expect(typeof item.value).toBe('number');
+        });
+        done();
+    });
 })
 
 describe('#4 Invalidação da redação', () => {
     const user: UserModel = userFactory();
+    const admin: UserModel = userFactory({ permission: 1 });
     const student: UserModel = userFactory({ permission: 6 });
     beforeAll(async (done) => {
+        const service = () => UserService(driver)
+            .onConflict('user_id').merge();
+        await saveUser(admin, service());
+        await saveUser(student, service());
         const themeService = EssayThemeService(driver);
         await themeService.delete().del()
         const repository = new EssayThemeRepository(await context);
@@ -632,10 +663,7 @@ describe('#4 Invalidação da redação', () => {
         const theme = await repository.create(themeData);
         expect(theme.id).not.toBeUndefined();
         expect(theme.id).not.toBeNull();
-        const service = UserService(driver)
-            .onConflict('user_id').merge();
-        await saveUser(user, service);
-        await saveUser(student, service);
+        await saveUser(user, service());
         done()
     })
     afterAll(async (done) => {
@@ -1015,14 +1043,14 @@ describe('#6 Inscrições', () => {
         const response = await api.get('/subscriptions/charts/actives/')
             .query({
                 period: {
-                    start: new Date(Date.now() - 2 * 360 * 24 * 60 * 60 * 1000),
+                    start: new Date(Date.now() - 2 * 12 * 30 * 24 * 60 * 60 * 1000),
                     end: new Date()
                 }
             })
             .set('Authorization', header);
         expect(response.status, jp(response.body)).toBe(200);
         expect(response.body).toBeInstanceOf(Array);
-        expect(response.body.length).toBe(12);
+        expect(response.body.length).toBe(24);
         response.body.forEach((item: any) => {
             expect(item, JSON.stringify(response.body)).toBeDefined();
             expect(typeof item.key).toBe('string');

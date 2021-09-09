@@ -138,6 +138,12 @@ const routes: Route[] = [
         handlers: [
             { handler: handlers.activeSubscriptionsChart, method: 'get' }
         ]
+    },
+    {
+        path: '/essays/charts/sent/',
+        handlers: [
+            { handler: handlers.sentEssaysChart, method: 'get' }
+        ]
     }
 ];
 

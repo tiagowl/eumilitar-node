@@ -605,8 +605,14 @@ describe('#3 Redações', () => {
     test('Gráfico de envios', async done => {
         const repository = new EssayTestRepository(essayDatabase, userDatabase);
         const useCase = new EssayCase(repository);
-        const chart = await useCase.sentChart({});
+        const chart = await useCase.sentChart({
+            period: {
+                start: new Date(Date.now() - 2 * 360 * 24 * 60 * 60 * 1000),
+                end: new Date()
+            }
+        });
         expect(chart).toBeInstanceOf(Array);
+        expect(chart.length).toBe(24);
         chart.forEach(item => {
             expect(item, JSON.stringify(chart)).toBeDefined();
             expect(typeof item.key).toBe('string');

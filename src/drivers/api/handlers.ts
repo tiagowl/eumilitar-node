@@ -647,9 +647,24 @@ export function activeSubscriptionsChart(context: Context) {
     const controller = new SubscriptionController(context);
     return handler.use(async (req, res) => {
         try {
-            const subscriptions = await controller.activeChart(req.query);
-            res.status(200).json(subscriptions);
-        } catch (error) {
+            const chart = await controller.activeChart(req.query);
+            res.status(200).json(chart);
+        } catch (error: any) {
+            res.status(error.status || 500).json(error);
+        } finally {
+            res.end();
+        }
+    });
+}
+
+export function sentEssaysChart(context: Context) {
+    const handler = express.Router({ mergeParams: true }).use(checkPermission(context, ['admin']));
+    const controller = new EssayController(context);
+    return handler.use(async (req, res) => {
+        try {
+            const chart = await controller.sentChart(req.query);
+            res.status(200).json(chart);
+        } catch (error: any) {
             res.status(error.status || 500).json(error);
         } finally {
             res.end();

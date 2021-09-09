@@ -29,14 +29,15 @@ export default class Controller<Fields> {
         this.logger = logger;
     }
 
-    protected async removeVoidValues<T>(obj: any) {
-        const entries = Object.entries(obj);
+    protected async removeVoidValues<T>(obj: T) {
+        const entries = Object.entries(obj) as [keyof T, any][];
         const defaultValue = Promise.resolve({}) as Promise<T>;
         return entries.reduce(async (promiseResult, [key, val]) => {
             const result = await promiseResult;
-            const isObject = typeof val === 'object';
-            const value: any = isObject ? await this.removeVoidValues<any>(val) : val;
-            return ((isObject && _.isEmpty(value)) || !value) ? result : { ...result, [key]: value };
+            const isObject = _.isObject(val);
+            const isDate = val instanceof Date;
+            const value: any = (isObject && !isDate) ? await this.removeVoidValues<typeof val>(val) : val;
+            return (isObject && _.isEmpty(value) && !isDate) || !value ? result : { ...result, [key]: value };
         }, defaultValue);
     }
 
