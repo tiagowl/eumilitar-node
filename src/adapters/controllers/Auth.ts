@@ -82,10 +82,10 @@ export default class AuthController extends Controller<AuthInterface> {
         try {
             const data = await this.validate(rawData);
             const useCase = new UserUseCase(this.repository);
-            const auth = await useCase.authenticate(data.email, data.password);
-            if (auth.email && auth.password) {
+            const [auth, user] = await useCase.authenticate(data.email, data.password);
+            if (auth.email && auth.password && user) {
                 const token = await this.generateToken();
-                if (!!useCase.user) await this.saveToken(useCase.user, token, userAgent);
+                await this.saveToken(user, token, userAgent);
                 return { token };
             }
             if (!auth.email) throw { errors: [['email', 'Email inválido']], status: 400 };

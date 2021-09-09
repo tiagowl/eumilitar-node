@@ -50,6 +50,11 @@ export interface UserSavingData {
     password: string;
 }
 
+export interface AuthResponse {
+    email: boolean;
+    password: boolean;
+}
+
 export interface UserRepositoryInterface {
     readonly get: (filter: UserFilter) => Promise<User | null | undefined>;
     readonly filter: (filter: UserFilter) => Promise<User[] | UserPaginated>;
@@ -58,46 +63,43 @@ export interface UserRepositoryInterface {
 }
 
 export default class UserUseCase {
-    #saltRounds: number = 10;
-    #user: User | undefined | null;
+    readonly #saltRounds: number = 10;
     private readonly repository: UserRepositoryInterface;
 
     constructor(repository: UserRepositoryInterface) {
         this.repository = repository;
     }
 
-    get user() { return this.#user; }
-
     private async hashPassword(password: string) {
         const salt = await bcrypt.genSalt(this.#saltRounds);
         return bcrypt.hash(password, salt);
     }
 
-    public async authenticate(email: string, password: string) {
+    public async authenticate(email: string, password: string): Promise<[AuthResponse, User | null]> {
         try {
             const user = await this.repository.get({ email });
             const exists = user instanceof User;
-            if (exists) this.#user = user;
-            return {
+            const auth = {
                 email: exists,
                 password: !!user && await user.checkPassword(password, bcrypt.compare)
             };
+            return [auth, auth.password && auth.email ? user || null : null];
         } catch (error: any) {
-            return {
+            return [{
                 email: false,
                 password: false,
-            };
+            }, null];
         }
     }
 
     public async updatePassword(id: number, password: string) {
-        this.#user = await this.get(id);
-        if (!!this.#user) {
+        const user = await this.get(id);
+        if (!!user) {
             const hash = await this.hashPassword(password);
-            this.#user.password = hash;
+            user.password = hash;
             const amount = await this.repository.update(id, {
                 password: hash,
-                lastModified: this.#user.lastModified
+                lastModified: user.lastModified
             });
             if (amount > 1) throw new CaseError('Mais de um usuário afetado');
             return !!amount;
@@ -106,9 +108,9 @@ export default class UserUseCase {
     }
 
     public async get(id: number) {
-        this.#user = await this.repository.get({ id });
-        if (!this.#user) throw new CaseError('Usuário não encontrado', 'not_found');
-        return this.#user;
+        const user = await this.repository.get({ id });
+        if (!user) throw new CaseError('Usuário não encontrado', 'not_found');
+        return user;
     }
 
     public async listAll(filter: UserFilter = {}) {

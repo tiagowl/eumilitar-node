@@ -424,8 +424,10 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         const repository = new UserTestRepository(userDatabase);
         const user = await repository.get({ status: 'active' })
         const useCase = new UserUseCase(new UserTestRepository(userDatabase));
-        const auth = await useCase.authenticate(user?.email || "", defaultPassword)
-        expect(auth).toEqual({ email: true, password: true })
+        const [auth, checkedUser] = await useCase.authenticate(user?.email || "", defaultPassword)
+        expect(auth).toEqual({ email: true, password: true });
+        if (!checkedUser) throw new Error();
+        expect(user).toMatchObject(checkedUser);
         done()
     })
     it('Senha errada', async (done) => {
@@ -433,13 +435,14 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         const user = await repository.get({ status: 'active' })
         const useCase = new UserUseCase(new UserTestRepository(userDatabase));
         const auth = await useCase.authenticate(user?.email || "", 'wrongPass')
-        expect(auth).toEqual({ email: true, password: false })
+        expect(auth).toEqual([{"email": true, "password": false}, null])
         done()
     })
     it('Email errado', async (done) => {
         const useCase = new UserUseCase(new UserTestRepository(userDatabase));
-        const auth = await useCase.authenticate("wrong__5@mail.com", defaultPassword)
-        expect(auth).toEqual({ email: false, password: false })
+        const [auth, notUser] = await useCase.authenticate("wrong__5@mail.com", defaultPassword)
+        expect(auth).toEqual({ email: false, password: false });
+        expect(notUser).toBeNull();
         done()
     })
     test('Atualização da senha', async (done) => {
@@ -449,9 +452,10 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         const useCase = new UserUseCase(usedRepo);
         const changed = await useCase.updatePassword(user?.id || 0, 'newPass');
         expect(changed).toBeTruthy();
-        const auth = await useCase.authenticate(user?.email || "", 'newPass')
+        const [auth] = await useCase.authenticate(user?.email || "", 'newPass')
         expect(auth).toEqual({ email: true, password: true })
-        const failAuth = await useCase.authenticate(user?.email || "", defaultPassword)
+        const [failAuth, notUser] = await useCase.authenticate(user?.email || "", defaultPassword)
+        expect(notUser).toBeNull();
         expect(failAuth).toEqual({ email: true, password: false })
         done()
     })

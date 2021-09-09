@@ -20,7 +20,6 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
     private readonly smtp: Mail;
     private readonly repository: UserRepository;
     private readonly config: MessageConfigInterface;
-    private token?: string;
     private readonly service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
 
     constructor(context: Context) {
@@ -64,8 +63,8 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
         });
     }
 
-    private async sendConfirmationEmail(email: string, username: string) {
-        const link = `${this.config.url}${this.token}`;
+    private async sendConfirmationEmail(email: string, username: string, token: string) {
+        const link = `${this.config.url}${token}`;
         return this.smtp.sendMail({
             from: this.config.sender,
             to: { email, name: username },
@@ -75,15 +74,14 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
         });
     }
 
-    private async saveToken(userId: number) {
-        if (this.token) {
-            const token: PasswordRecoveryInsert = {
-                token: this.token,
+    private async saveToken(userId: number, token: string) {
+        if (token) {
+            return this.service.insert({
+                token,
                 expires: new Date(Date.now() + this.config.expirationTime * 60 * 60 * 1000),
                 selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
                 user_id: userId,
-            };
-            return this.service.insert(token);
+            });
         }
         throw { message: "Token inválido" };
     }
@@ -93,9 +91,9 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
             const data = await this.validate(rawData);
             const user = await this.repository.get(data);
             if (!user) throw { message: 'Usuário não encontrado', status: 404 };
-            this.token = await this.generateConfirmationToken();
-            await this.saveToken(user.id);
-            return this.sendConfirmationEmail(user.email, user.fullName)
+            const token = await this.generateConfirmationToken();
+            await this.saveToken(user.id, token);
+            return this.sendConfirmationEmail(user.email, user.fullName, token)
                 .then(async () => ({ message: "Email enviado! Verifique sua caixa de entrada." }))
                 .catch(async (error) => {
                     this.logger.error(error);
