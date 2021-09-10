@@ -16,6 +16,10 @@ export type PasswordRecoveryResponse = {
     message: string
 };
 
+const schema = yup.object().shape({
+    email: yup.string().email('Email inválido').required('O campo "email" é obrigatório'),
+});
+
 export default class PasswordRecoveryController extends Controller<PasswordRecoveryInterface> {
     private readonly smtp: Mail;
     private readonly repository: UserRepository;
@@ -24,9 +28,6 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
 
     constructor(context: Context) {
         const { smtp, driver, settings } = context;
-        const schema = yup.object().shape({
-            email: yup.string().email('Email inválido').required('O campo "email" é obrigatório'),
-        });
         super(context, schema);
         this.smtp = smtp;
         this.repository = new UserRepository(context);

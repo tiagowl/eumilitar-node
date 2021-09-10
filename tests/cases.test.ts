@@ -15,7 +15,9 @@ import Product, { ProductInterface } from '../src/entities/Product';
 import SubscriptionCase, { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from '../src/cases/Subscription';
 import Subscription, { SubscriptionInterface } from '../src/entities/Subscription';
 import SessionCase, { SessionInsertionInterface, SessionRepositoryInterface } from '../src/cases/Session';
+import RecoveryCase, { RecoveryInsertionInterface, RecoveryRepositoryInterface } from '../src/cases/Recovery';
 import Session, { SessionInterface } from '../src/entities/Session';
+import Recovery from '../src/entities/Recovery';
 
 const defaultPassword = 'pass1235'
 const userDatabase = new Array(5).fill(0).map((_, id) => userEntityFactory({ password: hashPassword(defaultPassword), id }));
@@ -467,6 +469,25 @@ class SessionTestRepository implements SessionRepositoryInterface {
     }
 }
 
+// tslint:disable-next-line
+class RecoveryTestRespository implements RecoveryRepositoryInterface {
+    public readonly users: UserRepositoryInterface;
+    private readonly database: Recovery[] = [];
+
+    constructor() {
+        this.users = new UserTestRepository(userDatabase);
+    }
+
+    public async create(data: RecoveryInsertionInterface) {
+        const recovery = new Recovery({
+            ...data,
+            id: this.database.length,
+        });
+        this.database.push(recovery);
+        return recovery;
+    }
+}
+
 describe('#1 Testes nos casos de uso da entidade User', () => {
     it('Autenticação', async (done) => {
         const repository = new UserTestRepository(userDatabase);
@@ -892,3 +913,15 @@ describe('Sessões', () => {
         done();
     })
 });
+
+
+describe('Recuperação de senha', () => {
+    test('Criação', async done => {
+        const repository = new RecoveryTestRespository();
+        const useCase = new RecoveryCase(repository, 40 * 60 * 60 * 1000);
+        const [user] = userDatabase;
+        const created = await useCase.create(user.email);
+        expect(created).toBeInstanceOf(Recovery);
+        done();
+    });
+})
