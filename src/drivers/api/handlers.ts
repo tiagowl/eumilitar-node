@@ -119,12 +119,12 @@ export function createToken(context: Context): RequestHandler<any, AuthResponse,
 }
 
 export function logOut(context: Context): RequestHandler<any, void, void> {
-    const controller = new AuthController(context);
+    const controller = new SessionController(context);
     return async (req, res) => {
         try {
             await checkAuth(req, context);
             const token = await getToken(req.headers.authorization);
-            await controller.logOut(token);
+            await controller.delete(token);
             res.status(204);
         } catch (error: any) {
             res.status(error.status || 400).json(error);
