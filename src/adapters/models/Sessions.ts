@@ -59,4 +59,18 @@ export default class SessionRepository extends Repository<SessionModel, SessionI
             throw { message: 'Erro ao deletar token no banco de dados', status: 500 };
         }
     }
+
+    public async get(filter: Partial<SessionInterface>) {
+        try {
+            const parsed = await this.toDb(filter);
+            const data = await this.query.where(parsed).first();
+            if (!data) return;
+            const toEntity = await this.toEntity(data);
+            return new Session(toEntity);
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao consultar token no banco de dados', status: 500 };
+        }
+    }
 }

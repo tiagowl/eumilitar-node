@@ -180,22 +180,22 @@ describe('#1 Testes na autenticação', () => {
             email: user.email,
             password: 'newPassword'
         };
-        const auth = new AuthController(await context);
+        const auth = new SessionController(await context);
         const { token } = await auth.auth(credentials);
-        const controller = new AuthController(await context);
-        const response = await controller.checkToken({ token: token || '' });
-        expect(response.isValid).toBeTruthy();
-        expect(response.user).not.toBeNull();
-        expect(response.user).not.toBeUndefined();
-        expect(response.user?.email).toEqual(user.email);
+        const controller = new SessionController(await context);
+        const response = await controller.checkToken(token);
+        expect(response).not.toBeNull();
+        expect(response).not.toBeUndefined();
+        expect(response?.email).toEqual(user.email);
         done();
     })
     test('Verificar autenticação com token inválido', async (done) => {
         const token = crypto.randomBytes(32).toString('base64');
-        const controller = new AuthController(await context);
-        const response = await controller.checkToken({ token: token || '' });
-        expect(response.isValid).toBeFalsy();
-        expect(response.user).toBeUndefined();
+        const controller = new SessionController(await context);
+        await controller.checkToken(token).catch(error => {
+            expect(error.message).toEqual('Token inválido');
+            expect(error.status).toEqual(401);
+        });
         done();
     })
     test('logout', async done => {

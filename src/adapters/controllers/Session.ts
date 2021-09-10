@@ -5,6 +5,7 @@ import * as yup from 'yup';
 import SessionCase from "../../cases/Session";
 import CaseError, { Errors } from "../../cases/Error";
 import { SessionInterface } from "../../entities/Session";
+import User from "../../entities/User";
 
 export interface AuthInterface {
     email: string;
@@ -54,6 +55,19 @@ export default class SessionController extends Controller<AuthInterface> {
         } catch (error: any) {
             if (error.status) throw error;
             throw { message: 'Erro remover token', status: 500 };
+        }
+    }
+
+    public async checkToken(token: string): Promise<User> {
+        try {
+            const validated = await this.validate({ token }, logoutSchema);
+            return await this.useCase.checkToken(validated.token);
+        } catch (error: any) {
+            if (error instanceof CaseError) {
+                if (error.code === Errors.UNAUTHORIZED) throw { message: error.message, status: 401 };
+            }
+            if (error.status) throw error;
+            throw { message: 'Erro autenticar', status: 500 };
         }
     }
 }
