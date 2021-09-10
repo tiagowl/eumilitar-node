@@ -198,6 +198,16 @@ describe('#1 Testes na autenticação', () => {
         expect(response.user).toBeUndefined();
         done();
     })
+    test('logout', async done => {
+        const credentials = {
+            email: user.email,
+            password: 'newPassword'
+        };
+        const controller = new SessionController(await context);
+        const { token } = await controller.auth(credentials);
+        await controller.delete(token);
+        done();
+    })
 })
 
 
@@ -805,7 +815,7 @@ describe('#8 Inscrições', () => {
     test('#88 atualização manual', async done => {
         const selected = await SubscriptionService(driver).first();
         expect(selected).toBeDefined();
-        if(!selected) throw new Error();
+        if (!selected) throw new Error();
         const controller = new SubscriptionController(await context);
         const productRepository = new ProductRepository(await context);
         const product = await productRepository.get({ course: 'esa' });
