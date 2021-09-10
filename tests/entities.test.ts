@@ -8,6 +8,7 @@ import faker from 'faker';
 import Product from '../src/entities/Product';
 import Subscription from '../src/entities/Subscription';
 import Session from '../src/entities/Session';
+import Recovery from '../src/entities/Recovery';
 
 test('Testes na entidade User', async (done) => {
     const password = 'l23jlk234';
@@ -142,6 +143,18 @@ test('Sessões', () => {
             loginTime: new Date(),
             user: faker.datatype.number(),
             agent: faker.internet.userAgent(),
+        });
+    }).not.toThrowError();
+})
+
+test('Recuperação de senha', () => {
+    expect(() => {
+        new Recovery({
+            id: faker.datatype.number(),
+            token: faker.datatype.string(),
+            expires: new Date(),
+            user: faker.datatype.number(),
+            selector: faker.datatype.string(),
         });
     }).not.toThrowError();
 })
