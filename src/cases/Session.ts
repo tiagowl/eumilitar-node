@@ -8,6 +8,7 @@ export interface SessionRepositoryInterface {
     readonly users: UserRepositoryInterface;
     readonly create: (data: SessionInsertionInterface) => Promise<Session>;
     readonly delete: (filter: Partial<SessionInterface>) => Promise<number>;
+    readonly get: (filter: Partial<SessionInterface>) => Promise<Session | null | undefined>;
 }
 
 export interface SessionInsertionInterface {
@@ -57,5 +58,14 @@ export default class SessionCase {
     public async delete(token: string) {
         const deleted = await this.repository.delete({ token });
         if (deleted === 0) throw new CaseError('Nenhum token deletado');
+    }
+
+    public async checkToken(token: string) {
+        const session = await this.repository.get({ token });
+        const error = new CaseError('Token inválido', Errors.UNAUTHORIZED);
+        if (!session) throw error;
+        const user = await this.repository.users.get({ id: session.user });
+        if (!user) throw error;
+        return user;
     }
 }

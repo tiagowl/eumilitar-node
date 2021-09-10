@@ -458,6 +458,13 @@ class SessionTestRepository implements SessionRepositoryInterface {
         this.database = this.database.filter(item => toRemove.indexOf(item) >= 0);
         return toRemove.length;
     }
+
+    public async get(filter: Partial<SessionInterface>) {
+        const fields = Object.entries(filter) as [keyof SessionInterface, number | Date][];
+        return this.database.find(item => (
+            !!fields.filter(([key, value]) => item[key] === value).length
+        ));
+    }
 }
 
 describe('#1 Testes nos casos de uso da entidade User', () => {
@@ -872,6 +879,16 @@ describe('Sessões', () => {
         const [selected] = await repository.filter({});
         const useCase = new SessionCase(repository);
         await useCase.delete(selected.token);
+        done();
+    });
+    test('Checar token', async done => {
+        const user = userDatabase.find(item => item.checkPassword(defaultPassword));
+        if (!user) throw new Error();
+        const repository = new SessionTestRepository();
+        const useCase = new SessionCase(repository);
+        const auth = await useCase.auth({ email: user.email, password: defaultPassword });
+        const checked = await useCase.checkToken(auth.token);
+        expect(user.id).toBe(checked.id);
         done();
     })
 });

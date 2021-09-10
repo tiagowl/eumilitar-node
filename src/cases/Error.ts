@@ -4,6 +4,7 @@ export enum Errors {
     WRONG_PASSWORD = 'WRONG_PASSWORD',
     EXPIRED = 'EXPIRED',
     INVALID_THEME = 'INVALID_THEME',
+    UNAUTHORIZED = 'UNAUTHORIZED',
 }
 
 export default class CaseError extends Error {
