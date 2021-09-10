@@ -47,4 +47,16 @@ export default class SessionRepository extends Repository<SessionModel, SessionI
             throw { message: 'Erro ao gravar token no banco de dados', status: 500 };
         }
     }
+
+    public async delete(filter: Partial<SessionInterface>) {
+        try {
+            const parsed = await this.toDb(filter);
+            const deleted = await this.query.where(parsed).delete();
+            return deleted;
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao deletar token no banco de dados', status: 500 };
+        }
+    }
 }

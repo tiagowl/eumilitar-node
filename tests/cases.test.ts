@@ -871,9 +871,7 @@ describe('Sessões', () => {
         const repository = new SessionTestRepository();
         const [selected] = await repository.filter({});
         const useCase = new SessionCase(repository);
-        await expect(async () => {
-            return await useCase.delete(selected.token);
-        }).resolves.toBeUndefined();
+        await useCase.delete(selected.token);
         done();
     })
 });
