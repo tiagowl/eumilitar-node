@@ -1,5 +1,4 @@
 import express, { RequestHandler, Request } from "express";
-import AuthController, { AuthInterface, AuthResponse } from "../../adapters/controllers/Auth";
 import ChangePasswordController, { ChangePasswordInterface, ChangePasswordResponse } from "../../adapters/controllers/ChangePassword";
 import CheckPasswordToken, { CheckPasswordInterface, CheckedTokenInterface } from "../../adapters/controllers/CheckPasswordToken";
 import CorrectionController from "../../adapters/controllers/Correction";
@@ -8,7 +7,7 @@ import EssayInvalidationController from "../../adapters/controllers/EssayInvalid
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
 import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
 import ProductController from "../../adapters/controllers/Products";
-import SessionController from "../../adapters/controllers/Session";
+import SessionController, { AuthInterface } from "../../adapters/controllers/Session";
 import SubscriptionController, { OrderData } from "../../adapters/controllers/Subscription";
 import UserController from "../../adapters/controllers/User";
 import { SubscriptionCreation } from "../../cases/Subscription";
@@ -59,10 +58,8 @@ async function getToken(header: string | undefined) {
 
 async function checkAuth(req: Request<any>, context: Context) {
     const token = await getToken(req.headers.authorization);
-    const controller = new AuthController(context);
-    const { user, isValid } = await controller.checkToken({ token },);
-    if (!isValid || !user) throw { message: 'Não autorizado', status: 401 };
-    return user;
+    const controller = new SessionController(context);
+    return controller.checkToken(token);
 }
 
 function checkPermission(context: Context, permissions: AccountPermission[]): RequestHandler {
@@ -101,7 +98,7 @@ function isAuthenticated(context: Context): RequestHandler {
     };
 }
 
-export function createToken(context: Context): RequestHandler<any, AuthResponse, AuthInterface> {
+export function createToken(context: Context): RequestHandler<any, any, AuthInterface> {
     const controller = new SessionController(context);
     return async (req, res) => {
         try {

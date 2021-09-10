@@ -1,4 +1,3 @@
-import AuthController from '../src/adapters/controllers/Auth';
 import { UserService } from '../src/adapters/models/User';
 import { TokenService } from '../src/adapters/models/Token';
 import { contextFactory, hottok, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, userFactory, mails } from './shortcuts';
@@ -193,7 +192,7 @@ describe('#1 Testes na autenticação', () => {
         const token = crypto.randomBytes(32).toString('base64');
         const controller = new SessionController(await context);
         await controller.checkToken(token).catch(error => {
-            expect(error.message).toEqual('Token inválido');
+            expect(error.message).toEqual('Não autorizado');
             expect(error.status).toEqual(401);
         });
         done();

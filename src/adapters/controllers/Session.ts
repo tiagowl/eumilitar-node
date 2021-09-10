@@ -6,6 +6,7 @@ import SessionCase from "../../cases/Session";
 import CaseError, { Errors } from "../../cases/Error";
 import { SessionInterface } from "../../entities/Session";
 import User from "../../entities/User";
+import UserController from "./User";
 
 export interface AuthInterface {
     email: string;
@@ -58,10 +59,11 @@ export default class SessionController extends Controller<AuthInterface> {
         }
     }
 
-    public async checkToken(token: string): Promise<User> {
+    public async checkToken(token: string) {
         try {
             const validated = await this.validate({ token }, logoutSchema);
-            return await this.useCase.checkToken(validated.token);
+            const user = await this.useCase.checkToken(validated.token);
+            return await UserController.parseEntity(user);
         } catch (error: any) {
             if (error instanceof CaseError) {
                 if (error.code === Errors.UNAUTHORIZED) throw { message: error.message, status: 401 };

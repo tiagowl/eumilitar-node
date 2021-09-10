@@ -62,7 +62,7 @@ export default class SessionCase {
 
     public async checkToken(token: string) {
         const session = await this.repository.get({ token });
-        const error = new CaseError('Token inválido', Errors.UNAUTHORIZED);
+        const error = new CaseError('Não autorizado', Errors.UNAUTHORIZED);
         if (!session) throw error;
         const user = await this.repository.users.get({ id: session.user });
         if (!user) throw error;
