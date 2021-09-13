@@ -19,7 +19,7 @@ export interface CheckInterface {
     token: string;
 }
 
-interface UpdatePasswordData extends DefaultUpdatePasswordData {
+export interface UpdatePasswordData extends DefaultUpdatePasswordData {
     confirmPassword: string;
 }
 
@@ -126,6 +126,9 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
             const updated = await this.useCase.updatePassword(validated);
             return { updated };
         } catch (error: any) {
+            if (error instanceof CaseError) {
+                throw { message: error.message, status: 400 };
+            }
             if (error.status) throw error;
             throw { message: 'Erro atualizar senha', status: 500 };
         }

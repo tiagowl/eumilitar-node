@@ -70,7 +70,7 @@ export default class RecoveryCase {
         const recovery = await this.check(token);
         const userCase = new UserUseCase(this.repository.users);
         const updated = await userCase.updatePassword(recovery.user, password);
-        if (updated) this.repository.delete({ token });
+        if (updated) await this.repository.delete({ token });
         else throw new CaseError('Falha ao atualizar senha');
         return updated;
     }

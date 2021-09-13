@@ -1,10 +1,9 @@
 import express, { RequestHandler, Request } from "express";
-import ChangePasswordController, { ChangePasswordInterface, ChangePasswordResponse } from "../../adapters/controllers/ChangePassword";
 import CorrectionController from "../../adapters/controllers/Correction";
 import EssayController, { EssayInput, EssayResponse } from "../../adapters/controllers/Essay";
 import EssayInvalidationController from "../../adapters/controllers/EssayInvalidation";
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
-import RecoveryController, { CheckInterface, RecoveryInterface, RecoveryResponse } from "../../adapters/controllers/Recovery";
+import RecoveryController, { CheckInterface, RecoveryInterface, RecoveryResponse, UpdatePasswordData } from "../../adapters/controllers/Recovery";
 import ProductController from "../../adapters/controllers/Products";
 import SessionController, { AuthInterface } from "../../adapters/controllers/Session";
 import SubscriptionController, { OrderData } from "../../adapters/controllers/Subscription";
@@ -159,8 +158,8 @@ export function checkChangePasswordToken(context: Context): RequestHandler<any, 
     };
 }
 
-export function changePassword(context: Context): RequestHandler<any, ChangePasswordResponse, ChangePasswordInterface> {
-    const controller = new ChangePasswordController(context);
+export function changePassword(context: Context): RequestHandler<any, any, UpdatePasswordData> {
+    const controller = new RecoveryController(context);
     return async (req, res) => {
         try {
             const response = await controller.updatePassword(req.body);
