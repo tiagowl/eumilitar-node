@@ -3,7 +3,7 @@ import ProductCase, { ProductRepositoryInterface } from "./ProductCase";
 import UserUseCase, { UserRepositoryInterface } from "./UserUseCase";
 import crypto from 'crypto';
 import { Course } from "../entities/Product";
-import CaseError from "./Error";
+import CaseError, { Errors } from "./Error";
 import { Paginated, Pagination } from "./interfaces";
 
 export interface SubscriptionFilter extends Partial<SubscriptionInterface> {
@@ -102,7 +102,7 @@ export default class SubscriptionCase {
 
     public async cancel(code: number) {
         const [subscription] = (await this.repository.filter({ code })) as Subscription[];
-        if (!subscription) throw new CaseError('Inscrição não encontrada', 'not_found');
+        if (!subscription) throw new CaseError('Inscrição não encontrada', Errors.NOT_FOUND);
         return this.repository.update(subscription.id, { active: false });
     }
 

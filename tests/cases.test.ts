@@ -14,6 +14,10 @@ import ProductCase, { ProductCreation, ProductRepositoryInterface } from '../src
 import Product, { ProductInterface } from '../src/entities/Product';
 import SubscriptionCase, { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from '../src/cases/Subscription';
 import Subscription, { SubscriptionInterface } from '../src/entities/Subscription';
+import SessionCase, { SessionInsertionInterface, SessionRepositoryInterface } from '../src/cases/Session';
+import RecoveryCase, { RecoveryInsertionInterface, RecoveryRepositoryInterface } from '../src/cases/Recovery';
+import Session, { SessionInterface } from '../src/entities/Session';
+import Recovery, { RecoveryInterface } from '../src/entities/Recovery';
 
 const defaultPassword = 'pass1235'
 const userDatabase = new Array(5).fill(0).map((_, id) => userEntityFactory({ password: hashPassword(defaultPassword), id }));
@@ -419,13 +423,107 @@ class SubscriptionTestRepository implements SubscriptionRepositoryInterface {
     }
 }
 
+// tslint:disable-next-line
+class SessionTestRepository implements SessionRepositoryInterface {
+    public readonly users: UserRepositoryInterface;
+    private database: Session[] = new Array(5).fill(0).map((_, id) => new Session({
+        id,
+        token: faker.random.alphaNumeric(),
+        user: id,
+        loginTime: new Date(),
+        agent: faker.internet.userAgent(),
+    }));
+
+    constructor() {
+        this.users = new UserTestRepository(userDatabase);
+    }
+
+    public async filter(filter: Partial<SessionInterface>) {
+        const fields = Object.entries(filter) as [keyof SessionInterface, number | Date][];
+        if (!fields.length) return this.database;
+        return this.database.filter(item => (
+            !!fields.filter(([key, value]) => item[key] === value).length
+        ))
+    }
+
+    public async create(data: SessionInsertionInterface) {
+        const session = new Session({
+            ...data,
+            id: this.database.length,
+        });
+        this.database.push(session);
+        return session;
+    }
+
+    public async delete(filter: Partial<SessionInterface>) {
+        const toRemove = await this.filter(filter);
+        this.database = this.database.filter(item => toRemove.indexOf(item) >= 0);
+        return toRemove.length;
+    }
+
+    public async get(filter: Partial<SessionInterface>) {
+        const fields = Object.entries(filter) as [keyof SessionInterface, number | Date][];
+        return this.database.find(item => (
+            !!fields.filter(([key, value]) => item[key] === value).length
+        ));
+    }
+}
+
+// tslint:disable-next-line
+class RecoveryTestRespository implements RecoveryRepositoryInterface {
+    public readonly users: UserRepositoryInterface;
+    private database: Recovery[] = new Array(10).fill(0).map((_, id) => new Recovery({
+        id,
+        expires: new Date(Date.now() + 60 * 60 * 1000),
+        selector: faker.datatype.string(),
+        token: faker.datatype.string(),
+        user: id,
+    }));
+
+    constructor() {
+        this.users = new UserTestRepository(userDatabase);
+    }
+
+    public async filter(filter: Partial<RecoveryInterface>) {
+        const fields = Object.entries(filter) as [keyof RecoveryInterface, number | Date][];
+        if (!fields.length) return this.database;
+        return this.database.filter(item => (
+            !!fields.filter(([key, value]) => item[key] === value).length
+        ))
+    }
+
+    public async create(data: RecoveryInsertionInterface) {
+        const recovery = new Recovery({
+            ...data,
+            id: this.database.length,
+        });
+        this.database.push(recovery);
+        return recovery;
+    }
+
+    public async get(filter: Partial<RecoveryInterface>) {
+        const fields = Object.entries(filter) as [keyof RecoveryInterface, number | Date][];
+        return this.database.find(item => (
+            !!fields.filter(([key, value]) => item[key] === value).length
+        ));
+    }
+
+    public async delete(filter: Partial<RecoveryInterface>) {
+        const toRemove = await this.filter(filter);
+        this.database = this.database.filter(item => toRemove.indexOf(item) >= 0);
+        return toRemove.length;
+    }
+}
+
 describe('#1 Testes nos casos de uso da entidade User', () => {
     it('Autenticação', async (done) => {
         const repository = new UserTestRepository(userDatabase);
         const user = await repository.get({ status: 'active' })
         const useCase = new UserUseCase(new UserTestRepository(userDatabase));
-        const auth = await useCase.authenticate(user?.email || "", defaultPassword)
-        expect(auth).toEqual({ email: true, password: true })
+        const [auth, checkedUser] = await useCase.authenticate(user?.email || "", defaultPassword)
+        expect(auth).toEqual({ email: true, password: true });
+        if (!checkedUser) throw new Error();
+        expect(user).toMatchObject(checkedUser);
         done()
     })
     it('Senha errada', async (done) => {
@@ -433,13 +531,14 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         const user = await repository.get({ status: 'active' })
         const useCase = new UserUseCase(new UserTestRepository(userDatabase));
         const auth = await useCase.authenticate(user?.email || "", 'wrongPass')
-        expect(auth).toEqual({ email: true, password: false })
+        expect(auth).toEqual([{ "email": true, "password": false }, null])
         done()
     })
     it('Email errado', async (done) => {
         const useCase = new UserUseCase(new UserTestRepository(userDatabase));
-        const auth = await useCase.authenticate("wrong__5@mail.com", defaultPassword)
-        expect(auth).toEqual({ email: false, password: false })
+        const [auth, notUser] = await useCase.authenticate("wrong__5@mail.com", defaultPassword)
+        expect(auth).toEqual({ email: false, password: false });
+        expect(notUser).toBeNull();
         done()
     })
     test('Atualização da senha', async (done) => {
@@ -449,9 +548,10 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         const useCase = new UserUseCase(usedRepo);
         const changed = await useCase.updatePassword(user?.id || 0, 'newPass');
         expect(changed).toBeTruthy();
-        const auth = await useCase.authenticate(user?.email || "", 'newPass')
+        const [auth] = await useCase.authenticate(user?.email || "", 'newPass')
         expect(auth).toEqual({ email: true, password: true })
-        const failAuth = await useCase.authenticate(user?.email || "", defaultPassword)
+        const [failAuth, notUser] = await useCase.authenticate(user?.email || "", defaultPassword)
+        expect(notUser).toBeNull();
         expect(failAuth).toEqual({ email: true, password: false })
         done()
     })
@@ -825,3 +925,77 @@ describe('#8 Produtos', () => {
         done();
     })
 });
+
+describe('Sessões', () => {
+    test('Autenticação', async done => {
+        const [user] = userDatabase.reverse();
+        const repository = new SessionTestRepository();
+        const useCase = new SessionCase(repository);
+        const auth = await useCase.auth({ email: user.email, password: defaultPassword });
+        expect(auth).toBeInstanceOf(Session);
+        done();
+    });
+    test('Senha errada', async done => {
+        const [user] = userDatabase;
+        const repository = new SessionTestRepository();
+        const useCase = new SessionCase(repository);
+        await expect(async () => {
+            return useCase.auth({ email: user.email, password: faker.random.alpha() });
+        }).rejects.toThrow('Senha inválida')
+        done();
+    });
+    test('Email inválido', async done => {
+        const repository = new SessionTestRepository();
+        const useCase = new SessionCase(repository);
+        await expect(async () => {
+            await useCase.auth({ email: faker.internet.email(), password: defaultPassword });
+        }).rejects.toThrow('Email inválido')
+        done();
+    });
+    test('Logout', async done => {
+        const repository = new SessionTestRepository();
+        const [selected] = await repository.filter({});
+        const useCase = new SessionCase(repository);
+        await useCase.delete(selected.token);
+        done();
+    });
+    test('Checar token', async done => {
+        const user = userDatabase.find(item => item.checkPassword(defaultPassword));
+        if (!user) throw new Error();
+        const repository = new SessionTestRepository();
+        const useCase = new SessionCase(repository);
+        const auth = await useCase.auth({ email: user.email, password: defaultPassword });
+        const checked = await useCase.checkToken(auth.token);
+        expect(user.id).toBe(checked.id);
+        done();
+    })
+});
+
+
+describe('Recuperação de senha', () => {
+    test('Criação', async done => {
+        const repository = new RecoveryTestRespository();
+        const useCase = new RecoveryCase(repository, 40 * 60 * 60 * 1000);
+        const [selected] = userDatabase;
+        const { recovery, user } = await useCase.create(selected.email);
+        expect(recovery).toBeInstanceOf(Recovery);
+        expect(user).toBeInstanceOf(User);
+        done();
+    });
+    test('Verificação', async done => {
+        const repository = new RecoveryTestRespository();
+        const [selected] = await repository.filter({});
+        const useCase = new RecoveryCase(repository, 40 * 60 * 60 * 1000);
+        const isValid = await useCase.check(selected.token);
+        expect(selected.id).toEqual(isValid.id);
+        done();
+    });
+    test('Atualização da senha', async done => {
+        const repository = new RecoveryTestRespository();
+        const [selected] = await repository.filter({});
+        const useCase = new RecoveryCase(repository, 40 * 60 * 60 * 1000);
+        const updated = await useCase.updatePassword({ token: selected.token, password: faker.internet.password() });
+        expect(updated).toBeTruthy();
+        done();
+    })
+})

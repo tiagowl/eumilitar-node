@@ -1,12 +1,7 @@
-import AuthController from '../src/adapters/controllers/Auth';
 import { UserService } from '../src/adapters/models/User';
-import { TokenService } from '../src/adapters/models/Token';
+import { SessionService } from '../src/adapters/models/Session';
 import { contextFactory, hottok, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, userFactory, mails } from './shortcuts';
-import PasswordRecoveryController from '../src/adapters/controllers/PasswordRecovery';
-import settings from '../src/settings';
-import { PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
-import CheckPasswordToken from '../src/adapters/controllers/CheckPasswordToken';
-import ChangePasswordController from '../src/adapters/controllers/ChangePassword';
+import { RecoveryService } from '../src/adapters/models/Recovery';
 import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
@@ -26,6 +21,8 @@ import ProductController from '../src/adapters/controllers/Products';
 import { ProductCreation } from '../src/cases/ProductCase';
 import User from '../src/entities/User';
 import { UserCreation, UserUpdate } from '../src/cases/UserUseCase';
+import SessionController from '../src/adapters/controllers/Session';
+import RecoveryController from '../src/adapters/controllers/Recovery';
 
 afterAll(async (done) => {
     await driver.destroy();
@@ -36,7 +33,7 @@ const context = contextFactory();
 
 describe('#1 Testes na autenticação', () => {
     const user = userFactory()
-    const passwordService = PasswordRecoveryService(driver);
+    const passwordService = RecoveryService(driver);
     beforeAll(async (done) => {
         const service = UserService(driver)
             .onConflict('user_id').merge();
@@ -57,11 +54,11 @@ describe('#1 Testes na autenticação', () => {
             email: user.email,
             password: user.passwd
         };
-        const controller = new AuthController(await context);
+        const controller = new SessionController(await context);
         const token = await controller.auth(credentials);
         expect(token.token).not.toBeNull();
-        const tokenService = TokenService(driver);
-        tokenService.where('session_id', token.token).then(dbToken => {
+        const sessionService = SessionService(driver);
+        sessionService.where('session_id', token.token).then(dbToken => {
             expect(dbToken[0]).not.toBeNull()
             done();
         })
@@ -70,7 +67,7 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
         const credentials = { email: user.email, }
-        const controller = new PasswordRecoveryController(await context);
+        const controller = new RecoveryController(await context);
         const response = await controller.recover(credentials);
         expect(response).toEqual({ message: "Email enviado! Verifique sua caixa de entrada." });
         const token = await passwordService.where('user_id', userData?.user_id).first();
@@ -82,17 +79,17 @@ describe('#1 Testes na autenticação', () => {
     })
     test('Recuperação de senha com email errado', async (done) => {
         const credentials = { email: 'wrong@mail.com' }
-        const controller = new PasswordRecoveryController(await context);
+        const controller = new RecoveryController(await context);
         try {
             await controller.recover(credentials);
         } catch (error: any) {
-            expect(error).toEqual({ message: 'Usuário não encontrado', status: 404 });
+            expect(error).toEqual({ message: 'Email inválido', status: 400 });
         }
         done()
     })
     test('Recuperação de senha com email inválido', async done => {
         const credentials = { email: 'wrongmail.com' }
-        const controller = new PasswordRecoveryController(await context);
+        const controller = new RecoveryController(await context);
         try {
             await controller.recover(credentials);
         } catch (error: any) {
@@ -109,7 +106,7 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, driver);
-        const controller = new CheckPasswordToken(await context);
+        const controller = new RecoveryController(await context);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeTruthy()
         done();
@@ -119,7 +116,7 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date(Date.now() - 1000));
-        const controller = new CheckPasswordToken(await context);
+        const controller = new RecoveryController(await context);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeFalsy()
         done();
@@ -129,7 +126,7 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date(0));
-        const controller = new CheckPasswordToken(await context);
+        const controller = new RecoveryController(await context);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeFalsy()
         done();
@@ -140,7 +137,7 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, driver);
-        const controller = new CheckPasswordToken(await context);
+        const controller = new RecoveryController(await context);
         const { isValid } = await controller.check({ token: invalidToken });
         expect(isValid).toBeFalsy()
         done();
@@ -151,7 +148,7 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(driver);
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, driver);
-        const controller = new CheckPasswordToken(await context);
+        const controller = new RecoveryController(await context);
         const { isValid } = await controller.check({ token: invalidToken },);
         expect(isValid).toBeFalsy()
         done();
@@ -162,15 +159,14 @@ describe('#1 Testes na autenticação', () => {
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, driver);
         const newPassword = 'newPassword'
-        const controller = new ChangePasswordController(await context);
+        const controller = new RecoveryController(await context);
         const updated = await controller.updatePassword({
             password: newPassword,
             confirmPassword: newPassword,
             token,
         });
         expect(updated).toEqual({ updated: true })
-        const checker = new CheckPasswordToken(await context);
-        const { isValid } = await checker.check({ token },);
+        const { isValid } = await controller.check({ token },);
         expect(isValid).toBeFalsy()
         done();
     })
@@ -179,22 +175,32 @@ describe('#1 Testes na autenticação', () => {
             email: user.email,
             password: 'newPassword'
         };
-        const auth = new AuthController(await context);
+        const auth = new SessionController(await context);
         const { token } = await auth.auth(credentials);
-        const controller = new AuthController(await context);
-        const response = await controller.checkToken({ token: token || '' });
-        expect(response.isValid).toBeTruthy();
-        expect(response.user).not.toBeNull();
-        expect(response.user).not.toBeUndefined();
-        expect(response.user?.email).toEqual(user.email);
+        const controller = new SessionController(await context);
+        const response = await controller.checkToken(token);
+        expect(response).not.toBeNull();
+        expect(response).not.toBeUndefined();
+        expect(response?.email).toEqual(user.email);
         done();
     })
     test('Verificar autenticação com token inválido', async (done) => {
         const token = crypto.randomBytes(32).toString('base64');
-        const controller = new AuthController(await context);
-        const response = await controller.checkToken({ token: token || '' });
-        expect(response.isValid).toBeFalsy();
-        expect(response.user).toBeUndefined();
+        const controller = new SessionController(await context);
+        await controller.checkToken(token).catch(error => {
+            expect(error.message).toEqual('Não autorizado');
+            expect(error.status).toEqual(401);
+        });
+        done();
+    })
+    test('logout', async done => {
+        const credentials = {
+            email: user.email,
+            password: 'newPassword'
+        };
+        const controller = new SessionController(await context);
+        const { token } = await controller.auth(credentials);
+        await controller.delete(token);
         done();
     })
 })

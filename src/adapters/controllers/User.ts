@@ -57,7 +57,7 @@ export default class UserController extends Controller<any> {
         this.useCase = new UserUseCase(this.repository);
     }
 
-    private async parseEntity(entity: User) {
+    static async parseEntity(entity: User) {
         return {
             id: entity.id,
             firstName: entity.firstName,
@@ -77,11 +77,11 @@ export default class UserController extends Controller<any> {
             const parsedFilter = await this.castFilter(filter, filterSchema);
             const users = await this.useCase.listAll(parsedFilter);
             if (users instanceof Array) {
-                return Promise.all(users.map(async user => this.parseEntity(user)));
+                return Promise.all(users.map(UserController.parseEntity));
             }
             return {
                 ...users,
-                page: await Promise.all(users.page.map(async user => this.parseEntity(user)))
+                page: await Promise.all(users.page.map(UserController.parseEntity))
             };
         } catch (error: any) {
             this.logger.error(error);
@@ -93,7 +93,7 @@ export default class UserController extends Controller<any> {
         try {
             const validated = await this.validate(data);
             const created = await this.useCase.create(validated);
-            return this.parseEntity(created);
+            return UserController.parseEntity(created);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -105,7 +105,7 @@ export default class UserController extends Controller<any> {
         try {
             const validated = await this.validate(data, updateSchema);
             const updated = await this.useCase.update(id, validated);
-            return this.parseEntity(updated);
+            return UserController.parseEntity(updated);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -116,7 +116,7 @@ export default class UserController extends Controller<any> {
     public async get(id: number) {
         try {
             const user = await this.useCase.get(id);
-            return this.parseEntity(user);
+            return UserController.parseEntity(user);
         } catch (error: any) {
             this.logger.error(error);
             if (error.code === 'not_found') throw { message: 'Usuário não encontrado', status: 404 };

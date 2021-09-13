@@ -1,13 +1,11 @@
 import express, { RequestHandler, Request } from "express";
-import AuthController, { AuthInterface, AuthResponse } from "../../adapters/controllers/Auth";
-import ChangePasswordController, { ChangePasswordInterface, ChangePasswordResponse } from "../../adapters/controllers/ChangePassword";
-import CheckPasswordToken, { CheckPasswordInterface, CheckedTokenInterface } from "../../adapters/controllers/CheckPasswordToken";
 import CorrectionController from "../../adapters/controllers/Correction";
 import EssayController, { EssayInput, EssayResponse } from "../../adapters/controllers/Essay";
 import EssayInvalidationController from "../../adapters/controllers/EssayInvalidation";
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
-import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
+import RecoveryController, { CheckInterface, RecoveryInterface, RecoveryResponse, UpdatePasswordData } from "../../adapters/controllers/Recovery";
 import ProductController from "../../adapters/controllers/Products";
+import SessionController, { AuthInterface } from "../../adapters/controllers/Session";
 import SubscriptionController, { OrderData } from "../../adapters/controllers/Subscription";
 import UserController from "../../adapters/controllers/User";
 import { SubscriptionCreation } from "../../cases/Subscription";
@@ -58,10 +56,8 @@ async function getToken(header: string | undefined) {
 
 async function checkAuth(req: Request<any>, context: Context) {
     const token = await getToken(req.headers.authorization);
-    const controller = new AuthController(context);
-    const { user, isValid } = await controller.checkToken({ token },);
-    if (!isValid || !user) throw { message: 'Não autorizado', status: 401 };
-    return user;
+    const controller = new SessionController(context);
+    return controller.checkToken(token);
 }
 
 function checkPermission(context: Context, permissions: AccountPermission[]): RequestHandler {
@@ -100,16 +96,17 @@ function isAuthenticated(context: Context): RequestHandler {
     };
 }
 
-export function createToken(context: Context): RequestHandler<any, AuthResponse, AuthInterface> {
-    const controller = new AuthController(context);
+export function createToken(context: Context): RequestHandler<any, any, AuthInterface> {
+    const controller = new SessionController(context);
     return async (req, res) => {
         try {
-            const response = await controller.auth(req.body, req.get('User-Agent'));
-            res.status(!!response.token ? 201 : 400);
-            res.json(response);
+            const response = await controller.auth({
+                ...req.body,
+                agent: req.get('User-Agent')
+            });
+            res.status(201).json(response);
         } catch (error: any) {
-            res.status(400);
-            res.json(error);
+            res.status(error.status || 500).json(error);
         } finally {
             res.end();
         }
@@ -117,12 +114,12 @@ export function createToken(context: Context): RequestHandler<any, AuthResponse,
 }
 
 export function logOut(context: Context): RequestHandler<any, void, void> {
-    const controller = new AuthController(context);
+    const controller = new SessionController(context);
     return async (req, res) => {
         try {
             await checkAuth(req, context);
             const token = await getToken(req.headers.authorization);
-            await controller.logOut(token);
+            await controller.delete(token);
             res.status(204);
         } catch (error: any) {
             res.status(error.status || 400).json(error);
@@ -132,8 +129,8 @@ export function logOut(context: Context): RequestHandler<any, void, void> {
     };
 }
 
-export function passwordRecoveries(context: Context): RequestHandler<any, PasswordRecoveryResponse, PasswordRecoveryInterface> {
-    const controller = new PasswordRecoveryController(context);
+export function passwordRecoveries(context: Context): RequestHandler<any, RecoveryResponse, RecoveryInterface> {
+    const controller = new RecoveryController(context);
     return async (req, res) => {
         try {
             const response = await controller.recover(req.body);
@@ -147,8 +144,8 @@ export function passwordRecoveries(context: Context): RequestHandler<any, Passwo
 }
 
 
-export function checkChangePasswordToken(context: Context): RequestHandler<any, CheckedTokenInterface, CheckPasswordInterface> {
-    const controller = new CheckPasswordToken(context);
+export function checkChangePasswordToken(context: Context): RequestHandler<any, any, CheckInterface> {
+    const controller = new RecoveryController(context);
     return async (req, res) => {
         try {
             const response = await controller.check(req.params);
@@ -161,8 +158,8 @@ export function checkChangePasswordToken(context: Context): RequestHandler<any, 
     };
 }
 
-export function changePassword(context: Context): RequestHandler<any, ChangePasswordResponse, ChangePasswordInterface> {
-    const controller = new ChangePasswordController(context);
+export function changePassword(context: Context): RequestHandler<any, any, UpdatePasswordData> {
+    const controller = new RecoveryController(context);
     return async (req, res) => {
         try {
             const response = await controller.updatePassword(req.body);

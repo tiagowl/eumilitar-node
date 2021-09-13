@@ -3,7 +3,7 @@ import { Reason, reasons } from "../entities/EssayInvalidation";
 import EssayTheme, { Course } from '../entities/EssayTheme';
 import Subscription from "../entities/Subscription";
 import User from "../entities/User";
-import CaseError from "./Error";
+import CaseError, { Errors } from "./Error";
 import { EssayThemeRepositoryInterface } from './EssayThemeCase';
 import { ProductRepositoryInterface } from "./ProductCase";
 import { SubscriptionRepositoryInterface } from "./Subscription";
@@ -92,9 +92,9 @@ export default class EssayCase {
 
     private async getTheme(course: Course) {
         const themeData = await this.repository.themes.get({ courses: new Set([course]) }, true);
-        if (!themeData) throw new CaseError('Nenhum tema ativo para este curso', 'invalid_theme');
+        if (!themeData) throw new CaseError('Nenhum tema ativo para este curso', Errors.INVALID_THEME);
         const theme = new EssayTheme(themeData);
-        if (!theme.active) throw new CaseError('Tema inválido', 'invalid_theme');
+        if (!theme.active) throw new CaseError('Tema inválido', Errors.INVALID_THEME);
         return theme;
     }
 
@@ -107,7 +107,7 @@ export default class EssayCase {
             const validCourse = theme.courses.has(product.course);
             return (!expired && validCourse && subscription.active) || permitted;
         }, Promise.resolve(false) as Promise<boolean>);
-        if (!hasPermission) throw new CaseError('Não autorizado', 'expired');
+        if (!hasPermission) throw new CaseError('Não autorizado', Errors.EXPIRED);
     }
 
     private async checkPermission(theme: EssayTheme, student: User, course: Course) {

@@ -7,11 +7,13 @@ import Correction from '../src/entities/Correction';
 import faker from 'faker';
 import Product from '../src/entities/Product';
 import Subscription from '../src/entities/Subscription';
+import Session from '../src/entities/Session';
+import Recovery from '../src/entities/Recovery';
 
 test('Testes na entidade User', async (done) => {
     const password = 'l23jlk234';
-    const user = await userEntityFactory({ password: await hashPassword(password) });
-    expect(user.checkPassword(password, bcrypt.compare)).toBeTruthy()
+    const user = userEntityFactory({ password: await hashPassword(password) });
+    expect(user.checkPassword(password)).toBeTruthy()
     user.update({
         firstName: 'Denis',
         lastName: 'Antonio',
@@ -130,5 +132,29 @@ test('Inscrições', () => {
             active: true,
             course: 'esa',
         })
+    }).not.toThrowError();
+})
+
+test('Sessões', () => {
+    expect(() => {
+        new Session({
+            id: faker.datatype.number(),
+            token: faker.datatype.string(),
+            loginTime: new Date(),
+            user: faker.datatype.number(),
+            agent: faker.internet.userAgent(),
+        });
+    }).not.toThrowError();
+})
+
+test('Recuperação de senha', () => {
+    expect(() => {
+        new Recovery({
+            id: faker.datatype.number(),
+            token: faker.datatype.string(),
+            expires: new Date(),
+            user: faker.datatype.number(),
+            selector: faker.datatype.string(),
+        });
     }).not.toThrowError();
 })
