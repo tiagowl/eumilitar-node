@@ -3,7 +3,6 @@ import { SessionService } from '../src/adapters/models/Session';
 import { contextFactory, hottok, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, userFactory, mails } from './shortcuts';
 import settings from '../src/settings';
 import { RecoveryService } from '../src/adapters/models/Recovery';
-import CheckPasswordToken from '../src/adapters/controllers/CheckPasswordToken';
 import ChangePasswordController from '../src/adapters/controllers/ChangePassword';
 import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
@@ -169,7 +168,7 @@ describe('#1 Testes na autenticação', () => {
             token,
         });
         expect(updated).toEqual({ updated: true })
-        const checker = new CheckPasswordToken(await context);
+        const checker = new RecoveryController(await context);
         const { isValid } = await checker.check({ token },);
         expect(isValid).toBeFalsy()
         done();

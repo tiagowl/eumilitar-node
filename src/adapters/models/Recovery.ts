@@ -61,4 +61,16 @@ export default class RecoveryRepository extends Repository<RecoveryModel, Recove
             throw { message: 'Erro ao consultar banco de dados', status: 500 };
         }
     }
+
+    public async delete(filter: Partial<RecoveryInterface>) {
+        try {
+            const parsed = await this.toDb(filter);
+            const deleted = await this.query.where(parsed).del();
+            return deleted;
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro deletar token do banco de dados', status: 500 };
+        }
+    }
 }

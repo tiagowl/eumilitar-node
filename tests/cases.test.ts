@@ -472,10 +472,18 @@ class SessionTestRepository implements SessionRepositoryInterface {
 // tslint:disable-next-line
 class RecoveryTestRespository implements RecoveryRepositoryInterface {
     public readonly users: UserRepositoryInterface;
-    private readonly database: Recovery[] = [];
+    private database: Recovery[] = [];
 
     constructor() {
         this.users = new UserTestRepository(userDatabase);
+    }
+
+    public async filter(filter: Partial<SessionInterface>) {
+        const fields = Object.entries(filter) as [keyof SessionInterface, number | Date][];
+        if (!fields.length) return this.database;
+        return this.database.filter(item => (
+            !!fields.filter(([key, value]) => item[key] === value).length
+        ))
     }
 
     public async create(data: RecoveryInsertionInterface) {
@@ -492,6 +500,12 @@ class RecoveryTestRespository implements RecoveryRepositoryInterface {
         return this.database.find(item => (
             !!fields.filter(([key, value]) => item[key] === value).length
         ));
+    }
+
+    public async delete(filter: Partial<SessionInterface>) {
+        const toRemove = await this.filter(filter);
+        this.database = this.database.filter(item => toRemove.indexOf(item) >= 0);
+        return toRemove.length;
     }
 }
 

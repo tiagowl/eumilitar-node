@@ -14,6 +14,7 @@ export interface RecoveryRepositoryInterface {
     readonly users: UserRepositoryInterface;
     readonly create: (data: RecoveryInsertionInterface) => Promise<Recovery>;
     readonly get: (filter: Partial<RecoveryInterface>) => Promise<Recovery | null | undefined>;
+    readonly delete: (filter: Partial<RecoveryInterface>) => Promise<number>;
 }
 
 export default class RecoveryCase {
@@ -52,7 +53,10 @@ export default class RecoveryCase {
         const recovery = await this.repository.get({ token });
         if (!recovery) throw new CaseError('Token inválido', Errors.NOT_FOUND);
         const expired = recovery.expires <= new Date();
-        if (expired) throw new CaseError('Token expirado', Errors.EXPIRED);
+        if (expired) {
+            this.repository.delete({ token });
+            throw new CaseError('Token expirado', Errors.EXPIRED);
+        }
         return true;
     }
 }

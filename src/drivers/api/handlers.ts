@@ -1,11 +1,10 @@
 import express, { RequestHandler, Request } from "express";
 import ChangePasswordController, { ChangePasswordInterface, ChangePasswordResponse } from "../../adapters/controllers/ChangePassword";
-import CheckPasswordToken, { CheckPasswordInterface, CheckedTokenInterface } from "../../adapters/controllers/CheckPasswordToken";
 import CorrectionController from "../../adapters/controllers/Correction";
 import EssayController, { EssayInput, EssayResponse } from "../../adapters/controllers/Essay";
 import EssayInvalidationController from "../../adapters/controllers/EssayInvalidation";
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
-import RecoveryController, { RecoveryInterface, RecoveryResponse } from "../../adapters/controllers/Recovery";
+import RecoveryController, { CheckInterface, RecoveryInterface, RecoveryResponse } from "../../adapters/controllers/Recovery";
 import ProductController from "../../adapters/controllers/Products";
 import SessionController, { AuthInterface } from "../../adapters/controllers/Session";
 import SubscriptionController, { OrderData } from "../../adapters/controllers/Subscription";
@@ -146,8 +145,8 @@ export function passwordRecoveries(context: Context): RequestHandler<any, Recove
 }
 
 
-export function checkChangePasswordToken(context: Context): RequestHandler<any, CheckedTokenInterface, CheckPasswordInterface> {
-    const controller = new CheckPasswordToken(context);
+export function checkChangePasswordToken(context: Context): RequestHandler<any, any, CheckInterface> {
+    const controller = new RecoveryController(context);
     return async (req, res) => {
         try {
             const response = await controller.check(req.params);
