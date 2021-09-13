@@ -1,12 +1,10 @@
 import Controller from "./Controller";
 import { Mail, MessageConfigInterface } from '../interfaces';
-import { Knex } from "knex";
 import * as yup from 'yup';
-import UserRepository from "../models/User";
-import crypto from 'crypto';
-import { PasswordRecoveryInsert, PasswordRecoveryModel, PasswordRecoveryService } from '../models/PasswordRecoveries';
+import RecoveryRepository from '../models/Recovery';
 import PasswordRecoveryRender from '../views/PasswordRecovery';
 import { Context } from "../interfaces";
+import RecoveryCase from "../../cases/Recovery";
 
 export interface PasswordRecoveryInterface {
     email: string;
@@ -22,26 +20,17 @@ const schema = yup.object().shape({
 
 export default class PasswordRecoveryController extends Controller<PasswordRecoveryInterface> {
     private readonly smtp: Mail;
-    private readonly repository: UserRepository;
+    private readonly repository: RecoveryRepository;
     private readonly config: MessageConfigInterface;
-    private readonly service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
+    private readonly useCase: RecoveryCase;
 
     constructor(context: Context) {
-        const { smtp, driver, settings } = context;
+        const { smtp, settings } = context;
         super(context, schema);
         this.smtp = smtp;
-        this.repository = new UserRepository(context);
+        this.repository = new RecoveryRepository(context);
         this.config = settings.messageConfig;
-        this.service = PasswordRecoveryService(driver);
-    }
-
-    private async generateConfirmationToken(): Promise<string> {
-        return new Promise((resolve, reject) => {
-            crypto.randomBytes(32, (error, buffer) => {
-                if (error) reject(error);
-                else resolve(buffer.toString('hex'));
-            });
-        });
+        this.useCase = new RecoveryCase(this.repository, this.config.expirationTime * 60 * 60 * 1000);
     }
 
     private async writeMessage(username: string, link: string) {
@@ -75,31 +64,16 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
         });
     }
 
-    private async saveToken(userId: number, token: string) {
-        if (token) {
-            return this.service.insert({
-                token,
-                expires: new Date(Date.now() + this.config.expirationTime * 60 * 60 * 1000),
-                selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
-                user_id: userId,
-            });
-        }
-        throw { message: "Token inválido" };
-    }
-
     public async recover(rawData: PasswordRecoveryInterface,): Promise<PasswordRecoveryResponse> {
         try {
-            const data = await this.validate(rawData);
-            const user = await this.repository.get(data);
-            if (!user) throw { message: 'Usuário não encontrado', status: 404 };
-            const token = await this.generateConfirmationToken();
-            await this.saveToken(user.id, token);
-            return this.sendConfirmationEmail(user.email, user.fullName, token)
-                .then(async () => ({ message: "Email enviado! Verifique sua caixa de entrada." }))
+            const { email } = await this.validate(rawData);
+            const { recovery, user } = await this.useCase.create(email);
+            await this.sendConfirmationEmail(user.email, user.fullName, recovery.token)
                 .catch(async (error) => {
                     this.logger.error(error);
-                    throw { message: 'Falha ao enviar o email! Tente novamente ou entre em contato com o suporte.' };
+                    throw { message: 'Falha ao enviar o email! Tente novamente ou entre em contato com o suporte.', status: 500 };
                 });
+            return { message: "Email enviado! Verifique sua caixa de entrada." };
         } catch (error: any) {
             this.logger.error({ ...error });
             throw error;

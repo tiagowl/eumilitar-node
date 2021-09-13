@@ -3,10 +3,10 @@ import { UserFilter, UserPaginated, UserRepositoryInterface, UserSavingData } fr
 import User, { AccountPermission, AccountStatus, UserData, UserInterface } from "../../entities/User";
 import Repository, { FieldsMap } from "./Repository";
 import { Context } from "../interfaces";
-import { TokenService } from "./Token";
+import { SessionService } from "./Session";
 import UserCreation, { Props as UserCreationProps } from '../views/UserCreation';
 import crypto from 'crypto';
-import { PasswordRecoveryService } from "./PasswordRecoveries";
+import { RecoveryService } from "./Recovery";
 import { Pagination } from "../../cases/interfaces";
 
 const statusMap: AccountStatus[] = ['inactive', 'active', 'pending'];
@@ -150,7 +150,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     }
 
     private async saveToken(token: string, user: User) {
-        const [saved] = await PasswordRecoveryService(this.driver).insert({
+        const [saved] = await RecoveryService(this.driver).insert({
             token,
             expires: new Date(Date.now() + this.context.settings.messageConfig.expirationTime * 60 * 60 * 1000),
             selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
@@ -246,7 +246,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     }
 
     public async auth(token: string) {
-        const tokenSubQuery = TokenService(this.driver)
+        const tokenSubQuery = SessionService(this.driver)
             .select('user_id').where('session_id', token);
         const user = await this.query
             .whereIn('user_id', tokenSubQuery)

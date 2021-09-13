@@ -3,7 +3,7 @@ import * as yup from 'yup';
 import UserRepository from "../models/User";
 import CheckPasswordToken from "./CheckPasswordToken";
 import UserUseCase from "../../cases/UserUseCase";
-import { PasswordRecoveryService } from "../models/PasswordRecoveries";
+import { RecoveryService } from "../models/Recovery";
 import { Context } from "../interfaces";
 
 export interface ChangePasswordInterface {
@@ -51,7 +51,7 @@ export default class ChangePasswordController extends Controller<ChangePasswordI
 
     private async deleteToken(token: string) {
         try {
-            const service = PasswordRecoveryService(this.driver);
+            const service = RecoveryService(this.driver);
             return await service.where('token', token).del();
         } catch (error: any) {
             this.logger.error(error);

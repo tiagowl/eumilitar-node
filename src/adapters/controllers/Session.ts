@@ -1,5 +1,5 @@
 import { Context } from "../interfaces";
-import SessionRepository from "../models/Sessions";
+import SessionRepository from "../models/Session";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import SessionCase from "../../cases/Session";

@@ -1,9 +1,9 @@
 import { UserService } from '../src/adapters/models/User';
-import { TokenService } from '../src/adapters/models/Token';
+import { SessionService } from '../src/adapters/models/Session';
 import { contextFactory, hottok, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, userFactory, mails } from './shortcuts';
 import PasswordRecoveryController from '../src/adapters/controllers/PasswordRecovery';
 import settings from '../src/settings';
-import { PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
+import { RecoveryService } from '../src/adapters/models/Recovery';
 import CheckPasswordToken from '../src/adapters/controllers/CheckPasswordToken';
 import ChangePasswordController from '../src/adapters/controllers/ChangePassword';
 import crypto from 'crypto';
@@ -36,7 +36,7 @@ const context = contextFactory();
 
 describe('#1 Testes na autenticação', () => {
     const user = userFactory()
-    const passwordService = PasswordRecoveryService(driver);
+    const passwordService = RecoveryService(driver);
     beforeAll(async (done) => {
         const service = UserService(driver)
             .onConflict('user_id').merge();
@@ -60,8 +60,8 @@ describe('#1 Testes na autenticação', () => {
         const controller = new SessionController(await context);
         const token = await controller.auth(credentials);
         expect(token.token).not.toBeNull();
-        const tokenService = TokenService(driver);
-        tokenService.where('session_id', token.token).then(dbToken => {
+        const sessionService = SessionService(driver);
+        sessionService.where('session_id', token.token).then(dbToken => {
             expect(dbToken[0]).not.toBeNull()
             done();
         })

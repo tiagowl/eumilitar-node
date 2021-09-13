@@ -36,11 +36,14 @@ export default class RecoveryCase {
     public async create(email: string) {
         const user = await this.repository.users.get({ email });
         if (!user) throw new CaseError(`Email inválido`, Errors.NOT_FOUND);
-        return this.repository.create({
-            token: await this.generateConfirmationToken(),
-            expires: new Date(Date.now() + this.defaultExpiration),
-            user: user.id,
-            selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
-        });
+        return {
+            user,
+            recovery: await this.repository.create({
+                token: await this.generateConfirmationToken(),
+                expires: new Date(Date.now() + this.defaultExpiration),
+                user: user.id,
+                selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
+            }),
+        };
     }
 }

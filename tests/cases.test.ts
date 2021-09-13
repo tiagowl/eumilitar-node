@@ -919,9 +919,10 @@ describe('Recuperação de senha', () => {
     test('Criação', async done => {
         const repository = new RecoveryTestRespository();
         const useCase = new RecoveryCase(repository, 40 * 60 * 60 * 1000);
-        const [user] = userDatabase;
-        const created = await useCase.create(user.email);
-        expect(created).toBeInstanceOf(Recovery);
+        const [selected] = userDatabase;
+        const { recovery, user } = await useCase.create(selected.email);
+        expect(recovery).toBeInstanceOf(Recovery);
+        expect(user).toBeInstanceOf(User);
         done();
     });
 })

@@ -1,7 +1,7 @@
 import { Knex } from "knex";
 import Controller from "./Controller";
 import * as yup from 'yup';
-import { PasswordRecoveryInsert, PasswordRecoveryModel, PasswordRecoveryService } from '../models/PasswordRecoveries';
+import {  RecoveryModel, RecoveryService } from '../models/Recovery';
 import { Context } from "../interfaces";
 
 export interface CheckPasswordInterface {
@@ -16,13 +16,13 @@ export const schema = yup.object({
 });
 
 export default class CheckPasswordToken extends Controller<CheckPasswordInterface> {
-    private readonly service: Knex.QueryBuilder<PasswordRecoveryInsert, PasswordRecoveryModel>;
-    private _tokenData?: PasswordRecoveryModel;
+    private readonly service: Knex.QueryBuilder<Partial<RecoveryModel>, RecoveryModel[]>;
+    private _tokenData?: RecoveryModel;
 
     constructor(context: Context) {
         const { driver } = context;
         super(context, schema);
-        this.service = PasswordRecoveryService(driver);
+        this.service = RecoveryService(driver);
     }
 
     get tokenData() { return this._tokenData; }
@@ -33,7 +33,7 @@ export default class CheckPasswordToken extends Controller<CheckPasswordInterfac
 
     private async deleteToken(token: string) {
         try {
-            const service = PasswordRecoveryService(this.driver);
+            const service = RecoveryService(this.driver);
             return await service.where('token', token).del();
         } catch (error: any) {
             this.logger.error(error);
