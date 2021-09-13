@@ -1,4 +1,4 @@
-import Recovery from "../entities/Recovery";
+import Recovery, { RecoveryInterface } from "../entities/Recovery";
 import CaseError, { Errors } from "./Error";
 import { UserRepositoryInterface } from "./UserUseCase";
 import crypto from "crypto";
@@ -13,6 +13,7 @@ export interface RecoveryInsertionInterface {
 export interface RecoveryRepositoryInterface {
     readonly users: UserRepositoryInterface;
     readonly create: (data: RecoveryInsertionInterface) => Promise<Recovery>;
+    readonly get: (filter: Partial<RecoveryInterface>) => Promise<Recovery | null | undefined>;
 }
 
 export default class RecoveryCase {
@@ -45,5 +46,13 @@ export default class RecoveryCase {
                 selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
             }),
         };
+    }
+
+    public async check(token: string) {
+        const recovery = await this.repository.get({ token });
+        if (!recovery) throw new CaseError('Token inválido', Errors.NOT_FOUND);
+        const expired = recovery.expires > new Date();
+        if (expired) throw new CaseError('Token expirado', Errors.EXPIRED);
+        return true;
     }
 }

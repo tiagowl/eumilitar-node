@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import settings from '../src/settings';
 import { Mail, MailData } from '../src/adapters/interfaces';
 import crypto from 'crypto';
-import { PasswordRecoveryInsert, PasswordRecoveryService } from '../src/adapters/models/PasswordRecoveries';
+import { RecoveryService } from '../src/adapters/models/Recovery';
 import User, { UserData } from '../src/entities/User';
 import createStorage from '../src/drivers/storage';
 import Application from '../src/drivers/api';
@@ -100,13 +100,13 @@ export async function generateConfirmationToken() {
 }
 
 export async function saveConfirmationToken(token: string, userId: number, driver: Knex, expiration?: Date) {
-    const data: PasswordRecoveryInsert = {
+    const data = {
         token,
         expires: expiration || new Date(Date.now() + 24 * 60 * 60 * 1000),
         selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
         user_id: userId,
     }
-    const service = PasswordRecoveryService(driver);
+    const service = RecoveryService(driver);
     return service.insert(data);
 }
 

@@ -17,7 +17,7 @@ import Subscription, { SubscriptionInterface } from '../src/entities/Subscriptio
 import SessionCase, { SessionInsertionInterface, SessionRepositoryInterface } from '../src/cases/Session';
 import RecoveryCase, { RecoveryInsertionInterface, RecoveryRepositoryInterface } from '../src/cases/Recovery';
 import Session, { SessionInterface } from '../src/entities/Session';
-import Recovery from '../src/entities/Recovery';
+import Recovery, { RecoveryInterface } from '../src/entities/Recovery';
 
 const defaultPassword = 'pass1235'
 const userDatabase = new Array(5).fill(0).map((_, id) => userEntityFactory({ password: hashPassword(defaultPassword), id }));
@@ -485,6 +485,13 @@ class RecoveryTestRespository implements RecoveryRepositoryInterface {
         });
         this.database.push(recovery);
         return recovery;
+    }
+
+    public async get(filter: Partial<RecoveryInterface>) {
+        const fields = Object.entries(filter) as [keyof RecoveryInterface, number | Date][];
+        return this.database.find(item => (
+            !!fields.filter(([key, value]) => item[key] === value).length
+        ));
     }
 }
 
