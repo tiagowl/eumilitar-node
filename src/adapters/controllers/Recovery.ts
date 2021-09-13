@@ -2,23 +2,32 @@ import Controller from "./Controller";
 import { Mail, MessageConfigInterface } from '../interfaces';
 import * as yup from 'yup';
 import RecoveryRepository from '../models/Recovery';
-import PasswordRecoveryRender from '../views/PasswordRecovery';
+import RecoveryRender from '../views/Recovery';
 import { Context } from "../interfaces";
 import RecoveryCase from "../../cases/Recovery";
+import CaseError, { Errors } from "../../cases/Error";
 
-export interface PasswordRecoveryInterface {
+export interface RecoveryInterface {
     email: string;
 }
 
-export type PasswordRecoveryResponse = {
+export type RecoveryResponse = {
     message: string
 };
+
+export interface CheckInterface {
+    token: string;
+}
 
 const schema = yup.object().shape({
     email: yup.string().email('Email inválido').required('O campo "email" é obrigatório'),
 });
 
-export default class PasswordRecoveryController extends Controller<PasswordRecoveryInterface> {
+const checkSchema = yup.object().shape({
+    token: yup.string().required('O token é obrigatório'),
+});
+
+export default class RecoveryController extends Controller<RecoveryInterface> {
     private readonly smtp: Mail;
     private readonly repository: RecoveryRepository;
     private readonly config: MessageConfigInterface;
@@ -47,7 +56,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
     }
 
     private async renderMessage(username: string, link: string) {
-        return PasswordRecoveryRender({
+        return RecoveryRender({
             link, username,
             expirationTime: this.config.expirationTime
         });
@@ -64,7 +73,7 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
         });
     }
 
-    public async recover(rawData: PasswordRecoveryInterface,): Promise<PasswordRecoveryResponse> {
+    public async recover(rawData: RecoveryInterface,): Promise<RecoveryResponse> {
         try {
             const { email } = await this.validate(rawData);
             const { recovery, user } = await this.useCase.create(email);
@@ -75,8 +84,22 @@ export default class PasswordRecoveryController extends Controller<PasswordRecov
                 });
             return { message: "Email enviado! Verifique sua caixa de entrada." };
         } catch (error: any) {
+            if (error instanceof CaseError) {
+                if (error.code === Errors.NOT_FOUND) throw { message: error.message, status: 400 };
+            }
             this.logger.error({ ...error });
             throw error;
+        }
+    }
+
+    public async check(data: CheckInterface) {
+        try {
+            const { token } = await this.validate(data, checkSchema);
+            const isValid = await this.useCase.check(token);
+            return { isValid };
+        } catch (error) {
+            this.logger.error(error);
+            return { isValid: false };
         }
     }
 

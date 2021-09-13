@@ -51,7 +51,7 @@ export default class RecoveryCase {
     public async check(token: string) {
         const recovery = await this.repository.get({ token });
         if (!recovery) throw new CaseError('Token inválido', Errors.NOT_FOUND);
-        const expired = recovery.expires > new Date();
+        const expired = recovery.expires <= new Date();
         if (expired) throw new CaseError('Token expirado', Errors.EXPIRED);
         return true;
     }

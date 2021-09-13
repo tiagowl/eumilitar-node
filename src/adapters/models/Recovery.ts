@@ -3,7 +3,7 @@ import { RecoveryInsertionInterface, RecoveryRepositoryInterface } from "../../c
 import { UserRepositoryInterface } from "../../cases/UserUseCase";
 import Recovery, { RecoveryInterface } from "../../entities/Recovery";
 import { Context } from "../interfaces";
-import Repository from "./Repository";
+import Repository, { FieldsMap } from "./Repository";
 import UserRepository from "./User";
 
 export interface RecoveryModel {
@@ -16,11 +16,19 @@ export interface RecoveryModel {
 
 export const RecoveryService = (driver: Knex) => driver<Partial<RecoveryModel>, RecoveryModel[]>('password_reset');
 
+const fieldsMap: FieldsMap<RecoveryModel, RecoveryInterface> = [
+    [['expires', val => new Date(val)], ['expires', val => new Date(val)]],
+    [['id', Number], ['id', Number]],
+    [['selector', String], ['selector', String]],
+    [['token', String], ['token', String]],
+    [['user_id', Number], ['user', Number]],
+];
+
 export default class RecoveryRepository extends Repository<RecoveryModel, RecoveryInterface> implements RecoveryRepositoryInterface {
     public readonly users: UserRepositoryInterface;
 
     constructor(context: Context) {
-        super([], context, RecoveryService);
+        super(fieldsMap, context, RecoveryService);
         this.users = new UserRepository(context);
     }
 
@@ -37,6 +45,20 @@ export default class RecoveryRepository extends Repository<RecoveryModel, Recove
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: 'Erro ao salvar token no banco de dados', status: 500 };
+        }
+    }
+
+    public async get(filter: Partial<RecoveryInterface>) {
+        try {
+            const parsed = await this.toDb(filter);
+            const data = await this.query.where(parsed).first();
+            if (!data) return null;
+            const parsedData = await this.toEntity(data);
+            return new Recovery(parsedData);
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao consultar banco de dados', status: 500 };
         }
     }
 }

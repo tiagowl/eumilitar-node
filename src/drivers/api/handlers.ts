@@ -5,7 +5,7 @@ import CorrectionController from "../../adapters/controllers/Correction";
 import EssayController, { EssayInput, EssayResponse } from "../../adapters/controllers/Essay";
 import EssayInvalidationController from "../../adapters/controllers/EssayInvalidation";
 import EssayThemeController, { EssayThemeResponse } from "../../adapters/controllers/EssayTheme";
-import PasswordRecoveryController, { PasswordRecoveryInterface, PasswordRecoveryResponse } from "../../adapters/controllers/PasswordRecovery";
+import RecoveryController, { RecoveryInterface, RecoveryResponse } from "../../adapters/controllers/Recovery";
 import ProductController from "../../adapters/controllers/Products";
 import SessionController, { AuthInterface } from "../../adapters/controllers/Session";
 import SubscriptionController, { OrderData } from "../../adapters/controllers/Subscription";
@@ -131,8 +131,8 @@ export function logOut(context: Context): RequestHandler<any, void, void> {
     };
 }
 
-export function passwordRecoveries(context: Context): RequestHandler<any, PasswordRecoveryResponse, PasswordRecoveryInterface> {
-    const controller = new PasswordRecoveryController(context);
+export function passwordRecoveries(context: Context): RequestHandler<any, RecoveryResponse, RecoveryInterface> {
+    const controller = new RecoveryController(context);
     return async (req, res) => {
         try {
             const response = await controller.recover(req.body);
