@@ -95,8 +95,8 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
     public async check(data: CheckInterface) {
         try {
             const { token } = await this.validate(data, checkSchema);
-            const isValid = await this.useCase.check(token);
-            return { isValid };
+            const recovery = await this.useCase.check(token);
+            return { isValid: !!recovery };
         } catch (error) {
             this.logger.error(error);
             return { isValid: false };

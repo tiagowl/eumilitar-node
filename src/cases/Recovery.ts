@@ -1,6 +1,6 @@
 import Recovery, { RecoveryInterface } from "../entities/Recovery";
 import CaseError, { Errors } from "./Error";
-import { UserRepositoryInterface } from "./UserUseCase";
+import UserUseCase, { UserRepositoryInterface } from "./UserUseCase";
 import crypto from "crypto";
 
 export interface RecoveryInsertionInterface {
@@ -8,6 +8,11 @@ export interface RecoveryInsertionInterface {
     expires: Date;
     user: number;
     selector: string;
+}
+
+export interface UpdatePasswordData {
+    token: string;
+    password: string;
 }
 
 export interface RecoveryRepositoryInterface {
@@ -57,6 +62,16 @@ export default class RecoveryCase {
             this.repository.delete({ token });
             throw new CaseError('Token expirado', Errors.EXPIRED);
         }
-        return true;
+        return recovery;
+    }
+
+    public async updatePassword(data: UpdatePasswordData) {
+        const { token, password } = data;
+        const recovery = await this.check(token);
+        const userCase = new UserUseCase(this.repository.users);
+        const updated = await userCase.updatePassword(recovery.user, password);
+        if (updated) this.repository.delete({ token });
+        else throw new CaseError('Falha ao atualizar senha');
+        return updated;
     }
 }

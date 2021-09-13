@@ -472,14 +472,20 @@ class SessionTestRepository implements SessionRepositoryInterface {
 // tslint:disable-next-line
 class RecoveryTestRespository implements RecoveryRepositoryInterface {
     public readonly users: UserRepositoryInterface;
-    private database: Recovery[] = [];
+    private database: Recovery[] = new Array(10).fill(0).map((_, id) => new Recovery({
+        id,
+        expires: new Date(Date.now() + 60 * 60 * 1000),
+        selector: faker.datatype.string(),
+        token: faker.datatype.string(),
+        user: id,
+    }));
 
     constructor() {
         this.users = new UserTestRepository(userDatabase);
     }
 
-    public async filter(filter: Partial<SessionInterface>) {
-        const fields = Object.entries(filter) as [keyof SessionInterface, number | Date][];
+    public async filter(filter: Partial<RecoveryInterface>) {
+        const fields = Object.entries(filter) as [keyof RecoveryInterface, number | Date][];
         if (!fields.length) return this.database;
         return this.database.filter(item => (
             !!fields.filter(([key, value]) => item[key] === value).length
@@ -502,7 +508,7 @@ class RecoveryTestRespository implements RecoveryRepositoryInterface {
         ));
     }
 
-    public async delete(filter: Partial<SessionInterface>) {
+    public async delete(filter: Partial<RecoveryInterface>) {
         const toRemove = await this.filter(filter);
         this.database = this.database.filter(item => toRemove.indexOf(item) >= 0);
         return toRemove.length;
@@ -946,4 +952,20 @@ describe('Recuperação de senha', () => {
         expect(user).toBeInstanceOf(User);
         done();
     });
+    test('Verificação', async done => {
+        const repository = new RecoveryTestRespository();
+        const [selected] = await repository.filter({});
+        const useCase = new RecoveryCase(repository, 40 * 60 * 60 * 1000);
+        const isValid = await useCase.check(selected.token);
+        expect(selected.id).toEqual(isValid.id);
+        done();
+    });
+    test('Atualização da senha', async done => {
+        const repository = new RecoveryTestRespository();
+        const [selected] = await repository.filter({});
+        const useCase = new RecoveryCase(repository, 40 * 60 * 60 * 1000);
+        const updated = await useCase.updatePassword({ token: selected.token, password: faker.internet.password() });
+        expect(updated).toBeTruthy();
+        done();
+    })
 })

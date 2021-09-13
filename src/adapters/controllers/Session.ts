@@ -40,6 +40,7 @@ export default class SessionController extends Controller<AuthInterface> {
             const session = await this.useCase.auth(parsed);
             return { token: session.token };
         } catch (error: any) {
+            this.logger.error(error);
             if (error instanceof CaseError) {
                 if (error.code === Errors.NOT_FOUND) throw { errors: [['email', 'Email inválido']], status: 400 };
                 if (error.code === Errors.WRONG_PASSWORD) throw { errors: [['password', 'Senha inválida']], status: 400 };
