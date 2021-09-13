@@ -3,7 +3,6 @@ import { SessionService } from '../src/adapters/models/Session';
 import { contextFactory, hottok, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, userFactory, mails } from './shortcuts';
 import settings from '../src/settings';
 import { RecoveryService } from '../src/adapters/models/Recovery';
-import ChangePasswordController from '../src/adapters/controllers/ChangePassword';
 import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
@@ -161,7 +160,7 @@ describe('#1 Testes na autenticação', () => {
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, driver);
         const newPassword = 'newPassword'
-        const controller = new ChangePasswordController(await context);
+        const controller = new RecoveryController(await context);
         const updated = await controller.updatePassword({
             password: newPassword,
             confirmPassword: newPassword,

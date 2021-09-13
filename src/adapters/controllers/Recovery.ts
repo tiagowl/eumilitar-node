@@ -4,7 +4,7 @@ import * as yup from 'yup';
 import RecoveryRepository from '../models/Recovery';
 import RecoveryRender from '../views/Recovery';
 import { Context } from "../interfaces";
-import RecoveryCase from "../../cases/Recovery";
+import RecoveryCase, { UpdatePasswordData as DefaultUpdatePasswordData } from "../../cases/Recovery";
 import CaseError, { Errors } from "../../cases/Error";
 
 export interface RecoveryInterface {
@@ -19,12 +19,29 @@ export interface CheckInterface {
     token: string;
 }
 
+interface UpdatePasswordData extends DefaultUpdatePasswordData {
+    confirmPassword: string;
+}
+
 const schema = yup.object().shape({
     email: yup.string().email('Email inválido').required('O campo "email" é obrigatório'),
 });
 
 const checkSchema = yup.object().shape({
     token: yup.string().required('O token é obrigatório'),
+});
+
+const updatePasswordSchema = yup.object().shape({
+    password: yup.string()
+        .required('É preciso criar uma senha nova')
+        .min(8, "A senha deve conter pelo menos 8 caracteres")
+        .max(16, "A senha deve conter no máximo 16 caracteres"),
+    confirmPassword: yup.string()
+        .required('É preciso confirmar sua senha')
+        .oneOf([yup.ref('password')], "As senhas não coincidem"),
+    token: yup.string()
+        .required('O token é obrigatório')
+        .length(64, 'Token inválido')
 });
 
 export default class RecoveryController extends Controller<RecoveryInterface> {
@@ -97,9 +114,20 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
             const { token } = await this.validate(data, checkSchema);
             const recovery = await this.useCase.check(token);
             return { isValid: !!recovery };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             return { isValid: false };
+        }
+    }
+
+    public async updatePassword(data: UpdatePasswordData) {
+        try {
+            const validated = await this.validate(data, updatePasswordSchema);
+            const updated = await this.useCase.updatePassword(validated);
+            return { updated };
+        } catch (error: any) {
+            if (error.status) throw error;
+            throw { message: 'Erro atualizar senha', status: 500 };
         }
     }
 
