@@ -69,7 +69,6 @@ export async function up(knex: Knex): Promise<void> {
                 .notNullable().unsigned();
         });
         const pages = getPages();
-        const trx = await knex.transaction();
         let pageNumber = 0;
         let pagesAmount = 0;
         for await (const page of pages) {
@@ -94,7 +93,7 @@ export async function up(knex: Knex): Promise<void> {
                     product: product?.course_tag || 1,
                     user: user?.user_id || 1,
                     expiration: new Date(subscription.accession_date + product.expiration_time),
-                    registrationDate: new Date(),
+                    registrationDate: new Date(subscription.accession_date),
                     hotmart_id: subscription.subscription_id,
                 };
             }));
@@ -103,12 +102,11 @@ export async function up(knex: Knex): Promise<void> {
                 return !!item;
             });
             if (filteredData.length > 0) {
-                await trx('subscriptions').insert(filteredData).onConflict('hotmart_id').ignore();
+                await knex('subscriptions').insert(filteredData).onConflict('hotmart_id').ignore();
             }
             bar.increment();
             bar.stop();
         }
-        await trx.commit();
     } catch (error: any) {
         await down(knex);
         throw error;

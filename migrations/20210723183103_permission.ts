@@ -4,14 +4,14 @@ const permissions = [2, 3, 4];
 export async function up(knex: Knex): Promise<void> {
     const esa = await knex('products').where('course_tag', 2).first();
     const espcex = await knex('products').where('course_tag', 3).first();
-    const expiration = new Date(Date.now() + 360 * 24 * 60 * 60 * 1000);
     const data = await Promise.all(permissions.map(async (permission) => {
         const users = await knex('users')
             .where('permission', permission)
             .where('status', 1);
         if (permission === 4) {
             const subscriptions = await Promise.all(users.map(async user => {
-                const base = { expiration, user: user.user_id, };
+                const expiration = new Date(new Date(user.date_created).getTime() + 360 * 24 * 60 * 60 * 1000);
+                const base = { expiration, user: user.user_id, registrationDate: user.date_created };
                 return [
                     { ...base, product: esa.product_id, },
                     { ...base, product: espcex.product_id, },
@@ -22,8 +22,9 @@ export async function up(knex: Knex): Promise<void> {
             const product = await knex('products').where('course_tag', permission).first();
             return Promise.all(users.map(async user => ({
                 product: product.product_id,
-                expiration,
+                expiration: new Date(new Date(user.date_created).getTime() + 360 * 24 * 60 * 60 * 1000),
                 user: user.user_id,
+                registrationDate: user.date_created,
             })));
         }
     }));
