@@ -154,11 +154,10 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
                 this.logger.error(error);
                 throw { message: 'Erro ao consultar banco de dados', status: 500 };
             });
-        const page = await Promise.all(subscriptions.map(async data => {
+        return Promise.all(subscriptions.map(async data => {
             const parsedData = await this.toEntity(data);
             return new Subscription(parsedData);
         }));
-        return page;
     }
 
 
