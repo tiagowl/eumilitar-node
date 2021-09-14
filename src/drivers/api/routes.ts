@@ -144,7 +144,13 @@ const routes: Route[] = [
         handlers: [
             { handler: handlers.sentEssaysChart, method: 'get' }
         ]
-    }
+    },
+    {
+        path: '/essays/charts/evaluated/',
+        handlers: [
+            { handler: handlers.evaluatedEssaysChart, method: 'get' }
+        ]
+    },
 ];
 
 export default routes;

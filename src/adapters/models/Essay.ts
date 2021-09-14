@@ -237,35 +237,41 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
     }
 
     public async evaluatedChart(filter: EssayChartFilter) {
-        const { period, ...filterData } = filter;
-        const start = period?.start || new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000);
-        const end = period?.end || new Date();
-        const months = Math.round((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000));
-        const parsed = await this.toDb(filterData);
-        const chart = new Array(months).fill(0)
-            .map(async (_, index) => {
-                const date = new Date(0);
-                date.setFullYear(start.getFullYear());
-                date.setMonth(start.getMonth() + index);
-                const month = date.getMonth();
-                const year = date.getFullYear();
-                const [{ revised }] = await CorrectionService(this.driver)
-                    .whereIn('essay_id', this.query.where(parsed).select('essay_id'))
-                    .whereRaw('year(`grading_date`) = ?', year)
-                    .whereRaw('month(`grading_date`) = ?', month)
-                    .count({ revised: '*' });
-                const [{ invalid }] = await EssayInvalidationService(this.driver)
-                    .whereIn('essay', this.query.where(parsed).select('essay_id as essay'))
-                    .whereRaw('year(`invalidationDate`) = ?', year)
-                    .whereRaw('month(`invalidationDate`) = ?', month)
-                    .count({ invalid: '*' });
-                const value = Number(revised) + Number(invalid);
-                return {
-                    key: `${month + 1}-${year}`,
-                    value,
-                };
-            });
-        return Promise.all(chart);
+        try {
+            const { period, ...filterData } = filter;
+            const start = period?.start || new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000);
+            const end = period?.end || new Date();
+            const months = Math.round((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000));
+            const parsed = await this.toDb(filterData);
+            const chart = new Array(months).fill(0)
+                .map(async (_, index) => {
+                    const date = new Date(0);
+                    date.setFullYear(start.getFullYear());
+                    date.setMonth(start.getMonth() + index);
+                    const month = date.getMonth();
+                    const year = date.getFullYear();
+                    const [{ revised }] = await CorrectionService(this.driver)
+                        .whereIn('essay_id', this.query.where(parsed).select('essay_id'))
+                        .whereRaw('year(`grading_date`) = ?', year)
+                        .whereRaw('month(`grading_date`) = ?', month)
+                        .count({ revised: '*' });
+                    const [{ invalid }] = await EssayInvalidationService(this.driver)
+                        .whereIn('essay', this.query.where(parsed).select('essay_id as essay'))
+                        .whereRaw('year(`invalidationDate`) = ?', year)
+                        .whereRaw('month(`invalidationDate`) = ?', month)
+                        .count({ invalid: '*' });
+                    const value = Number(revised) + Number(invalid);
+                    return {
+                        key: `${month + 1}-${year}`,
+                        value,
+                    };
+                });
+            return Promise.all(chart);
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao consultar banco de dados', status: 500 };
+        }
     }
 
 }

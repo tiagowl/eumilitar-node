@@ -637,6 +637,30 @@ describe('#3 Redações', () => {
         });
         done();
     });
+    test('Gráfico de corrigidas', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        if (!admin) throw new Error('Sem usuário');
+        const token = await authenticate(admin, api)
+        const header = `Bearer ${token}`;
+        const response = await api.get('/essays/charts/evaluated/')
+            .query({
+                period: {
+                    start: new Date(Date.now() - (2 * 360 * 24 * 60 * 60 * 1000)),
+                    end: new Date(),
+                }
+            })
+            .set('Authorization', header);
+        expect(response.status, jp(response.body)).toBe(200);
+        expect(response.body).toBeInstanceOf(Array);
+        expect(response.body.length).toBe(24);
+        response.body.forEach((item: any) => {
+            expect(item, JSON.stringify(response.body)).toBeDefined();
+            expect(typeof item.key).toBe('string');
+            expect(typeof item.value).toBe('number');
+        });
+        done();
+    });
 })
 
 describe('#4 Invalidação da redação', () => {
