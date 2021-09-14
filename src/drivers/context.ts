@@ -1,11 +1,11 @@
 import { createLogger } from "winston";
 import connect from "./database";
 import createHttpClient from "./httpClient";
-import { Settings } from "./interfaces";
+import { Context, Settings } from "./interfaces";
 import createTransport from "./smtp";
 import createStorage from "./storage";
 
-export default function createContext(settings: Settings) {
+export default function createContext(settings: Settings): Context {
     const logger = createLogger(settings.logger);
     return Object.freeze({
         logger,
