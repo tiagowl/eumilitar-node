@@ -2,14 +2,13 @@ import Essay, { status, Status } from "../../entities/Essay";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import { EssayRepository } from "../models/Essay";
-import EssayCase, { EssayCreationData, EssayFilter, EssayPagination, EssayPartialUpdate } from "../../cases/EssayCase";
+import EssayCase, { EssayChartFilter, EssayCreationData, EssayFilter, EssayPagination, EssayPartialUpdate } from "../../cases/EssayCase";
 import { Course } from "../../entities/EssayTheme";
 import EssayThemeController, { EssayThemeResponse } from "./EssayTheme";
 import UserRepository from "../models/User";
 import UserUseCase from "../../cases/UserUseCase";
 import { AccountPermission } from "../../entities/User";
 import { Context } from "../interfaces";
-import { ChartFilter } from "../../cases/Subscription";
 import CaseError, { Errors } from "../../cases/Error";
 
 export interface EssayInput {
@@ -196,11 +195,21 @@ export default class EssayController extends Controller<EssayData> {
         }
     }
 
-    public async sentChart(filter: ChartFilter) {
+    public async sentChart(filter: EssayChartFilter) {
         try {
             const parsed = await this.castFilter(filter, filterSchema);
-            const chart = await this.useCase.sentChart(parsed);
-            return chart;
+            return await this.useCase.sentChart(parsed);
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: error.message, status: 500 };
+        }
+    }
+
+    public async evaluatedChart(filter: EssayChartFilter) {
+        try {
+            const parsed = await this.castFilter(filter, filterSchema);
+            return await this.useCase.evaluatedChart(parsed);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;

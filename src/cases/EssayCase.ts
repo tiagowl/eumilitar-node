@@ -3,8 +3,11 @@ import { Reason, reasons } from "../entities/EssayInvalidation";
 import EssayTheme, { Course } from '../entities/EssayTheme';
 import Subscription from "../entities/Subscription";
 import User from "../entities/User";
+import { CorrectionRepositoryInterface } from "./Correction";
 import CaseError, { Errors } from "./Error";
+import { EssayInvalidationRepositoryInterface } from "./EssayInvalidation";
 import { EssayThemeRepositoryInterface } from './EssayThemeCase';
+import { Chart } from "./interfaces";
 import { ProductRepositoryInterface } from "./ProductCase";
 import { SubscriptionRepositoryInterface } from "./Subscription";
 import { UserRepositoryInterface } from "./UserUseCase";
@@ -32,6 +35,7 @@ export interface EssayRepositoryInterface {
     readonly count: (filter: EssayFilter) => Promise<number>;
     readonly get: (filter: EssayFilter) => Promise<Essay | undefined>;
     readonly update: (id: number, data: Partial<EssayInsertionData>) => Promise<Essay>;
+    readonly evaluatedChart: (filter: EssayChartFilter) => Promise<Chart>;
 }
 
 export interface EssayPagination {
@@ -200,6 +204,10 @@ export default class EssayCase {
                 };
             });
         return Promise.all(chart);
+    }
+
+    public async evaluatedChart(filter: EssayChartFilter) {
+        return this.repository.evaluatedChart(filter);
     }
 
 }

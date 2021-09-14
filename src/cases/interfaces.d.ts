@@ -9,3 +9,8 @@ export interface Paginated<T> {
     page: T[];
     count: number;
 }
+
+export type Chart = {
+    key: string;
+    value: number;
+}[];

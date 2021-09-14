@@ -4,7 +4,7 @@ import UserUseCase, { UserRepositoryInterface } from "./UserUseCase";
 import crypto from 'crypto';
 import { Course } from "../entities/Product";
 import CaseError, { Errors } from "./Error";
-import { Paginated, Pagination } from "./interfaces";
+import { Chart, Paginated, Pagination } from "./interfaces";
 
 export interface SubscriptionFilter extends Partial<SubscriptionInterface> {
     pagination?: Pagination<SubscriptionInterface>;
@@ -46,10 +46,6 @@ export interface SubscriptionInsertionInterface {
     course: Course;
 }
 
-export type Chart = {
-    key: string;
-    value: number;
-}[];
 
 export interface ChartFilter extends Partial<SubscriptionInterface> {
     period?: {

@@ -3,7 +3,7 @@ import { hashPassword, userEntityFactory } from './shortcuts';
 import EssayThemeCase, { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeRepositoryInterface } from '../src/cases/EssayThemeCase';
 import EssayTheme, { Course } from '../src/entities/EssayTheme';
 import faker, { fake } from 'faker';
-import EssayCase, { EssayCreationData, EssayInsertionData, EssayInvalidationData, EssayPagination, EssayRepositoryInterface } from '../src/cases/EssayCase';
+import EssayCase, { EssayChartFilter, EssayCreationData, EssayInsertionData, EssayInvalidationData, EssayPagination, EssayRepositoryInterface } from '../src/cases/EssayCase';
 import Essay, { EssayInterface } from '../src/entities/Essay';
 import User from '../src/entities/User';
 import EssayInvalidation from '../src/entities/EssayInvalidation';
@@ -12,12 +12,13 @@ import Correction, { CorrectionInterface } from '../src/entities/Correction';
 import CorrectionCase, { CorrectionInsertionData, CorrectionRepositoryInterface } from '../src/cases/Correction';
 import ProductCase, { ProductCreation, ProductRepositoryInterface } from '../src/cases/ProductCase';
 import Product, { ProductInterface } from '../src/entities/Product';
-import SubscriptionCase, { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from '../src/cases/Subscription';
+import SubscriptionCase, { ChartFilter, SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from '../src/cases/Subscription';
 import Subscription, { SubscriptionInterface } from '../src/entities/Subscription';
 import SessionCase, { SessionInsertionInterface, SessionRepositoryInterface } from '../src/cases/Session';
 import RecoveryCase, { RecoveryInsertionInterface, RecoveryRepositoryInterface } from '../src/cases/Recovery';
 import Session, { SessionInterface } from '../src/entities/Session';
 import Recovery, { RecoveryInterface } from '../src/entities/Recovery';
+import { Chart } from '../src/cases/interfaces';
 
 const defaultPassword = 'pass1235'
 const userDatabase = new Array(5).fill(0).map((_, id) => userEntityFactory({ password: hashPassword(defaultPassword), id }));
@@ -292,6 +293,10 @@ class EssayTestRepository implements EssayRepositoryInterface {
             }
             return item
         })[id]
+    }
+
+    async evaluatedChart(_filter: EssayChartFilter): Promise<Chart> {
+        return [{ key: '1-12', value: 55 }];
     }
 }
 
