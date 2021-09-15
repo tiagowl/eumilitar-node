@@ -151,6 +151,12 @@ const routes: Route[] = [
             { handler: handlers.evaluatedEssaysChart, method: 'get' }
         ]
     },
+    {
+        path: '/essays/charts/avg-correction-time/',
+        handlers: [
+            { handler: handlers.avgTimeCorrection, method: 'get' }
+        ]
+    },
 ];
 
 export default routes;

@@ -1082,6 +1082,30 @@ describe('#6 Inscrições', () => {
         });
         done();
     });
+    test('Gráfico do tempo médio de correção', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        if (!admin) throw new Error('Sem usuário');
+        const token = await authenticate(admin, api)
+        const header = `Bearer ${token}`;
+        const response = await api.get('/essays/charts/avg-correction-time/')
+            .query({
+                period: {
+                    start: new Date(Date.now() - 2 * 12 * 30 * 24 * 60 * 60 * 1000),
+                    end: new Date()
+                }
+            })
+            .set('Authorization', header);
+        expect(response.status, jp(response.body)).toBe(200);
+        expect(response.body).toBeInstanceOf(Array);
+        expect(response.body.length).toBe(24);
+        response.body.forEach((item: any) => {
+            expect(item, JSON.stringify(response.body)).toBeDefined();
+            expect(typeof item.key).toBe('string');
+            expect(typeof item.value).toBe('number');
+        });
+        done();
+    });
 });
 
 describe('#7 Produtos', () => {

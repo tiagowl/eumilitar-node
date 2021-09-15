@@ -309,7 +309,6 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                             .as('join')
                         ) as any[];
                     const value = (Number(corrections.avg) + Number(invalidations.avg)) / 2;
-                    this.logger.info(JSON.stringify({ corrections, invalidations }));
                     return {
                         key: `${month + 1}-${year}`,
                         value,
