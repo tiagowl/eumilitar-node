@@ -298,6 +298,10 @@ class EssayTestRepository implements EssayRepositoryInterface {
     async evaluatedChart(_filter: EssayChartFilter): Promise<Chart> {
         return [{ key: '1-12', value: 55 }];
     }
+
+    async avgTimeCorrection(_filter: EssayChartFilter): Promise<Chart> {
+        return [{ key: '1-12', value: 55 }];
+    }
 }
 
 // tslint:disable-next-line

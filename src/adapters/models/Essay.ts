@@ -288,27 +288,25 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                     date.setMonth(start.getMonth() + index);
                     const month = date.getMonth();
                     const year = date.getFullYear();
-                    const [corrections] = await CorrectionService(this.driver).debug(true)
-                        .avg('diff as avg')
+                    const [corrections] = await this.driver.avg('diff as avg')
                         .from(CorrectionService(this.driver)
                             .where(this.driver.raw('MONTH(`essay_grading`.`grading_date`) = ?', month))
                             .where(this.driver.raw('YEAR(`essay_grading`.`grading_date`) = ?', year))
                             .whereIn('essay_grading.essay_id', this.query.where(parsed).select('essay_id'))
                             .innerJoin('essays', 'essays.essay_id', 'essay_grading.essay_id')
-                            .select(this.driver.raw('DISTINCT (TIME_TO_SEC(`essay_grading`.`grading_date`) - TIME_TO_SEC(`essays`.`sent_date`)) as `diff`'))
+                            .select(this.driver.raw('DISTINCT TIME_TO_SEC(TIMEDIFF(`essay_grading`.`grading_date`, `essays`.`sent_date`)) as `diff`'))
                             .as('join')
                         ) as any[];
-                    const [invalidations] = await EssayInvalidationService(this.driver)
-                        .avg('diff as avg')
+                    const [invalidations] = await this.driver.avg('diff as avg')
                         .from(EssayInvalidationService(this.driver)
                             .where(this.driver.raw('MONTH(`essay_invalidations`.`invalidationDate`) = ?', month))
                             .where(this.driver.raw('YEAR(`essay_invalidations`.`invalidationDate`) = ?', year))
                             .whereIn('essay_invalidations.essay', this.query.where(parsed).select('essay_id as essay'))
                             .innerJoin('essays', 'essays.essay_id', 'essay_invalidations.essay')
-                            .select(this.driver.raw('DISTINCT (TIME_TO_SEC(`essay_invalidations`.`invalidationDate`) - TIME_TO_SEC(`essays`.`sent_date`)) as `diff`'))
+                            .select(this.driver.raw('DISTINCT TIME_TO_SEC(TIMEDIFF(`essay_invalidations`.`invalidationDate`, `essays`.`sent_date`)) as `diff`'))
                             .as('join')
                         ) as any[];
-                    const value = (Number(corrections.avg) + Number(invalidations.avg)) / 2;
+                    const value = Math.round(((Number(corrections.avg) + Number(invalidations.avg)) / 2) * 1000);
                     return {
                         key: `${month + 1}-${year}`,
                         value,
