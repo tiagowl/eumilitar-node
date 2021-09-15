@@ -1,18 +1,15 @@
 import express, { Express, RequestHandler } from 'express';
-import routes from './routes';
-import { Context, Route } from '../interfaces';
+import { Context } from '../interfaces';
 import getMiddlewares from './middlewares';
-
+import getRouter from './routes';
 
 export default class Application {
     private readonly _server: Express;
-    private readonly routes: Route[];
     private readonly middlewares: RequestHandler[];
     private readonly context: Context;
 
     constructor(context: Context) {
         this._server = express();
-        this.routes = routes;
         this.context = context;
         this.middlewares = getMiddlewares(this.context);
         this.setUpMiddlewares();
@@ -22,12 +19,8 @@ export default class Application {
     get server() { return this._server; }
 
     private setUpRoutes() {
-        this.routes.forEach(route => {
-            const { path, handlers } = route;
-            handlers.forEach(({ handler, method }) => {
-                this._server[method](path, handler(this.context));
-            });
-        });
+        const router = getRouter(this.context);
+        this._server.use(router);
     }
 
     private setUpMiddlewares() {
