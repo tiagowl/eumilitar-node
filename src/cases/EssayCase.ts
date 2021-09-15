@@ -36,6 +36,7 @@ export interface EssayRepositoryInterface {
     readonly get: (filter: EssayFilter) => Promise<Essay | undefined>;
     readonly update: (id: number, data: Partial<EssayInsertionData>) => Promise<Essay>;
     readonly evaluatedChart: (filter: EssayChartFilter) => Promise<Chart>;
+    readonly avgTimeCorrection: (filter: EssayChartFilter) => Promise<Chart>;
 }
 
 export interface EssayPagination {
@@ -208,6 +209,11 @@ export default class EssayCase {
 
     public async evaluatedChart(filter: EssayChartFilter) {
         return this.repository.evaluatedChart(filter);
+    }
+
+    public async avgTimeCorrection(filter: EssayChartFilter) {
+        return this.repository.avgTimeCorrection(filter);
+
     }
 
 }

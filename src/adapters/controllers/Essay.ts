@@ -217,4 +217,15 @@ export default class EssayController extends Controller<EssayData> {
         }
     }
 
+    public async avgTimeCorrection(filter: EssayChartFilter) {
+        try {
+            const parsed = await this.castFilter(filter, filterSchema);
+            return await this.useCase.avgTimeCorrection(parsed);
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: error.message, status: 500 };
+        }
+    }
+
 }

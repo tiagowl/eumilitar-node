@@ -462,6 +462,7 @@ describe('#4 Redações', () => {
             expect(item, JSON.stringify(chart)).toBeDefined();
             expect(typeof item.key).toBe('string');
             expect(typeof item.value).toBe('number');
+            expect(item.value).not.toBeNaN();
         });
         done();
     });
@@ -479,6 +480,25 @@ describe('#4 Redações', () => {
             expect(item, JSON.stringify(chart)).toBeDefined();
             expect(typeof item.key).toBe('string');
             expect(typeof item.value).toBe('number');
+            expect(item.value).not.toBeNaN();
+        });
+        done();
+    })
+    test('gráfico tempo de correção', async done => {
+        const controller = new EssayController(await context);
+        const chart = await controller.avgTimeCorrection({
+            period: {
+                start: new Date(Date.now() - 2 * 360 * 24 * 60 * 60 * 1000),
+                end: new Date()
+            }
+        });
+        expect(chart).toBeInstanceOf(Array);
+        expect(chart.length).toBe(24);
+        chart.forEach(item => {
+            expect(item, JSON.stringify(chart)).toBeDefined();
+            expect(typeof item.key).toBe('string');
+            expect(typeof item.value).toBe('number');
+            expect(item.value).not.toBeNaN();
         });
         done();
     })
