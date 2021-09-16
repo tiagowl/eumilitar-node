@@ -55,6 +55,8 @@ const reverseCourseParser: Parser = (data: number) => {
     return field[1];
 };
 
+const parseCorrector = (value: null | number) => value === null ? value : Number(value);
+
 const fieldParserDB: FieldsMap<EssayModel, EssayInterface> = [
     [['essay_id', Number], ['id', Number],],
     [['file_url', String], ['file', String],],
@@ -64,7 +66,7 @@ const fieldParserDB: FieldsMap<EssayModel, EssayInterface> = [
     [['last_modified', value => new Date(value)], ['lastModified', value => new Date(value)],],
     [['status', String], ['status', String],],
     [['sent_date', value => new Date(value)], ['sendDate', value => new Date(value)],],
-    [['corrector', (value: null | number) => !!value ? Number(value) : value], ['corrector', (value: null | number) => !!value ? Number(value) : value],],
+    [['corrector', parseCorrector], ['corrector', parseCorrector],],
 ];
 
 export class EssayRepository extends Repository<EssayModel, EssayInterface> implements EssayRepositoryInterface {
@@ -151,10 +153,9 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
     }
 
     public async create(data: EssayInsertionData) {
-        const service = this.query;
         const error = 'Falha ao gravar no banco de dados';
         const parsed = await this.toDb(data);
-        const [id] = await service.insert({ ...parsed, local: false, status: 'pending' })
+        const [id] = await this.query.insert({ ...parsed, local: false, status: 'pending' })
             .catch((err) => {
                 this.logger.error(err);
                 throw new Error(error);
@@ -179,19 +180,14 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
     }
 
     public async filter(filterData: EssayFilter, pagination?: EssayPagination) {
-        const { pageSize = 10, page = 1, ordering = 'sendDate' } = pagination || {};
         const { search, period, status, ...filter } = filterData;
         const service = this.query;
-        if (!!pagination) service
-            .offset(((page - 1) * (pageSize)))
-            .limit(pageSize);
+        this.paginate(service, pagination);
         this.period(service, period);
         this.byStatus(service, status);
         this.search(service, search);
-        const orderingField = await this.getDbField(ordering);
         const parsedToDb = await this.toDb(filter);
         const essaysData = await service.where(parsedToDb)
-            .orderBy(orderingField, 'asc')
             .catch((err) => {
                 this.logger.error(err);
                 throw new Error('Erro ao consultar banco de dados');
@@ -204,7 +200,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
 
     public async count(filterData: EssayFilter) {
         const { search, period, status, ...filter } = filterData;
-        const service = this.search(EssayService(this.driver), search);
+        const service = this.query;
         this.period(service, period);
         this.byStatus(service, status);
         this.search(service, search);
