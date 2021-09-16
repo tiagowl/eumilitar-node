@@ -281,11 +281,12 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
             const end = period?.end || new Date();
             const months = Math.round((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000));
             const parsed = await this.toDb(filterData);
-            const chart = new Array(months).fill(0)
+            const chart = new Array(months).fill(undefined)
                 .map(async (_, index) => {
                     const date = new Date(0);
+                    const current = start.getMonth() + index;
                     date.setFullYear(start.getFullYear());
-                    date.setMonth(start.getMonth() + index);
+                    date.setMonth(current);
                     const month = date.getMonth();
                     const year = date.getFullYear();
                     const [corrections] = await this.driver.avg('diff as avg')
