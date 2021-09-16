@@ -241,9 +241,8 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
             const parsed = await this.toDb(filterData);
             const chart = new Array(months).fill(0)
                 .map(async (_, index) => {
-                    const date = new Date(0);
-                    date.setFullYear(start.getFullYear());
-                    date.setMonth(start.getMonth() + index);
+                    const current = start.getMonth() + index;
+                    const date = new Date(start.getFullYear(), current, 1);
                     const month = date.getMonth();
                     const year = date.getFullYear();
                     const [{ revised }] = await CorrectionService(this.driver)
@@ -279,10 +278,8 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
             const parsed = await this.toDb(filterData);
             const chart = new Array(months).fill(undefined)
                 .map(async (_, index) => {
-                    const date = new Date(0);
                     const current = start.getMonth() + index;
-                    date.setFullYear(start.getFullYear());
-                    date.setMonth(current);
+                    const date = new Date(start.getFullYear(), current, 1);
                     const month = date.getMonth();
                     const year = date.getFullYear();
                     const [corrections] = await this.driver.avg('diff as avg')
