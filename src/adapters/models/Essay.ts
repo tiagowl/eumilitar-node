@@ -243,7 +243,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                 .map(async (_, index) => {
                     const current = start.getMonth() + index;
                     const date = new Date(start.getFullYear(), current, 1);
-                    const month = date.getMonth();
+                    const month = date.getMonth() + 1;
                     const year = date.getFullYear();
                     const [{ revised }] = await CorrectionService(this.driver)
                         .whereIn('essay_id', this.query.where(parsed).select('essay_id'))
@@ -257,7 +257,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                         .count({ invalid: '*' });
                     const value = Number(revised) + Number(invalid);
                     return {
-                        key: `${month + 1}-${year}`,
+                        key: `${month}-${year}`,
                         value,
                     };
                 });
@@ -280,7 +280,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                 .map(async (_, index) => {
                     const current = start.getMonth() + index;
                     const date = new Date(start.getFullYear(), current, 1);
-                    const month = date.getMonth();
+                    const month = date.getMonth() + 1;
                     const year = date.getFullYear();
                     const [corrections] = await this.driver.avg('diff as avg')
                         .from(CorrectionService(this.driver)
@@ -302,7 +302,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                         ) as any[];
                     const value = Math.round(((Number(corrections.avg) + Number(invalidations.avg)) / 2) * 1000);
                     return {
-                        key: `${month + 1}-${year}`,
+                        key: `${month}-${year}`,
                         value,
                     };
                 });
