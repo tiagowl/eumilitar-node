@@ -245,20 +245,22 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                     const date = new Date(start.getFullYear(), current, 1);
                     const month = date.getMonth() + 1;
                     const year = date.getFullYear();
-                    const [{ revised }] = await CorrectionService(this.driver)
-                        .whereIn('essay_id', this.query.where(parsed).select('essay_id'))
+                    const revised = CorrectionService(this.driver)
                         .whereRaw('year(`grading_date`) = ?', year)
                         .whereRaw('month(`grading_date`) = ?', month)
-                        .count({ revised: '*' });
-                    const [{ invalid }] = await EssayInvalidationService(this.driver)
-                        .whereIn('essay', this.query.where(parsed).select('essay_id as essay'))
+                        .select('essay_id');
+                    const invalid = EssayInvalidationService(this.driver)
                         .whereRaw('year(`invalidationDate`) = ?', year)
                         .whereRaw('month(`invalidationDate`) = ?', month)
-                        .count({ invalid: '*' });
-                    const value = Number(revised) + Number(invalid);
+                        .select('essay as essay_id');
+                    const [{ value }] = await this.query.where(parsed)
+                        .where(function () {
+                            this.orWhereIn('essay_id', revised);
+                            this.orWhereIn('essay_id', invalid);
+                        }).count({ value: '*' }).debug(true);
                     return {
                         key: `${month}-${year}`,
-                        value,
+                        value: Number(value),
                     };
                 });
             return Promise.all(chart);
