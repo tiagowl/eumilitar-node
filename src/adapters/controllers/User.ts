@@ -26,7 +26,10 @@ const updateSchemaBase = {
     permission: yup.string().required('O campo "Permissão" é obrigatório').is(accountPermissions, 'Permissão inválida'),
 };
 
-const updateSchema = yup.object().shape(updateSchemaBase);
+const updateSchema = yup.object().shape({
+    ...updateSchemaBase,
+    password: yup.string(),
+});
 
 const schema = yup.object().shape({
     ...updateSchemaBase,
