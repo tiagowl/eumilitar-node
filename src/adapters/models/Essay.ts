@@ -124,7 +124,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                     .orWhere('status', '=', 'invalid');
             });
         }
-        return service.where('status', '=', status);
+        return service.where('status', '=', status).debug(true);
     }
 
     private filterCorrectionPeriod(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, period?: { start?: Date, end?: Date }) {
@@ -138,10 +138,12 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                 if (!!end) this.where('invalidationDate', '<', end);
                 if (!!start) this.where('invalidationDate', '>', start);
             }).select('essay as essay_id');
-            service.orWhere(function () {
-                this.whereIn('essay_id', corrections);
-            }).orWhere(function () {
-                this.whereIn('essay_id', invalidations);
+            service.andWhere(function () {
+                this.orWhere(function () {
+                    this.whereIn('essay_id', corrections);
+                }).orWhere(function () {
+                    this.whereIn('essay_id', invalidations);
+                });
             });
         }
         return service;
