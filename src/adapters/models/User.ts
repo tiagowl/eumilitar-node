@@ -259,5 +259,15 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
         return new User(userData);
     }
 
+    public async getUnsyncUsers() {
+        return await this.query.whereNotIn('permission', [1, 5, 6]);
+    }
+
+    public async fixPermissions() {
+        return await this.query
+            .whereNotIn('permission', [1, 5, 6])
+            .update({ permission: 6 });
+    }
+
 }
 

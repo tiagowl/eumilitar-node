@@ -239,4 +239,37 @@ export default class SubscriptionController extends Controller<OrderData> {
             throw { message: error.message, status: 500 };
         }
     }
+
+
+    public async sync() {
+        const users = await this.repository.users.getUnsyncUsers();
+        this.logger.info(`Synchronizing ${users.length} users`);
+        const synced = await Promise.all(users.map(async (user, index) => {
+            this.logger.info(`User ${index + 1} of ${users.length} users`);
+            const payload: HotmartFilter = {
+                'subscriber_email': user.email,
+                'status': 'ACTIVE',
+            };
+            const createdList = [];
+            const subscriptions = this.repository.getFromHotmart(payload);
+            for await (const subscription of subscriptions) {
+                const created = await this.useCase.autoCreate({
+                    email: user.email,
+                    firstName: user.first_name,
+                    lastName: user.last_name,
+                    product: subscription.product.id,
+                    code: subscription.subscription_id,
+                });
+                if (!!created) {
+                    const parsed = await this.parseEntity(created);
+                    createdList.push(parsed);
+                }
+            }
+            this.logger.info(`Synced ${createdList.length} subscriptions for user "${user.email}"`);
+            return createdList;
+        }));
+        const fixed = await this.repository.users.fixPermissions();
+        if (fixed !== users.length) throw new Error(`Mudança em usuários errados -> ${JSON.stringify(users)}`);
+        return synced.flat().filter(item => !!item);
+    }
 }

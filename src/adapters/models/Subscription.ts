@@ -72,7 +72,7 @@ const fieldsMap: FieldsMap<SubscriptionModel, SubscriptionInterface> = [
 ];
 
 export default class SubscriptionRepository extends Repository<SubscriptionModel, SubscriptionInterface> implements SubscriptionRepositoryInterface {
-    public readonly users: UserRepositoryInterface;
+    public readonly users: UserRepository;
     public readonly products: ProductRepositoryInterface;
 
     constructor(context: Context) {
@@ -160,7 +160,6 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
         }));
     }
 
-
     public async update(id: number, data: Partial<SubscriptionInterface>) {
         const parsed = await this.toDb(data);
         const updated = await this.query.where('id', id)
@@ -179,4 +178,5 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
         const parsedData = await this.toEntity(subscriptionData);
         return new Subscription(parsedData);
     }
+
 }
