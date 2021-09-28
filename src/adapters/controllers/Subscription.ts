@@ -8,6 +8,7 @@ import CaseError, { Errors } from '../../cases/Error';
 import ProductCase from '../../cases/ProductCase';
 import { courses } from '../../entities/Product';
 import { number } from 'yup/lib/locale';
+import UserUseCase from '../../cases/UserUseCase';
 
 export interface OrderData {
     hottok: string;
@@ -252,6 +253,7 @@ export default class SubscriptionController extends Controller<OrderData> {
             };
             const createdList = [];
             const subscriptions = this.repository.getFromHotmart(payload);
+            await this.repository.users.fixPermission(user.user_id);
             for await (const subscription of subscriptions) {
                 const created = await this.useCase.autoCreate({
                     email: user.email,
@@ -268,8 +270,6 @@ export default class SubscriptionController extends Controller<OrderData> {
             this.logger.info(`Synced ${createdList.length} subscriptions for user "${user.email}"`);
             return createdList;
         }));
-        const fixed = await this.repository.users.fixPermissions();
-        if (fixed !== users.length) throw new Error(`Mudança em usuários errados -> ${JSON.stringify(users)}`);
         return synced.flat().filter(item => !!item);
     }
 }

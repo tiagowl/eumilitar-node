@@ -124,7 +124,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                     .orWhere('status', '=', 'invalid');
             });
         }
-        return service.where('status', '=', status).debug(true);
+        return service.where('status', '=', status);
     }
 
     private filterCorrectionPeriod(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, period?: { start?: Date, end?: Date }) {
