@@ -127,6 +127,26 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
         return service.where('status', '=', status);
     }
 
+    private filterCorrectionPeriod(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, period?: { start?: Date, end?: Date }) {
+        const { start, end } = period || {};
+        if (!!period) {
+            const corrections = CorrectionService(this.driver).where(function () {
+                if (!!end) this.where('grading_date', '<', end);
+                if (!!start) this.where('grading_date', '>', start);
+            }).select('essay_id');
+            const invalidations = EssayInvalidationService(this.driver).where(function () {
+                if (!!end) this.where('invalidationDate', '<', end);
+                if (!!start) this.where('invalidationDate', '>', start);
+            }).select('essay as essay_id');
+            service.orWhere(function () {
+                this.whereIn('essay_id', corrections);
+            }).orWhere(function () {
+                this.whereIn('essay_id', invalidations);
+            });
+        }
+        return service.debug(true);
+    }
+
     public async toDb(data: Partial<EssayInterface>) {
         const parsed = await super.toDb(data);
         if (parsed.file_url) return {
@@ -180,27 +200,30 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
     }
 
     public async filter(filterData: EssayFilter, pagination?: EssayPagination) {
-        const { search, period, status, ...filter } = filterData;
-        const service = this.query;
-        this.paginate(service, pagination);
-        this.period(service, period);
-        this.byStatus(service, status);
-        this.search(service, search);
-        const parsedToDb = await this.toDb(filter);
-        const essaysData = await service.where(parsedToDb)
-            .catch((err) => {
-                this.logger.error(err);
-                throw new Error('Erro ao consultar banco de dados');
-            });
-        return Promise.all(essaysData?.map(async (data) => {
-            const parsed = await this.toEntity(data);
-            return new Essay(parsed);
-        }));
+        try {
+            const { search, period, status, correctionPeriod, ...filter } = filterData;
+            const service = this.query;
+            this.paginate(service, pagination);
+            this.period(service, period);
+            this.filterCorrectionPeriod(service, correctionPeriod);
+            this.byStatus(service, status);
+            this.search(service, search);
+            const parsedToDb = await this.toDb(filter);
+            const essaysData = await service.where(parsedToDb);
+            return Promise.all(essaysData?.map(async (data) => {
+                const parsed = await this.toEntity(data);
+                return new Essay(parsed);
+            }));
+        } catch (error: any) {
+            this.logger.error(error);
+            throw new Error('Erro ao consultar banco de dados');
+        }
     }
 
     public async count(filterData: EssayFilter) {
-        const { search, period, status, ...filter } = filterData;
+        const { search, period, status, correctionPeriod, ...filter } = filterData;
         const service = this.query;
+        this.filterCorrectionPeriod(service, correctionPeriod);
         this.period(service, period);
         this.byStatus(service, status);
         this.search(service, search);

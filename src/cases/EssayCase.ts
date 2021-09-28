@@ -63,6 +63,10 @@ export interface EssayFilter extends Partial<EssayInterface> {
         start?: Date;
         end?: Date;
     };
+    correctionPeriod?: {
+        start?: Date;
+        end?: Date;
+    };
 }
 
 export interface EssayChartFilter extends Partial<EssayInterface> {

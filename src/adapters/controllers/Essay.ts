@@ -73,7 +73,11 @@ const filterSchema = yup.object().shape({
     period: yup.object({
         start: yup.date(),
         end: yup.date(),
-    })
+    }),
+    correctionPeriod: yup.object({
+        start: yup.date(),
+        end: yup.date(),
+    }),
 });
 
 export default class EssayController extends Controller<EssayData> {
