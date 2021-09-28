@@ -144,7 +144,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                 this.whereIn('essay_id', invalidations);
             });
         }
-        return service.debug(true);
+        return service;
     }
 
     public async toDb(data: Partial<EssayInterface>) {
@@ -280,7 +280,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                         .where(function () {
                             this.orWhereIn('essay_id', revised);
                             this.orWhereIn('essay_id', invalid);
-                        }).count({ value: '*' }).debug(true);
+                        }).count({ value: '*' });
                     return {
                         key: `${month}-${year}`,
                         value: Number(value),
