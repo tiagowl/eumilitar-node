@@ -13,6 +13,6 @@ export default function createContext(settings: Settings): Context {
         driver: connect(settings.database),
         smtp: createTransport(settings.smtp, logger),
         storage: createStorage(settings.storage),
-        http: createHttpClient(settings.httpClient),
+        http: createHttpClient(settings.httpClient, logger),
     });
 }

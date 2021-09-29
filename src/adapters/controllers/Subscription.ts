@@ -6,9 +6,6 @@ import SubscriptionCase, { ChartFilter, SubscriptionCreation, SubscriptionFilter
 import Subscription, { SubscriptionInterface } from '../../entities/Subscription';
 import CaseError, { Errors } from '../../cases/Error';
 import ProductCase from '../../cases/ProductCase';
-import { courses } from '../../entities/Product';
-import { number } from 'yup/lib/locale';
-import UserUseCase from '../../cases/UserUseCase';
 
 export interface OrderData {
     hottok: string;

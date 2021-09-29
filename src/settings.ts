@@ -22,7 +22,7 @@ const settings = Object.freeze<Settings>({
         acquireConnectionTimeout: 10000
     },
     server: {
-        port: Number(process.env.PORT) || 22000,
+        port: Number(process.env.PORT || 22000),
         host: process.env.HOST || '0.0.0.0'
     },
     helmet: {},

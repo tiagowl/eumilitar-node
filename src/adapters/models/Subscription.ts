@@ -128,7 +128,7 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
         } catch (error: any) {
             this.logger.error(error);
             this.logger.error(error.response?.data);
-            throw error;
+            throw { message: 'Erro ao recuperar inscrições da Hotmart', status: 500 };
         }
     }
 
