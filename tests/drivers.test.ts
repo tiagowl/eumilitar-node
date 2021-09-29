@@ -1,7 +1,7 @@
 import faker from 'faker';
 import supertest from 'supertest';
 import { UserModel, UserService } from '../src/adapters/models/User';
-import { hottok, contextFactory, appFactory, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory, jp } from './shortcuts';
+import { hottok, contextFactory, appFactory, createEssay, deleteUser, db, generateConfirmationToken, saveConfirmationToken, saveUser, smtpFactory, userFactory, jp } from './shortcuts';
 import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { Course } from '../src/entities/EssayTheme';
@@ -13,11 +13,11 @@ import UserRepository from '../src/adapters/models/User';
 import { UserCreation, UserUpdate } from '../src/cases/UserUseCase';
 
 beforeAll(async (done) => {
-    await driver.migrate.latest().finally(done)
+    await db.migrate.latest().finally(done)
     done()
 });
 
-afterAll((done) => driver.destroy().finally(done) || done())
+afterAll((done) => db.destroy().finally(done) || done())
 const context = contextFactory();
 
 async function authenticate(user: UserModel, api: supertest.SuperTest<supertest.Test>) {
@@ -37,17 +37,17 @@ async function authenticate(user: UserModel, api: supertest.SuperTest<supertest.
 describe('#1 Teste na api do usuário', () => {
     const user = userFactory({ permission: 1 });
     beforeAll(async (done) => {
-        const service = UserService(driver)
+        const service = UserService(db)
             .onConflict('user_id').merge();
         await saveUser(user, service);
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.del().delete();
         done()
     })
     afterAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(db);
         await deleteUser(user, service);
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.del().delete()
         done()
     })
@@ -127,9 +127,9 @@ describe('#1 Teste na api do usuário', () => {
         const app = await appFactory();
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
-        const service = UserService(driver);
+        const service = UserService(db);
         const userData = await service.where('email', user.email).first();
-        await saveConfirmationToken(token, userData?.user_id || 0, driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, db);
         const response = await api.get(`/password-recoveries/${encodeURIComponent(token)}/`);
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ isValid: true });
@@ -139,9 +139,9 @@ describe('#1 Teste na api do usuário', () => {
         const app = await appFactory();
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
-        const service = UserService(driver);
+        const service = UserService(db);
         const userData = await service.where('email', user.email).first();
-        await saveConfirmationToken(token, userData?.user_id || 0, driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, db);
         const credentials = {
             token,
             password: 'abda143501',
@@ -175,9 +175,9 @@ describe('#1 Teste na api do usuário', () => {
         const app = await appFactory();
         const api = supertest(app.server);
         const token = await generateConfirmationToken();
-        const service = UserService(driver);
+        const service = UserService(db);
         const userData = await service.where('email', user.email).first();
-        await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date(Date.now() - 1000));
+        await saveConfirmationToken(token, userData?.user_id || 0, db, new Date(Date.now() - 1000));
         const credentials = {
             token,
             password: 'abda143501',
@@ -348,16 +348,16 @@ describe('#1 Teste na api do usuário', () => {
 describe('#2 Testes nos temas', () => {
     const user: UserModel = userFactory();
     beforeAll(async (done) => {
-        const service = UserService(driver)
+        const service = UserService(db)
             .onConflict('user_id').merge();
         await saveUser(user, service);
-        await EssayThemeService(driver).del().delete()
+        await EssayThemeService(db).del().delete()
         done()
     })
     afterAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(db);
         await deleteUser(user, service);
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.del().delete()
         done()
     })
@@ -482,9 +482,9 @@ describe('#3 Redações', () => {
     const student: UserModel = userFactory({ permission: 6 });
     const admin: UserModel = userFactory({ permission: 1 });
     beforeAll(async (done) => {
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.delete().del();
-        const service = () => UserService(driver)
+        const service = () => UserService(db)
             .onConflict('user_id').merge();
         await saveUser(admin, service());
         const repository = new EssayThemeRepository(await context);
@@ -505,9 +505,9 @@ describe('#3 Redações', () => {
         done()
     })
     afterAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(db);
         await deleteUser(user, service);
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.del().delete();
         done()
     })
@@ -668,11 +668,11 @@ describe('#4 Invalidação da redação', () => {
     const admin: UserModel = userFactory({ permission: 1 });
     const student: UserModel = userFactory({ permission: 6 });
     beforeAll(async (done) => {
-        const service = () => UserService(driver)
+        const service = () => UserService(db)
             .onConflict('user_id').merge();
         await saveUser(admin, service());
         await saveUser(student, service());
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.delete().del()
         const repository = new EssayThemeRepository(await context);
         const themeData: EssayThemeCreation = {
@@ -691,9 +691,9 @@ describe('#4 Invalidação da redação', () => {
         done()
     })
     afterAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(db);
         await deleteUser(user, service);
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.del().delete();
         done()
     })
@@ -738,7 +738,7 @@ describe('#5 Correção da redação', () => {
     const user: UserModel = userFactory();
     const student: UserModel = userFactory({ permission: 6 });
     beforeAll(async (done) => {
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.delete().del()
         const repository = new EssayThemeRepository(await context);
         const themeData: EssayThemeCreation = {
@@ -753,16 +753,16 @@ describe('#5 Correção da redação', () => {
         const theme = await repository.create(themeData);
         expect(theme.id).not.toBeUndefined();
         expect(theme.id).not.toBeNull();
-        const service = UserService(driver)
+        const service = UserService(db)
             .onConflict('user_id').merge();
         await saveUser(user, service);
         await saveUser(student, service);
         done()
     }, 100000)
     afterAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(db);
         await deleteUser(user, service);
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.del().delete();
         done()
     })
@@ -856,11 +856,11 @@ describe('#6 Inscrições', () => {
         done();
     };
     beforeAll(async (done) => {
-        const service = () => UserService(driver)
+        const service = () => UserService(db)
             .onConflict('user_id').merge();
         await saveUser(student, service());
         await saveUser(admin, service());
-        await SubscriptionService(driver).insert({
+        await SubscriptionService(db).insert({
             user: student.user_id,
             hotmart_id: faker.datatype.number(),
             product: 2,
@@ -869,8 +869,8 @@ describe('#6 Inscrições', () => {
             active: true,
             course_tag: 2,
         });
-        await saveUser(user, UserService(driver).onConflict('user_id').merge());
-        await SubscriptionService(driver).where('hotmart_id', 18).del();
+        await saveUser(user, UserService(db).onConflict('user_id').merge());
+        await SubscriptionService(db).where('hotmart_id', 18).del();
         done()
     }, 100000)
     beforeAll(deleteAll);
@@ -933,13 +933,13 @@ describe('#6 Inscrições', () => {
         done();
     });
     test('#62 Cancelamento', async done => {
-        await saveUser(user, UserService(driver).onConflict('user_id').merge());
+        await saveUser(user, UserService(db).onConflict('user_id').merge());
         const app = await appFactory();
         const api = supertest(app.server);
         const productRepository = new ProductRepository(await context);
         const product = await productRepository.get({ course: 'espcex' });
-        await SubscriptionService(driver).where('hotmart_id', 18).del();
-        const [inserted] = await SubscriptionService(driver).insert({
+        await SubscriptionService(db).where('hotmart_id', 18).del();
+        const [inserted] = await SubscriptionService(db).insert({
             hotmart_id: 18,
             product: product.id,
             user: user.user_id,
@@ -949,7 +949,7 @@ describe('#6 Inscrições', () => {
             course_tag: 2,
         });
         expect(inserted).toBeDefined();
-        const selected = await SubscriptionService(driver)
+        const selected = await SubscriptionService(db)
             .where('hotmart_id', 18).first();
         expect(selected).toBeDefined();
         const response = await api.post('/subscriptions/cancelation/')
@@ -1112,15 +1112,15 @@ describe('#7 Produtos', () => {
     const user: UserModel = userFactory();
     const toDelete: number[] = []
     beforeAll(async (done) => {
-        const service = UserService(driver)
+        const service = UserService(db)
             .onConflict('user_id').merge();
         await saveUser(user, service);
         done()
     });
     afterAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(db);
         await deleteUser(user, service);
-        await ProductService(driver).whereIn('product_id', toDelete).del();
+        await ProductService(db).whereIn('product_id', toDelete).del();
         done();
     });
     test('Criação', async done => {

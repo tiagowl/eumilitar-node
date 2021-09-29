@@ -10,7 +10,7 @@ export default function createContext(settings: Settings): Context {
     return Object.freeze({
         logger,
         settings,
-        driver: connect(settings.database),
+        db: connect(settings.database),
         smtp: createTransport(settings.smtp, logger),
         storage: createStorage(settings.storage),
         http: createHttpClient(settings.httpClient, logger),

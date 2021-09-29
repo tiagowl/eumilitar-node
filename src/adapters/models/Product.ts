@@ -34,7 +34,7 @@ const parserMap: FieldsMap<ProductModel, ProductInterface> = [
     [['expiration_time', Number], ['expirationTime', Number]]
 ];
 
-export const ProductService = (driver: Knex) => driver<Partial<ProductModel>, ProductModel[]>('products');
+export const ProductService = (db: Knex) => db<Partial<ProductModel>, ProductModel[]>('products');
 
 export default class ProductRepository extends Repository<ProductModel, ProductInterface> implements ProductRepositoryInterface {
 

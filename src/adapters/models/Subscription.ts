@@ -9,7 +9,7 @@ import Repository, { FieldsMap } from "./Repository";
 import UserRepository from "./User";
 import qs from 'querystring';
 
-export const SubscriptionService = (driver: Knex) => driver<Partial<SubscriptionModel>, SubscriptionModel[]>('subscriptions');
+export const SubscriptionService = (db: Knex) => db<Partial<SubscriptionModel>, SubscriptionModel[]>('subscriptions');
 
 export interface SubscriptionModel {
     hotmart_id: number;

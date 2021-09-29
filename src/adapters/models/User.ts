@@ -48,7 +48,7 @@ export interface UserModel {
     date_modified: Date;
 }
 
-export const UserService = (driver: Knex) => driver<Partial<UserModel>, UserModel[]>('users');
+export const UserService = (db: Knex) => db<Partial<UserModel>, UserModel[]>('users');
 
 const fieldsMap: FieldsMap<UserModel, UserData> = [
     [['user_id', Number], ['id', Number]],
@@ -68,7 +68,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
         super(fieldsMap, context, UserService);
     }
 
-    get query() { return UserService(this.driver); }
+    get query() { return UserService(this.db); }
 
     private async search(service: Knex.QueryBuilder<Partial<UserModel>, UserModel[]>, search?: string) {
         if (!!search) {
@@ -150,7 +150,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     }
 
     private async saveToken(token: string, user: User) {
-        const [saved] = await RecoveryService(this.driver).insert({
+        const [saved] = await RecoveryService(this.db).insert({
             token,
             expires: new Date(Date.now() + this.context.settings.messageConfig.expirationTime * 60 * 60 * 1000),
             selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
@@ -246,7 +246,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     }
 
     public async auth(token: string) {
-        const tokenSubQuery = SessionService(this.driver)
+        const tokenSubQuery = SessionService(this.db)
             .select('user_id').where('session_id', token);
         const user = await this.query
             .whereIn('user_id', tokenSubQuery)

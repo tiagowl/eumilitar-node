@@ -14,7 +14,7 @@ export interface SessionModel {
     user_agent: string | undefined;
 }
 
-export const SessionService = (driver: Knex) => driver<Partial<SessionModel>, SessionModel[]>('login_sessions');
+export const SessionService = (db: Knex) => db<Partial<SessionModel>, SessionModel[]>('login_sessions');
 
 const fieldsMap: FieldsMap<SessionModel, SessionInterface> = [
     [['id', Number], ['id', Number]],

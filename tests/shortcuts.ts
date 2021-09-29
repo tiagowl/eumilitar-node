@@ -66,9 +66,9 @@ export const dbSetting: Knex.Config = {
     acquireConnectionTimeout: 10000
 }
 
-export const driverFactory = () => {
-    const driver = knex(dbSetting);
-    return driver;
+export const dbFactory = () => {
+    const db = knex(dbSetting);
+    return db;
 }
 
 export function hashPassword(password: string) {
@@ -99,20 +99,20 @@ export async function generateConfirmationToken() {
     return crypto.randomBytes(32).toString('hex');
 }
 
-export async function saveConfirmationToken(token: string, userId: number, driver: Knex, expiration?: Date) {
+export async function saveConfirmationToken(token: string, userId: number, db: Knex, expiration?: Date) {
     const data = {
         token,
         expires: expiration || new Date(Date.now() + 24 * 60 * 60 * 1000),
         selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
         user_id: userId,
     }
-    const service = RecoveryService(driver);
+    const service = RecoveryService(db);
     return service.insert(data);
 }
 
-export async function appFactory(driver?: Knex, customSettings?: any) {
+export async function appFactory(db?: Knex, customSettings?: any) {
     const context = await contextFactory();
-    return new Application({ ...context, driver: driver || context.driver, settings: customSettings || context.settings })
+    return new Application({ ...context, db: db || context.db, settings: customSettings || context.settings })
 }
 
 export async function createEssay(context: Context, id: number) {
@@ -140,14 +140,14 @@ export async function createEssay(context: Context, id: number) {
     });
 }
 
-export const driver = driverFactory();
+export const db = dbFactory();
 export const hottok = faker.datatype.string();
 
 export async function contextFactory(inject = {}): Promise<Context> {
     const smtp = await smtpFactory();
     const storage = createStorage(settings.storage);
     return Object.assign({
-        driver,
+        db,
         smtp,
         settings: { ...settings, hotmart: { ...settings.hotmart, hottok } },
         logger,

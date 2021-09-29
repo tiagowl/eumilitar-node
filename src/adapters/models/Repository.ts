@@ -8,20 +8,20 @@ export type FieldsMap<Model = any, Entity = any> = [[keyof Model, (val: any) => 
 export default class Repository<Model, Entity> {
     protected readonly fieldsMap: FieldsMap<Model, Entity>;
     protected readonly logger: Logger;
-    protected readonly driver: Knex;
+    protected readonly db: Knex;
     protected readonly context: Context;
-    protected readonly service: (driver: Knex) => Knex.QueryBuilder<Partial<Model>, Model[]>;
+    protected readonly service: (db: Knex) => Knex.QueryBuilder<Partial<Model>, Model[]>;
 
-    constructor(fieldsMap: FieldsMap<Model, Entity>, context: Context, service: (driver: Knex) => Knex.QueryBuilder<Partial<Model>, Model[]>) {
-        const { logger, driver } = context;
+    constructor(fieldsMap: FieldsMap<Model, Entity>, context: Context, service: (db: Knex) => Knex.QueryBuilder<Partial<Model>, Model[]>) {
+        const { logger, db } = context;
         this.fieldsMap = fieldsMap;
         this.logger = logger;
-        this.driver = driver;
+        this.db = db;
         this.context = context;
         this.service = service;
     }
 
-    get query() { return this.service(this.driver); }
+    get query() { return this.service(this.db); }
 
     protected async processError(error: any) {
         this.logger.error(error);

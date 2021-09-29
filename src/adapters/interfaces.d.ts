@@ -33,7 +33,7 @@ export interface Settings {
 }
 
 export type Context = {
-    readonly driver: Knex;
+    readonly db: Knex;
     readonly smtp: Mail;
     readonly storage: Multer;
     readonly settings: Settings;

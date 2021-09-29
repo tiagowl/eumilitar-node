@@ -22,7 +22,7 @@ export interface EssayThemeInsertion {
 
 const divider = ', ';
 
-export const EssayThemeService = (driver: Knex) => driver<Partial<EssayThemeInsertion>, EssayThemeModel[]>('essay_themes');
+export const EssayThemeService = (db: Knex) => db<Partial<EssayThemeInsertion>, EssayThemeModel[]>('essay_themes');
 
 export default class EssayThemeRepository extends Repository<EssayThemeModel, EssayThemeInterface> implements EssayThemeRepositoryInterface {
 

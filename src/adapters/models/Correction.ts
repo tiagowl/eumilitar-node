@@ -55,7 +55,7 @@ const fieldsMap: FieldsMap<CorrectionModel, CorrectionInterface> = [
     [['final_grading', Number], ['points', Number],],
 ];
 
-export const CorrectionService = (driver: Knex) => driver<Partial<CorrectionModelInsertionData>, CorrectionModel[]>('essay_grading');
+export const CorrectionService = (db: Knex) => db<Partial<CorrectionModelInsertionData>, CorrectionModel[]>('essay_grading');
 
 export default class CorrectionRepository extends Repository<CorrectionModel, CorrectionInterface> implements CorrectionRepositoryInterface {
     public readonly users: UserRepositoryInterface;

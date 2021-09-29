@@ -17,15 +17,15 @@ export const paginationSchema = yup.object().shape({
 
 export default class Controller<Fields> {
     protected readonly schema: yup.ObjectSchema<any>;
-    protected readonly driver: Knex;
+    protected readonly db: Knex;
     protected readonly logger: Logger;
     protected readonly context: Context;
 
     constructor(context: Context, schema: yup.ObjectSchema<any>) {
-        const { driver, logger } = context;
+        const { db, logger } = context;
         this.context = context;
         this.schema = schema;
-        this.driver = driver;
+        this.db = db;
         this.logger = logger;
     }
 

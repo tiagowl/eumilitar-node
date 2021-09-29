@@ -14,7 +14,7 @@ export interface RecoveryModel {
     user_id: number;
 }
 
-export const RecoveryService = (driver: Knex) => driver<Partial<RecoveryModel>, RecoveryModel[]>('password_reset');
+export const RecoveryService = (db: Knex) => db<Partial<RecoveryModel>, RecoveryModel[]>('password_reset');
 
 const fieldsMap: FieldsMap<RecoveryModel, RecoveryInterface> = [
     [['expires', val => new Date(val)], ['expires', val => new Date(val)]],

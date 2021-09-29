@@ -1,6 +1,6 @@
 import { UserService } from '../src/adapters/models/User';
 import { SessionService } from '../src/adapters/models/Session';
-import { contextFactory, hottok, createEssay, deleteUser, driver, generateConfirmationToken, saveConfirmationToken, saveUser, userFactory, mails } from './shortcuts';
+import { contextFactory, hottok, createEssay, deleteUser, db, generateConfirmationToken, saveConfirmationToken, saveUser, userFactory, mails } from './shortcuts';
 import { RecoveryService } from '../src/adapters/models/Recovery';
 import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
@@ -25,7 +25,7 @@ import SessionController from '../src/adapters/controllers/Session';
 import RecoveryController from '../src/adapters/controllers/Recovery';
 
 afterAll(async (done) => {
-    await driver.destroy();
+    await db.destroy();
     done();
 })
 
@@ -33,19 +33,19 @@ const context = contextFactory();
 
 describe('#1 Testes na autenticação', () => {
     const user = userFactory()
-    const passwordService = RecoveryService(driver);
+    const passwordService = RecoveryService(db);
     beforeAll(async (done) => {
-        const service = UserService(driver)
+        const service = UserService(db)
             .onConflict('user_id').merge();
         await saveUser(user, service)
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.delete().del()
         done();
     })
     afterAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(db);
         await deleteUser(user, service)
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.del().delete();
         done()
     })
@@ -57,14 +57,14 @@ describe('#1 Testes na autenticação', () => {
         const controller = new SessionController(await context);
         const token = await controller.auth(credentials);
         expect(token.token).not.toBeNull();
-        const sessionService = SessionService(driver);
+        const sessionService = SessionService(db);
         sessionService.where('session_id', token.token).then(dbToken => {
             expect(dbToken[0]).not.toBeNull()
             done();
         })
     })
     test('Recuperação de senha', async (done) => {
-        const service = UserService(driver);
+        const service = UserService(db);
         const userData = await service.where('email', user.email).first();
         const credentials = { email: user.email, }
         const controller = new RecoveryController(await context);
@@ -103,9 +103,9 @@ describe('#1 Testes na autenticação', () => {
     })
     test('Verificar token de mudança de senha', async (done) => {
         const token = await generateConfirmationToken();
-        const service = UserService(driver);
+        const service = UserService(db);
         const userData = await service.where('email', user.email).first();
-        await saveConfirmationToken(token, userData?.user_id || 0, driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, db);
         const controller = new RecoveryController(await context);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeTruthy()
@@ -113,9 +113,9 @@ describe('#1 Testes na autenticação', () => {
     })
     test('Verificar token expirado de mudança de senha', async (done) => {
         const token = await generateConfirmationToken();
-        const service = UserService(driver);
+        const service = UserService(db);
         const userData = await service.where('email', user.email).first();
-        await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date(Date.now() - 1000));
+        await saveConfirmationToken(token, userData?.user_id || 0, db, new Date(Date.now() - 1000));
         const controller = new RecoveryController(await context);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeFalsy()
@@ -123,9 +123,9 @@ describe('#1 Testes na autenticação', () => {
     })
     test('Verificar token expirado de mudança de senha', async (done) => {
         const token = await generateConfirmationToken();
-        const service = UserService(driver);
+        const service = UserService(db);
         const userData = await service.where('email', user.email).first();
-        await saveConfirmationToken(token, userData?.user_id || 0, driver, new Date(0));
+        await saveConfirmationToken(token, userData?.user_id || 0, db, new Date(0));
         const controller = new RecoveryController(await context);
         const { isValid } = await controller.check({ token });
         expect(isValid).toBeFalsy()
@@ -134,9 +134,9 @@ describe('#1 Testes na autenticação', () => {
     test('Verificar token inválido de mudança de senha', async (done) => {
         const token = await generateConfirmationToken();
         const invalidToken = await generateConfirmationToken()
-        const service = UserService(driver);
+        const service = UserService(db);
         const userData = await service.where('email', user.email).first();
-        await saveConfirmationToken(token, userData?.user_id || 0, driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, db);
         const controller = new RecoveryController(await context);
         const { isValid } = await controller.check({ token: invalidToken });
         expect(isValid).toBeFalsy()
@@ -145,9 +145,9 @@ describe('#1 Testes na autenticação', () => {
     test('Verificar token inválido de mudança de senha', async (done) => {
         const token = await generateConfirmationToken();
         const invalidToken = (await generateConfirmationToken()).slice(0, 15)
-        const service = UserService(driver);
+        const service = UserService(db);
         const userData = await service.where('email', user.email).first();
-        await saveConfirmationToken(token, userData?.user_id || 0, driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, db);
         const controller = new RecoveryController(await context);
         const { isValid } = await controller.check({ token: invalidToken },);
         expect(isValid).toBeFalsy()
@@ -155,9 +155,9 @@ describe('#1 Testes na autenticação', () => {
     })
     test('Mudar senha', async done => {
         const token = await generateConfirmationToken();
-        const service = UserService(driver);
+        const service = UserService(db);
         const userData = await service.where('email', user.email).first();
-        await saveConfirmationToken(token, userData?.user_id || 0, driver);
+        await saveConfirmationToken(token, userData?.user_id || 0, db);
         const newPassword = 'newPassword'
         const controller = new RecoveryController(await context);
         const updated = await controller.updatePassword({
@@ -209,7 +209,7 @@ describe('#1 Testes na autenticação', () => {
 
 describe('#2 Testes nos temas de redação', () => {
     afterAll(async (done) => {
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.delete().del()
         done();
     })
@@ -344,23 +344,23 @@ describe('#4 Redações', () => {
     const user = userFactory({ permission: 6 });
     const corrector = userFactory({ permission: 5 });
     beforeAll(async (done) => {
-        const service = UserService(driver)
+        const service = UserService(db)
             .onConflict('user_id').merge();
         await saveUser(user, service);
         await saveUser(corrector, service);
         done();
     })
     afterAll(async (done) => {
-        const service = UserService(driver)
+        const service = UserService(db)
             .onConflict('user_id').merge();
         await deleteUser(user, service);
         await deleteUser(corrector, service);
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.delete().del();
         done()
     })
     test('#41 Criação de redações', async done => {
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.delete().del()
         const repository = new EssayThemeRepository(await context);
         const themeData: EssayThemeCreation = {
@@ -507,15 +507,15 @@ describe('#4 Redações', () => {
 describe('#5 Invalidações', () => {
     const user = userFactory();
     beforeAll(async (done) => {
-        const service = UserService(driver)
+        const service = UserService(db)
             .onConflict('user_id').merge();
         await saveUser(user, service)
         done();
     })
     afterAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(db);
         await deleteUser(user, service);
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.delete().del();
         done()
     })
@@ -553,15 +553,15 @@ describe('#5 Invalidações', () => {
 describe('#6 Correções', () => {
     const user = userFactory();
     beforeAll(async (done) => {
-        const service = UserService(driver)
+        const service = UserService(db)
             .onConflict('user_id').merge();
         await saveUser(user, service)
         done();
     })
     afterAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(db);
         await deleteUser(user, service);
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.delete().del();
         done()
     })
@@ -646,18 +646,18 @@ describe('#6 Correções', () => {
 describe('#7 Testes no usuário', () => {
     const user = userFactory()
     beforeAll(async (done) => {
-        const service = UserService(driver)
+        const service = UserService(db)
             .onConflict(['email', 'user_id'])
             .merge();
         await saveUser(user, service)
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.delete().del()
         done();
     })
     afterAll(async (done) => {
-        const service = UserService(driver);
+        const service = UserService(db);
         await deleteUser(user, service)
-        const themeService = EssayThemeService(driver);
+        const themeService = EssayThemeService(db);
         await themeService.del().delete();
         done()
     })
@@ -730,7 +730,7 @@ describe('#8 Inscrições', () => {
     const email = 'teste.sandbox@hotmart.com';
     const user = userFactory({ email });
     const deleteAll = async (done: any) => {
-        await UserService(driver).where('email', email).del();
+        await UserService(db).where('email', email).del();
         done()
     };
     afterAll(deleteAll);
@@ -738,7 +738,7 @@ describe('#8 Inscrições', () => {
     beforeAll(async done => {
         const productRepository = new ProductRepository(await context);
         const product = await productRepository.get({ course: 'espcex' });
-        await SubscriptionService(driver).insert({
+        await SubscriptionService(db).insert({
             hotmart_id: faker.datatype.number(),
             product: product.id,
             user: user.user_id,
@@ -747,7 +747,7 @@ describe('#8 Inscrições', () => {
             active: true,
             course_tag: 2,
         }).onConflict().ignore();
-        await saveUser(user, UserService(driver));
+        await saveUser(user, UserService(db));
         done();
     }, 10000);
     test('#81 Criação', async done => {
@@ -768,7 +768,7 @@ describe('#8 Inscrições', () => {
     test('#82 Cancelamento', async done => {
         const productRepository = new ProductRepository(await context);
         const product = await productRepository.get({ course: 'espcex' });
-        const [inserted] = await SubscriptionService(driver).insert({
+        const [inserted] = await SubscriptionService(db).insert({
             hotmart_id: 18,
             product: product.id,
             user: user.user_id,
@@ -862,7 +862,7 @@ describe('#8 Inscrições', () => {
         done();
     });
     test('#88 atualização manual', async done => {
-        const selected = await SubscriptionService(driver).first();
+        const selected = await SubscriptionService(db).first();
         expect(selected).toBeDefined();
         if (!selected) throw new Error();
         const controller = new SubscriptionController(await context);
@@ -894,7 +894,7 @@ describe('#8 Inscrições', () => {
 describe('#9 Produtos', () => {
     const toRemove: number[] = [];
     afterAll(async done => {
-        await ProductService(driver)
+        await ProductService(db)
             .whereIn('product_id', toRemove).del();
         done();
     }, 10000);
@@ -905,7 +905,7 @@ describe('#9 Produtos', () => {
             'id_hotmart': faker.datatype.number(),
             'product_name': faker.name.title(),
         }
-        const [id] = await ProductService(driver).insert(product);
+        const [id] = await ProductService(db).insert(product);
         toRemove.push(id);
         done();
     }, 10000);

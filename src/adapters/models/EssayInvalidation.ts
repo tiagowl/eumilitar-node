@@ -15,7 +15,7 @@ export interface EssayInvalidationModel {
     comment?: string;
 }
 
-export const EssayInvalidationService = (driver: Knex) => driver<Partial<EssayInvalidationModel>, EssayInvalidationModel[]>('essay_invalidations');
+export const EssayInvalidationService = (db: Knex) => db<Partial<EssayInvalidationModel>, EssayInvalidationModel[]>('essay_invalidations');
 
 export default class EssayInvalidationRepository extends Repository<EssayInvalidationModel, EssayInvalidationInterface> implements EssayInvalidationRepositoryInterface {
     public readonly essays: EssayRepositoryInterface;

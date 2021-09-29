@@ -33,7 +33,7 @@ export interface EssayInsertion {
     status: Status;
 }
 
-export const EssayService = (driver: Knex) => driver<Partial<EssayModel>, EssayModel[]>('essays');
+export const EssayService = (db: Knex) => db<Partial<EssayModel>, EssayModel[]>('essays');
 
 type Parser = (data: any) => any;
 
@@ -86,7 +86,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
 
     private search(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, search?: string) {
         if (!!search) {
-            const userSubQuery = UserService(this.driver)
+            const userSubQuery = UserService(this.db)
                 .orWhere('first_name', 'like', `%${search}%`)
                 .orWhere('last_name', 'like', `%${search}%`)
                 .orWhere('email', 'like', `%${search}%`)
@@ -130,11 +130,11 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
     private filterCorrectionPeriod(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, period?: { start?: Date, end?: Date }) {
         const { start, end } = period || {};
         if (!!period) {
-            const corrections = CorrectionService(this.driver).where(function () {
+            const corrections = CorrectionService(this.db).where(function () {
                 if (!!end) this.where('grading_date', '<', end);
                 if (!!start) this.where('grading_date', '>', start);
             }).select('essay_id');
-            const invalidations = EssayInvalidationService(this.driver).where(function () {
+            const invalidations = EssayInvalidationService(this.db).where(function () {
                 if (!!end) this.where('invalidationDate', '<', end);
                 if (!!start) this.where('invalidationDate', '>', start);
             }).select('essay as essay_id');
@@ -270,11 +270,11 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                     const date = new Date(start.getFullYear(), current, 1);
                     const month = date.getMonth() + 1;
                     const year = date.getFullYear();
-                    const revised = CorrectionService(this.driver)
+                    const revised = CorrectionService(this.db)
                         .whereRaw('year(`grading_date`) = ?', year)
                         .whereRaw('month(`grading_date`) = ?', month)
                         .select('essay_id');
-                    const invalid = EssayInvalidationService(this.driver)
+                    const invalid = EssayInvalidationService(this.db)
                         .whereRaw('year(`invalidationDate`) = ?', year)
                         .whereRaw('month(`invalidationDate`) = ?', month)
                         .select('essay as essay_id');
@@ -309,22 +309,22 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                     const date = new Date(start.getFullYear(), current, 1);
                     const month = date.getMonth() + 1;
                     const year = date.getFullYear();
-                    const [corrections] = await this.driver.avg('diff as avg')
-                        .from(CorrectionService(this.driver)
-                            .where(this.driver.raw('MONTH(`essay_grading`.`grading_date`) = ?', month))
-                            .where(this.driver.raw('YEAR(`essay_grading`.`grading_date`) = ?', year))
+                    const [corrections] = await this.db.avg('diff as avg')
+                        .from(CorrectionService(this.db)
+                            .where(this.db.raw('MONTH(`essay_grading`.`grading_date`) = ?', month))
+                            .where(this.db.raw('YEAR(`essay_grading`.`grading_date`) = ?', year))
                             .whereIn('essay_grading.essay_id', this.query.where(parsed).select('essay_id'))
                             .innerJoin('essays', 'essays.essay_id', 'essay_grading.essay_id')
-                            .select(this.driver.raw('DISTINCT TIME_TO_SEC(TIMEDIFF(`essay_grading`.`grading_date`, `essays`.`sent_date`)) as `diff`'))
+                            .select(this.db.raw('DISTINCT TIME_TO_SEC(TIMEDIFF(`essay_grading`.`grading_date`, `essays`.`sent_date`)) as `diff`'))
                             .as('join')
                         ) as any[];
-                    const [invalidations] = await this.driver.avg('diff as avg')
-                        .from(EssayInvalidationService(this.driver)
-                            .where(this.driver.raw('MONTH(`essay_invalidations`.`invalidationDate`) = ?', month))
-                            .where(this.driver.raw('YEAR(`essay_invalidations`.`invalidationDate`) = ?', year))
+                    const [invalidations] = await this.db.avg('diff as avg')
+                        .from(EssayInvalidationService(this.db)
+                            .where(this.db.raw('MONTH(`essay_invalidations`.`invalidationDate`) = ?', month))
+                            .where(this.db.raw('YEAR(`essay_invalidations`.`invalidationDate`) = ?', year))
                             .whereIn('essay_invalidations.essay', this.query.where(parsed).select('essay_id as essay'))
                             .innerJoin('essays', 'essays.essay_id', 'essay_invalidations.essay')
-                            .select(this.driver.raw('DISTINCT TIME_TO_SEC(TIMEDIFF(`essay_invalidations`.`invalidationDate`, `essays`.`sent_date`)) as `diff`'))
+                            .select(this.db.raw('DISTINCT TIME_TO_SEC(TIMEDIFF(`essay_invalidations`.`invalidationDate`, `essays`.`sent_date`)) as `diff`'))
                             .as('join')
                         ) as any[];
                     const value = Math.round(((Number(corrections.avg) + Number(invalidations.avg)) / 2) * 1000);
