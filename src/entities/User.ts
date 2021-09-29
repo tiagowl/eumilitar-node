@@ -15,6 +15,7 @@ export interface UserInterface {
     permission: AccountPermission;
     creationDate: Date;
     lastModified: Date;
+    phone?: string;
 }
 
 export interface UserData extends UserInterface {
@@ -28,6 +29,7 @@ export interface UserUpdateData {
     status?: AccountStatus;
     permission?: AccountPermission;
     password?: string;
+    phone?: string;
 }
 
 export default class User implements UserInterface {
@@ -40,6 +42,7 @@ export default class User implements UserInterface {
     #creationDate: Date;
     #lastModified: Date;
     #permission: AccountPermission;
+    #phone?: string;
 
     constructor(data: UserData) {
         this.#id = data.id;
@@ -51,6 +54,7 @@ export default class User implements UserInterface {
         this.#creationDate = data.creationDate;
         this.#lastModified = data.lastModified;
         this.#permission = data.permission;
+        this.#phone = data.phone;
     }
 
     get data() {
@@ -64,6 +68,7 @@ export default class User implements UserInterface {
             creationDate: this.#creationDate,
             lastModified: this.#lastModified,
             permission: this.#permission,
+            phone: this.#phone,
         };
     }
 
@@ -110,6 +115,12 @@ export default class User implements UserInterface {
     }
     get permission() { return this.#permission; }
 
+    set phone(value: string) {
+        this.#phone = value;
+        this.updateDate();
+    }
+    get phone() { return this.phone; }
+
     public async checkPassword(password: string) {
         return compare(password, this.#password.replace(/^\$2y(.+)$/i, '$2a$1'));
     }
@@ -122,6 +133,7 @@ export default class User implements UserInterface {
             this.#status = data.status || this.#status;
             this.#permission = data.permission || this.#permission;
             this.#password = data.password || this.#password;
+            this.#phone = data.phone || this.#phone;
             this.updateDate();
         }
         return this;
