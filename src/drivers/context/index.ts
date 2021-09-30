@@ -4,6 +4,7 @@ import createHttpClient from "./httpClient";
 import { Context, Settings } from "../interfaces";
 import createTransport from "./smtp";
 import createStorage from "./storage";
+import createSMS from "./sms";
 
 export default function createContext(settings: Settings): Context {
     const logger = createLogger(settings.logger);
@@ -14,5 +15,6 @@ export default function createContext(settings: Settings): Context {
         smtp: createTransport(settings.smtp, logger),
         storage: createStorage(settings.storage),
         http: createHttpClient(settings.httpClient, logger),
+        sms: createSMS(settings, logger),
     });
 }

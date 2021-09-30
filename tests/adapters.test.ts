@@ -65,9 +65,8 @@ describe('#1 Testes na autenticação', () => {
     test('Recuperação de senha', async (done) => {
         const service = UserService(db);
         const userData = await service.where('email', user.email).first();
-        const credentials = { email: user.email, }
         const controller = new RecoveryController(await context);
-        const response = await controller.recover(credentials);
+        const response = await controller.recover({ email: user.email, type: 'email' });
         expect(response).toEqual({ message: "Email enviado! Verifique sua caixa de entrada." });
         const token = await passwordService.where('user_id', userData?.user_id).first();
         expect(token).not.toBeNull();
@@ -77,20 +76,18 @@ describe('#1 Testes na autenticação', () => {
         done()
     })
     test('Recuperação de senha com email errado', async (done) => {
-        const credentials = { email: 'wrong@mail.com' }
         const controller = new RecoveryController(await context);
         try {
-            await controller.recover(credentials);
+            await controller.recover({ email: 'wrong@mail.com', type: 'email' });
         } catch (error: any) {
             expect(error).toEqual({ message: 'Email inválido', status: 400 });
         }
         done()
     })
     test('Recuperação de senha com email inválido', async done => {
-        const credentials = { email: 'wrongmail.com' }
         const controller = new RecoveryController(await context);
         try {
-            await controller.recover(credentials);
+            await controller.recover({ email: 'wrongmail.com', type: 'email' });
         } catch (error: any) {
             expect(error).toMatchObject({
                 message: "Email inválido",
