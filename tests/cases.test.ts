@@ -1006,5 +1006,15 @@ describe('Recuperação de senha', () => {
         const updated = await useCase.updatePassword({ token: selected.token, password: faker.internet.password() });
         expect(updated).toBeTruthy();
         done();
-    })
+    });
+    test('Criação com token curto', async done => {
+        const repository = new RecoveryTestRespository();
+        const useCase = new RecoveryCase(repository, 40 * 60 * 60 * 1000);
+        const [selected] = userDatabase;
+        const { recovery, user } = await useCase.create(selected.email, false);
+        expect(recovery).toBeInstanceOf(Recovery);
+        expect(recovery.token.length).toBe(6);
+        expect(user).toBeInstanceOf(User);
+        done();
+    });
 })
