@@ -115,11 +115,11 @@ export default class User implements UserInterface {
     }
     get permission() { return this.#permission; }
 
-    set phone(value: string) {
+    set phone(value: string | undefined) {
         this.#phone = value;
         this.updateDate();
     }
-    get phone() { return this.phone; }
+    get phone() { return this.#phone; }
 
     public async checkPassword(password: string) {
         return compare(password, this.#password.replace(/^\$2y(.+)$/i, '$2a$1'));

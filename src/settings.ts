@@ -103,7 +103,11 @@ const settings = Object.freeze<Settings>({
             }),
         ],
     },
-    httpClient: {}
+    httpClient: {},
+    sms: {
+        authKey: process.env.SMS_KEY || '',
+        senderID: process.env.SMS_SENDER_ID || '',
+    }
 });
 
 export default settings;

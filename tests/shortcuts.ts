@@ -20,6 +20,7 @@ import axios from 'axios';
 export const now = new Date();
 export const logger = createLogger(settings.logger);
 export const mails: MailData[] = [];
+export const sms: any[] = [];
 
 export const userFactory = (inject?: Partial<UserModel>) => {
     const data = {
@@ -94,6 +95,14 @@ export async function smtpFactory(): Promise<Mail> {
     }
 }
 
+export function smsFactory() {
+    return {
+        async send(to: string, message: string) {
+            sms.push({ to, message });
+        }
+    }
+}
+
 export async function generateConfirmationToken() {
     return crypto.randomBytes(32).toString('hex');
 }
@@ -152,6 +161,7 @@ export async function contextFactory(inject = {}): Promise<Context> {
         logger,
         storage,
         http: axios.create({}),
+        sms: smsFactory(),
     }, inject);
 }
 

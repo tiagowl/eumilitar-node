@@ -68,6 +68,10 @@ export interface Settings extends DefaultSettings {
     readonly storage: StorageSettings;
     readonly logger: winston.LoggerOptions;
     readonly httpClient: AxiosRequestConfig;
+    readonly sms: {
+        readonly authKey: string;
+        readonly senderID: string;
+    };
 }
 
 export interface Context extends DefaultContext {

@@ -116,7 +116,7 @@ describe('#1 Teste na api do usuário', () => {
     it('#15 Recuperação de senha', async (done) => {
         const app = await appFactory();
         const api = supertest(app.server);
-        const credentials = { email: user.email };
+        const credentials = { email: user.email, type: 'email' };
         const response = await api.post('/password-recoveries/')
             .send(credentials)
         expect(response.body).toEqual({ message: "Email enviado! Verifique sua caixa de entrada." });

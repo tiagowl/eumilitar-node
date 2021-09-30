@@ -94,7 +94,7 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
                 text: await this.writeEmail(username, link),
                 html: await this.renderEmail(username, link),
             });
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: 'Falha ao enviar o email! Tente novamente ou entre em contato com o suporte.', status: 500 };
         }
@@ -113,8 +113,8 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
     private async sendRecoverySMS(user: User, recovery: Recovery) {
         try {
             const message = await this.writeSMS(recovery);
-            await this.context.sms.send(user.phone, message);
-        } catch (error) {
+            await this.context.sms.send(user.phone || '', message);
+        } catch (error: any) {
             this.logger.error(error);
             throw { message: 'Falha ao enviar o SMS! Tente novamente ou entre em contato com o suporte.', status: 500 };
         }
