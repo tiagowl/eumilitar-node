@@ -6,9 +6,12 @@ import RecoveryRender from '../views/Recovery';
 import { Context } from "../interfaces";
 import RecoveryCase, { UpdatePasswordData as DefaultUpdatePasswordData } from "../../cases/Recovery";
 import CaseError, { Errors } from "../../cases/Error";
+import User from "../../entities/User";
+import Recovery from "../../entities/Recovery";
 
 export interface RecoveryInterface {
     email: string;
+    type: 'email' | 'sms';
 }
 
 export type RecoveryResponse = {
@@ -25,6 +28,8 @@ export interface UpdatePasswordData extends DefaultUpdatePasswordData {
 
 const schema = yup.object().shape({
     email: yup.string().email('Email inválido').required('O campo "email" é obrigatório'),
+    type: yup.string().required('É preciso especificar o tipo de recuperação')
+        .is(['email', 'sms'], 'Tipo de recuperação inválido'),
 });
 
 const checkSchema = yup.object().shape({
@@ -59,7 +64,7 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
         this.useCase = new RecoveryCase(this.repository, this.config.expirationTime * 60 * 60 * 1000);
     }
 
-    private async writeMessage(username: string, link: string) {
+    private async writeEmail(username: string, link: string) {
         const { expirationTime } = this.config;
         return `
             Olá, ${username}!\n
@@ -72,37 +77,66 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
         `;
     }
 
-    private async renderMessage(username: string, link: string) {
+    private async renderEmail(username: string, link: string) {
         return RecoveryRender({
             link, username,
             expirationTime: this.config.expirationTime
         });
     }
 
-    private async sendConfirmationEmail(email: string, username: string, token: string) {
-        const link = `${this.config.url}${token}`;
-        return this.smtp.sendMail({
-            from: this.config.sender,
-            to: { email, name: username },
-            subject: 'Recuperação de senha',
-            text: await this.writeMessage(username, link),
-            html: await this.renderMessage(username, link),
-        });
+    private async sendRecoveryEmail(email: string, username: string, token: string) {
+        try {
+            const link = `${this.config.url}${token}`;
+            await this.smtp.sendMail({
+                from: this.config.sender,
+                to: { email, name: username },
+                subject: 'Recuperação de senha',
+                text: await this.writeEmail(username, link),
+                html: await this.renderEmail(username, link),
+            });
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: 'Falha ao enviar o email! Tente novamente ou entre em contato com o suporte.', status: 500 };
+        }
+    }
+
+    private async recoveryByEmail(email: string) {
+        const { recovery, user } = await this.useCase.create(email);
+        await this.sendRecoveryEmail(user.email, user.fullName, recovery.token);
+        return { message: "Email enviado! Verifique sua caixa de entrada." };
+    }
+
+    private async writeSMS(recovery: Recovery) {
+        return `Seu código Eu Militar é: ${recovery.token}. Não compartilhe este código com ninguém!`;
+    }
+
+    private async sendRecoverySMS(user: User, recovery: Recovery) {
+        try {
+            const message = await this.writeSMS(recovery);
+            await this.context.sms.send(user.phone, message);
+        } catch (error) {
+            this.logger.error(error);
+            throw { message: 'Falha ao enviar o SMS! Tente novamente ou entre em contato com o suporte.', status: 500 };
+        }
+    }
+
+    private async recoveryBySMS(email: string) {
+        const { recovery, user } = await this.useCase.create(email, false);
+        await this.sendRecoverySMS(user, recovery);
+        return { message: "SMS enviado, verifique sua caixa de mensagens" };
     }
 
     public async recover(rawData: RecoveryInterface,): Promise<RecoveryResponse> {
         try {
-            const { email } = await this.validate(rawData);
-            const { recovery, user } = await this.useCase.create(email);
-            await this.sendConfirmationEmail(user.email, user.fullName, recovery.token)
-                .catch(async (error) => {
-                    this.logger.error(error);
-                    throw { message: 'Falha ao enviar o email! Tente novamente ou entre em contato com o suporte.', status: 500 };
-                });
-            return { message: "Email enviado! Verifique sua caixa de entrada." };
+            const { email, type } = await this.validate(rawData);
+            const types = {
+                sms: this.recoveryBySMS,
+                email: this.recoveryByEmail,
+            };
+            return types[type](email);
         } catch (error: any) {
             if (error instanceof CaseError) {
-                if (error.code === Errors.NOT_FOUND) throw { message: error.message, status: 400 };
+                throw { message: error.message, status: 400 };
             }
             this.logger.error({ ...error });
             throw error;

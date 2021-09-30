@@ -39,6 +39,7 @@ export type Context = {
     readonly settings: Settings;
     readonly logger: winston.Logger;
     readonly http: AxiosInstance;
+    readonly sms: SMS;
 };
 
 
@@ -50,4 +51,8 @@ export interface MessageConfigInterface {
     readonly url: string;
     readonly expirationTime: number;
     readonly adminMail: string;
+}
+
+export interface SMS {
+    readonly send: (to: string, msg: string) => Promise<void>;
 }

@@ -48,17 +48,18 @@ export default class RecoveryCase {
         return numberList.join('');
     }
 
-    private async generateConfirmationToken(long: boolean): Promise<string> {
-        return long ? this.generateLongToken() : this.generateShortToken();
+    private async generateConfirmationToken(byEmail: boolean): Promise<string> {
+        return byEmail ? this.generateLongToken() : this.generateShortToken();
     }
 
-    public async create(email: string, long: boolean = true) {
+    public async create(email: string, byEmail: boolean = true) {
         const user = await this.repository.users.get({ email });
         if (!user) throw new CaseError(`Email inválido`, Errors.NOT_FOUND);
+        if (!user.phone && !byEmail) throw new CaseError('Usuário não informou o telefone', Errors.UNAUTHORIZED);
         return {
             user,
             recovery: await this.repository.create({
-                token: await this.generateConfirmationToken(long),
+                token: await this.generateConfirmationToken(byEmail),
                 expires: new Date(Date.now() + this.defaultExpiration),
                 user: user.id,
                 selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
