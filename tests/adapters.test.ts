@@ -13,7 +13,6 @@ import EssayController, { EssayInput } from '../src/adapters/controllers/Essay';
 import EssayInvalidationController from '../src/adapters/controllers/EssayInvalidation';
 import CorrectionController from '../src/adapters/controllers/Correction';
 import UserController from '../src/adapters/controllers/User';
-import createLogger from '../src/drivers/logger';
 import SubscriptionRepository, { SubscriptionService } from '../src/adapters/models/Subscription';
 import ProductRepository, { ProductModel, ProductService } from '../src/adapters/models/Product';
 import SubscriptionController from '../src/adapters/controllers/Subscription';
@@ -746,7 +745,7 @@ describe('#8 Inscrições', () => {
             registrationDate: new Date(),
             active: true,
             course_tag: 2,
-        }).onConflict().ignore();
+        }).onConflict('hotmart_id').ignore();
         await saveUser(user, UserService(db));
         done();
     }, 10000);

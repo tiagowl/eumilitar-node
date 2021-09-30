@@ -6,15 +6,14 @@ import { Mail, MailData } from '../src/adapters/interfaces';
 import crypto from 'crypto';
 import { RecoveryService } from '../src/adapters/models/Recovery';
 import User, { UserData } from '../src/entities/User';
-import createStorage from '../src/drivers/storage';
+import createStorage from '../src/drivers/context/storage';
 import Application from '../src/drivers/api';
 import { UserModel } from '../src/adapters/models/User';
 import { EssayRepository } from '../src/adapters/models/Essay';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
 import { Course } from '../src/entities/EssayTheme';
-import createLogger from '../src/drivers/logger';
-import createTransport from '../src/drivers/smtp';
+import createLogger from '../src/drivers/context/logger';
 import { Context } from '../src/drivers/interfaces';
 import axios from 'axios';
 
