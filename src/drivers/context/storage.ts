@@ -3,7 +3,7 @@ import multer from 'multer';
 import multerS3 from 'multer-s3';
 import { v4 } from 'uuid';
 import mime from 'mime';
-import { StorageSettings } from './interfaces';
+import { StorageSettings } from '../interfaces';
 
 interface StorageTypes {
     [s: string]: multer.StorageEngine;

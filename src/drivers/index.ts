@@ -1,6 +1,6 @@
 import Application from './api';
-import createContext from './context';
 import { Settings } from './interfaces';
+import createContext from './context';
 
 export default function createServer(settings: Settings) {
     const context = createContext(settings);

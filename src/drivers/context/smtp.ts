@@ -1,7 +1,7 @@
 import mailjet from 'node-mailjet';
 import { Logger } from 'winston';
-import { Mail } from '../adapters/interfaces';
-import { SMTPSettings } from './interfaces';
+import { Mail } from '../../adapters/interfaces';
+import { SMTPSettings } from '../interfaces';
 
 export default function createTransport(settings: SMTPSettings, logger: Logger): Mail {
     const sender = mailjet.connect(settings.auth.key, settings.auth.secret);

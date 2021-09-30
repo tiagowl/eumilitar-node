@@ -1,7 +1,7 @@
 import { createLogger } from "winston";
 import connect from "./database";
 import createHttpClient from "./httpClient";
-import { Context, Settings } from "./interfaces";
+import { Context, Settings } from "../interfaces";
 import createTransport from "./smtp";
 import createStorage from "./storage";
 
