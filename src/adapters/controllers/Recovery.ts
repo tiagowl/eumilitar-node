@@ -130,16 +130,17 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
         try {
             const { email, type } = await this.validate(rawData);
             const types = {
-                sms: this.recoveryBySMS,
-                email: this.recoveryByEmail,
+                sms: async (val: string) => this.recoveryBySMS(val),
+                email: async (val: string) => this.recoveryByEmail(val),
             };
-            return types[type](email);
+            return await types[type](email);
         } catch (error: any) {
             if (error instanceof CaseError) {
                 throw { message: error.message, status: 400 };
             }
             this.logger.error({ ...error });
-            throw error;
+            if (error.status) throw error;
+            throw { message: error.message };
         }
     }
 

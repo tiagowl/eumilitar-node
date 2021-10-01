@@ -80,7 +80,7 @@ describe('#1 Testes na autenticação', () => {
         try {
             await controller.recover({ email: 'wrong@mail.com', type: 'email' });
         } catch (error: any) {
-            expect(error).toEqual({ message: 'Email inválido', status: 400 });
+            expect(error, JSON.stringify(error)).toEqual({ message: 'Email inválido', status: 400 });
         }
         done()
     })
