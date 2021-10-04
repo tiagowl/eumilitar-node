@@ -40,7 +40,6 @@ describe('#1 Teste na api do usuário', () => {
         const deleted = await UserService(db).where('user_id', user.user_id).delete();
         const [id] = await saveUser(user, UserService(db));
         await EssayThemeService(db).del().delete();
-        console.debug(JSON.stringify(user), id, deleted)
         done()
     })
     afterAll(async (done) => {
@@ -339,6 +338,16 @@ describe('#1 Teste na api do usuário', () => {
         expect(status).toBe(200);
         expect(body.id).toBeDefined();
         expect(body.password).toBeUndefined();
+        done();
+    });
+    it('#1991 Recuperação de senha com sms', async (done) => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const credentials = { email: user.email, type: 'sms' };
+        const response = await api.post('/password-recoveries/')
+            .send(credentials)
+        expect(response.body).toEqual({ message: "SMS enviado, verifique sua caixa de mensagens" });
+        expect(response.status).toBe(201);
         done();
     });
 })

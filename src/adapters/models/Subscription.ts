@@ -100,7 +100,7 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
         const created = await ((acceptDuplicate && !id) ? this.query.where('hotmart_id', parsed.hotmart_id) : this.query.where('id', id))
             .first().catch((error) => {
                 this.logger.error(error);
-                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+                throw { message: 'Erro ao consultar inscrição no banco de dados', status: 500 };
             });
         if (!created) throw defaultError;
         return new Subscription(await this.toEntity(created));
@@ -139,7 +139,7 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
         const [{ count }] = await counting.where(parsed).count({ count: '*' })
             .catch(error => {
                 this.logger.error(error);
-                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+                throw { message: 'Erro ao consultar inscrições no banco de dados', status: 500 };
             });
         return Number(count);
     }
@@ -152,7 +152,7 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
         const subscriptions = await service.where(parsed)
             .catch(error => {
                 this.logger.error(error);
-                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+                throw { message: 'Erro ao consultar inscrições no banco de dados', status: 500 };
             });
         return Promise.all(subscriptions.map(async data => {
             const parsedData = await this.toEntity(data);

@@ -21,7 +21,14 @@ export default class Repository<Model, Entity> {
         this.service = service;
     }
 
-    get query() { return this.service(this.db); }
+    get query() {
+        try {
+            return this.service(this.context.db);
+        } catch (error: any) {
+            this.logger.error(error);
+            throw { message: 'Erro ao conectar com o banco de dados', status: 500 };
+        }
+    }
 
     protected async processError(error: any) {
         this.logger.error(error);

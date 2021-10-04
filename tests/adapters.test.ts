@@ -32,10 +32,9 @@ const context = contextFactory();
 
 describe('#1 Testes na autenticação', () => {
     const user = userFactory()
-    const passwordService = RecoveryService(db);
     beforeAll(async (done) => {
         const service = UserService(db)
-            .onConflict('user_id').merge();
+            .onConflict().merge();
         await saveUser(user, service)
         const themeService = EssayThemeService(db);
         await themeService.delete().del()
@@ -63,11 +62,26 @@ describe('#1 Testes na autenticação', () => {
         })
     })
     test('Recuperação de senha', async (done) => {
-        const service = UserService(db);
-        const userData = await service.where('email', user.email).first();
+        await UserService(db).where('user_id', user.user_id).update({ phone: faker.phone.phoneNumber('3333333333333') });
+        const userData = await UserService(db).where('email', user.email).first();
         const controller = new RecoveryController(await context);
         const response = await controller.recover({ email: user.email, type: 'email' });
         expect(response).toEqual({ message: "Email enviado! Verifique sua caixa de entrada." });
+        const passwordService = RecoveryService(db);
+        const token = await passwordService.where('user_id', userData?.user_id).first();
+        expect(token).not.toBeNull();
+        expect(token).not.toBeUndefined();
+        expect(token?.token).not.toBeNull();
+        expect(token?.token).not.toBeUndefined();
+        done()
+    })
+    test('Recuperação de senha com sms', async (done) => {
+        const service = UserService(db);
+        const userData = await service.where('email', user.email).first();
+        const controller = new RecoveryController(await context);
+        const response = await controller.recover({ email: user.email, type: 'sms' });
+        expect(response).toEqual({ message: "SMS enviado, verifique sua caixa de mensagens" });
+        const passwordService = RecoveryService(db);
         const token = await passwordService.where('user_id', userData?.user_id).first();
         expect(token).not.toBeNull();
         expect(token).not.toBeUndefined();

@@ -90,7 +90,7 @@ export default class CorrectionRepository extends Repository<CorrectionModel, Co
         const data = await this.query.where(parsed)
             .first().catch((error) => {
                 this.logger.error(error);
-                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+                throw { message: 'Erro ao consultar correção no banco de dados', status: 500 };
             });
         if (!data) throw { message: 'Correção não encontrada', status: 404 };
         const correctionData = await this.toEntity(data) as CorrectionInterface;

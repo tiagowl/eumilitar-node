@@ -33,7 +33,7 @@ export const userFactory = (inject?: Partial<UserModel>) => {
         date_created: now,
         date_modified: now,
         user_id: faker.unique(faker.datatype.number),
-        phone: faker.phone.phoneNumber('3333333333333'),
+        phone: faker.phone.phoneNumber('333333333333'),
     }
     Object.assign(data, inject);
     return data;
@@ -69,8 +69,7 @@ export const dbSetting: Knex.Config = {
 }
 
 export const dbFactory = () => {
-    const db = knex(dbSetting);
-    return db;
+    return knex(dbSetting);
 }
 
 export function hashPassword(password: string) {

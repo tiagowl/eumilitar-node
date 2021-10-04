@@ -10,7 +10,7 @@ export default (context: Context) => {
                 const response = await controller.recover(req.body);
                 res.status(201).json(response);
             } catch (error: any) {
-                res.status(400).json(error);
+                res.status(error.status || 400).json(error);
             } finally {
                 res.end();
             }
@@ -20,7 +20,7 @@ export default (context: Context) => {
                 const response = await controller.check(req.params);
                 res.status(200).json(response);
             } catch (error: any) {
-                res.status(500).json(error);
+                res.status(error.status || 500).json(error);
             } finally {
                 res.end();
             }
@@ -30,7 +30,7 @@ export default (context: Context) => {
                 const response = await controller.updatePassword(req.body);
                 res.status(200).json(response);
             } catch (error: any) {
-                res.status(400).json(error);
+                res.status(error.status || 400).json(error);
             } finally {
                 res.end();
             }

@@ -6,7 +6,7 @@ import { Settings } from './drivers/interfaces';
 config({ path: path.resolve(__dirname, "..", ".env") });
 
 const errorFormat = format.combine(
-    format.printf(error => `[${new Date()}]: ${JSON.stringify(error)};`),
+    format.printf(error => `[${new Date().toISOString()}]: ${JSON.stringify(error)};`),
 );
 
 const settings = Object.freeze<Settings>({
@@ -98,7 +98,7 @@ const settings = Object.freeze<Settings>({
                 format: format.combine(
                     format.colorize({ colors: { info: 'green' } }),
                     format.timestamp(),
-                    format.printf(({ message }) => message),
+                    format.printf(({ message }) => typeof message === 'string' ? message : JSON.stringify(message)),
                 ),
             }),
         ],

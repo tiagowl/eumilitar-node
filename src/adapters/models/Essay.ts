@@ -167,7 +167,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
         const essayData = await service.where(parsedFilter).first()
             .catch((err) => {
                 this.logger.error(err);
-                throw new Error('Erro ao consultar banco de dados');
+                throw new Error('Erro ao consultar redação no banco de dados');
             });
         if (!essayData) return undefined;
         const parsedData = await this.toEntity(essayData);
@@ -197,7 +197,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
             .then(data => !!data)
             .catch((err) => {
                 this.logger.error(err);
-                throw new Error('Erro ao consultar banco de dados');
+                throw new Error('Erro ao consultar redação no banco de dados');
             });
     }
 
@@ -218,7 +218,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
             }));
         } catch (error: any) {
             this.logger.error(error);
-            throw new Error('Erro ao consultar banco de dados');
+            throw new Error('Erro ao consultar redações no banco de dados');
         }
     }
 
@@ -233,7 +233,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
             .count<Record<string, { count: number }>>('essay_id as count')
             .catch((err) => {
                 this.logger.error(err);
-                throw new Error('Erro ao consultar banco de dados');
+                throw new Error('Erro ao consultar redaçoes no banco de dados');
             });
         return amount[0].count;
     }
@@ -246,7 +246,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
             });
         if (updated < 1) throw { message: 'Erro ao atualizar redação', status: 404 };
         if (updated > 1) throw { message: `${updated} redações afetadas!`, status: 500 };
-        const error = { message: 'Erro ao consultar banco de dados' };
+        const error = { message: 'Erro ao consultar redação no banco de dados' };
         const essay = await this.query.where('essay_id', id).first()
             .catch((err) => {
                 this.logger.error(err);
@@ -292,7 +292,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
-            throw { message: 'Erro ao consultar banco de dados', status: 500 };
+            throw { message: 'Erro ao consultar redações no banco de dados', status: 500 };
         }
     }
 
@@ -337,7 +337,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
-            throw { message: 'Erro ao consultar banco de dados', status: 500 };
+            throw { message: 'Erro ao consultar redações no banco de dados', status: 500 };
         }
     }
 

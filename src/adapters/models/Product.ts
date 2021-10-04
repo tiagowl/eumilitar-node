@@ -61,7 +61,7 @@ export default class ProductRepository extends Repository<ProductModel, ProductI
             .where(parsed).first()
             .catch((error) => {
                 this.logger.error(error);
-                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+                throw { message: 'Erro ao consultar produto no banco de dados', status: 500 };
             });
         if (!product) {
             if (typeof filter.code === 'number') await this.notifyAdmins(filter);
@@ -82,7 +82,7 @@ export default class ProductRepository extends Repository<ProductModel, ProductI
         const productData = await this.query.where('product_id', id).first()
             .catch((error) => {
                 this.logger.error(error);
-                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+                throw { message: 'Erro ao consultar produto no banco de dados', status: 500 };
             });
         if (!productData) throw err;
         const entityData = await this.toEntity(productData);
@@ -94,7 +94,7 @@ export default class ProductRepository extends Repository<ProductModel, ProductI
         const filtered = await this.query.where(parsed)
             .catch(error => {
                 this.logger.error(error);
-                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+                throw { message: 'Erro ao consultar produtos no banco de dados', status: 500 };
             });
         return Promise.all(filtered.map(async item => {
             const data = await this.toEntity(item);

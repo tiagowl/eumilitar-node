@@ -25,7 +25,7 @@ const fieldsMap: FieldsMap<RecoveryModel, RecoveryInterface> = [
 ];
 
 export default class RecoveryRepository extends Repository<RecoveryModel, RecoveryInterface> implements RecoveryRepositoryInterface {
-    public readonly users: UserRepositoryInterface;
+    public readonly users: UserRepository;
 
     constructor(context: Context) {
         super(fieldsMap, context, RecoveryService);
@@ -58,7 +58,7 @@ export default class RecoveryRepository extends Repository<RecoveryModel, Recove
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
-            throw { message: 'Erro ao consultar banco de dados', status: 500 };
+            throw { message: 'Erro ao consultar token no banco de dados', status: 500 };
         }
     }
 

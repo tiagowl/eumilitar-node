@@ -46,6 +46,7 @@ export interface UserModel {
     permission: number;
     date_created: Date;
     date_modified: Date;
+    phone: string;
 }
 
 export const UserService = (db: Knex) => db<Partial<UserModel>, UserModel[]>('users');
@@ -60,6 +61,7 @@ const fieldsMap: FieldsMap<UserModel, UserData> = [
     [['permission', parsePermissionToDB], ['permission', parsePermission]],
     [['date_created', (value) => new Date(value)], ['creationDate', (value) => new Date(value)]],
     [['date_modified', (value) => new Date(value)], ['lastModified', (value) => new Date(value)]],
+    [['phone', String], ['phone', String]],
 ];
 
 export default class UserRepository extends Repository<UserModel, UserData> implements UserRepositoryInterface {
@@ -67,8 +69,6 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
     constructor(context: Context) {
         super(fieldsMap, context, UserService);
     }
-
-    get query() { return UserService(this.db); }
 
     private async search(service: Knex.QueryBuilder<Partial<UserModel>, UserModel[]>, search?: string) {
         if (!!search) {
@@ -100,7 +100,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
         const filtered = await service.where(parsedFilter)
             .catch(async (error) => {
                 this.logger.error(error);
-                throw { message: 'Erro ao consultar banco de dados', status: 400 };
+                throw { message: 'Erro ao consultar usuários no banco de dados', status: 400 };
             });
         const users = await Promise.all(filtered.map(async data => {
             const parsedData = await this.toEntity(data);
@@ -209,7 +209,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
-            throw { message: 'Erro ao consultar banco de dados', status: 500 };
+            throw { message: 'Erro ao consultar usuário no banco de dados', status: 500 };
         }
     }
 
@@ -222,7 +222,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
             }));
         } catch (error: any) {
             this.logger.error(error);
-            throw { message: 'Erro ao consultar banco de dados', status: 500 };
+            throw { message: 'Erro ao consultar usuários no banco de dados', status: 500 };
         }
     }
 
@@ -252,7 +252,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
             .whereIn('user_id', tokenSubQuery)
             .first().catch(error => {
                 this.logger.error(error);
-                throw { message: 'Erro ao consultar banco de dados', status: 500 };
+                throw { message: 'Erro ao consultar usuário no banco de dados', status: 500 };
             });
         if (!user) throw { message: 'Token inválido', status: 400 };
         const userData = await this.toEntity(user);
