@@ -107,7 +107,7 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
     }
 
     private async writeSMS(recovery: Recovery) {
-        return `Seu código Eu Militar é: ${recovery.token}. Não compartilhe este código com ninguém!`;
+        return `Seu código Eu Militar: ${recovery.token}. Não compartilhe este código com ninguém!`;
     }
 
     private async sendRecoverySMS(user: User, recovery: Recovery) {

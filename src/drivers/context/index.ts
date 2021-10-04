@@ -15,6 +15,6 @@ export default function createContext(settings: Settings): Context {
         smtp: createTransport(settings.smtp, logger),
         storage: createStorage(settings.storage),
         http: createHttpClient(settings.httpClient, logger),
-        sms: createSMS(settings, logger),
+        sms: createSMS(settings.sms, logger),
     });
 }

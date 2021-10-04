@@ -47,6 +47,11 @@ export interface SMTPSettings {
     };
 }
 
+export interface SMSSettings {
+    readonly authKey: string;
+    readonly senderID: string;
+}
+
 export interface Settings extends DefaultSettings {
     readonly database: Knex.Config;
     readonly server: {
@@ -68,10 +73,7 @@ export interface Settings extends DefaultSettings {
     readonly storage: StorageSettings;
     readonly logger: winston.LoggerOptions;
     readonly httpClient: AxiosRequestConfig;
-    readonly sms: {
-        readonly authKey: string;
-        readonly senderID: string;
-    };
+    readonly sms: SMSSettings;
 }
 
 export interface Context extends DefaultContext {

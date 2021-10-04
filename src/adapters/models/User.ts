@@ -61,7 +61,7 @@ const fieldsMap: FieldsMap<UserModel, UserData> = [
     [['permission', parsePermissionToDB], ['permission', parsePermission]],
     [['date_created', (value) => new Date(value)], ['creationDate', (value) => new Date(value)]],
     [['date_modified', (value) => new Date(value)], ['lastModified', (value) => new Date(value)]],
-    [['phone', String], ['phone', String]],
+    [['phone', val => !!val ? String(val) : val], ['phone', val => !!val ? String(val) : val]],
 ];
 
 export default class UserRepository extends Repository<UserModel, UserData> implements UserRepositoryInterface {
