@@ -14,16 +14,16 @@ export default class Repository<Model, Entity> {
 
     constructor(fieldsMap: FieldsMap<Model, Entity>, context: Context, service: (db: Knex) => Knex.QueryBuilder<Partial<Model>, Model[]>) {
         const { logger, db } = context;
+        this.context = context;
         this.fieldsMap = fieldsMap;
         this.logger = logger;
         this.db = db;
-        this.context = context;
         this.service = service;
     }
 
-    get query() {
+    get query(): Knex.QueryBuilder<Partial<Model>, Model[]> {
         try {
-            return this.service(this.context.db);
+            return this.service(this.db);
         } catch (error: any) {
             this.logger.error(error);
             throw { message: 'Erro ao conectar com o banco de dados', status: 500 };

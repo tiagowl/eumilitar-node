@@ -11,6 +11,7 @@ services:
         user: root
         ports:
             - 80:22000
+            - 9229:9229
         depends_on:
             - db
             - test_db
