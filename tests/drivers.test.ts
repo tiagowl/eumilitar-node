@@ -37,16 +37,14 @@ async function authenticate(user: UserModel, api: supertest.SuperTest<supertest.
 describe('#1 Teste na api do usuário', () => {
     const user = userFactory({ permission: 1 });
     beforeAll(async (done) => {
-        const service = UserService(db)
-            .onConflict('user_id').merge();
-        await saveUser(user, service);
-        const themeService = EssayThemeService(db);
-        await themeService.del().delete();
+        const deleted = await UserService(db).where('user_id', user.user_id).delete();
+        const [id] = await saveUser(user, UserService(db));
+        await EssayThemeService(db).del().delete();
+        console.debug(JSON.stringify(user), id, deleted)
         done()
     })
     afterAll(async (done) => {
-        const service = UserService(db);
-        await deleteUser(user, service);
+        await deleteUser(user, UserService(db));
         const themeService = EssayThemeService(db);
         await themeService.del().delete()
         done()
@@ -122,7 +120,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.body).toEqual({ message: "Email enviado! Verifique sua caixa de entrada." });
         expect(response.status).toBe(201);
         done();
-    })
+    });
     test('#16 Verificar token de mudança de senha', async (done) => {
         const app = await appFactory();
         const api = supertest(app.server);

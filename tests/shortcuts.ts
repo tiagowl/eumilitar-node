@@ -33,6 +33,7 @@ export const userFactory = (inject?: Partial<UserModel>) => {
         date_created: now,
         date_modified: now,
         user_id: faker.unique(faker.datatype.number),
+        phone: faker.phone.phoneNumber('3333333333333'),
     }
     Object.assign(data, inject);
     return data;
@@ -79,13 +80,13 @@ export function hashPassword(password: string) {
 
 export async function saveUser(user: any, service: Knex.QueryBuilder) {
     const userDB = { ...user, passwd: hashPassword(user.passwd) };
-    return await service.insert(userDB);
+    return service.insert(userDB);
 }
 
 export async function deleteUser(user: any, service: Knex.QueryBuilder) {
-    await service
+    return service
         .where('user_id', user.user_id)
-        .del().delete();
+        .del();
 }
 
 export async function smtpFactory(): Promise<Mail> {
