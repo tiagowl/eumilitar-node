@@ -39,7 +39,8 @@ const schema = yup.object().shape({
 });
 
 const checkSchema = yup.object().shape({
-    token: yup.string().required('O token é obrigatório'),
+    token: yup.string().required('O token é obrigatório')
+        .length(64, 'Token inválido')
 });
 
 const updatePasswordSchema = yup.object().shape({
@@ -129,7 +130,9 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
     private async recoveryBySMS(data: RecoveryData) {
         const { recovery, user } = await this.useCase.create({ ...data, long: false });
         await this.sendRecoverySMS(user, recovery);
-        return { message: "SMS enviado, verifique sua caixa de mensagens" };
+        const phone = user.phone?.replace(/(?!\d{7})(\d{4})/g, 'xxxx');
+        const [[_, area, digit, start, end]] = [...(phone?.matchAll(/(\d{2}){2}(\d{1})(\d{2}x{2})(x{2}\d{2})/g) || [[]])];
+        return { message: `SMS enviado para (${area}) ${digit} ${start}-${end}, verifique sua caixa de mensagens` };
     }
 
     public async recover(rawData: RecoveryInterface): Promise<RecoveryResponse> {
@@ -153,7 +156,7 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
     public async check(data: CheckInterface) {
         try {
             const { token } = await this.validate(data, checkSchema);
-            const recovery = await this.useCase.check(token);
+            const recovery = await this.useCase.checkLongToken(token);
             return { isValid: !!recovery };
         } catch (error: any) {
             this.logger.error(error);
