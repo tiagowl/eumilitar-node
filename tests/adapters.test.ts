@@ -22,6 +22,7 @@ import User from '../src/entities/User';
 import { UserCreation, UserUpdate } from '../src/cases/UserUseCase';
 import SessionController from '../src/adapters/controllers/Session';
 import RecoveryController from '../src/adapters/controllers/Recovery';
+import { v4 } from 'uuid';
 
 afterAll(async (done) => {
     await db.destroy();
@@ -65,7 +66,7 @@ describe('#1 Testes na autenticação', () => {
         await UserService(db).where('user_id', user.user_id).update({ phone: faker.phone.phoneNumber('3333333333333') });
         const userData = await UserService(db).where('email', user.email).first();
         const controller = new RecoveryController(await context);
-        const response = await controller.recover({ email: user.email, type: 'email' });
+        const response = await controller.recover({ email: user.email, type: 'email', session: v4() });
         expect(response).toEqual({ message: "Email enviado! Verifique sua caixa de entrada." });
         const passwordService = RecoveryService(db);
         const token = await passwordService.where('user_id', userData?.user_id).first();
@@ -79,7 +80,7 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(db);
         const userData = await service.where('email', user.email).first();
         const controller = new RecoveryController(await context);
-        const response = await controller.recover({ email: user.email, type: 'sms' });
+        const response = await controller.recover({ email: user.email, type: 'sms', session: v4() });
         expect(response).toEqual({ message: "SMS enviado, verifique sua caixa de mensagens" });
         const passwordService = RecoveryService(db);
         const token = await passwordService.where('user_id', userData?.user_id).first();
@@ -92,7 +93,7 @@ describe('#1 Testes na autenticação', () => {
     test('Recuperação de senha com email errado', async (done) => {
         const controller = new RecoveryController(await context);
         try {
-            await controller.recover({ email: 'wrong@mail.com', type: 'email' });
+            await controller.recover({ email: 'wrong@mail.com', type: 'email', session: v4() });
         } catch (error: any) {
             expect(error, JSON.stringify(error)).toEqual({ message: 'Email inválido', status: 400 });
         }
@@ -101,7 +102,7 @@ describe('#1 Testes na autenticação', () => {
     test('Recuperação de senha com email inválido', async done => {
         const controller = new RecoveryController(await context);
         try {
-            await controller.recover({ email: 'wrongmail.com', type: 'email' });
+            await controller.recover({ email: 'wrongmail.com', type: 'email', session: v4() });
         } catch (error: any) {
             expect(error).toMatchObject({
                 message: "Email inválido",

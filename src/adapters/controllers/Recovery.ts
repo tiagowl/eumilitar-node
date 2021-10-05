@@ -9,8 +9,12 @@ import CaseError, { Errors } from "../../cases/Error";
 import User from "../../entities/User";
 import Recovery from "../../entities/Recovery";
 
-export interface RecoveryInterface {
+interface RecoveryData {
     email: string;
+    session: string;
+}
+
+export interface RecoveryInterface extends RecoveryData {
     type: 'email' | 'sms';
 }
 
@@ -30,6 +34,8 @@ const schema = yup.object().shape({
     email: yup.string().email('Email inválido').required('O campo "email" é obrigatório'),
     type: yup.string().required('É preciso especificar o tipo de recuperação')
         .is(['email', 'sms'], 'Tipo de recuperação inválido'),
+    session: yup.string().uuid('Código de sessão inválido')
+        .required('O código da sessão é obrigatório'),
 });
 
 const checkSchema = yup.object().shape({
@@ -100,8 +106,8 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
         }
     }
 
-    private async recoveryByEmail(email: string) {
-        const { recovery, user } = await this.useCase.create(email);
+    private async recoveryByEmail(data: RecoveryData) {
+        const { recovery, user } = await this.useCase.create(data);
         await this.sendRecoveryEmail(user.email, user.fullName, recovery.token);
         return { message: "Email enviado! Verifique sua caixa de entrada." };
     }
@@ -120,20 +126,20 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
         }
     }
 
-    private async recoveryBySMS(email: string) {
-        const { recovery, user } = await this.useCase.create(email, false);
+    private async recoveryBySMS(data: RecoveryData) {
+        const { recovery, user } = await this.useCase.create({ ...data, long: false });
         await this.sendRecoverySMS(user, recovery);
         return { message: "SMS enviado, verifique sua caixa de mensagens" };
     }
 
-    public async recover(rawData: RecoveryInterface,): Promise<RecoveryResponse> {
+    public async recover(rawData: RecoveryInterface): Promise<RecoveryResponse> {
         try {
-            const { email, type } = await this.validate(rawData);
+            const { type, ...data } = await this.validate(rawData);
             const types = {
-                sms: async (val: string) => this.recoveryBySMS(val),
-                email: async (val: string) => this.recoveryByEmail(val),
+                sms: async (val: RecoveryData) => this.recoveryBySMS(val),
+                email: async (val: RecoveryData) => this.recoveryByEmail(val),
             };
-            return await types[type](email);
+            return await types[type](data);
         } catch (error: any) {
             if (error instanceof CaseError) {
                 throw { message: error.message, status: 400 };

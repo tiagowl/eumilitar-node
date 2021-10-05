@@ -15,6 +15,12 @@ export interface UpdatePasswordData {
     password: string;
 }
 
+export interface CreationData {
+    email: string;
+    session: string;
+    long?: boolean;
+}
+
 export interface RecoveryRepositoryInterface {
     readonly users: UserRepositoryInterface;
     readonly create: (data: RecoveryInsertionInterface) => Promise<Recovery>;
@@ -48,21 +54,22 @@ export default class RecoveryCase {
         return numberList.join('');
     }
 
-    private async generateConfirmationToken(byEmail: boolean): Promise<string> {
-        return byEmail ? this.generateLongToken() : this.generateShortToken();
+    private async generateConfirmationToken(long: boolean): Promise<string> {
+        return long ? this.generateLongToken() : this.generateShortToken();
     }
 
-    public async create(email: string, byEmail: boolean = true) {
+    public async create(data: CreationData) {
+        const { long = true, email, session } = data;
         const user = await this.repository.users.get({ email });
         if (!user) throw new CaseError(`Email inválido`, Errors.NOT_FOUND);
-        if (!user.phone && !byEmail) throw new CaseError('Usuário não informou o telefone', Errors.UNAUTHORIZED);
+        if (!user.phone && !long) throw new CaseError('Usuário não informou o telefone', Errors.UNAUTHORIZED);
         return {
             user,
             recovery: await this.repository.create({
-                token: await this.generateConfirmationToken(byEmail),
+                token: await this.generateConfirmationToken(long),
                 expires: new Date(Date.now() + this.defaultExpiration),
                 user: user.id,
-                selector: crypto.randomBytes(24).toString('hex').substring(0, 16),
+                selector: session,
             }),
         };
     }

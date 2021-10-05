@@ -11,6 +11,7 @@ import ProductRepository, { ProductService } from '../src/adapters/models/Produc
 import qs from 'querystring';
 import UserRepository from '../src/adapters/models/User';
 import { UserCreation, UserUpdate } from '../src/cases/UserUseCase';
+import { v4 } from 'uuid';
 
 beforeAll(async (done) => {
     await db.migrate.latest().finally(done)
@@ -113,7 +114,7 @@ describe('#1 Teste na api do usuário', () => {
     it('#15 Recuperação de senha', async (done) => {
         const app = await appFactory();
         const api = supertest(app.server);
-        const credentials = { email: user.email, type: 'email' };
+        const credentials = { email: user.email, type: 'email', session: v4() };
         const response = await api.post('/password-recoveries/')
             .send(credentials)
         expect(response.body).toEqual({ message: "Email enviado! Verifique sua caixa de entrada." });
@@ -343,7 +344,7 @@ describe('#1 Teste na api do usuário', () => {
     it('#1991 Recuperação de senha com sms', async (done) => {
         const app = await appFactory();
         const api = supertest(app.server);
-        const credentials = { email: user.email, type: 'sms' };
+        const credentials = { email: user.email, type: 'sms', session: v4() };
         const response = await api.post('/password-recoveries/')
             .send(credentials)
         expect(response.body).toEqual({ message: "SMS enviado, verifique sua caixa de mensagens" });

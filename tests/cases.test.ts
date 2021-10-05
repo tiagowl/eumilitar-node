@@ -19,6 +19,7 @@ import RecoveryCase, { RecoveryInsertionInterface, RecoveryRepositoryInterface }
 import Session, { SessionInterface } from '../src/entities/Session';
 import Recovery, { RecoveryInterface } from '../src/entities/Recovery';
 import { Chart } from '../src/cases/interfaces';
+import { v4 } from 'uuid';
 
 const defaultPassword = 'pass1235'
 const userDatabase = new Array(5).fill(0).map((_, id) => userEntityFactory({ password: hashPassword(defaultPassword), id }));
@@ -986,7 +987,7 @@ describe('Recuperação de senha', () => {
         const repository = new RecoveryTestRespository();
         const useCase = new RecoveryCase(repository, 40 * 60 * 60 * 1000);
         const [selected] = userDatabase;
-        const { recovery, user } = await useCase.create(selected.email);
+        const { recovery, user } = await useCase.create({ email: selected.email, session: v4() });
         expect(recovery).toBeInstanceOf(Recovery);
         expect(user).toBeInstanceOf(User);
         done();
@@ -1011,7 +1012,7 @@ describe('Recuperação de senha', () => {
         const repository = new RecoveryTestRespository();
         const useCase = new RecoveryCase(repository, 40 * 60 * 60 * 1000);
         const [selected] = userDatabase;
-        const { recovery, user } = await useCase.create(selected.email, false);
+        const { recovery, user } = await useCase.create({ email: selected.email, session: v4(), long: false });
         expect(recovery).toBeInstanceOf(Recovery);
         expect(recovery.token.length).toBe(6);
         expect(user).toBeInstanceOf(User);
