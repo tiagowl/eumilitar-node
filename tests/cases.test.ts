@@ -996,7 +996,7 @@ describe('Recuperação de senha', () => {
         const repository = new RecoveryTestRespository();
         const [selected] = await repository.filter({});
         const useCase = new RecoveryCase(repository, 40 * 60 * 60 * 1000);
-        const isValid = await useCase.check(selected.token);
+        const isValid = await useCase.checkLongToken(selected.token);
         expect(selected.id).toEqual(isValid.id);
         done();
     });
@@ -1018,4 +1018,16 @@ describe('Recuperação de senha', () => {
         expect(user).toBeInstanceOf(User);
         done();
     });
+    test('Verifiação de token curto', async done => {
+        const repository = new RecoveryTestRespository();
+        const useCase = new RecoveryCase(repository, 40 * 60 * 60 * 1000);
+        const [selected] = userDatabase;
+        const session = v4();
+        const { recovery, user } = await useCase.create({ email: selected.email, session, long: false });
+        expect(recovery.token.length).toBe(6);
+        const long = await useCase.checkShortToken({ token: recovery.token, session });
+        expect(long.user).toBe(user.id);
+        expect(long.token.length).toBe(64);
+        done();
+    })
 })

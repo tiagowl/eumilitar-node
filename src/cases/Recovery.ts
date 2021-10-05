@@ -21,6 +21,11 @@ export interface CreationData {
     long?: boolean;
 }
 
+export interface CheckShortTokenData {
+    session: string;
+    token: string;
+}
+
 export interface RecoveryRepositoryInterface {
     readonly users: UserRepositoryInterface;
     readonly create: (data: RecoveryInsertionInterface) => Promise<Recovery>;
@@ -74,7 +79,7 @@ export default class RecoveryCase {
         };
     }
 
-    public async check(token: string) {
+    public async checkLongToken(token: string) {
         const recovery = await this.repository.get({ token });
         if (!recovery) throw new CaseError('Token inválido', Errors.NOT_FOUND);
         const expired = recovery.expires <= new Date();
@@ -87,11 +92,26 @@ export default class RecoveryCase {
 
     public async updatePassword(data: UpdatePasswordData) {
         const { token, password } = data;
-        const recovery = await this.check(token);
+        const recovery = await this.checkLongToken(token);
         const userCase = new UserUseCase(this.repository.users);
         const updated = await userCase.updatePassword(recovery.user, password);
         if (updated) await this.repository.delete({ token });
         else throw new CaseError('Falha ao atualizar senha');
         return updated;
+    }
+
+    public async checkShortToken(data: CheckShortTokenData) {
+        const { token, session } = data;
+        const recovery = await this.repository.get({ token, selector: session });
+        if (!recovery) throw new CaseError('Token inválido', Errors.NOT_FOUND);
+        const expired = recovery.expires <= new Date();
+        if (expired) throw new CaseError('Token expirado', Errors.EXPIRED);
+        this.repository.delete({ token });
+        return this.repository.create({
+            token: await this.generateConfirmationToken(true),
+            expires: new Date(Date.now() + this.defaultExpiration),
+            user: recovery.user,
+            selector: session,
+        });
     }
 }
