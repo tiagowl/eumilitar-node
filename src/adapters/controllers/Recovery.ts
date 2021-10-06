@@ -4,7 +4,7 @@ import * as yup from 'yup';
 import RecoveryRepository from '../models/Recovery';
 import RecoveryRender from '../views/Recovery';
 import { Context } from "../interfaces";
-import RecoveryCase, { UpdatePasswordData as DefaultUpdatePasswordData } from "../../cases/Recovery";
+import RecoveryCase, { CheckShortTokenData, UpdatePasswordData as DefaultUpdatePasswordData } from "../../cases/Recovery";
 import CaseError, { Errors } from "../../cases/Error";
 import User from "../../entities/User";
 import Recovery from "../../entities/Recovery";
@@ -41,6 +41,13 @@ const schema = yup.object().shape({
 const checkSchema = yup.object().shape({
     token: yup.string().required('O token é obrigatório')
         .length(64, 'Token inválido')
+});
+
+const checkShortTokenSchema = yup.object().shape({
+    token: yup.string().required('O token é obrigatório')
+        .length(64, 'Token inválido'),
+    session: yup.string().uuid('Código de sessão inválido')
+        .required('O código da sessão é obrigatório'),
 });
 
 const updatePasswordSchema = yup.object().shape({
@@ -170,6 +177,22 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
             const updated = await this.useCase.updatePassword(validated);
             return { updated };
         } catch (error: any) {
+            this.logger.error(error);
+            if (error instanceof CaseError) {
+                throw { message: error.message, status: 400 };
+            }
+            if (error.status) throw error;
+            throw { message: 'Erro atualizar senha', status: 500 };
+        }
+    }
+
+    public async checkShortToken(data: CheckShortTokenData) {
+        try {
+            const validated = await this.validate(data, checkShortTokenSchema);
+            const token = await this.useCase.checkShortToken(validated);
+            return { token: token.token };
+        } catch (error: any) {
+            this.logger.error(error);
             if (error instanceof CaseError) {
                 throw { message: error.message, status: 400 };
             }

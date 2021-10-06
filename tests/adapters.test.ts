@@ -80,7 +80,8 @@ describe('#1 Testes na autenticação', () => {
         const service = UserService(db);
         const userData = await service.where('email', user.email).first();
         const controller = new RecoveryController(await context);
-        const response = await controller.recover({ email: user.email, type: 'sms', session: v4() });
+        const session = v4();
+        const response = await controller.recover({ email: user.email, type: 'sms', session });
         expect(response).toEqual({ message: "SMS enviado, verifique sua caixa de mensagens" });
         const passwordService = RecoveryService(db);
         const token = await passwordService.where('user_id', userData?.user_id).first();
@@ -88,8 +89,10 @@ describe('#1 Testes na autenticação', () => {
         expect(token).not.toBeUndefined();
         expect(token?.token).not.toBeNull();
         expect(token?.token).not.toBeUndefined();
+        const long = await controller.checkShortToken({ session, token: token?.token || '' });
+        expect(long.token.length).toBe(64);
         done()
-    })
+    });
     test('Recuperação de senha com email errado', async (done) => {
         const controller = new RecoveryController(await context);
         try {
