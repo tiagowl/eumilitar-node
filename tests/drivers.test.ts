@@ -12,6 +12,7 @@ import qs from 'querystring';
 import UserRepository from '../src/adapters/models/User';
 import { UserCreation, UserUpdate } from '../src/cases/UserUseCase';
 import { v4 } from 'uuid';
+import { RecoveryService } from '../src/adapters/models/Recovery';
 
 beforeAll(async (done) => {
     await db.migrate.latest().finally(done)
@@ -344,11 +345,19 @@ describe('#1 Teste na api do usuário', () => {
     it('#1991 Recuperação de senha com sms', async (done) => {
         const app = await appFactory();
         const api = supertest(app.server);
-        const credentials = { email: user.email, type: 'sms', session: v4() };
+        const session = v4();
+        const credentials = { email: user.email, type: 'sms', session };
         const response = await api.post('/password-recoveries/')
             .send(credentials)
-        expect(response.body).toEqual({ message: "SMS enviado, verifique sua caixa de mensagens" });
+        expect(response.body).toEqual({ message: "SMS enviado para +11 (22) 3 44xx-xx55, verifique sua caixa de mensagens" });
         expect(response.status).toBe(201);
+        const token = await RecoveryService(db).where({ user_id: user.user_id, selector: session }).first();
+        const smsToken = { token: token?.token, session };
+        const validated = await api.post('/password-recoveries/checks/')
+            .send(smsToken);
+        expect(validated.status, JSON.stringify({ body: validated.body, sent: smsToken })).toBe(201);
+        expect(typeof validated.body.token).toBe('string');
+        expect(validated.body.token.length).toBe(64);
         done();
     });
 })

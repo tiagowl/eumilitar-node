@@ -33,7 +33,7 @@ export const userFactory = (inject?: Partial<UserModel>) => {
         date_created: now,
         date_modified: now,
         user_id: faker.unique(faker.datatype.number),
-        phone: faker.phone.phoneNumber('333333333333'),
+        phone: faker.phone.phoneNumber('1122344445555'),
     }
     Object.assign(data, inject);
     return data;

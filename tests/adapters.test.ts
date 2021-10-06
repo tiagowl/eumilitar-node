@@ -82,7 +82,7 @@ describe('#1 Testes na autenticação', () => {
         const controller = new RecoveryController(await context);
         const session = v4();
         const response = await controller.recover({ email: user.email, type: 'sms', session });
-        expect(response).toEqual({ message: "SMS enviado, verifique sua caixa de mensagens" });
+        expect(response).toEqual({ message: "SMS enviado para +33 (33) 3 33xx-xx33, verifique sua caixa de mensagens" });
         const passwordService = RecoveryService(db);
         const token = await passwordService.where('user_id', userData?.user_id).first();
         expect(token).not.toBeNull();

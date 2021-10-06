@@ -34,5 +34,15 @@ export default (context: Context) => {
             } finally {
                 res.end();
             }
+        })
+        .post('/password-recoveries/checks/', async (req, res) => {
+            try {
+                const response = await controller.checkShortToken(req.body);
+                res.status(201).json(response);
+            } catch (error: any) {
+                res.status(error.status || 500).json(error);
+            } finally {
+                res.end();
+            }
         });
 };

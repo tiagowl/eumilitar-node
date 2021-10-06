@@ -45,7 +45,7 @@ const checkSchema = yup.object().shape({
 
 const checkShortTokenSchema = yup.object().shape({
     token: yup.string().required('O token é obrigatório')
-        .length(64, 'Token inválido'),
+        .length(6, 'Token inválido').matches(/^\d{6}$/g, 'Token inválido'),
     session: yup.string().uuid('Código de sessão inválido')
         .required('O código da sessão é obrigatório'),
 });
@@ -138,8 +138,7 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
         const { recovery, user } = await this.useCase.create({ ...data, long: false });
         await this.sendRecoverySMS(user, recovery);
         const phone = user.phone?.replace(/(?!\d{7})(\d{4})/g, 'xxxx');
-        const [[_, area, digit, start, end]] = [...(phone?.matchAll(/(\d{2}){2}(\d{1})(\d{2}x{2})(x{2}\d{2})/g) || [[]])];
-        return { message: `SMS enviado para (${area}) ${digit} ${start}-${end}, verifique sua caixa de mensagens` };
+        return { message: `SMS enviado para +${phone?.slice(0, 2)} (${phone?.slice(2, 4)}) ${phone?.slice(4, 5)} ${phone?.slice(5, 9)}-${phone?.slice(9, 13)}, verifique sua caixa de mensagens` };
     }
 
     public async recover(rawData: RecoveryInterface): Promise<RecoveryResponse> {
