@@ -64,9 +64,9 @@ export default class Controller<Fields> {
                 recursive: true,
             });
             return validator.noUnknown().cast(validated, { stripUnknown: true });
-        } catch (err) {
-            if (err instanceof yup.ValidationError) {
-                const errors: yup.ValidationError = err;
+        } catch (error: any) {
+            if (error instanceof yup.ValidationError) {
+                const errors: yup.ValidationError = error;
                 throw {
                     message: errors.message,
                     errors: errors.inner.map(({ path, message }) => ([path, message])),
