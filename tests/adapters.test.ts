@@ -660,7 +660,7 @@ describe('#6 Correções', () => {
         const controller = new CorrectionController(await context);
         const correction = await CorrectionService(db).first();
         if (!correction) throw new Error();
-        const updated = await controller.update(correction.grading_id, user.user_id, {
+        const updatingData = {
             'comment': faker.lorem.lines(5),
             'conclusion': "Sim",
             'erased': "Não",
@@ -672,9 +672,11 @@ describe('#6 Correções', () => {
             'repeated': "Não",
             'understoodTheme': "Sim",
             'veryShortSentences': "Não",
-        });
+        };
+        const updated = await controller.update(correction.essay_id, user.user_id, updatingData);
         expect(correction.grading_id).toBe(updated.id);
         expect(updated.accentuation).toBe('Sim');
+        expect(updatingData.comment).toBe(updated.comment);
         done();
     })
 })

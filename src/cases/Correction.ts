@@ -81,14 +81,15 @@ export default class CorrectionCase {
         return this.repository.get(filter);
     }
 
-    public async update(id: number, userId: number, data: Partial<CorrectionBase>) {
+    public async update(essayId: number, userId: number, data: Partial<CorrectionBase>) {
         const user = await this.repository.users.get({ id: userId });
-        const correction = await this.repository.get({ id });
-        const essay = await this.repository.essays.get({ id: correction.essay });
+        const correction = await this.repository.get({ essay: essayId });
+        const essay = await this.repository.essays.get({ id: essayId });
+        if (!correction) throw new CaseError('Correção não encontrada', Errors.NOT_FOUND);
         if (!user) throw new CaseError('Usuário inválido', Errors.UNAUTHORIZED);
         if (user.permission === 'student') throw new CaseError('Corretor inválido', Errors.UNAUTHORIZED);
         if (!essay) throw new CaseError('Redação inexistente', Errors.NOT_FOUND);
         if (user.permission === 'corrector' && essay.corrector !== userId) throw new CaseError('Corretor inválido', Errors.UNAUTHORIZED);
-        return this.repository.update(id, data);
+        return this.repository.update(correction.id, data);
     }
 }

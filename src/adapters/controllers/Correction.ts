@@ -6,6 +6,7 @@ import Correction, { CorrectionInterface } from "../../entities/Correction";
 import { Mail, MessageConfigInterface } from "../interfaces";
 import message from '../views/CorrectionNotification';
 import { Context } from '../interfaces';
+import CaseError, { Errors } from "../../cases/Error";
 
 const schema = yup.object().shape({
     essay: yup.number().required('É preciso informar qual redação será corrigida'),
@@ -128,14 +129,18 @@ export default class CorrectionController extends Controller<CorrectionData> {
         }
     }
 
-    public async update(id: number, user: number, data: Partial<CorrectionBase>) {
+    public async update(essayId: number, user: number, data: Partial<CorrectionBase>) {
         try {
             const validated = await this.validate(data, updateSchema);
             const casted = await this.castFilter(validated, updateSchema);
-            const updated = await this.useCase.update(id, user, casted);
+            const updated = await this.useCase.update(essayId, user, casted);
             return await this.parseEntity(updated);
         } catch (error: any) {
             this.logger.error(error);
+            if (error instanceof CaseError) {
+                if (error.code === Errors.NOT_FOUND) throw { message: error.message, status: 404 };
+                if (error.code === Errors.UNAUTHORIZED) throw { message: error.message, status: 401 };
+            }
             if (error.status) throw error;
             throw { message: error.message || "Falha ao atualizar correção", status: 500 };
         }

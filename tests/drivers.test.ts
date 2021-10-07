@@ -858,7 +858,59 @@ describe('#5 Correção da redação', () => {
                 expect(response.body[key]).toBe(value);
             });
         done();
-    }, 100000)
+    }, 100000);
+    test('Atualização', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const token = await authenticate(user, api)
+        const header = `Bearer ${token}`;
+        const base = await createEssay(await context, user.user_id);
+        const data = {
+            'accentuation': "Sim",
+            'agreement': "Sim",
+            'cohesion': "Sim",
+            'comment': faker.lorem.lines(5),
+            'conclusion': "Sim",
+            'erased': "Não",
+            'followedGenre': "Sim",
+            'hasMarginSpacing': "Sim",
+            'isReadable': "Sim",
+            'obeyedMargins': "Sim",
+            'organized': "Sim",
+            'orthography': "Sim",
+            'points': 7.5,
+            'repeated': "Não",
+            'understoodTheme': "Sim",
+            'veryShortSentences': "Não",
+        }
+        await api.post(`/essays/${base.id}/corrector/`)
+            .set('Authorization', header);
+        const created = await api.post(`/essays/${base.id}/correction/`)
+            .send(data)
+            .set('Authorization', header);
+        expect(created.status, jp(created.body)).toBe(201);
+        expect(created.body, jp(created.body)).toBeDefined();
+        const response = await api.get(`/essays/${base.id}/correction/`)
+            .set('Authorization', header);
+        expect(response.status, jp(response.body)).toBe(200);
+        expect(response.body, jp(response.body)).toBeDefined();
+        expect(response.body.essay).toBe(base.id);
+        (Object.entries(data) as [keyof typeof data, any][])
+            .forEach(([key, value]) => {
+                expect(response.body[key]).toBeDefined();
+                expect(response.body[key]).toBe(value);
+            });
+        const updatingData = {
+            'comment': faker.lorem.lines(5),
+        }
+        const updated = await api.patch(`/essays/${base.id}/correction/`)
+            .send(updatingData)
+            .set('Authorization', header);
+        expect(updatingData.comment).toBe(updated.body.comment);
+        expect(updated.body.id).toBe(created.body.id);
+        expect(updated.body.comment).not.toEqual(created.body.comment);
+        done();
+    })
 })
 
 
