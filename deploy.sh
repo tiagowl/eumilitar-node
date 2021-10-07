@@ -10,6 +10,10 @@ DIR="/usr/share/eumilitar/$ENV_TYPE"
 SERVICE="eumilitar-$ENV_TYPE"
 USER_NAME="eumilitar-api"
 
+auto_test() {
+    yarn test
+}
+
 build() {
     rm -rf ./dist ./migrations.prod
     yarn install || exit
@@ -29,5 +33,5 @@ send_files() {
     scp -i $SSH_KEY -r ./migrations.prod $SERVER:/tmp/eumilitar/migrations
 }
 
-build && send_files || exit
+build && auto_test && send_files || exit
 ssh -i $SSH_KEY $SERVER "sudo bash /tmp/eumilitar/install.sh $ENV_TYPE"

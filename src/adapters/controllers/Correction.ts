@@ -1,4 +1,4 @@
-import CorrectionCase, { CorrectionData, CorrectionRepositoryInterface } from "../../cases/Correction";
+import CorrectionCase, { CorrectionBase, CorrectionData, CorrectionRepositoryInterface } from "../../cases/Correction";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import CorrectionRepository from "../models/Correction";
@@ -27,6 +27,26 @@ const schema = yup.object().shape({
     comment: yup.string().required('Avalie sob aspécto geral'),
     points: yup.number().required('Informe a pontuação do aluno')
         .min(0, 'A nota não pode ser menor que 0')
+        .max(10, "A nota não pode ser maior que 10"),
+});
+
+const updateSchema = yup.object().shape({
+    isReadable: yup.string().max(25, 'Máximo de 25 digitos'),
+    hasMarginSpacing: yup.string().max(25, 'Máximo de 25 digitos'),
+    obeyedMargins: yup.string().max(25, 'Máximo de 25 digitos'),
+    erased: yup.string().max(25, 'Máximo de 25 digitos'),
+    orthography: yup.string().max(25, 'Máximo de 25 digitos'),
+    accentuation: yup.string().max(25, 'Máximo de 25 digitos'),
+    agreement: yup.string().max(25, 'Máximo de 25 digitos'),
+    repeated: yup.string().max(25, 'Máximo de 25 digitos'),
+    veryShortSentences: yup.string().max(25, 'Máximo de 25 digitos'),
+    understoodTheme: yup.string().max(25, 'Máximo de 25 digitos'),
+    followedGenre: yup.string().max(25, 'Máximo de 25 digitos'),
+    cohesion: yup.string().max(25, 'Máximo de 25 digitos'),
+    organized: yup.string().max(25, 'Máximo de 25 digitos'),
+    conclusion: yup.string().max(25, 'Máximo de 25 digitos'),
+    comment: yup.string(),
+    points: yup.number().min(0, 'A nota não pode ser menor que 0')
         .max(10, "A nota não pode ser maior que 10"),
 });
 
@@ -105,6 +125,19 @@ export default class CorrectionController extends Controller<CorrectionData> {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: error.message || "Falha ao encontrar correção", status: 500 };
+        }
+    }
+
+    public async update(id: number, data: Partial<CorrectionBase>) {
+        try {
+            const validated = await this.validate(data, updateSchema);
+            const casted = await this.castFilter(validated, updateSchema);
+            const updated = await this.useCase.update(id, casted);
+            return await this.parseEntity(updated);
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: error.message || "Falha ao atualizar correção", status: 500 };
         }
     }
 }

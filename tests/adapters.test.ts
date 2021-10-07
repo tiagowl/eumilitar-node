@@ -23,6 +23,7 @@ import { UserCreation, UserUpdate } from '../src/cases/User';
 import SessionController from '../src/adapters/controllers/Session';
 import RecoveryController from '../src/adapters/controllers/Recovery';
 import { v4 } from 'uuid';
+import { CorrectionService } from '../src/adapters/models/Correction';
 
 afterAll(async (done) => {
     await db.destroy();
@@ -653,6 +654,27 @@ describe('#6 Correções', () => {
                 expect(data[key]).toBeDefined();
                 expect(data[key]).toBe(value);
             })
+        done();
+    })
+    test('Atualização', async done => {
+        const controller = new CorrectionController(await context);
+        const correction = await CorrectionService(db).first();
+        if (!correction) throw new Error();
+        const updated = await controller.update(correction.grading_id, {
+            'comment': faker.lorem.lines(5),
+            'conclusion': "Sim",
+            'erased': "Não",
+            'followedGenre': "Sim",
+            'obeyedMargins': "Sim",
+            'organized': "Sim",
+            'orthography': "Sim",
+            'points': 9.4,
+            'repeated': "Não",
+            'understoodTheme': "Sim",
+            'veryShortSentences': "Não",
+        });
+        expect(correction.grading_id).toBe(updated.id);
+        expect(updated.accentuation).toBe('Sim');
         done();
     })
 })
