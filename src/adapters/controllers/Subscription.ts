@@ -5,7 +5,7 @@ import Controller, { paginationSchema } from './Controller';
 import SubscriptionCase, { ChartFilter, SubscriptionCreation, SubscriptionFilter } from '../../cases/Subscription';
 import Subscription, { SubscriptionInterface } from '../../entities/Subscription';
 import CaseError, { Errors } from '../../cases/Error';
-import ProductCase from '../../cases/ProductCase';
+import ProductCase from '../../cases/Product';
 
 export interface OrderData {
     hottok: string;

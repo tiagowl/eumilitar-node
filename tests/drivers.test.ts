@@ -5,12 +5,12 @@ import { hottok, contextFactory, appFactory, createEssay, deleteUser, db, genera
 import crypto from 'crypto';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { Course } from '../src/entities/EssayTheme';
-import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
+import { EssayThemeCreation } from '../src/cases/EssayTheme';
 import SubscriptionRepository, { SubscriptionService } from '../src/adapters/models/Subscription';
 import ProductRepository, { ProductService } from '../src/adapters/models/Product';
 import qs from 'querystring';
 import UserRepository from '../src/adapters/models/User';
-import { UserCreation, UserUpdate } from '../src/cases/UserUseCase';
+import { UserCreation, UserUpdate } from '../src/cases/User';
 import { v4 } from 'uuid';
 import { RecoveryService } from '../src/adapters/models/Recovery';
 

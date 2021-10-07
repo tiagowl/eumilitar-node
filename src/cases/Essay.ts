@@ -6,11 +6,11 @@ import User from "../entities/User";
 import { CorrectionRepositoryInterface } from "./Correction";
 import CaseError, { Errors } from "./Error";
 import { EssayInvalidationRepositoryInterface } from "./EssayInvalidation";
-import { EssayThemeRepositoryInterface } from './EssayThemeCase';
+import { EssayThemeRepositoryInterface } from './EssayTheme';
 import { Chart } from "./interfaces";
-import { ProductRepositoryInterface } from "./ProductCase";
+import { ProductRepositoryInterface } from "./Product";
 import { SubscriptionRepositoryInterface } from "./Subscription";
-import { UserRepositoryInterface } from "./UserUseCase";
+import { UserRepositoryInterface } from "./User";
 
 export interface EssayCreationData {
     file: string;

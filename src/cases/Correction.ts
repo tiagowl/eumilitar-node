@@ -1,8 +1,8 @@
 import Correction, { CorrectionInterface } from "../entities/Correction";
 import Essay from "../entities/Essay";
 import CaseError from "./Error";
-import { EssayRepositoryInterface } from "./EssayCase";
-import { UserRepositoryInterface } from "./UserUseCase";
+import { EssayRepositoryInterface } from "./Essay";
+import { UserRepositoryInterface } from "./User";
 
 export interface CorrectionBase {
     essay: number;

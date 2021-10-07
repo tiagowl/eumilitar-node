@@ -1,14 +1,14 @@
 import { Knex } from "knex";
-import { EssayChartFilter, EssayFilter, EssayInsertionData, EssayPagination, EssayRepositoryInterface } from "../../cases/EssayCase";
-import { EssayThemeRepositoryInterface } from "../../cases/EssayThemeCase";
-import { UserRepositoryInterface } from "../../cases/UserUseCase";
+import { EssayChartFilter, EssayFilter, EssayInsertionData, EssayPagination, EssayRepositoryInterface } from "../../cases/Essay";
+import { EssayThemeRepositoryInterface } from "../../cases/EssayTheme";
+import { UserRepositoryInterface } from "../../cases/User";
 import Essay, { EssayInterface, Status } from "../../entities/Essay";
 import { Course } from "../../entities/EssayTheme";
 import EssayThemeRepository from "./EssayTheme";
 import UserRepository, { UserService } from "./User";
 import ProductRepository from "./Product";
 import { SubscriptionRepositoryInterface } from "../../cases/Subscription";
-import { ProductRepositoryInterface } from "../../cases/ProductCase";
+import { ProductRepositoryInterface } from "../../cases/Product";
 import SubscriptionRepository from "./Subscription";
 import { Context } from "../interfaces";
 import Repository, { FieldsMap } from "./Repository";

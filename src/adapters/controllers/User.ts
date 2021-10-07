@@ -1,5 +1,5 @@
 import * as yup from 'yup';
-import UserUseCase, { UserCreation, UserFilter, UserUpdate } from '../../cases/UserUseCase';
+import UserUseCase, { UserCreation, UserFilter, UserUpdate } from '../../cases/User';
 import User, { AccountPermission, accountPermissions, accountStatus, AccountStatus } from '../../entities/User';
 import UserRepository from '../models/User';
 import Controller, { paginationSchema } from './Controller';

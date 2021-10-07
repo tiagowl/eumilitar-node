@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import { EssayRepositoryInterface } from "../../cases/EssayCase";
+import { EssayRepositoryInterface } from "../../cases/Essay";
 import { EssayInvalidationCreationData, EssayInvalidationRepositoryInterface } from "../../cases/EssayInvalidation";
 import EssayInvalidation, { EssayInvalidationInterface, Reason } from "../../entities/EssayInvalidation";
 import { EssayRepository } from "./Essay";

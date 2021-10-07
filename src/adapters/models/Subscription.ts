@@ -1,7 +1,7 @@
 import { Knex } from "knex";
-import { ProductRepositoryInterface } from "../../cases/ProductCase";
+import { ProductRepositoryInterface } from "../../cases/Product";
 import { SubscriptionFilter, SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from "../../cases/Subscription";
-import { UserRepositoryInterface } from "../../cases/UserUseCase";
+import { UserRepositoryInterface } from "../../cases/User";
 import Subscription, { SubscriptionInterface } from "../../entities/Subscription";
 import { Context } from "../interfaces";
 import ProductRepository, { courseParser, courseTagParser } from "./Product";

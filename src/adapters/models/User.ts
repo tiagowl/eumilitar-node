@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import { UserFilter, UserPaginated, UserRepositoryInterface, UserSavingData } from "../../cases/UserUseCase";
+import { UserFilter, UserPaginated, UserRepositoryInterface, UserSavingData } from "../../cases/User";
 import User, { AccountPermission, AccountStatus, UserData, UserInterface } from "../../entities/User";
 import Repository, { FieldsMap } from "./Repository";
 import { Context } from "../interfaces";

@@ -1,6 +1,6 @@
 import { Knex } from "knex";
 import { RecoveryInsertionInterface, RecoveryRepositoryInterface } from "../../cases/Recovery";
-import { UserRepositoryInterface } from "../../cases/UserUseCase";
+import { UserRepositoryInterface } from "../../cases/User";
 import Recovery, { RecoveryInterface } from "../../entities/Recovery";
 import { Context } from "../interfaces";
 import Repository, { FieldsMap } from "./Repository";

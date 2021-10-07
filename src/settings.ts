@@ -9,74 +9,111 @@ const errorFormat = format.combine(
     format.printf(error => `[${new Date().toISOString()}]: ${JSON.stringify(error)};`),
 );
 
+const {
+    DATABASE_URL,
+    DB_HOST,
+    DB_USER,
+    DB_PASS,
+    DB_NAME,
+    PORT = 22000,
+    HOST = '0.0.0.0',
+    CORS = '',
+    KEYS,
+    SMTP_HOST = '',
+    SMTP_PORT,
+    SMTP_SECURE,
+    MAILJET_API_KEY = '',
+    MAILJET_API_SECRET = '',
+    EMAIL_SENDER = '',
+    NAME_SENDER = '',
+    PASSWORD_RECOVERY_URL = '',
+    EXPIRATION_TIME = 4,
+    ADMIN_MAIL = '',
+    BUCKET_NAME = '',
+    S3_DESTINATION = '',
+    STORAGE_PERMISSION = "authenticated-read",
+    STORAGE_TYPE = 'local',
+    MAX_SIZE_UPLOAD = 10,
+    AWS_ACCESS_KEY_ID = '',
+    AWS_SECRET_ACCESS_KEY = '',
+    HOTTOK = '',
+    HOTMART_TOKEN = '',
+    HOTMART_ID = '',
+    HOTMART_SECRET = '',
+    HOTMART_ENV = 'sandbox',
+    NODE_ENV = 'default',
+    SMS_KEY = '',
+    SMS_SENDER_ID = '',
+} = process.env;
+
 const settings = Object.freeze<Settings>({
     database: {
         client: 'mysql',
-        connection: process.env.DATABASE_URL || {
-            host: process.env.DB_HOST,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASS,
-            database: process.env.DB_NAME
+        connection: DATABASE_URL || {
+            host: DB_HOST,
+            user: DB_USER,
+            password: DB_PASS,
+            database: DB_NAME
         },
         pool: { min: 0, max: 5 },
         acquireConnectionTimeout: 10000
     },
     server: {
-        port: Number(process.env.PORT || 22000),
-        host: process.env.HOST || '0.0.0.0'
+        port: Number(PORT),
+        host: HOST,
     },
     helmet: {},
     logging: { format: 'common', options: {} },
     cors: {
-        origin: process.env.CORS || '',
+        origin: CORS,
     },
     session: {
-        keys: process.env.KEYS?.split(' ') || new Array(2).fill(5).map(() => Math.random().toString(32).substr(2))
+        keys: KEYS?.split(' ') || new Array(2).fill(5).map(() => Math.random().toString(32).substr(2))
     },
     smtp: {
-        host: process.env.SMTP_HOST || '',
-        port: Number(process.env.SMTP_PORT),
-        secure: process.env.SMTP_SECURE === 'true',
+        host: SMTP_HOST,
+        port: Number(SMTP_PORT),
+        secure: SMTP_SECURE === 'true',
         auth: {
-            key: process.env.MAILJET_API_KEY || '',
-            secret: process.env.MAILJET_API_SECRET || '',
+            key: MAILJET_API_KEY,
+            secret: MAILJET_API_SECRET,
         },
     },
     messageConfig: {
         sender: {
-            email: process.env.EMAIL_SENDER || "",
-            name: process.env.NAME_SENDER || "",
+            email: EMAIL_SENDER,
+            name: NAME_SENDER,
         },
-        url: process.env.PASSWORD_RECOVERY_URL || "",
-        expirationTime: Number(process.env.EXPIRATION_TIME || 4),
-        adminMail: process.env.ADMIN_MAIL || '',
+        url: PASSWORD_RECOVERY_URL,
+        expirationTime: Number(EXPIRATION_TIME),
+        adminMail: ADMIN_MAIL,
     },
     storage: {
-        bucket: process.env.BUCKET_NAME || '',
-        destination: process.env.S3_DESTINATION || '',
-        permission: process.env.STORAGE_PERMISSION || "authenticated-read",
+        bucket: BUCKET_NAME,
+        destination: S3_DESTINATION,
+        permission: STORAGE_PERMISSION,
         allowedMimes: [
             "application/pdf",
             "image/png",
             "image/jpeg",
             "image/gif",
         ],
-        type: (process.env.STORAGE_TYPE as 's3' | 'local') || 'local',
-        maxSize: Number(process.env.MAX_SIZE_UPLOAD || 10) * 1024 * 1024,
+        type: (STORAGE_TYPE as 's3' | 'local'),
+        maxSize: Number(MAX_SIZE_UPLOAD) * 1024 * 1024,
         credentials: {
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+            accessKeyId: AWS_ACCESS_KEY_ID,
+            secretAccessKey: AWS_SECRET_ACCESS_KEY,
         },
         local: {
             destination: path.resolve(__dirname, "..", "tmp", "uploads")
         }
     },
     hotmart: {
-        hottok: process.env.HOTTOK || '',
-        token: process.env.HOTMART_TOKEN || '',
-        id: process.env.HOTMART_ID || '',
-        secret: process.env.HOTMART_SECRET || '',
-        env: (process.env.HOTMART_ENV || 'sandbox') as 'sandbox' | 'developers',
+        hottok: HOTTOK,
+        token: HOTMART_TOKEN,
+        id: HOTMART_ID,
+        secret: HOTMART_SECRET,
+        env: (HOTMART_ENV) as 'sandbox' | 'developers',
     },
     logger: {
         transports: [
@@ -84,13 +121,13 @@ const settings = Object.freeze<Settings>({
                 filename: 'error.log',
                 level: 'error',
                 format: errorFormat,
-                dirname: path.resolve(__dirname, '..', '..', 'logs', process.env.NODE_ENV || 'default')
+                dirname: path.resolve(__dirname, '..', '..', 'logs', NODE_ENV)
             }),
             new transports.File({
                 filename: 'info.log',
                 level: 'info',
                 format: errorFormat,
-                dirname: path.resolve(__dirname, '..', '..', 'logs', process.env.NODE_ENV || 'default')
+                dirname: path.resolve(__dirname, '..', '..', 'logs', NODE_ENV)
             }),
             new transports.Console({ level: 'error', format: errorFormat }),
             new transports.Console({
@@ -105,8 +142,8 @@ const settings = Object.freeze<Settings>({
     },
     httpClient: {},
     sms: {
-        authKey: process.env.SMS_KEY || '',
-        senderID: process.env.SMS_SENDER_ID || '',
+        authKey: SMS_KEY,
+        senderID: SMS_SENDER_ID,
     }
 });
 

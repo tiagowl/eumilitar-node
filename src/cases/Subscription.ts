@@ -1,6 +1,6 @@
 import Subscription, { SubscriptionInterface } from "../entities/Subscription";
-import ProductCase, { ProductRepositoryInterface } from "./ProductCase";
-import UserUseCase, { UserRepositoryInterface } from "./UserUseCase";
+import ProductCase, { ProductRepositoryInterface } from "./Product";
+import UserUseCase, { UserRepositoryInterface } from "./User";
 import crypto from 'crypto';
 import { Course } from "../entities/Product";
 import CaseError, { Errors } from "./Error";

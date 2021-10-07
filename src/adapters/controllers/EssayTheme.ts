@@ -2,7 +2,7 @@ import EssayTheme, { EssayThemeInterface } from "../../entities/EssayTheme";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import { Course } from '../../entities/EssayTheme';
-import EssayThemeCase, { EssayThemeFilter } from "../../cases/EssayThemeCase";
+import EssayThemeCase, { EssayThemeFilter } from "../../cases/EssayTheme";
 import EssayThemeRepository, { EssayThemeModel } from '../models/EssayTheme';
 import { Context } from "../interfaces";
 

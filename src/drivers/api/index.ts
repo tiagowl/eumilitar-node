@@ -24,9 +24,7 @@ export default class Application {
     }
 
     private setUpMiddlewares() {
-        this.middlewares.forEach(middleware => {
-            this._server.use(middleware);
-        });
+        this._server.use(...this.middlewares);
     }
 
     public serve() {
@@ -35,5 +33,4 @@ export default class Application {
             this.context.logger.info(`RUNNING AT http://${host}:${port}/`);
         });
     }
-
 }

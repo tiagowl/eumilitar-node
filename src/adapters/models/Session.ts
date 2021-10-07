@@ -1,6 +1,6 @@
 import { Knex } from "knex";
 import { SessionInsertionInterface, SessionRepositoryInterface } from "../../cases/Session";
-import { UserRepositoryInterface } from "../../cases/UserUseCase";
+import { UserRepositoryInterface } from "../../cases/User";
 import Session, { SessionInterface } from "../../entities/Session";
 import { Context } from "../interfaces";
 import Repository, { FieldsMap } from "./Repository";

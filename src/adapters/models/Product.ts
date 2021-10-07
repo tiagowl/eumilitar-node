@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import { ProductCreation, ProductRepositoryInterface } from "../../cases/ProductCase";
+import { ProductCreation, ProductRepositoryInterface } from "../../cases/Product";
 import Product, { ProductInterface, Course } from "../../entities/Product";
 import { Context } from "../interfaces";
 import Repository, { FieldsMap } from "./Repository";

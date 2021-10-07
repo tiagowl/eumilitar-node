@@ -1,7 +1,7 @@
 import Session, { SessionInterface } from "../entities/Session";
 import User from "../entities/User";
 import CaseError, { Errors } from "./Error";
-import { UserRepositoryInterface } from "./UserUseCase";
+import { UserRepositoryInterface } from "./User";
 import crypto from 'crypto';
 
 export interface SessionRepositoryInterface {

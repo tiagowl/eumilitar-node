@@ -1,5 +1,5 @@
 import Controller from "./Controller";
-import ProductCase, { ProductCreation } from '../../cases/ProductCase';
+import ProductCase, { ProductCreation } from '../../cases/Product';
 import * as yup from 'yup';
 import { Context } from "../interfaces";
 import ProductRepository from "../models/Product";

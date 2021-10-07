@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeRepositoryInterface } from "../../cases/EssayThemeCase";
+import { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeRepositoryInterface } from "../../cases/EssayTheme";
 import EssayTheme, { Course, EssayThemeInterface } from "../../entities/EssayTheme";
 import { Logger } from 'winston';
 import { Context } from "../interfaces";

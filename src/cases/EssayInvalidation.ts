@@ -1,6 +1,6 @@
 import EssayInvalidation, { Reason, reasons } from "../entities/EssayInvalidation";
 import CaseError from "./Error";
-import { EssayRepositoryInterface } from "./EssayCase";
+import { EssayRepositoryInterface } from "./Essay";
 
 export interface EssayInvalidationCreationData {
     corrector: number;

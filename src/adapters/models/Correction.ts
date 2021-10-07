@@ -1,7 +1,7 @@
 import { Knex } from "knex";
 import { CorrectionInsertionData, CorrectionRepositoryInterface } from "../../cases/Correction";
-import { EssayRepositoryInterface } from "../../cases/EssayCase";
-import { UserRepositoryInterface } from "../../cases/UserUseCase";
+import { EssayRepositoryInterface } from "../../cases/Essay";
+import { UserRepositoryInterface } from "../../cases/User";
 import Correction, { CorrectionInterface } from "../../entities/Correction";
 import { EssayRepository } from "./Essay";
 import UserRepository from "./User";

@@ -1,6 +1,6 @@
 import Recovery, { RecoveryInterface } from "../entities/Recovery";
 import CaseError, { Errors } from "./Error";
-import UserUseCase, { UserRepositoryInterface } from "./UserUseCase";
+import UserUseCase, { UserRepositoryInterface } from "./User";
 import crypto from "crypto";
 
 export interface RecoveryInsertionInterface {
