@@ -1,6 +1,6 @@
 import Correction, { CorrectionInterface } from "../entities/Correction";
 import Essay from "../entities/Essay";
-import CaseError from "./Error";
+import CaseError, { Errors } from "./Error";
 import { EssayRepositoryInterface } from "./Essay";
 import { UserRepositoryInterface } from "./User";
 
@@ -81,7 +81,14 @@ export default class CorrectionCase {
         return this.repository.get(filter);
     }
 
-    public async update(id: number, data: Partial<CorrectionBase>) {
+    public async update(id: number, userId: number, data: Partial<CorrectionBase>) {
+        const user = await this.repository.users.get({ id: userId });
+        const correction = await this.repository.get({ id });
+        const essay = await this.repository.essays.get({ id: correction.essay });
+        if (!user) throw new CaseError('Usuário inválido', Errors.UNAUTHORIZED);
+        if (user.permission === 'student') throw new CaseError('Corretor inválido', Errors.UNAUTHORIZED);
+        if (!essay) throw new CaseError('Redação inexistente', Errors.NOT_FOUND);
+        if (user.permission === 'corrector' && essay.corrector !== userId) throw new CaseError('Corretor inválido', Errors.UNAUTHORIZED);
         return this.repository.update(id, data);
     }
 }

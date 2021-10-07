@@ -128,11 +128,11 @@ export default class CorrectionController extends Controller<CorrectionData> {
         }
     }
 
-    public async update(id: number, data: Partial<CorrectionBase>) {
+    public async update(id: number, user: number, data: Partial<CorrectionBase>) {
         try {
             const validated = await this.validate(data, updateSchema);
             const casted = await this.castFilter(validated, updateSchema);
-            const updated = await this.useCase.update(id, casted);
+            const updated = await this.useCase.update(id, user, casted);
             return await this.parseEntity(updated);
         } catch (error: any) {
             this.logger.error(error);

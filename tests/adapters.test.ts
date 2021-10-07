@@ -660,7 +660,7 @@ describe('#6 Correções', () => {
         const controller = new CorrectionController(await context);
         const correction = await CorrectionService(db).first();
         if (!correction) throw new Error();
-        const updated = await controller.update(correction.grading_id, {
+        const updated = await controller.update(correction.grading_id, user.user_id, {
             'comment': faker.lorem.lines(5),
             'conclusion': "Sim",
             'erased': "Não",

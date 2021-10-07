@@ -849,7 +849,8 @@ describe('#5 Correção', () => {
     test('Atualização', async done => {
         const repository = new CorrectionTestRepository(correctionDatabase, userDatabase);
         const useCase = new CorrectionCase(repository);
-        const updated = await useCase.update(1, {
+        const [user] = userDatabase;
+        const updated = await useCase.update(1, user.id, {
             'accentuation': "Sim",
             'agreement': "Sim",
             'cohesion': "Sim",
