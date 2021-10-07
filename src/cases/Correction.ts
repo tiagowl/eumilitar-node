@@ -5,7 +5,6 @@ import { EssayRepositoryInterface } from "./Essay";
 import { UserRepositoryInterface } from "./User";
 
 export interface CorrectionBase {
-    essay: number;
     isReadable: string;
     hasMarginSpacing: string;
     obeyedMargins: string;
@@ -26,16 +25,19 @@ export interface CorrectionBase {
 
 export interface CorrectionData extends CorrectionBase {
     corrector: number;
+    essay: number;
 }
 
 export interface CorrectionInsertionData extends CorrectionBase {
     correctionDate: Date;
+    essay: number;
 }
 
 export interface CorrectionRepositoryInterface {
     readonly essays: EssayRepositoryInterface;
     readonly users: UserRepositoryInterface;
     readonly create: (data: CorrectionInsertionData) => Promise<Correction>;
+    readonly update: (id: number, data: Partial<CorrectionBase>) => Promise<Correction>;
     readonly get: (filter: Partial<CorrectionInterface>) => Promise<Correction>;
 }
 
@@ -77,5 +79,9 @@ export default class CorrectionCase {
 
     public async get(filter: Partial<CorrectionInterface>) {
         return this.repository.get(filter);
+    }
+
+    public async update(id: number, data: Partial<CorrectionBase>) {
+        return this.repository.update(id, data);
     }
 }

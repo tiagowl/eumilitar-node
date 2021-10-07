@@ -9,7 +9,7 @@ import User from '../src/entities/User';
 import EssayInvalidation from '../src/entities/EssayInvalidation';
 import EssayInvalidationCase, { EssayInvalidationRepositoryInterface } from '../src/cases/EssayInvalidation';
 import Correction, { CorrectionInterface } from '../src/entities/Correction';
-import CorrectionCase, { CorrectionInsertionData, CorrectionRepositoryInterface } from '../src/cases/Correction';
+import CorrectionCase, { CorrectionBase, CorrectionInsertionData, CorrectionRepositoryInterface } from '../src/cases/Correction';
 import ProductCase, { ProductCreation, ProductRepositoryInterface } from '../src/cases/Product';
 import Product, { ProductInterface } from '../src/entities/Product';
 import SubscriptionCase, { ChartFilter, SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from '../src/cases/Subscription';
@@ -52,6 +52,26 @@ const productsDatabase = new Array(5).fill(0).map((_, id) => new Product({
     name: faker.lorem.sentence(),
     expirationTime: 360 * 24 * 60 * 60 * 1000,
 }));
+const correctionDatabase = new Array(5).fill(0).map((_, id) => new Correction({
+    id, essay: id,
+    'accentuation': "Sim",
+    'agreement': "Sim",
+    'cohesion': "Sim",
+    'comment': faker.lorem.lines(5),
+    'conclusion': "Sim",
+    'erased': "Não",
+    'followedGenre': "Sim",
+    'hasMarginSpacing': "Sim",
+    'isReadable': "Sim",
+    'obeyedMargins': "Sim",
+    'organized': "Sim",
+    'orthography': "Sim",
+    'points': faker.datatype.number(10),
+    'repeated': "Não",
+    'understoodTheme': "Sim",
+    'veryShortSentences': "Não",
+    'correctionDate': new Date(),
+}))
 
 class UserTestRepository implements UserRepositoryInterface {
     database: User[]
@@ -332,6 +352,19 @@ class CorrectionTestRepository implements CorrectionRepositoryInterface {
         return this.database.find((correction => (Object.entries(filter) as [keyof CorrectionInterface, any][])
             .reduce((valid, [key, value]) => valid && (correction[key] === value), true as boolean))
         ) as Correction;
+    }
+
+    public async update(id: number, data: Partial<CorrectionBase>) {
+        let correction: Correction;
+        this.database = this.database.map((item) => {
+            if (item.id === id) {
+                Object.assign(item, data);
+                correction = item;
+            }
+            return item;
+        });
+        // @ts-ignore
+        return correction;
     }
 }
 
@@ -812,6 +845,30 @@ describe('#5 Correção', () => {
         expect(correction).toMatchObject(correction);
         expect(retrieved).toBeInstanceOf(Correction);
         done();
+    });
+    test('Atualização', async done => {
+        const repository = new CorrectionTestRepository(correctionDatabase, userDatabase);
+        const useCase = new CorrectionCase(repository);
+        const updated = await useCase.update(1, {
+            'accentuation': "Sim",
+            'agreement': "Sim",
+            'cohesion': "Sim",
+            'comment': faker.lorem.lines(5),
+            'conclusion': "Sim",
+            'erased': "Não",
+            'followedGenre': "Sim",
+            'hasMarginSpacing': "Sim",
+            'isReadable': "Sim",
+            'obeyedMargins': "Sim",
+            'organized': "Sim",
+            'orthography': "Sim",
+            'points': faker.datatype.number(10),
+            'repeated': "Não",
+            'understoodTheme': "Sim",
+            'veryShortSentences': "Não",
+        });
+        expect(updated).toBeInstanceOf(Correction);
+        done();
     })
 })
 
@@ -938,7 +995,8 @@ describe('#8 Produtos', () => {
 
 describe('Sessões', () => {
     test('Autenticação', async done => {
-        const [user] = userDatabase.reverse();
+        const user = userDatabase.find(item => item.checkPassword(defaultPassword));
+        if (!user) throw new Error();
         const repository = new SessionTestRepository();
         const useCase = new SessionCase(repository);
         const auth = await useCase.auth({ email: user.email, password: defaultPassword });

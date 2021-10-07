@@ -11,7 +11,7 @@ import Application from '../src/drivers/api';
 import { UserModel } from '../src/adapters/models/User';
 import { EssayRepository } from '../src/adapters/models/Essay';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
-import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
+import { EssayThemeCreation } from '../src/cases/EssayTheme';
 import { Course } from '../src/entities/EssayTheme';
 import createLogger from '../src/drivers/context/logger';
 import { Context } from '../src/drivers/interfaces';

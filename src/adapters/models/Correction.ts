@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import { CorrectionInsertionData, CorrectionRepositoryInterface } from "../../cases/Correction";
+import { CorrectionBase, CorrectionInsertionData, CorrectionRepositoryInterface } from "../../cases/Correction";
 import { EssayRepositoryInterface } from "../../cases/Essay";
 import { UserRepositoryInterface } from "../../cases/User";
 import Correction, { CorrectionInterface } from "../../entities/Correction";
@@ -95,6 +95,23 @@ export default class CorrectionRepository extends Repository<CorrectionModel, Co
         if (!data) throw { message: 'Correção não encontrada', status: 404 };
         const correctionData = await this.toEntity(data) as CorrectionInterface;
         return new Correction(correctionData);
+    }
+
+    public async update(id: number, data: Partial<CorrectionBase>) {
+        try {
+            const parsed = await this.toDb(data);
+            const updated = await this.query.where('grading_id', id).update(parsed);
+            if (updated === 0) throw { message: 'Nenhuma correção atualizada', status: 400 };
+            if (updated > 1) throw { message: 'Mais de uma correção afetada', status: 500 };
+            const recoveredData = await this.query.where('grading_id', id).first();
+            if (!recoveredData) throw { message: 'Correção não encontrada', status: 404 };
+            const parsedData = await this.toEntity(recoveredData);
+            return new Correction(parsedData);
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao atualizar correção', status: 500 };
+        }
     }
 
 }
