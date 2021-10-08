@@ -9,6 +9,7 @@ import Product from '../src/entities/Product';
 import Subscription from '../src/entities/Subscription';
 import Session from '../src/entities/Session';
 import Recovery from '../src/entities/Recovery';
+import SingleEssay from '../src/entities/SingleEssay';
 
 test('Testes na entidade User', async (done) => {
     const password = 'l23jlk234';
@@ -155,6 +156,20 @@ test('Recuperação de senha', () => {
             expires: new Date(),
             user: faker.datatype.number(),
             selector: faker.datatype.string(),
+        });
+    }).not.toThrowError();
+});
+
+test('Redação avulsa', () => {
+    expect(() => {
+        new SingleEssay({
+            id: faker.datatype.number(),
+            token: faker.datatype.string(),
+            sentDate: new Date(),
+            registrationDate: new Date(),
+            expiration: new Date(),
+            student: faker.datatype.number(),
+            theme: faker.datatype.number(),
         });
     }).not.toThrowError();
 })
