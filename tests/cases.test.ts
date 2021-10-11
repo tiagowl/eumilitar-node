@@ -1115,5 +1115,11 @@ describe('Recuperação de senha', () => {
 })
 
 describe('Redação avulsa', () => {
-
+    test('Criação', async done => {
+        const repository = new SingleEssayTestRepository();
+        const useCase = new SingleEssayCase(repository, { 'expiration': 48 * 60 * 60 * 1000 });
+        const created = await useCase.create({ 'student': 1, 'theme': 1 });
+        expect(created).toBeInstanceOf(SingleEssay);
+        done();
+    })
 });

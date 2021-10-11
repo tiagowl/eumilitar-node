@@ -1,5 +1,5 @@
 import SingleEssay from "../entities/SingleEssay";
-import uuid from 'uuid';
+import crypto from 'crypto';
 
 export interface SingleEssayInsertionInterface {
     theme: number;
@@ -33,10 +33,19 @@ export default class SingleEssayCase {
         this.settings = settigs;
     }
 
+    private async generateToken(): Promise<string> {
+        return new Promise((resolve, reject) => {
+            crypto.randomBytes(32, (error, buffer) => {
+                if (error) reject(error);
+                else resolve(buffer.toString('hex'));
+            });
+        });
+    }
+
     public async create(data: SingleEssayCreation) {
         return this.repository.create({
             ...data,
-            token: uuid.v4(),
+            token: await this.generateToken(),
             registrationDate: new Date(),
             expiration: new Date(Date.now() + this.settings.expiration),
         });
