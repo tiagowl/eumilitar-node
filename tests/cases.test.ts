@@ -16,10 +16,13 @@ import SubscriptionCase, { ChartFilter, SubscriptionInsertionInterface, Subscrip
 import Subscription, { SubscriptionInterface } from '../src/entities/Subscription';
 import SessionCase, { SessionInsertionInterface, SessionRepositoryInterface } from '../src/cases/Session';
 import RecoveryCase, { RecoveryInsertionInterface, RecoveryRepositoryInterface } from '../src/cases/Recovery';
+import SingleEssayCase, { SingleEssayInsertionInterface, SingleEssayRepositoryInterface } from '../src/cases/SingleEssay';
 import Session, { SessionInterface } from '../src/entities/Session';
 import Recovery, { RecoveryInterface } from '../src/entities/Recovery';
 import { Chart } from '../src/cases/interfaces';
 import { v4 } from 'uuid';
+import SingleEssay from '../src/entities/SingleEssay';
+import { uniqueId } from 'lodash';
 
 const defaultPassword = 'pass1235'
 const userDatabase = new Array(5).fill(0).map((_, id) => userEntityFactory({ password: hashPassword(defaultPassword), id }));
@@ -558,6 +561,26 @@ class RecoveryTestRespository implements RecoveryRepositoryInterface {
     }
 }
 
+class SingleEssayTestRepository implements SingleEssayRepositoryInterface {
+    public readonly database: SingleEssay[] = new Array(5).fill(0).map((_, id) => new SingleEssay({
+        id,
+        theme: faker.datatype.number(essayThemeDatabase.length),
+        student: faker.datatype.number(userDatabase.length),
+        token: uniqueId(),
+        registrationDate: new Date(),
+        expiration: faker.date.future(),
+    }));
+
+    public async create(data: SingleEssayInsertionInterface) {
+        const singleEssay = new SingleEssay({
+            ...data,
+            id: this.database.length,
+        });
+        this.database.push(singleEssay);
+        return singleEssay;
+    }
+}
+
 describe('#1 Testes nos casos de uso da entidade User', () => {
     it('Autenticação', async (done) => {
         const repository = new UserTestRepository(userDatabase);
@@ -1090,3 +1113,7 @@ describe('Recuperação de senha', () => {
         done();
     })
 })
+
+describe('Redação avulsa', () => {
+
+});
