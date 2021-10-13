@@ -6,8 +6,8 @@ import SingleEssayCase, { SingleEssayCreation } from "../../cases/SingleEssay";
 import { SingleEssayInterface } from "../../entities/SingleEssay";
 
 const schema = yup.object().shape({
-    theme: yup.number().required('Este campo é obrigatório'),
-    student: yup.number().required('Este campo é obrigatório'),
+    theme: yup.number().required('O campo "tema" é obrigatório'),
+    student: yup.number().required('É preciso informar o usuário'),
 });
 
 export default class SingleEssayController extends Controller<any> {
