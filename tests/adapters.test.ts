@@ -22,6 +22,7 @@ import User from '../src/entities/User';
 import { UserCreation, UserUpdate } from '../src/cases/User';
 import SessionController from '../src/adapters/controllers/Session';
 import RecoveryController from '../src/adapters/controllers/Recovery';
+import SingleEssayController from '../src/adapters/controllers/SingleEssay';
 import { v4 } from 'uuid';
 import { CorrectionService } from '../src/adapters/models/Correction';
 
@@ -985,4 +986,34 @@ describe('#9 Produtos', () => {
         });
         done();
     }, 10000);
+});
+
+describe('#10 Redação avulsa', () => {
+    beforeAll(async (done) => {
+        await EssayThemeService(db).delete().del();
+        done();
+    });
+    test('Criação', async done => {
+        const repository = new EssayThemeRepository(await context);
+        const data: EssayThemeCreation = {
+            title: 'Título',
+            endDate: new Date(Date.now() - 150 * 24 * 60 * 60),
+            startDate: new Date(Date.now() - 160 * 24 * 60 * 60),
+            helpText: faker.lorem.lines(3),
+            file: '/usr/share/data/theme.pdf',
+            courses: new Set(['esa', 'espcex'] as Course[]),
+            deactivated: false,
+        }
+        const theme = await repository.create(data);
+        const controller = new SingleEssayController(await context);
+        const student = await UserService(db).where('permission', 6).first();
+        if (!theme || !student) {
+            console.log(theme, student);
+            throw new Error();
+        }
+        const created = await controller.create({ theme: theme.id, student: student.user_id });
+        expect(created.token).toBeDefined();
+        expect(created.token.length).toBe(64);
+        done();
+    });
 });

@@ -25,7 +25,7 @@ const fieldsMap: FieldsMap<SingleEssayModel, SingleEssayInterface> = [
     [['id', Number], ['id', Number]],
     [['theme_id', Number], ['theme', Number]],
     [['user_id', Number], ['student', Number]],
-    [['token', Number], ['token', Number]],
+    [['token', String], ['token', String]],
     [['registration_date', timeParser], ['registrationDate', timeParser]],
     [['expiration', timeParser], ['expiration', timeParser]],
     [['sent_date', timeParser], ['sentDate', timeParser]],
