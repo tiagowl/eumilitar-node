@@ -9,6 +9,7 @@ import productRouter from './product';
 import recoveryRouter from './recovery';
 import subscriptionRouter from './subscription';
 import themeRouter from './theme';
+import singleEssayRouter from './singleEssay';
 
 const routers = [
     userRouter,
@@ -20,6 +21,7 @@ const routers = [
     recoveryRouter,
     subscriptionRouter,
     themeRouter,
+    singleEssayRouter,
 ];
 
 export default function getRouter(context: Context) {

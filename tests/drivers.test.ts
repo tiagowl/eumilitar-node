@@ -1244,3 +1244,42 @@ describe('#7 Produtos', () => {
         done();
     });
 });
+
+describe('#8 Redações avulsas', () => {
+    const user: UserModel = userFactory();
+    beforeAll(async (done) => {
+        const service = UserService(db)
+            .onConflict('user_id').merge();
+        await saveUser(user, service);
+        done()
+    });
+    test('Criação', async done => {
+        const app = await appFactory();
+        const api = supertest(app.server);
+        const token = await authenticate(user, api);
+        const header = `Bearer ${token}`;
+        const student = await UserService(db).where('permission', 6).first();
+        const repository = new EssayThemeRepository(await context);
+        const theme = await repository.create({
+            title: 'Título',
+            endDate: new Date(Date.now() - 150 * 24 * 60 * 60),
+            startDate: new Date(Date.now() - 160 * 24 * 60 * 60),
+            helpText: faker.lorem.lines(3),
+            file: '/usr/share/data/theme.pdf',
+            courses: new Set(['esa', 'espcex'] as Course[]),
+            deactivated: false,
+        });
+        if (!theme || !student) {
+            console.log(theme, student);
+            throw new Error();
+        }
+        const data = {
+            student: student.user_id,
+            theme: theme.id,
+        };
+        const response = await api.post('/single-essays/')
+            .send(data).set('Authorization', header);
+        expect(response.status, jp(response.body)).toBe(201);
+        done();
+    });
+});
