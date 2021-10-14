@@ -51,4 +51,18 @@ export default class SingleEssayRepository extends Repository<SingleEssayModel, 
             throw { message: 'Erro ao salvar token', status: 500 };
         }
     }
+
+    public async get(filter: Partial<SingleEssayInterface>) {
+        try {
+            const parsed = await this.toDb(filter);
+            const recovered = await this.query.where(parsed).first();
+            if (!recovered) return;
+            const recoverdParsed = await this.toEntity(recovered);
+            return new SingleEssay(recoverdParsed);
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao consultar token', status: 500 };
+        }
+    }
 }
