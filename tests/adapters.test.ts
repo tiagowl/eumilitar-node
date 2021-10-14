@@ -1014,6 +1014,9 @@ describe('#10 Redação avulsa', () => {
         const created = await controller.create({ theme: theme.id, student: student.user_id });
         expect(created.token).toBeDefined();
         expect(created.token.length).toBe(64);
+        const checked = await controller.check({ token: created.token, student: student.user_id });
+        expect(checked).toMatchObject(created);
+        expect(checked.token).toBe(created.token);
         done();
     });
 });

@@ -144,7 +144,8 @@ const settings = Object.freeze<Settings>({
     sms: {
         authKey: SMS_KEY,
         senderID: SMS_SENDER_ID,
-    }
+    },
+    singleEssayExpiration: 48,
 });
 
 export default settings;
