@@ -1247,10 +1247,12 @@ describe('#7 Produtos', () => {
 
 describe('#8 Redações avulsas', () => {
     const user: UserModel = userFactory();
+    const student: UserModel = userFactory({ permission: 6 });
     beforeAll(async (done) => {
-        const service = UserService(db)
-            .onConflict('user_id').merge();
-        await saveUser(user, service);
+        await saveUser(user, UserService(db)
+            .onConflict('user_id').merge());
+        await saveUser(student, UserService(db)
+            .onConflict('user_id').merge());
         done()
     });
     test('Criação', async done => {
@@ -1258,7 +1260,6 @@ describe('#8 Redações avulsas', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api);
         const header = `Bearer ${token}`;
-        const student = await UserService(db).where('permission', 6).first();
         const repository = new EssayThemeRepository(await context);
         const theme = await repository.create({
             title: 'Título',
@@ -1280,6 +1281,11 @@ describe('#8 Redações avulsas', () => {
         const response = await api.post('/single-essays/')
             .send(data).set('Authorization', header);
         expect(response.status, jp(response.body)).toBe(201);
+        const checkingHeader = `Bearer ${await authenticate(student, api)}`;
+        const checked = await api.get(`/single-essays/${response.body.token}/`)
+            .set('Authorization', checkingHeader);
+        expect(checked.status, jp(checked.body)).toBe(200);
+        expect(checked.body).toMatchObject(response.body);
         done();
     });
 });
