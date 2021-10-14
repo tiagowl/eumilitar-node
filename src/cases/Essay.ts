@@ -16,6 +16,7 @@ export interface EssayCreationData {
     file: string;
     student: number;
     course: Course;
+    token?: string;
 }
 
 export interface EssayInsertionData extends EssayCreationData {
@@ -131,12 +132,13 @@ export default class EssayCase {
     }
 
     public async create(data: EssayCreationData) {
-        const student = await this.getStudent(data.student);
-        const theme = await this.getTheme(data.course);
+        const { token, ...fields } = data;
+        const student = await this.getStudent(fields.student);
+        const theme = await this.getTheme(fields.course);
         await this.checkSubscriptions(student.id, theme);
-        await this.checkPermission(theme, student, data.course);
+        await this.checkPermission(theme, student, fields.course);
         return this.repository.create({
-            ...data, theme: theme.id, sendDate: new Date(), status: 'pending'
+            ...fields, theme: theme.id, sendDate: new Date(), status: 'pending'
         });
     }
 
