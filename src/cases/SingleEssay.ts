@@ -1,5 +1,6 @@
-import SingleEssay from "../entities/SingleEssay";
+import SingleEssay, { SingleEssayInterface } from "../entities/SingleEssay";
 import crypto from 'crypto';
+import CaseError, { Errors } from "./Error";
 
 export interface SingleEssayInsertionInterface {
     theme: number;
@@ -18,6 +19,12 @@ export interface SingleEssayCreation {
 
 export interface SingleEssayRepositoryInterface {
     readonly create: (data: SingleEssayInsertionInterface) => Promise<SingleEssay>;
+    readonly get: (filter: Partial<SingleEssayInterface>) => Promise<SingleEssay | undefined>;
+}
+
+export interface CheckEssayTokenInterface {
+    token: string;
+    student: number;
 }
 
 export interface SingleEssayCaseSettings {
@@ -49,5 +56,12 @@ export default class SingleEssayCase {
             registrationDate: new Date(),
             expiration: new Date(Date.now() + this.settings.expiration),
         });
+    }
+
+    public async checkToken(data: CheckEssayTokenInterface) {
+        const single = await this.repository.get(data);
+        if (!single) throw new CaseError('Token inválido', Errors.UNAUTHORIZED);
+        if (single.expiration < new Date()) throw new CaseError('Token expirado', Errors.EXPIRED);
+        return single;
     }
 }

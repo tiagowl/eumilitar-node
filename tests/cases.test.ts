@@ -21,7 +21,7 @@ import Session, { SessionInterface } from '../src/entities/Session';
 import Recovery, { RecoveryInterface } from '../src/entities/Recovery';
 import { Chart } from '../src/cases/interfaces';
 import { v4 } from 'uuid';
-import SingleEssay from '../src/entities/SingleEssay';
+import SingleEssay, { SingleEssayInterface } from '../src/entities/SingleEssay';
 import { uniqueId } from 'lodash';
 
 const defaultPassword = 'pass1235'
@@ -579,6 +579,17 @@ class SingleEssayTestRepository implements SingleEssayRepositoryInterface {
         this.database.push(singleEssay);
         return singleEssay;
     }
+
+    public async get(filter: Partial<SingleEssayInterface>) {
+        return this.database.find((single) => {
+            const keys = Object.entries(filter);
+            // @ts-ignore
+            return keys.reduce((state, item) => {
+            // @ts-ignore
+                return (single[item[0]] === item[1]) && state
+            }, true);
+        })
+    }
 }
 
 describe('#1 Testes nos casos de uso da entidade User', () => {
@@ -1120,6 +1131,9 @@ describe('Redação avulsa', () => {
         const useCase = new SingleEssayCase(repository, { 'expiration': 48 * 60 * 60 * 1000 });
         const created = await useCase.create({ 'student': 1, 'theme': 1 });
         expect(created).toBeInstanceOf(SingleEssay);
+        const validated = await useCase.checkToken({ token: created.token, student: 1 });
+        expect(validated).toBeInstanceOf(SingleEssay);
+        expect(validated).toMatchObject(created);
         done();
-    })
+    });
 });
