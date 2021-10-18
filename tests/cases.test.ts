@@ -589,7 +589,6 @@ class SingleEssayTestRepository implements SingleEssayRepositoryInterface {
             // @ts-ignore
             return keys.reduce((state, [key, val]) => (single[key] == val) && state, true as boolean);
         })
-        console.log(item, filter, this.database);
         return item;
     }
 }

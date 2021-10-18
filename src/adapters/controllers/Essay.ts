@@ -14,7 +14,8 @@ import CaseError, { Errors } from "../../cases/Error";
 export interface EssayInput {
     file: Express.MulterS3.File;
     student: number;
-    course: Course;
+    course?: Course;
+    token?: string;
 }
 
 export interface EssayData {
@@ -53,8 +54,8 @@ export interface ListEssayParams extends EssayFilter, EssayPagination { }
 const schema = yup.object().shape({
     file: yup.string().required('O arquivo é obrigatório'),
     student: yup.number().required('É preciso informar o usuário'),
-    course: yup.string().required('É preciso informar o curso')
-        .oneOf(['esa', 'espcex'])
+    course: yup.string().oneOf(['esa', 'espcex']),
+    token: yup.string().length(64, 'Token inválido'),
 });
 
 const partialUpdateSchema = yup.object().shape({
@@ -121,7 +122,6 @@ export default class EssayController extends Controller<EssayData> {
             const data = await this.validate({
                 ...rawData,
                 file: rawData.file.path || rawData.file.location,
-                student: rawData.student,
             }) as EssayCreationData;
             const created = await this.useCase.create(data);
             return this.parseEntity(created);
