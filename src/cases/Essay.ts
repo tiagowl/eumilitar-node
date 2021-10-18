@@ -134,23 +134,27 @@ export default class EssayCase {
 
     }
 
-    private async getSingle(token: string) {
-        return this.repository.singles.get({ token });
+    private async deleteSingle(id: number) {
+        const deleted = await this.repository.singles.delete({ id });
+        if (deleted === 0) throw new CaseError('Nenhum link encontrado');
+        if (deleted > 1) throw new CaseError('Mais de um link removido');
     }
 
     public async create(data: EssayCreationData) {
         const { token, ...fields } = data;
-        const student = await this.getStudent(fields.student);
         if (token) {
-            const single = await this.getSingle(token);
+            const single = await this.repository.singles.get({ token, student: fields.student });
             if (!single || single.student !== fields.student) throw new CaseError('Token inválido', Errors.UNAUTHORIZED);
             if (single.expiration < new Date()) throw new CaseError('Token expirado', Errors.EXPIRED);
-            return this.repository.create({
+            const created = await this.repository.create({
                 course: 'blank', theme: single.theme, sendDate: new Date(),
                 status: 'pending', student: single.student, file: fields.file,
             });
+            await this.deleteSingle(single.id);
+            return created;
         }
         if (fields.course) {
+            const student = await this.getStudent(fields.student);
             const theme = await this.getTheme(fields.course);
             await this.checkSubscriptions(student.id, theme);
             await this.checkPermission(theme, student, fields.course);

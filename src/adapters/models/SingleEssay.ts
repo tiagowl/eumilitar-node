@@ -65,4 +65,16 @@ export default class SingleEssayRepository extends Repository<SingleEssayModel, 
             throw { message: 'Erro ao consultar token', status: 500 };
         }
     }
+
+    public async delete(filter: Partial<SingleEssayInterface>) {
+        try {
+            const parsed = await this.toDb(filter);
+            const deleted = await this.query.where(parsed).del();
+            return deleted;
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao consultar token', status: 500 };
+        }
+    }
 }

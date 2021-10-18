@@ -20,6 +20,7 @@ export interface SingleEssayCreation {
 export interface SingleEssayRepositoryInterface {
     readonly create: (data: SingleEssayInsertionInterface) => Promise<SingleEssay>;
     readonly get: (filter: Partial<SingleEssayInterface>) => Promise<SingleEssay | undefined>;
+    readonly delete: (filter: Partial<SingleEssayInterface>) => Promise<number>;
 }
 
 export interface CheckEssayTokenInterface {

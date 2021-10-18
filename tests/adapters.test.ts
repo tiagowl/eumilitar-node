@@ -518,6 +518,66 @@ describe('#4 Redações', () => {
         });
         done();
     })
+    test('Criação de redações com token', async done => {
+        const themeService = EssayThemeService(db);
+        await themeService.delete().del()
+        const repository = new EssayThemeRepository(await context);
+        const themeData: EssayThemeCreation = {
+            title: 'Título',
+            endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
+            startDate: new Date(Date.now() - 160 * 24 * 60 * 60 * 60),
+            helpText: faker.lorem.lines(3),
+            file: '/usr/share/data/theme.pdf',
+            courses: new Set(['espcex'] as Course[]),
+            deactivated: false,
+        }
+        const theme = await repository.create(themeData);
+        expect(theme.id).not.toBeUndefined();
+        expect(theme.id).not.toBeNull();
+        const subscriptionRepository = new SubscriptionRepository(await context);
+        const productRepository = new ProductRepository(await context);
+        const product = await productRepository.get({ course: 'espcex' })
+        await subscriptionRepository.create({
+            expiration: faker.date.future(),
+            product: product.id,
+            registrationDate: new Date(),
+            user: user.user_id,
+            code: faker.datatype.number(),
+            course: 'esa',
+            active: true,
+        })
+        const singleEssayController = new SingleEssayController(await context);
+        const student = await UserService(db).where('permission', 6).first();
+        if (!theme || !student) {
+            console.log(theme, student);
+            throw new Error();
+        }
+        const single = await singleEssayController.create({ theme: theme.id, student: student.user_id });
+        const data: EssayInput = {
+            // @ts-ignore
+            file: {
+                path: '/usr/share/data/theme.png',
+                buffer: Buffer.from(new ArrayBuffer(10), 0, 2),
+                size: 1,
+                fieldname: 'themeFile',
+                filename: faker.name.title(),
+                destination: '/usr/share/data/',
+                mimetype: 'application/pdf',
+                encoding: 'utf-8',
+                originalname: faker.name.title(),
+                stream: new Readable(),
+                location: faker.internet.url(),
+            },
+            student: student.user_id,
+            token: single.token,
+        }
+        const controller = new EssayController(await context);
+        const created = await controller.create(data);
+        expect(created.id, JSON.stringify(created)).not.toBeUndefined();
+        expect(created.id, JSON.stringify(created)).not.toBeNaN();
+        expect(created.course).toBe('blank');
+        done();
+    }, 10000)
 })
 
 describe('#5 Invalidações', () => {

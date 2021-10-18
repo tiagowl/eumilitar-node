@@ -10,9 +10,12 @@ export default (context: Context) => {
         .post('/essays/', isAuthenticated(context), storage.single('file'), async (req, res) => {
             try {
                 if (!req.user) throw { message: 'Não autenticado', status: 401 };
-                const response = await controller.create({
-                    course: req.body.course, file: (req.file as Express.MulterS3.File), student: req.user.id
-                });
+                const data = !!req.body.token ? {
+                    token: req.body.token,
+                } : {
+                    course: req.body.course,
+                };
+                const response = await controller.create({ ...data, file: (req.file as Express.MulterS3.File), student: req.user.id });
                 res.status(201).json(response);
             } catch (error: any) {
                 res.status(error.status || 400).json(error);
