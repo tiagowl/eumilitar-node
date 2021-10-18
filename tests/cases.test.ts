@@ -572,7 +572,7 @@ class RecoveryTestRespository implements RecoveryRepositoryInterface {
 }
 
 class SingleEssayTestRepository implements SingleEssayRepositoryInterface {
-    public readonly database: SingleEssay[] = singleDatabase;
+    public database: SingleEssay[] = singleDatabase;
 
     public async create(data: SingleEssayInsertionInterface) {
         const singleEssay = new SingleEssay({
@@ -590,6 +590,21 @@ class SingleEssayTestRepository implements SingleEssayRepositoryInterface {
             return keys.reduce((state, [key, val]) => (single[key] == val) && state, true as boolean);
         })
         return item;
+    }
+
+    public async delete(filter: Partial<SingleEssayInterface>) {
+        const toRemove = await this.filter(filter);
+        this.database = this.database.filter(item => toRemove.indexOf(item) >= 0);
+        return toRemove.length;
+    }
+
+    public async filter(filter: Partial<SessionInterface>) {
+        const fields = Object.entries(filter) as [keyof SessionInterface, number | Date][];
+        if (!fields.length) return this.database;
+        return this.database.filter(item => (
+            // @ts-ignore
+            !!fields.filter(([key, value]) => item[key] === value).length
+        ))
     }
 }
 
