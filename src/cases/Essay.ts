@@ -9,13 +9,14 @@ import { EssayInvalidationRepositoryInterface } from "./EssayInvalidation";
 import { EssayThemeRepositoryInterface } from './EssayTheme';
 import { Chart } from "./interfaces";
 import { ProductRepositoryInterface } from "./Product";
+import { SingleEssayRepositoryInterface } from "./SingleEssay";
 import { SubscriptionRepositoryInterface } from "./Subscription";
 import { UserRepositoryInterface } from "./User";
 
 export interface EssayCreationData {
     file: string;
     student: number;
-    course: Course;
+    course?: Course;
     token?: string;
 }
 
@@ -23,6 +24,7 @@ export interface EssayInsertionData extends EssayCreationData {
     theme: number;
     sendDate: Date;
     status: Status;
+    course: Course;
 }
 
 export interface EssayRepositoryInterface {
@@ -30,6 +32,7 @@ export interface EssayRepositoryInterface {
     readonly users: UserRepositoryInterface;
     readonly subscriptions: SubscriptionRepositoryInterface;
     readonly products: ProductRepositoryInterface;
+    readonly singles: SingleEssayRepositoryInterface;
     readonly create: (data: EssayInsertionData) => Promise<Essay>;
     readonly exists: (is: EssayFilter[]) => Promise<boolean>;
     readonly filter: (filter: EssayFilter, pagination?: EssayPagination) => Promise<Essay[]>;
@@ -131,15 +134,32 @@ export default class EssayCase {
 
     }
 
+    private async getSingle(token: string) {
+        return this.repository.singles.get({ token });
+    }
+
     public async create(data: EssayCreationData) {
         const { token, ...fields } = data;
         const student = await this.getStudent(fields.student);
-        const theme = await this.getTheme(fields.course);
-        await this.checkSubscriptions(student.id, theme);
-        await this.checkPermission(theme, student, fields.course);
-        return this.repository.create({
-            ...fields, theme: theme.id, sendDate: new Date(), status: 'pending'
-        });
+        if (token) {
+            const single = await this.getSingle(token);
+            if (!single || single.student !== fields.student) throw new CaseError('Token inválido', Errors.UNAUTHORIZED);
+            if (single.expiration < new Date()) throw new CaseError('Token expirado', Errors.EXPIRED);
+            return this.repository.create({
+                course: 'blank', theme: single.theme, sendDate: new Date(),
+                status: 'pending', student: single.student, file: fields.file,
+            });
+        }
+        if (fields.course) {
+            const theme = await this.getTheme(fields.course);
+            await this.checkSubscriptions(student.id, theme);
+            await this.checkPermission(theme, student, fields.course);
+            return this.repository.create({
+                ...fields, theme: theme.id, sendDate: new Date(), status: 'pending',
+                course: fields.course,
+            });
+        }
+        throw new CaseError('É preciso informar o token ou o curso', Errors.UNAUTHORIZED);
     }
 
     public async myEssays(student: number) {

@@ -14,6 +14,8 @@ import { Context } from "../interfaces";
 import Repository, { FieldsMap } from "./Repository";
 import { CorrectionService } from "./Correction";
 import { EssayInvalidationService } from "./EssayInvalidation";
+import { SingleEssayRepositoryInterface } from "../../cases/SingleEssay";
+import SingleEssayRepository from "./SingleEssay";
 
 export interface EssayModel extends EssayInsertion {
     essay_id: number;
@@ -74,6 +76,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
     public readonly users: UserRepositoryInterface;
     public readonly products: ProductRepositoryInterface;
     public readonly subscriptions: SubscriptionRepositoryInterface;
+    public readonly singles: SingleEssayRepositoryInterface;
 
     constructor(context: Context) {
         super(fieldParserDB, context, EssayService);
@@ -81,6 +84,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
         this.users = new UserRepository(context);
         this.products = new ProductRepository(context);
         this.subscriptions = new SubscriptionRepository(context);
+        this.singles = new SingleEssayRepository(context);
     }
 
 

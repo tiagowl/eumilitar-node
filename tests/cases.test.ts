@@ -75,6 +75,14 @@ const correctionDatabase = new Array(5).fill(0).map((_, id) => new Correction({
     'veryShortSentences': "Não",
     'correctionDate': new Date(),
 }))
+const singleDatabase = new Array(5).fill(0).map((_, id) => new SingleEssay({
+    id,
+    theme: faker.datatype.number(essayThemeDatabase.length),
+    student: faker.datatype.number(userDatabase.length),
+    token: uniqueId(),
+    registrationDate: new Date(),
+    expiration: faker.date.future(),
+}));
 
 class UserTestRepository implements UserRepositoryInterface {
     database: User[]
@@ -241,11 +249,12 @@ class EssayTestRepository implements EssayRepositoryInterface {
     users: UserTestRepository;
     products: ProductTestRepository;
     subscriptions: SubscriptionTestRepository;
+    singles: SingleEssayRepositoryInterface;
 
     constructor(database: any[], users: User[]) {
         this.database = [...database];
         this.themes = new EssayThemeTestRepository(essayThemeDatabase);
-        this.users = new UserTestRepository(users);
+        this.users = new UserTestRepository([...users]);
         const theme = new EssayTheme({
             title: 'Título',
             endDate: new Date(Date.now() + 15 * 24 * 60 * 60),
@@ -262,6 +271,7 @@ class EssayTestRepository implements EssayRepositoryInterface {
         expect(theme.active).toBeTruthy();
         this.products = new ProductTestRepository();
         this.subscriptions = new SubscriptionTestRepository();
+        this.singles = new SingleEssayTestRepository();
     }
 
     async create(data: EssayInsertionData) {
@@ -562,14 +572,7 @@ class RecoveryTestRespository implements RecoveryRepositoryInterface {
 }
 
 class SingleEssayTestRepository implements SingleEssayRepositoryInterface {
-    public readonly database: SingleEssay[] = new Array(5).fill(0).map((_, id) => new SingleEssay({
-        id,
-        theme: faker.datatype.number(essayThemeDatabase.length),
-        student: faker.datatype.number(userDatabase.length),
-        token: uniqueId(),
-        registrationDate: new Date(),
-        expiration: faker.date.future(),
-    }));
+    public readonly database: SingleEssay[] = singleDatabase;
 
     public async create(data: SingleEssayInsertionInterface) {
         const singleEssay = new SingleEssay({
@@ -581,14 +584,13 @@ class SingleEssayTestRepository implements SingleEssayRepositoryInterface {
     }
 
     public async get(filter: Partial<SingleEssayInterface>) {
-        return this.database.find((single) => {
+        const item = this.database.find((single) => {
             const keys = Object.entries(filter);
             // @ts-ignore
-            return keys.reduce((state, item) => {
-            // @ts-ignore
-                return (single[item[0]] === item[1]) && state
-            }, true);
+            return keys.reduce((state, [key, val]) => (single[key] == val) && state, true as boolean);
         })
+        console.log(item, filter, this.database);
+        return item;
     }
 }
 
@@ -734,6 +736,18 @@ describe('#3 Redações', () => {
         expect(created).not.toBeNull();
         expect(created.id).not.toBeUndefined();
         expect(created.id).not.toBeNull();
+        const singles = new SingleEssayTestRepository();
+        const single = await singles.get({});
+        if (!single) throw new Error();
+        const dataToken: EssayCreationData = {
+            file: '/path/to/image.png',
+            student: single.student,
+            token: single.token,
+        }
+        const createdWithToken = await useCase.create(dataToken);
+        expect(createdWithToken).not.toBeUndefined();
+        expect(createdWithToken).not.toBeNull();
+        expect(typeof createdWithToken.id).toBe('number');
         done();
     })
     test('Listagem', async done => {
