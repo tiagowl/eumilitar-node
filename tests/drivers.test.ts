@@ -408,7 +408,11 @@ describe('#2 Testes nos temas', () => {
         expect(response.status, JSON.stringify(response.body)).toEqual(201);
         expect(response.body.title).toEqual('Título')
         expect(response.body.id).not.toBeUndefined()
-        expect(response.body.id).not.toBeNull()
+        expect(response.body.id).not.toBeNull();
+        const recovered = await api.get(`/themes/${response.body.id}/`)
+            .set('Authorization', header);
+        expect(recovered.body).toMatchObject(response.body);
+        expect(recovered.status).toBe(200);
         done();
     })
     test('Testes na listagem de temas', async done => {

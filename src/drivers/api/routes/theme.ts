@@ -65,5 +65,16 @@ export default (context: Context) => {
             } finally {
                 res.end();
             }
+        })
+        .get('/themes/:id/', isAuthenticated(context), async (req, res) => {
+            try {
+                const { id } = req.params;
+                const theme = await controller.get({ id: Number(id) });
+                res.status(200).json(theme);
+            } catch (error: any) {
+                res.status(error.status || 500).json(error);
+            } finally {
+                res.end();
+            }
         });
 };
