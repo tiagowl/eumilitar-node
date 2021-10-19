@@ -18,6 +18,25 @@ export interface EssayCreationData {
     student: number;
     course?: Course;
     token?: string;
+    invalidEssay?: number;
+}
+
+export interface EssayCreationByToken {
+    file: string;
+    student: number;
+    token: string;
+}
+
+export interface EssaySimpleCreation {
+    file: string;
+    student: number;
+    course: Course;
+}
+
+export interface EssayCreationByInvalid {
+    file: string;
+    student: number;
+    invalidEssay: number;
 }
 
 export interface EssayInsertionData extends EssayCreationData {
@@ -133,28 +152,46 @@ export default class EssayCase {
         if (cantSend) throw new CaseError(`Já foi enviada uma redação do curso "${beautyCourse[course]}" para o tema vigente`);
     }
 
+    private async createWithToken(data: EssayCreationByToken) {
+        const singleCase = new SingleEssayCase(this.repository.singles, { expiration: 0 });
+        const single = await singleCase.checkToken({ token: data.token, student: data.student });
+        const essay = await this.repository.create({
+            course: 'blank', theme: single.theme, sendDate: new Date(),
+            status: 'pending', student: single.student, file: data.file,
+        });
+        await singleCase.update(single.id, { essay: essay.id, sentDate: new Date() });
+        return essay;
+    }
+
+    private async simpleCreation(data: EssaySimpleCreation) {
+        const student = await this.getStudent(data.student);
+        const theme = await this.getTheme(data.course);
+        await this.checkSubscriptions(student.id, theme);
+        await this.checkPermission(theme, student, data.course);
+        return this.repository.create({
+            ...data, theme: theme.id, sendDate: new Date(), status: 'pending',
+            course: data.course,
+        });
+    }
+
+    private async createWithInvalid(data: EssayCreationByInvalid) {
+        const { invalidEssay, student, file } = data;
+        const essay = await this.get({ id: invalidEssay, student });
+        const valids = await this.count({ student, theme: essay.theme, status: 'evaluated' });
+        const pendings = await this.count({ student, theme: essay.theme, status: 'pending' });
+        if (valids > 0 || pendings > 0) throw new CaseError('Já foi enviada uma redação para este tema', Errors.UNAUTHORIZED);
+        return this.repository.create({
+            course: essay.course, theme: essay.theme,
+            sendDate: new Date(), status: 'pending',
+            student, file,
+        });
+    }
+
     public async create(data: EssayCreationData) {
-        const { token, ...fields } = data;
-        if (token) {
-            const singleCase = new SingleEssayCase(this.repository.singles, { expiration: 0 });
-            const single = await singleCase.checkToken({ token, student: fields.student });
-            const essay = await this.repository.create({
-                course: 'blank', theme: single.theme, sendDate: new Date(),
-                status: 'pending', student: single.student, file: fields.file,
-            });
-            await singleCase.update(single.id, { essay: essay.id, sentDate: new Date() });
-            return essay;
-        }
-        if (fields.course) {
-            const student = await this.getStudent(fields.student);
-            const theme = await this.getTheme(fields.course);
-            await this.checkSubscriptions(student.id, theme);
-            await this.checkPermission(theme, student, fields.course);
-            return this.repository.create({
-                ...fields, theme: theme.id, sendDate: new Date(), status: 'pending',
-                course: fields.course,
-            });
-        }
+        const { token, invalidEssay, course } = data;
+        if (token) return this.createWithToken({ token, ...data });
+        if (invalidEssay) return this.createWithInvalid({ invalidEssay, ...data });
+        if (course) return this.simpleCreation({ course, ...data });
         throw new CaseError('É preciso informar o token ou o curso', Errors.UNAUTHORIZED);
     }
 
@@ -234,7 +271,6 @@ export default class EssayCase {
 
     public async avgTimeCorrection(filter: EssayChartFilter) {
         return this.repository.avgTimeCorrection(filter);
-
     }
 
 }
