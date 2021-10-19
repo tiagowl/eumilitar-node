@@ -54,8 +54,9 @@ export interface ListEssayParams extends EssayFilter, EssayPagination { }
 const schema = yup.object().shape({
     file: yup.string().required('O arquivo é obrigatório'),
     student: yup.number().required('É preciso informar o usuário'),
-    course: yup.string().oneOf(['esa', 'espcex']),
-    token: yup.string().length(64, 'Token inválido'),
+    course: yup.string().oneOf(['esa', 'espcex']).notRequired(),
+    token: yup.string().length(64, 'Token inválido').notRequired(),
+    invalidEssay: yup.number().notRequired(),
 });
 
 const partialUpdateSchema = yup.object().shape({
