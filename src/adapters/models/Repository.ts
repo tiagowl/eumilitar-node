@@ -116,4 +116,16 @@ export default class Repository<Model, Entity> {
         }
     }
 
+    public async delete(filter: Partial<Entity>) {
+        try {
+            const parsed = await this.toDb(filter);
+            const deleted = await this.query.where(parsed).del();
+            return deleted;
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao consultar token', status: 500 };
+        }
+    }
+
 }

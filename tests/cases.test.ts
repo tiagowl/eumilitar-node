@@ -606,6 +606,16 @@ class SingleEssayTestRepository implements SingleEssayRepositoryInterface {
             !!fields.filter(([key, value]) => item[key] === value).length
         ))
     }
+
+    public async update(id: number, data: Partial<SingleEssayInterface>) {
+        this.database = this.database.map(item => {
+            if (id === item.id) {
+                Object.assign(item, data);
+            }
+            return item;
+        })
+        return this.get({ id });
+    }
 }
 
 describe('#1 Testes nos casos de uso da entidade User', () => {

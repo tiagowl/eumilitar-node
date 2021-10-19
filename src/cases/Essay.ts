@@ -9,7 +9,7 @@ import { EssayInvalidationRepositoryInterface } from "./EssayInvalidation";
 import { EssayThemeRepositoryInterface } from './EssayTheme';
 import { Chart } from "./interfaces";
 import { ProductRepositoryInterface } from "./Product";
-import { SingleEssayRepositoryInterface } from "./SingleEssay";
+import SingleEssayCase, { SingleEssayRepositoryInterface } from "./SingleEssay";
 import { SubscriptionRepositoryInterface } from "./Subscription";
 import { UserRepositoryInterface } from "./User";
 
@@ -131,27 +131,19 @@ export default class EssayCase {
             { ...baseFilter, status: 'correcting' },
         ]);
         if (cantSend) throw new CaseError(`Já foi enviada uma redação do curso "${beautyCourse[course]}" para o tema vigente`);
-
-    }
-
-    private async deleteSingle(id: number) {
-        const deleted = await this.repository.singles.delete({ id });
-        if (deleted === 0) throw new CaseError('Nenhum link encontrado');
-        if (deleted > 1) throw new CaseError('Mais de um link removido');
     }
 
     public async create(data: EssayCreationData) {
         const { token, ...fields } = data;
         if (token) {
-            const single = await this.repository.singles.get({ token, student: fields.student });
-            if (!single || single.student !== fields.student) throw new CaseError('Token inválido', Errors.UNAUTHORIZED);
-            if (single.expiration < new Date()) throw new CaseError('Token expirado', Errors.EXPIRED);
-            const created = await this.repository.create({
+            const singleCase = new SingleEssayCase(this.repository.singles, { expiration: 0 });
+            const single = await singleCase.checkToken({ token, student: fields.student });
+            const essay = await this.repository.create({
                 course: 'blank', theme: single.theme, sendDate: new Date(),
                 status: 'pending', student: single.student, file: fields.file,
             });
-            await this.deleteSingle(single.id);
-            return created;
+            await singleCase.update(single.id, { essay: essay.id, sentDate: new Date() });
+            return essay;
         }
         if (fields.course) {
             const student = await this.getStudent(fields.student);

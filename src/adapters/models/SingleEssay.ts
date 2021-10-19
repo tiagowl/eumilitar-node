@@ -66,11 +66,13 @@ export default class SingleEssayRepository extends Repository<SingleEssayModel, 
         }
     }
 
-    public async delete(filter: Partial<SingleEssayInterface>) {
+    public async update(id: number, data: Partial<SingleEssayInterface>) {
         try {
-            const parsed = await this.toDb(filter);
-            const deleted = await this.query.where(parsed).del();
-            return deleted;
+            const parsed = await this.toDb(data);
+            const updated = await this.query.where('id', id).update(parsed);
+            if (updated === 0) throw { message: 'Nenhum registro afetado', status: 500 };
+            if (updated > 1) throw { message: 'Mais de um registro afetado', status: 500 };
+            return this.get({ id });
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;

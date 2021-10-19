@@ -21,6 +21,7 @@ export interface SingleEssayRepositoryInterface {
     readonly create: (data: SingleEssayInsertionInterface) => Promise<SingleEssay>;
     readonly get: (filter: Partial<SingleEssayInterface>) => Promise<SingleEssay | undefined>;
     readonly delete: (filter: Partial<SingleEssayInterface>) => Promise<number>;
+    readonly update: (id: number, data: Partial<SingleEssayInterface>) => Promise<SingleEssay | undefined>;
 }
 
 export interface CheckEssayTokenInterface {
@@ -61,8 +62,15 @@ export default class SingleEssayCase {
 
     public async checkToken(data: CheckEssayTokenInterface) {
         const single = await this.repository.get(data);
-        if (!single) throw new CaseError('Token inválido', Errors.UNAUTHORIZED);
+        if (!single || single.student !== data.student) throw new CaseError('Token inválido', Errors.UNAUTHORIZED);
         if (single.expiration < new Date()) throw new CaseError('Token expirado', Errors.EXPIRED);
+        if (single.essay) throw new CaseError('Link já utilizado', Errors.UNAUTHORIZED);
         return single;
+    }
+
+    public async update(id: number, data: Partial<SingleEssayInterface>) {
+        const updating = await this.repository.get({ id });
+        if (!updating) throw new CaseError('Token não encontrado', Errors.NOT_FOUND);
+        return this.repository.update(id, data);
     }
 }
