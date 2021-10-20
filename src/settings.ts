@@ -2,6 +2,7 @@ import path from 'path';
 import { config } from 'dotenv';
 import { transports, format } from 'winston';
 import { Settings } from './drivers/interfaces';
+import fs from 'fs';
 
 config({ path: path.resolve(__dirname, "..", ".env") });
 
@@ -63,7 +64,11 @@ const settings = Object.freeze<Settings>({
         host: HOST,
     },
     helmet: {},
-    logging: { format: 'common', options: {} },
+    logging: {
+        format: 'common', options: NODE_ENV === 'test' ? {
+            stream: fs.createWriteStream(path.resolve(__dirname, '..', 'logs', NODE_ENV, 'access.log'))
+        } : {},
+    },
     cors: {
         origin: CORS,
     },
@@ -116,7 +121,20 @@ const settings = Object.freeze<Settings>({
         env: (HOTMART_ENV) as 'sandbox' | 'developers',
     },
     logger: {
-        transports: [
+        transports: NODE_ENV === 'test' ? [
+            new transports.File({
+                filename: 'error.log',
+                level: 'error',
+                format: errorFormat,
+                dirname: path.resolve(__dirname, '..', 'logs', NODE_ENV)
+            }),
+            new transports.File({
+                filename: 'info.log',
+                level: 'info',
+                format: errorFormat,
+                dirname: path.resolve(__dirname, '..', 'logs', NODE_ENV)
+            }),
+        ] : [
             new transports.File({
                 filename: 'error.log',
                 level: 'error',
