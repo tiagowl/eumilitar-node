@@ -192,9 +192,9 @@ export default class EssayCase {
 
     public async create(data: EssayCreationData) {
         const { token, invalidEssay, course } = data;
-        if (token) return this.createWithToken({ token, ...data });
-        if (invalidEssay) return this.createWithInvalid({ invalidEssay, ...data });
-        if (course) return this.simpleCreation({ course, ...data });
+        if (typeof token === 'string') return this.createWithToken({ token, ...data });
+        if (typeof invalidEssay === 'number') return this.createWithInvalid({ invalidEssay, ...data });
+        if (typeof course === 'string') return this.simpleCreation({ course, ...data });
         throw new CaseError('É preciso informar o token ou o curso', Errors.UNAUTHORIZED);
     }
 

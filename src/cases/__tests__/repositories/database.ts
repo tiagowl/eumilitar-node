@@ -1,13 +1,13 @@
 import faker from "faker";
 import { uniqueId } from "lodash";
-import { hashPassword, userEntityFactory } from "../../../tests/shortcuts";
-import Correction from "../../entities/Correction";
-import Essay from "../../entities/Essay";
-import EssayInvalidation from "../../entities/EssayInvalidation";
-import EssayTheme, { Course } from "../../entities/EssayTheme";
-import Product from "../../entities/Product";
-import SingleEssay from "../../entities/SingleEssay";
-import Subscription from "../../entities/Subscription";
+import { hashPassword, userEntityFactory } from "../../../../tests/shortcuts";
+import Correction from "../../../entities/Correction";
+import Essay from "../../../entities/Essay";
+import EssayInvalidation from "../../../entities/EssayInvalidation";
+import EssayTheme, { Course } from "../../../entities/EssayTheme";
+import Product from "../../../entities/Product";
+import SingleEssay from "../../../entities/SingleEssay";
+import Subscription from "../../../entities/Subscription";
 
 export const defaultPassword = 'pass1235';
 const users = new Array(5).fill(0).map((_, id) => userEntityFactory({ password: hashPassword(defaultPassword), id }));
@@ -78,13 +78,15 @@ const subscriptions = users.reverse().map((user, id) => new Subscription({
     active: true,
     course: 'esa'
 }));
-export default () => Object.freeze({
-    users,
-    essayThemes,
-    essays,
-    essayInvalidations,
-    products,
-    corrections,
-    singles,
-    subscriptions,
-} as const);
+export default function getDb() {
+    return {
+        users,
+        essayThemes,
+        essays,
+        essayInvalidations,
+        products,
+        corrections,
+        singles,
+        subscriptions,
+    } as const
+};

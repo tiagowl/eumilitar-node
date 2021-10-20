@@ -3,59 +3,15 @@ import Correction, { CorrectionInterface } from "../../entities/Correction";
 import CorrectionCase, { CorrectionBase, CorrectionInsertionData, CorrectionRepositoryInterface } from "../Correction";
 import EssayCase, { EssayRepositoryInterface } from "../Essay";
 import { UserRepositoryInterface } from "../User";
-import getDb from "./database";
-import { EssayTestRepository } from "./essay.test";
-import { UserTestRepository } from "./user.test";
+import CorrectionTestRepository from "./repositories/CorrectionTestRepository";
+import getDb from "./repositories/database";
 
 const db = getDb();
-const userDatabase = db.users;
-
-export class CorrectionTestRepository implements CorrectionRepositoryInterface {
-    database: Correction[];
-    users: UserRepositoryInterface;
-    essays: EssayRepositoryInterface;
-
-    constructor() {
-        this.database = db.corrections;
-        this.users = new UserTestRepository();
-        this.essays = new EssayTestRepository();
-    }
-
-    public async create(data: CorrectionInsertionData) {
-        const correction = new Correction({
-            ...data,
-            id: this.database.length,
-        });
-        this.database.push(correction);
-        return correction;
-    }
-
-    public async get(filter: Partial<CorrectionInterface>) {
-        return this.database.find((correction => (Object.entries(filter) as [keyof CorrectionInterface, any][])
-            .reduce((valid, [key, value]) => valid && (correction[key] === value), true as boolean))
-        ) as Correction;
-    }
-
-    public async update(id: number, data: Partial<CorrectionBase>) {
-        let correction: Correction;
-        this.database = this.database.map((item) => {
-            if (item.id === id) {
-                Object.assign(item, data);
-                correction = item;
-            }
-            return item;
-        });
-        // @ts-ignore
-        return correction;
-    }
-}
-
-
 
 describe('#5 Correção', () => {
+    const repository = new CorrectionTestRepository();
+    const useCase = new CorrectionCase(repository);
     test('Criação', async done => {
-        const repository = new CorrectionTestRepository();
-        const useCase = new CorrectionCase(repository);
         const essays = new EssayCase(repository.essays);
         const correction = await useCase.create({
             'essay': 1,
@@ -115,7 +71,7 @@ describe('#5 Correção', () => {
     test('Atualização', async done => {
         const repository = new CorrectionTestRepository();
         const useCase = new CorrectionCase(repository);
-        const [user] = userDatabase;
+        const [user] = db.users;
         const updated = await useCase.update(1, user.id, {
             'accentuation': "Sim",
             'agreement': "Sim",

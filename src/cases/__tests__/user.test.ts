@@ -2,53 +2,10 @@ import faker from "faker";
 import { hashPassword, userEntityFactory } from "../../../tests/shortcuts";
 import User from "../../entities/User";
 import UserUseCase, { UserFilter, UserRepositoryInterface, UserSavingData } from "../User";
-import getDb, { defaultPassword } from "./database";
+import getDb, { defaultPassword } from "./repositories/database";
+import { UserTestRepository } from "./repositories/UserTestRepository";
 
 const db = getDb();
-
-export class UserTestRepository implements UserRepositoryInterface {
-    database: User[];
-    constructor() {
-        this.database = db.users;
-    }
-    async get(filter: UserFilter) {
-        const filtered = await this.filter(filter);
-        return filtered[0];
-    }
-    async filter(filter: UserFilter) {
-        const { pagination, search, ...params } = filter;
-        // @ts-ignore
-        const fields: [keyof typeof params, any][] = Object.entries(params);
-        if (!fields.length) return this.database;
-        return this.database.filter(item => (
-            !!fields.filter(([key, value]) => item[key] === value).length
-        ));
-    }
-    async update(id: number, data: UserFilter) {
-        let updated = 0;
-        this.database = this.database.map(item => {
-            if (id === item.id) {
-                item.update(data);
-                updated++;
-            }
-            return item;
-        });
-        return updated;
-    }
-
-    async all() {
-        return this.database;
-    }
-
-    async save(data: UserSavingData) {
-        const user = new User({
-            ...data,
-            id: this.database.length,
-        });
-        this.database.push(user);
-        return user;
-    }
-}
 
 describe('#1 Testes nos casos de uso da entidade User', () => {
     it('Autenticação', async (done) => {
