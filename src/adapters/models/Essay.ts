@@ -13,7 +13,7 @@ import SubscriptionRepository from "./Subscription";
 import { Context } from "../interfaces";
 import Repository, { FieldsMap } from "./Repository";
 import { CorrectionService } from "./Correction";
-import { EssayInvalidationService } from "./EssayInvalidation";
+import EssayInvalidationRepository, { EssayInvalidationService } from "./EssayInvalidation";
 import { SingleEssayRepositoryInterface } from "../../cases/SingleEssay";
 import SingleEssayRepository from "./SingleEssay";
 
@@ -342,6 +342,18 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: 'Erro ao consultar redações no banco de dados', status: 500 };
+        }
+    }
+
+    public async invalidiationIsExpired(essay: number) {
+        try {
+            const invalidations = new EssayInvalidationRepository(this.context);
+            const invalidation = await invalidations.get(essay);
+            return invalidation.invalidationDate < new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao consultar redação no banco de dados', status: 500 };
         }
     }
 

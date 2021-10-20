@@ -60,6 +60,7 @@ export interface EssayRepositoryInterface {
     readonly update: (id: number, data: Partial<EssayInsertionData>) => Promise<Essay>;
     readonly evaluatedChart: (filter: EssayChartFilter) => Promise<Chart>;
     readonly avgTimeCorrection: (filter: EssayChartFilter) => Promise<Chart>;
+    readonly invalidiationIsExpired: (essay: number) => Promise<boolean>;
 }
 
 export interface EssayPagination {
@@ -177,6 +178,8 @@ export default class EssayCase {
     private async createWithInvalid(data: EssayCreationByInvalid) {
         const { invalidEssay, student, file } = data;
         const essay = await this.get({ id: invalidEssay, student });
+        const expired = await this.repository.invalidiationIsExpired(essay.id);
+        if (expired) throw new CaseError('Prazo de reenvio expirado', Errors.EXPIRED);
         const valids = await this.count({ student, theme: essay.theme, status: 'evaluated' });
         const pendings = await this.count({ student, theme: essay.theme, status: 'pending' });
         if (valids > 0 || pendings > 0) throw new CaseError('Já foi enviada uma redação para este tema', Errors.UNAUTHORIZED);
