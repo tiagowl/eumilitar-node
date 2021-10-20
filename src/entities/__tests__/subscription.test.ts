@@ -3,7 +3,7 @@ import Subscription from "../Subscription";
 
 test('Inscrições', () => {
     expect(() => {
-        new Subscription({
+        return new Subscription({
             id: faker.datatype.number(),
             user: faker.datatype.number(),
             expiration: faker.date.future(),

@@ -3,7 +3,7 @@ import Product from "../Product";
 
 test('Produtos', () => {
     expect(() => {
-        new Product({
+        return new Product({
             id: faker.datatype.number(),
             code: faker.datatype.number(),
             name: faker.lorem.sentence(),

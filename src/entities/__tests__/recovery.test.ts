@@ -3,7 +3,7 @@ import Recovery from "../Recovery";
 
 test('Recuperação de senha', () => {
     expect(() => {
-        new Recovery({
+        return new Recovery({
             id: faker.datatype.number(),
             token: faker.datatype.string(),
             expires: new Date(),

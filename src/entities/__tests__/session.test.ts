@@ -3,7 +3,7 @@ import Session from "../Session";
 
 test('Sessões', () => {
     expect(() => {
-        new Session({
+        return new Session({
             id: faker.datatype.number(),
             token: faker.datatype.string(),
             loginTime: new Date(),

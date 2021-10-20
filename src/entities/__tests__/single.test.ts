@@ -3,7 +3,7 @@ import SingleEssay from "../SingleEssay";
 
 test('Redação avulsa', () => {
     expect(() => {
-        new SingleEssay({
+        return new SingleEssay({
             id: faker.datatype.number(),
             token: faker.datatype.string(),
             sentDate: new Date(),
