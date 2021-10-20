@@ -72,5 +72,6 @@
     "jest.config.ts",
     "knexfile.ts",
     "migrations/*",
+    "**/__tests__/"
   ]
 }

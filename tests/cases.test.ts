@@ -336,6 +336,12 @@ class EssayTestRepository implements EssayRepositoryInterface {
     async avgTimeCorrection(_filter: EssayChartFilter): Promise<Chart> {
         return [{ key: '1-12', value: 55 }];
     }
+
+    async invalidiationIsExpired(essay: number) {
+        const invalidations = new EssayInvalidationTestRepository(essayInvalidationDatabase, userDatabase);
+        const invalidation = await invalidations.get(essay);
+        return invalidation.invalidationDate < new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+    }
 }
 
 // tslint:disable-next-line
@@ -846,6 +852,21 @@ describe('#4 Invalidação', () => {
         const essay = await essays.get({ id: 2 });
         expect(invalidation).toBeDefined();
         expect(invalidation.essay).toBe(essay.id);
+        console.log(essayDatabase, userDatabase);
+        const essayRepository = new EssayTestRepository(essayDatabase, ([...userDatabase]).map(user => {
+            user.permission = 'student';
+            return user;
+        }));
+        console.log(essayDatabase, userDatabase);
+        return done();
+        const essayCase = new EssayCase(essayRepository);
+        const data: EssayCreationData = {
+            file: '/path/to/image.png',
+            invalidEssay: essay.id,
+            student: 1,
+        }
+        const created = await essayCase.create(data);
+        expect(created).toBeInstanceOf(Essay);
         done();
     })
     test('Recuperação', async done => {
