@@ -9,7 +9,7 @@ export interface EssayInvalidationInterface {
     comment?: string;
 }
 
-export const reasons: Reason[] = ['invalid', 'unreadable', 'tangent', 'notProse', 'grammatical', 'minLength', 'genre', 'corrupted', 'other'];
+export const reasons: Set<Reason> = new Set(['invalid', 'unreadable', 'tangent', 'notProse', 'grammatical', 'minLength', 'genre', 'corrupted', 'other']);
 
 export default class EssayInvalidation implements EssayInvalidationInterface {
     #id: number;

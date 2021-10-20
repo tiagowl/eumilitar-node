@@ -31,7 +31,7 @@ export default class EssayInvalidationCase {
         if (!essay) throw new CaseError('Redação não encontrada');
         if (essay.status !== 'correcting') throw new CaseError('Redação não está em correção');
         if (data.corrector !== essay.corrector) throw new CaseError('Não autorizado');
-        if (reasons.indexOf(data.reason) < 0) throw new CaseError('Razão inválida');
+        if (!reasons.has(data.reason)) throw new CaseError('Razão inválida');
         essay.status = 'invalid';
         await this.repository.essays.update(essay.id, essay.data);
         return this.repository.create({ ...data, invalidationDate: new Date() });

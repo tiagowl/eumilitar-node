@@ -11,7 +11,7 @@ import { Context } from "../interfaces";
 const schema = yup.object().shape({
     corrector: yup.number().required("É preciso informar o corretor!"),
     essay: yup.number().required('É preciso informar a redação'),
-    reason: yup.string().oneOf(reasons, "Motivo inválido").required('É preciso informar o motivo'),
+    reason: yup.string().oneOf([...reasons], "Motivo inválido").required('É preciso informar o motivo'),
     comment: yup.string().when('reason', {
         is: (val: Reason) => val === 'other',
         then: yup.string().required('É preciso descrever o motivo'),
@@ -64,7 +64,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
             const essay = await this.repository.essays.get({ id: essayId });
             const users = new UserRepository(this.context);
             const user = await users.get({ id: essay?.student });
-            if(!user) throw new Error(`Usuário "${essay?.student}", da redação "${essay?.id}" não encontrado`);
+            if (!user) throw new Error(`Usuário "${essay?.student}", da redação "${essay?.id}" não encontrado`);
             return this.smtp.sendMail({
                 from: this.config.sender,
                 to: { email: user.email, name: user.firstName },
