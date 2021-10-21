@@ -1,17 +1,19 @@
 import faker from "faker";
 import { uniqueId } from "lodash";
 import { hashPassword, userEntityFactory } from "../../../../tests/shortcuts";
-import Correction from "../../../entities/Correction";
-import Essay from "../../../entities/Essay";
-import EssayInvalidation from "../../../entities/EssayInvalidation";
-import EssayTheme, { Course } from "../../../entities/EssayTheme";
-import Product from "../../../entities/Product";
-import SingleEssay from "../../../entities/SingleEssay";
-import Subscription from "../../../entities/Subscription";
+import Correction, { CorrectionInterface } from "../../../entities/Correction";
+import Essay, { EssayInterface } from "../../../entities/Essay";
+import EssayInvalidation, { EssayInvalidationInterface } from "../../../entities/EssayInvalidation";
+import EssayTheme, { Course, EssayThemeInterface } from "../../../entities/EssayTheme";
+import Product, { ProductInterface } from "../../../entities/Product";
+import Recovery, { RecoveryInterface } from "../../../entities/Recovery";
+import Session, { SessionInterface } from "../../../entities/Session";
+import SingleEssay, { SingleEssayInterface } from "../../../entities/SingleEssay";
+import Subscription, { SubscriptionInterface } from "../../../entities/Subscription";
 
 export const defaultPassword = 'pass1235';
 const users = new Array(5).fill(0).map((_, id) => userEntityFactory({ password: hashPassword(defaultPassword), id }));
-const essayThemes = new Array(5).fill(0).map((_, index) => new EssayTheme({
+const essayThemes = new Array(5).fill(0).map((_, index) => ({
     title: 'Título',
     endDate: new Date(Date.now() + 15 * 24 * 60 * 60),
     startDate: new Date(Date.now() - 15 * 24 * 60 * 60),
@@ -21,8 +23,8 @@ const essayThemes = new Array(5).fill(0).map((_, index) => new EssayTheme({
     lastModified: new Date(),
     id: index,
     deactivated: false,
-}));
-const essays = new Array(5).fill(0).map((_, index) => new Essay({
+}) as EssayThemeInterface);
+const essays = new Array(5).fill(0).map((_, index) => ({
     file: '/usr/share/data/theme.pdf',
     course: 'esa',
     lastModified: new Date(),
@@ -31,16 +33,18 @@ const essays = new Array(5).fill(0).map((_, index) => new Essay({
     theme: faker.datatype.number(),
     status: 'pending',
     sendDate: faker.date.past(),
-}));
-const essayInvalidations = new Array(3).fill(0).map((_, id) => new EssayInvalidation({ id, corrector: 0, essay: id, reason: 'invalid', invalidationDate: new Date() }));
-const products = new Array(5).fill(0).map((_, id) => new Product({
+}) as EssayInterface);
+const essayInvalidations = new Array(3).fill(0).map((_, id) => ({
+    id, corrector: 0, essay: id, reason: 'invalid', invalidationDate: new Date()
+}) as EssayInvalidationInterface);
+const products = new Array(5).fill(0).map((_, id) => ({
     id,
     code: id * 10,
     course: 'esa',
     name: faker.lorem.sentence(),
     expirationTime: 360 * 24 * 60 * 60 * 1000,
-}));
-const corrections = new Array(5).fill(0).map((_, id) => new Correction({
+}) as ProductInterface);
+const corrections = new Array(5).fill(0).map((_, id) => ({
     id, essay: id,
     'accentuation': "Sim",
     'agreement': "Sim",
@@ -59,16 +63,16 @@ const corrections = new Array(5).fill(0).map((_, id) => new Correction({
     'understoodTheme': "Sim",
     'veryShortSentences': "Não",
     'correctionDate': new Date(),
-}));
-const singles = new Array(5).fill(0).map((_, id) => new SingleEssay({
+}) as CorrectionInterface);
+const singles = new Array(5).fill(0).map((_, id) => ({
     id,
     theme: faker.datatype.number(essayThemes.length),
     student: faker.datatype.number(users.length),
     token: uniqueId(),
     registrationDate: new Date(),
     expiration: faker.date.future(),
-}));
-const subscriptions = users.reverse().map((user, id) => new Subscription({
+}) as SingleEssayInterface);
+const subscriptions = users.reverse().map((user, id) => ({
     id,
     expiration: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     registrationDate: new Date(),
@@ -77,16 +81,37 @@ const subscriptions = users.reverse().map((user, id) => new Subscription({
     code: id,
     active: true,
     course: 'esa'
-}));
-export default function getDb() {
-    return {
-        users,
-        essayThemes,
-        essays,
-        essayInvalidations,
-        products,
-        corrections,
-        singles,
-        subscriptions,
-    } as const
+}) as SubscriptionInterface);
+const recoveries = new Array(10).fill(0).map((_, id) => ({
+    id,
+    expires: new Date(Date.now() + 60 * 60 * 1000),
+    selector: faker.datatype.string(),
+    token: faker.datatype.string(),
+    user: id,
+}) as RecoveryInterface);
+const sessions = new Array(5).fill(0).map((_, id) => ({
+    id,
+    token: faker.random.alphaNumeric(),
+    user: id,
+    loginTime: new Date(),
+    agent: faker.internet.userAgent(),
+}) as SessionInterface);
+
+const db = {
+    users,
+    essayThemes,
+    essays,
+    essayInvalidations,
+    products,
+    corrections,
+    singles,
+    subscriptions,
+    recoveries,
+    sessions,
 };
+
+export default function getDb() {
+    return db;
+};
+
+export type FakeDB = typeof db;

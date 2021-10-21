@@ -2,14 +2,14 @@ import faker from "faker";
 import Product, { ProductInterface } from "../../entities/Product";
 import ProductCase, { ProductRepositoryInterface, ProductCreation } from "../Product";
 import getDb from "./repositories/database";
-import { ProductTestRepository } from "./repositories/ProductTestRepository";
+import ProductTestRepository from "./repositories/ProductTestRepository";
 
 const db = getDb();
 
 describe('#8 Produtos', () => {
+    const repository = new ProductTestRepository(db);
+    const useCase = new ProductCase(repository);
     test('Criação', async done => {
-        const repository = new ProductTestRepository();
-        const useCase = new ProductCase(repository);
         const product = await useCase.create({
             code: faker.datatype.number(),
             course: 'esa',
@@ -21,9 +21,7 @@ describe('#8 Produtos', () => {
         done();
     });
     test('Listagem', async done => {
-        const repository = new ProductTestRepository();
-        const useCase = new ProductCase(repository);
-        const products = await useCase.list({ 'course': 'esa' });
+        const products = await useCase.list({ 'course': 'esa' }) as Product[];
         expect(products).toBeInstanceOf(Array);
         products.forEach(product => {
             expect(product).toBeInstanceOf(Product);
@@ -32,8 +30,6 @@ describe('#8 Produtos', () => {
         done();
     });
     test('Atualização', async done => {
-        const repository = new ProductTestRepository();
-        const useCase = new ProductCase(repository);
         const [product] = db.products;
         expect(product).toBeDefined();
         const updated = await useCase.update(product.id, { expirationTime: 55 });

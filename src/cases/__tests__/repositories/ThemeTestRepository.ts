@@ -1,26 +1,15 @@
-import EssayTheme from "../../../entities/EssayTheme";
+import EssayTheme, { EssayThemeInterface } from "../../../entities/EssayTheme";
 import { EssayThemeRepositoryInterface, EssayThemeCreation, EssayThemeFilter, EssayThemeData } from "../../EssayTheme";
-import getDb from "./database";
+import { FakeDB } from "./database";
+import TestRepository from "./TestRepository";
 
 
-const db = getDb();
 
-export class EssayThemeTestRepository implements EssayThemeRepositoryInterface {
-    database: any[];
-    constructor() {
-        this.database = [...db.essayThemes];
+export default class EssayThemeTestRepository extends TestRepository<EssayTheme, EssayThemeInterface> implements EssayThemeRepositoryInterface {
+    constructor(db: FakeDB) {
+        super(db, EssayTheme, 'essayThemes');
     }
-    public async create(data: EssayThemeCreation) {
-        const theme = {
-            ...data,
-            lastModified: new Date(),
-        };
-        this.database.push(theme);
-        return new EssayTheme({
-            ...theme,
-            id: this.database.indexOf(theme),
-        });
-    }
+
     public async exists(filter: EssayThemeFilter) {
         const operations = {
             '=': (a: any, b: any) => a === b,
@@ -45,7 +34,7 @@ export class EssayThemeTestRepository implements EssayThemeRepositoryInterface {
 
     public async hasActiveTheme(data: EssayThemeData, idToIgnore?: number) {
         const database = !!idToIgnore ? this.database.filter(item => item.id !== idToIgnore) : this.database;
-        return !!database.find((item: EssayTheme) => {
+        return !!database.find((item: EssayThemeInterface) => {
             return (
                 (item.startDate <= data.startDate && item.endDate > data.endDate) ||
                 (item.startDate > data.startDate && item.startDate < data.endDate)
@@ -57,34 +46,16 @@ export class EssayThemeTestRepository implements EssayThemeRepositoryInterface {
         const start = ((page || 1) - 1) * (pageSize || 10);
         const end = pageSize || 10;
         const order = ordering || 'id';
-        return [...this.database].slice(start, end).sort((a, b) => a[order] > b[order] ? 1 : a[order] < b[order] ? -1 : 0);
-    }
-
-    public async count() {
-        return this.database.length;
-    }
-
-    public async update(id: number, data: EssayThemeCreation) {
-        // @ts-ignore
-        let theme: EssayTheme;
-        // @ts-ignore
-        this.database = this.database.map(item => {
-            if (item.id === id) {
-                item.update(data);
-                theme = item;
-            }
-            return item;
-        });
-        // @ts-ignore
-        return theme;
+        const filtered = [...this.database].slice(start, end).sort((a, b) => a[order] > b[order] ? 1 : a[order] < b[order] ? -1 : 0);
+        return filtered.map(item => new this.entity(item));
     }
 
     public async get(filter: EssayThemeFilter) {
-        return this.database.find(item => {
+        return new this.entity(this.database.find(item => {
             return Object.entries(filter)
                 .reduce((valid, field) => {
                     return valid && (item[field[0]] === field[1]);
                 }, true as boolean);
-        });
+        }));
     }
 }

@@ -1,5 +1,6 @@
 import EssayTheme, { Course, EssayThemeInterface } from "../entities/EssayTheme";
 import CaseError from "./Error";
+import { countMethod, createMethod, existsMethod, filterMethod, getMethod, updateMethod } from "./interfaces";
 
 export type Operator = '=' | '<=' | '>=' | '>' | '<';
 
@@ -28,13 +29,13 @@ export interface EssayThemeCreation extends EssayThemeData {
 }
 
 export interface EssayThemeRepositoryInterface {
-    readonly create: (data: EssayThemeCreation) => Promise<EssayThemeInterface>;
+    readonly create: createMethod<EssayThemeCreation, EssayTheme>;
+    readonly count: countMethod<EssayTheme>;
+    readonly update: updateMethod<EssayTheme, EssayThemeInterface>;
     readonly exists: (filter: EssayThemeFilter) => Promise<boolean> | ((filter: EssayThemeFilter) => Promise<boolean>);
+    readonly get: (filter: EssayThemeFilter, active?: boolean) => Promise<EssayThemeInterface | undefined>;
     readonly hasActiveTheme: (data: EssayThemeData, notCheckId?: number) => Promise<boolean>;
     readonly findAll: (page?: number, pageSize?: number, ordering?: keyof EssayThemeInterface, active?: boolean) => Promise<EssayTheme[]>;
-    readonly count: () => Promise<number>;
-    readonly update: (id: number, data: EssayThemeCreation) => Promise<EssayTheme>;
-    readonly get: (filter: EssayThemeFilter, active?: boolean) => Promise<EssayThemeInterface | undefined>;
 }
 
 export default class EssayThemeCase {
@@ -56,7 +57,7 @@ export default class EssayThemeCase {
     }
 
     public async count() {
-        return this.repository.count();
+        return this.repository.count({});
     }
 
     public async update(id: number, data: EssayThemeData) {
@@ -78,7 +79,7 @@ export default class EssayThemeCase {
         return this.repository.update(id, theme.data);
     }
 
-    public async get(filter: EssayThemeFilter){
+    public async get(filter: EssayThemeFilter) {
         return this.repository.get(filter);
     }
 

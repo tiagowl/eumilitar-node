@@ -9,10 +9,11 @@ import getDb from "./repositories/database";
 const db = getDb();
 
 describe('#5 Correção', () => {
-    const repository = new CorrectionTestRepository();
+    const repository = new CorrectionTestRepository(db);
     const useCase = new CorrectionCase(repository);
     test('Criação', async done => {
         const essays = new EssayCase(repository.essays);
+        const essay = await essays.partialUpdate(1, { corrector: 0, status: 'correcting' })
         const correction = await useCase.create({
             'essay': 1,
             'corrector': 0,
@@ -33,7 +34,6 @@ describe('#5 Correção', () => {
             'understoodTheme': "Sim",
             'veryShortSentences': "Não",
         });
-        const essay = await essays.get({ id: 1 });
         expect(correction).toBeDefined();
         expect(correction).toBeInstanceOf(Correction);
         expect(correction.essay).toBe(essay.id);
@@ -61,16 +61,12 @@ describe('#5 Correção', () => {
             'veryShortSentences': "Não",
             'correctionDate': new Date(),
         });
-        const repository = new CorrectionTestRepository();
-        const useCase = new CorrectionCase(repository);
         const retrieved = await useCase.get({ essay: correction.essay });
         expect(correction).toMatchObject(correction);
         expect(retrieved).toBeInstanceOf(Correction);
         done();
     });
     test('Atualização', async done => {
-        const repository = new CorrectionTestRepository();
-        const useCase = new CorrectionCase(repository);
         const [user] = db.users;
         const updated = await useCase.update(1, user.id, {
             'accentuation': "Sim",

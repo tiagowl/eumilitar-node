@@ -1,7 +1,7 @@
 import User, { AccountStatus, AccountPermission, UserInterface, UserData } from "../entities/User";
 import bcrypt from 'bcrypt';
 import CaseError, { Errors } from "./Error";
-import { Paginated, Pagination } from "./interfaces";
+import { createMethod, Filter, filterMethod, getMethod, Paginated, Pagination, updateMethod } from "./interfaces";
 
 export type UserPagination = Pagination<User>;
 
@@ -56,10 +56,10 @@ export interface AuthResponse {
 }
 
 export interface UserRepositoryInterface {
-    readonly get: (filter: UserFilter) => Promise<User | null | undefined>;
-    readonly filter: (filter: UserFilter) => Promise<User[] | UserPaginated>;
-    readonly update: (id: number, data: UserFilter) => Promise<number>;
-    readonly save: (user: UserSavingData) => Promise<User>;
+    readonly get: getMethod<User, UserInterface>;
+    readonly filter: filterMethod<User, UserInterface>;
+    readonly update: updateMethod<User, UserData>;
+    readonly create: createMethod<UserSavingData, User>;
 }
 
 export default class UserUseCase {
@@ -94,17 +94,14 @@ export default class UserUseCase {
 
     public async updatePassword(id: number, password: string) {
         const user = await this.get(id);
-        if (!!user) {
-            const hash = await this.hashPassword(password);
-            user.password = hash;
-            const amount = await this.repository.update(id, {
-                password: hash,
-                lastModified: user.lastModified
-            });
-            if (amount > 1) throw new CaseError('Mais de um usuário afetado');
-            return !!amount;
-        }
-        return false;
+        if (!user) throw new CaseError('Usuário não encontrado', Errors.NOT_FOUND);
+        const hash = await this.hashPassword(password);
+        user.password = hash;
+        const updated = await this.repository.update(id, {
+            password: hash,
+            lastModified: user.lastModified
+        });
+        return updated;
     }
 
     public async get(id: number) {
@@ -113,12 +110,12 @@ export default class UserUseCase {
         return user;
     }
 
-    public async listAll(filter: UserFilter = {}) {
-        return this.repository.filter(filter || {});
+    public async filter(filter: Filter<UserInterface> = {}) {
+        return this.repository.filter(filter);
     }
 
     public async create(data: UserCreation) {
-        return this.repository.save({
+        return this.repository.create({
             ...data,
             password: await this.hashPassword(data.password),
             lastModified: new Date(),

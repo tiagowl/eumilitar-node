@@ -1,6 +1,7 @@
-import EssayInvalidation, { Reason, reasons } from "../entities/EssayInvalidation";
+import EssayInvalidation, { EssayInvalidationInterface, Reason, reasons } from "../entities/EssayInvalidation";
 import CaseError from "./Error";
 import { EssayRepositoryInterface } from "./Essay";
+import { createMethod, getMethod } from "./interfaces";
 
 export interface EssayInvalidationCreationData {
     corrector: number;
@@ -14,9 +15,9 @@ export interface EssayInvalidationInsertionData extends EssayInvalidationCreatio
 }
 
 export interface EssayInvalidationRepositoryInterface {
-    readonly create: (data: EssayInvalidationInsertionData) => Promise<EssayInvalidation>;
+    readonly create: createMethod<EssayInvalidationInsertionData, EssayInvalidation>;
     readonly essays: EssayRepositoryInterface;
-    readonly get: (essay: number) => Promise<EssayInvalidation>;
+    readonly get: getMethod<EssayInvalidation, EssayInvalidationInterface>;
 }
 
 export default class EssayInvalidationCase {
@@ -38,7 +39,7 @@ export default class EssayInvalidationCase {
     }
 
     public async get(essayId: number) {
-        return this.repository.get(essayId);
+        return this.repository.get({ id: essayId });
     }
 
 }

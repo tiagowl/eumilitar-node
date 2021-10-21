@@ -3,15 +3,15 @@ import { hashPassword, userEntityFactory } from "../../../tests/shortcuts";
 import User from "../../entities/User";
 import UserUseCase, { UserFilter, UserRepositoryInterface, UserSavingData } from "../User";
 import getDb, { defaultPassword } from "./repositories/database";
-import { UserTestRepository } from "./repositories/UserTestRepository";
+import UserTestRepository from "./repositories/UserTestRepository";
 
 const db = getDb();
 
 describe('#1 Testes nos casos de uso da entidade User', () => {
+    const repository = new UserTestRepository(db);
+    const useCase = new UserUseCase(repository);
     it('Autenticação', async (done) => {
-        const repository = new UserTestRepository();
         const user = await repository.get({ status: 'active' });
-        const useCase = new UserUseCase(new UserTestRepository());
         const [auth, checkedUser] = await useCase.authenticate(user?.email || "", defaultPassword);
         expect(auth).toEqual({ email: true, password: true });
         if (!checkedUser) throw new Error();
@@ -19,25 +19,19 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         done();
     });
     it('Senha errada', async (done) => {
-        const repository = new UserTestRepository();
         const user = await repository.get({ status: 'active' });
-        const useCase = new UserUseCase(new UserTestRepository());
         const auth = await useCase.authenticate(user?.email || "", 'wrongPass');
         expect(auth).toEqual([{ "email": true, "password": false }, null]);
         done();
     });
     it('Email errado', async (done) => {
-        const useCase = new UserUseCase(new UserTestRepository());
         const [auth, notUser] = await useCase.authenticate("wrong__5@mail.com", defaultPassword);
         expect(auth).toEqual({ email: false, password: false });
         expect(notUser).toBeNull();
         done();
     });
     test('Atualização da senha', async (done) => {
-        const repository = new UserTestRepository();
         const user = await repository.get({ status: 'active' });
-        const usedRepo = new UserTestRepository();
-        const useCase = new UserUseCase(usedRepo);
         const changed = await useCase.updatePassword(user?.id || 0, 'newPass');
         expect(changed).toBeTruthy();
         const [auth] = await useCase.authenticate(user?.email || "", 'newPass');
@@ -48,15 +42,11 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         done();
     });
     test('Listagem dos usuários', async done => {
-        const usedRepo = new UserTestRepository();
-        const useCase = new UserUseCase(usedRepo);
-        const all = await useCase.listAll();
-        expect(all).toMatchObject(db.users);
+        const all = await useCase.filter() as User[];
+        expect(all.map(user => user.data)).toEqual(repository.database);
         done();
     });
     test('Criação', async done => {
-        const userRepo = new UserTestRepository();
-        const useCase = new UserUseCase(userRepo);
         const created = await useCase.create({
             email: faker.internet.email(),
             firstName: faker.name.firstName(),
@@ -69,8 +59,6 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         done();
     });
     test('Atualização', async done => {
-        const repository = new UserTestRepository();
-        const useCase = new UserUseCase(repository);
         const updated = await useCase.update(0, {
             email: faker.internet.email(),
             firstName: faker.name.firstName(),

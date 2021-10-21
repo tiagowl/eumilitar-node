@@ -1,3 +1,4 @@
+import { EssayInsertion } from "../adapters/models/Essay";
 import Essay, { EssayInterface, Status } from "../entities/Essay";
 import { Reason, reasons } from "../entities/EssayInvalidation";
 import EssayTheme, { Course } from '../entities/EssayTheme';
@@ -7,7 +8,7 @@ import { CorrectionRepositoryInterface } from "./Correction";
 import CaseError, { Errors } from "./Error";
 import { EssayInvalidationRepositoryInterface } from "./EssayInvalidation";
 import { EssayThemeRepositoryInterface } from './EssayTheme';
-import { Chart } from "./interfaces";
+import { Chart, countMethod, createMethod, existsMethod, Filter, filterMethod, getMethod, updateMethod } from "./interfaces";
 import { ProductRepositoryInterface } from "./Product";
 import SingleEssayCase, { SingleEssayRepositoryInterface } from "./SingleEssay";
 import { SubscriptionRepositoryInterface } from "./Subscription";
@@ -52,12 +53,12 @@ export interface EssayRepositoryInterface {
     readonly subscriptions: SubscriptionRepositoryInterface;
     readonly products: ProductRepositoryInterface;
     readonly singles: SingleEssayRepositoryInterface;
-    readonly create: (data: EssayInsertionData) => Promise<Essay>;
-    readonly exists: (is: EssayFilter[]) => Promise<boolean>;
-    readonly filter: (filter: EssayFilter, pagination?: EssayPagination) => Promise<Essay[]>;
-    readonly count: (filter: EssayFilter) => Promise<number>;
-    readonly get: (filter: EssayFilter) => Promise<Essay | undefined>;
-    readonly update: (id: number, data: Partial<EssayInsertionData>) => Promise<Essay>;
+    readonly create: createMethod<EssayInsertionData, Essay>;
+    readonly exists: existsMethod<EssayInterface>;
+    readonly filter: filterMethod<Essay, EssayInterface>;
+    readonly count: countMethod<EssayInterface>;
+    readonly get: getMethod<Essay, EssayInterface>;
+    readonly update: updateMethod<Essay, EssayInterface>;
     readonly evaluatedChart: (filter: EssayChartFilter) => Promise<Chart>;
     readonly avgTimeCorrection: (filter: EssayChartFilter) => Promise<Chart>;
     readonly invalidiationIsExpired: (essay: number) => Promise<boolean>;
@@ -124,7 +125,7 @@ export default class EssayCase {
     }
 
     private async getTheme(course: Course) {
-        const themeData = await this.repository.themes.get({ courses: new Set([course]) }, true);
+        const themeData = await this.repository.themes.get({ courses: new Set([course]) });
         if (!themeData) throw new CaseError('Nenhum tema ativo para este curso', Errors.INVALID_THEME);
         const theme = new EssayTheme(themeData);
         if (!theme.active) throw new CaseError('Tema inválido', Errors.INVALID_THEME);
@@ -137,6 +138,7 @@ export default class EssayCase {
             const permitted = await value;
             const expired = subscription.expiration <= new Date();
             const product = await this.repository.products.get({ id: subscription.product });
+            if (!product) throw new CaseError('Produto não econtrado', Errors.NOT_FOUND);
             const validCourse = theme.courses.has(product.course);
             return (!expired && validCourse && subscription.active) || permitted;
         }, Promise.resolve(false) as Promise<boolean>);
@@ -199,11 +201,11 @@ export default class EssayCase {
     }
 
     public async myEssays(student: number) {
-        return this.repository.filter({ student });
+        return this.repository.filter({ student }) as Promise<Essay[]>;
     }
 
-    public async allEssays(filter: EssayFilter, pagination?: EssayPagination) {
-        return this.repository.filter(filter, pagination);
+    public async allEssays(filter: Filter<EssayFilter>) {
+        return this.repository.filter(filter);
     }
 
     public async count(filter: EssayFilter) {
@@ -250,7 +252,7 @@ export default class EssayCase {
         const start = period?.start || new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000);
         const end = period?.end || new Date();
         const months = Math.round((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000));
-        const essays = await this.repository.filter(filterData);
+        const essays = await this.repository.filter(filterData) as Essay[];
         const chart = new Array(months).fill(0)
             .map(async (_, index) => {
                 const current = start.getMonth() + index;

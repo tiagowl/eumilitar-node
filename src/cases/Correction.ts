@@ -2,6 +2,7 @@ import Correction, { CorrectionInterface } from "../entities/Correction";
 import Essay from "../entities/Essay";
 import CaseError, { Errors } from "./Error";
 import { EssayRepositoryInterface } from "./Essay";
+import { createMethod, filterMethod, getMethod, updateMethod } from "./interfaces";
 import { UserRepositoryInterface } from "./User";
 
 export interface CorrectionBase {
@@ -36,9 +37,9 @@ export interface CorrectionInsertionData extends CorrectionBase {
 export interface CorrectionRepositoryInterface {
     readonly essays: EssayRepositoryInterface;
     readonly users: UserRepositoryInterface;
-    readonly create: (data: CorrectionInsertionData) => Promise<Correction>;
-    readonly update: (id: number, data: Partial<CorrectionBase>) => Promise<Correction>;
-    readonly get: (filter: Partial<CorrectionInterface>) => Promise<Correction>;
+    readonly create: createMethod<CorrectionInsertionData, Correction>;
+    readonly update: updateMethod<Correction, CorrectionInterface>;
+    readonly get: getMethod<Correction, CorrectionInterface>;
 }
 
 export default class CorrectionCase {

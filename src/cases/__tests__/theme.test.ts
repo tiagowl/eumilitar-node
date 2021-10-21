@@ -2,14 +2,14 @@ import faker from "faker";
 import EssayTheme, { Course } from "../../entities/EssayTheme";
 import EssayThemeCase, { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeRepositoryInterface } from "../EssayTheme";
 import getDb from "./repositories/database";
-import { EssayThemeTestRepository } from "./repositories/ThemeTestRepository";
+import EssayThemeTestRepository from "./repositories/ThemeTestRepository";
 
 const db = getDb();
 
 describe('#2 Testes nos temas da redação', () => {
+    const repository = new EssayThemeTestRepository(db);
+    const useCase = new EssayThemeCase(repository);
     test('Teste na criação de temas de redação', async done => {
-        const repository = new EssayThemeTestRepository();
-        const useCase = new EssayThemeCase(repository);
         const data = {
             title: 'Título',
             endDate: new Date(Date.now() + 15 * 24 * 60 * 60),
@@ -25,10 +25,8 @@ describe('#2 Testes nos temas da redação', () => {
         done();
     });
     test('Lista todos', async done => {
-        const repository = new EssayThemeTestRepository();
-        const useCase = new EssayThemeCase(repository);
         const all = await useCase.findAll();
-        expect(all).toEqual(repository.database);
+        expect(all).toMatchObject(repository.database);
         const count = await useCase.count();
         expect(count).toEqual(repository.database.length);
         done();
@@ -42,8 +40,6 @@ describe('#2 Testes nos temas da redação', () => {
             file: '/usr/share/data/theme.pdf',
             courses: new Set(['esa'] as Course[]),
         };
-        const repository = new EssayThemeTestRepository();
-        const useCase = new EssayThemeCase(repository);
         const updated = await useCase.update(0, data);
         expect(updated.id).toEqual(0);
         expect(updated.title).toEqual(data.title);

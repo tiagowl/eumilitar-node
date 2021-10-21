@@ -2,6 +2,7 @@ import Recovery, { RecoveryInterface } from "../entities/Recovery";
 import CaseError, { Errors } from "./Error";
 import UserUseCase, { UserRepositoryInterface } from "./User";
 import crypto from "crypto";
+import { createMethod, deleteMethod, getMethod } from "./interfaces";
 
 export interface RecoveryInsertionInterface {
     token: string;
@@ -28,9 +29,9 @@ export interface CheckShortTokenData {
 
 export interface RecoveryRepositoryInterface {
     readonly users: UserRepositoryInterface;
-    readonly create: (data: RecoveryInsertionInterface) => Promise<Recovery>;
-    readonly get: (filter: Partial<RecoveryInterface>) => Promise<Recovery | null | undefined>;
-    readonly delete: (filter: Partial<RecoveryInterface>) => Promise<number>;
+    readonly create: createMethod<RecoveryInsertionInterface, Recovery>;
+    readonly get: getMethod<Recovery, RecoveryInterface>;
+    readonly delete: deleteMethod<Recovery>;
 }
 
 export default class RecoveryCase {

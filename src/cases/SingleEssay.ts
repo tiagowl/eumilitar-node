@@ -1,6 +1,7 @@
 import SingleEssay, { SingleEssayInterface } from "../entities/SingleEssay";
 import crypto from 'crypto';
 import CaseError, { Errors } from "./Error";
+import { createMethod, deleteMethod, getMethod, updateMethod } from "./interfaces";
 
 export interface SingleEssayInsertionInterface {
     theme: number;
@@ -18,10 +19,10 @@ export interface SingleEssayCreation {
 }
 
 export interface SingleEssayRepositoryInterface {
-    readonly create: (data: SingleEssayInsertionInterface) => Promise<SingleEssay>;
-    readonly get: (filter: Partial<SingleEssayInterface>) => Promise<SingleEssay | undefined>;
-    readonly delete: (filter: Partial<SingleEssayInterface>) => Promise<number>;
-    readonly update: (id: number, data: Partial<SingleEssayInterface>) => Promise<SingleEssay | undefined>;
+    readonly create: createMethod<SingleEssayInsertionInterface, SingleEssay>;
+    readonly get: getMethod<SingleEssay, SingleEssayInterface>;
+    readonly delete: deleteMethod<SingleEssay>;
+    readonly update: updateMethod<SingleEssay, SingleEssayInterface>;
 }
 
 export interface CheckEssayTokenInterface {

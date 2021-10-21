@@ -5,7 +5,7 @@ import settings from '../src/settings';
 import { Mail, MailData } from '../src/adapters/interfaces';
 import crypto from 'crypto';
 import { RecoveryService } from '../src/adapters/models/Recovery';
-import User, { UserData } from '../src/entities/User';
+import User, { UserData, UserInterface } from '../src/entities/User';
 import createStorage from '../src/drivers/context/storage';
 import Application from '../src/drivers/api';
 import { UserModel } from '../src/adapters/models/User';
@@ -39,7 +39,7 @@ export const userFactory = (inject?: Partial<UserModel>) => {
     return data;
 }
 
-export const userEntityFactory = (inject?: any): User => {
+export const userEntityFactory = (inject?: any): UserData => {
     const data: UserData = {
         id: Math.round(Math.random() * 2000),
         firstName: faker.name.firstName(),
@@ -52,8 +52,7 @@ export const userEntityFactory = (inject?: any): User => {
         password: hashPassword(faker.internet.password()),
         phone: faker.phone.phoneNumber(),
     }
-    Object.assign(data, inject);
-    return new User(data)
+    return Object.assign(data, inject);
 }
 
 export const dbSetting: Knex.Config = {

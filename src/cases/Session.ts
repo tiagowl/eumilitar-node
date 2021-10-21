@@ -3,12 +3,13 @@ import User from "../entities/User";
 import CaseError, { Errors } from "./Error";
 import { UserRepositoryInterface } from "./User";
 import crypto from 'crypto';
+import { createMethod, deleteMethod, getMethod } from "./interfaces";
 
 export interface SessionRepositoryInterface {
     readonly users: UserRepositoryInterface;
-    readonly create: (data: SessionInsertionInterface) => Promise<Session>;
-    readonly delete: (filter: Partial<SessionInterface>) => Promise<number>;
-    readonly get: (filter: Partial<SessionInterface>) => Promise<Session | null | undefined>;
+    readonly create: createMethod<SessionInsertionInterface, Session>;
+    readonly delete: deleteMethod<Session>;
+    readonly get: getMethod<Session, SessionInterface>;
 }
 
 export interface SessionInsertionInterface {

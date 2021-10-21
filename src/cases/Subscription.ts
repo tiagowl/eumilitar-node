@@ -4,7 +4,7 @@ import UserUseCase, { UserRepositoryInterface } from "./User";
 import crypto from 'crypto';
 import { Course } from "../entities/Product";
 import CaseError, { Errors } from "./Error";
-import { Chart, Paginated, Pagination } from "./interfaces";
+import { Chart, countMethod, createMethod, filterMethod, Paginated, Pagination, updateMethod } from "./interfaces";
 
 export interface SubscriptionFilter extends Partial<SubscriptionInterface> {
     pagination?: Pagination<SubscriptionInterface>;
@@ -12,10 +12,10 @@ export interface SubscriptionFilter extends Partial<SubscriptionInterface> {
 }
 
 export interface SubscriptionRepositoryInterface {
-    readonly create: (data: SubscriptionInsertionInterface, acceptDuplicates?: boolean) => Promise<Subscription>;
-    readonly filter: (filter: SubscriptionFilter) => Promise<Subscription[]>;
-    readonly update: (id: number, data: Partial<SubscriptionInterface>) => Promise<Subscription>;
-    readonly count: (filter: SubscriptionFilter) => Promise<number>;
+    readonly create: createMethod<SubscriptionInsertionInterface, Subscription>;
+    readonly filter: filterMethod<Subscription, SubscriptionInterface>;
+    readonly update: updateMethod<Subscription, SubscriptionInterface>;
+    readonly count: countMethod<Subscription>;
     readonly users: UserRepositoryInterface;
     readonly products: ProductRepositoryInterface;
 }
@@ -85,6 +85,8 @@ export default class SubscriptionCase {
         const user = await this.checkUser(data);
         const products = new ProductCase(this.repository.products);
         const product = await products.get({ code: data.product });
+        if (!product) throw new CaseError('Produto não encontrado', Errors.NOT_FOUND);
+        if (!product) throw new CaseError('Produto não econtrado', Errors.NOT_FOUND);
         return this.repository.create({
             user: user.id,
             expiration: new Date(Date.now() + product.expirationTime),
@@ -93,7 +95,7 @@ export default class SubscriptionCase {
             code: data.code,
             course: product.course,
             active: true,
-        }, true);
+        });
     }
 
     public async cancel(code: number) {
@@ -112,6 +114,7 @@ export default class SubscriptionCase {
 
     public async create(data: SubscriptionCreation) {
         const product = await this.repository.products.get({ id: data.product });
+        if (!product) throw new CaseError('Produto não encontrado', Errors.NOT_FOUND);
         return this.repository.create({
             ...data,
             registrationDate: new Date(),
@@ -121,6 +124,7 @@ export default class SubscriptionCase {
 
     public async update(id: number, data: SubscriptionCreation) {
         const product = await this.repository.products.get({ id: data.product });
+        if (!product) throw new CaseError('Produto não encontrado', Errors.NOT_FOUND);
         return this.repository.update(id, {
             ...data,
             course: product.course,
@@ -132,7 +136,7 @@ export default class SubscriptionCase {
         const start = period?.start || new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000);
         const end = period?.end || new Date();
         const months = Math.round((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000));
-        const subscriptions = await this.repository.filter(filterData);
+        const subscriptions = await this.repository.filter(filterData) as Subscription[];
         const data = new Array(months).fill(0)
             .map(async (_, index) => {
                 const current = start.getMonth() + index;

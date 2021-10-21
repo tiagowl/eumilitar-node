@@ -4,14 +4,14 @@ import { ProductRepositoryInterface } from "../Product";
 import SubscriptionCase, { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from "../Subscription";
 import { UserRepositoryInterface } from "../User";
 import getDb from "./repositories/database";
-import { SubscriptionTestRepository } from "./repositories/SubscriptionTestRepository";
+import SubscriptionTestRepository from "./repositories/SubscriptionTestRepository";
 
 const db = getDb();
 
 describe('#7 Assinaturas', () => {
+    const repository = new SubscriptionTestRepository(db);
+    const useCase = new SubscriptionCase(repository);
     test('Criação automática', async done => {
-        const repository = new SubscriptionTestRepository();
-        const useCase = new SubscriptionCase(repository);
         const subscription = await useCase.autoCreate({
             email: faker.internet.email(),
             firstName: faker.name.firstName(),
@@ -23,16 +23,12 @@ describe('#7 Assinaturas', () => {
         done();
     });
     test('Cancelamento', async done => {
-        const repository = new SubscriptionTestRepository();
-        const useCase = new SubscriptionCase(repository);
         const canceled = await useCase.cancel(1);
         expect(canceled).toBeInstanceOf(Subscription);
         expect(canceled.active).toBeFalsy();
         done();
     });
     test('Listagem', async done => {
-        const repository = new SubscriptionTestRepository();
-        const useCase = new SubscriptionCase(repository);
         const subscriptions = await useCase.filter({ 'active': true });
         expect(subscriptions).toBeInstanceOf(Array);
         if (!(subscriptions instanceof Array)) throw new Error();
@@ -42,8 +38,6 @@ describe('#7 Assinaturas', () => {
         done();
     });
     test('Criação manual', async done => {
-        const repository = new SubscriptionTestRepository();
-        const useCase = new SubscriptionCase(repository);
         const subscription = await useCase.create({
             product: 1,
             code: faker.datatype.number(),
@@ -55,8 +49,6 @@ describe('#7 Assinaturas', () => {
         done();
     });
     test('Atualização manual', async done => {
-        const repository = new SubscriptionTestRepository();
-        const useCase = new SubscriptionCase(repository);
         const subscription = await useCase.update(0, {
             product: 1,
             code: faker.datatype.number(),
@@ -68,8 +60,6 @@ describe('#7 Assinaturas', () => {
         done();
     });
     test('Gráfico ativos', async done => {
-        const repository = new SubscriptionTestRepository();
-        const useCase = new SubscriptionCase(repository);
         const chart = await useCase.activeChart({});
         expect(chart).toBeInstanceOf(Array);
         chart.forEach(item => {

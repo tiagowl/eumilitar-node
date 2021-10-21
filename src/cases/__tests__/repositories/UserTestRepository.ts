@@ -1,49 +1,15 @@
-import User from "../../../entities/User";
+import User, { UserInterface } from "../../../entities/User";
 import { UserRepositoryInterface, UserFilter, UserSavingData } from "../../User";
-import getDb from "./database";
+import { FakeDB } from "./database";
+import TestRepository from "./TestRepository";
 
-const db = getDb();
 
-export class UserTestRepository implements UserRepositoryInterface {
-    database: User[];
-    constructor() {
-        this.database = db.users;
-    }
-    async get(filter: UserFilter) {
-        const filtered = await this.filter(filter);
-        return filtered[0];
-    }
-    async filter(filter: UserFilter) {
-        const { pagination, search, ...params } = filter;
-        // @ts-ignore
-        const fields: [keyof typeof params, any][] = Object.entries(params);
-        if (!fields.length) return this.database;
-        return this.database.filter(item => (
-            !!fields.filter(([key, value]) => item[key] === value).length
-        ));
-    }
-    async update(id: number, data: UserFilter) {
-        let updated = 0;
-        this.database = this.database.map(item => {
-            if (id === item.id) {
-                item.update(data);
-                updated++;
-            }
-            return item;
-        });
-        return updated;
+export default class UserTestRepository extends TestRepository<User, UserInterface> implements UserRepositoryInterface {
+    constructor(db: FakeDB) {
+        super(db, User, 'users');
     }
 
     async all() {
         return this.database;
-    }
-
-    async save(data: UserSavingData) {
-        const user = new User({
-            ...data,
-            id: this.database.length,
-        });
-        this.database.push(user);
-        return user;
     }
 }

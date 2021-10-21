@@ -9,26 +9,26 @@ import { SingleEssayRepositoryInterface } from "../SingleEssay";
 import { SubscriptionRepositoryInterface } from "../Subscription";
 import { UserRepositoryInterface } from "../User";
 import getDb from "./repositories/database";
-import { EssayTestRepository } from "./repositories/EssayTestRepository";
-import { SingleEssayTestRepository } from "./repositories/SingleTestRepository";
+import EssayTestRepository from "./repositories/EssayTestRepository";
+import SingleEssayTestRepository from "./repositories/SingleTestRepository";
 
 const db = getDb();
 
 describe('#3 Redações', () => {
+    const repository = new EssayTestRepository(db);
+    const useCase = new EssayCase(repository);
+    const singles = new SingleEssayTestRepository(db);
     test('Criação', async done => {
         const data: EssayCreationData = {
             file: '/path/to/image.png',
             course: 'esa',
             student: 1,
         };
-        const repository = new EssayTestRepository();
-        const useCase = new EssayCase(repository);
         const created = await useCase.create(data);
         expect(created).not.toBeUndefined();
         expect(created).not.toBeNull();
         expect(created.id).not.toBeUndefined();
         expect(created.id).not.toBeNull();
-        const singles = new SingleEssayTestRepository();
         const single = await singles.get({});
         if (!single) throw new Error();
         const dataToken: EssayCreationData = {
@@ -43,8 +43,6 @@ describe('#3 Redações', () => {
         done();
     });
     test('Listagem', async done => {
-        const repository = new EssayTestRepository();
-        const useCase = new EssayCase(repository);
         const essays = await useCase.myEssays(6);
         expect(essays.length).not.toBeLessThan(1);
         const essay = essays[0];
@@ -52,25 +50,19 @@ describe('#3 Redações', () => {
         done();
     });
     test('Listagem de todas', async done => {
-        const repository = new EssayTestRepository();
-        const useCase = new EssayCase(repository);
-        const essays = await useCase.allEssays({});
+        const essays = await useCase.allEssays({}) as Essay[];
         expect(essays.length).not.toBeLessThan(1);
         const essay = essays[0];
         expect(essay.id).not.toBeUndefined();
         done();
     });
     test('Recuperação de uma redação', async done => {
-        const repository = new EssayTestRepository();
-        const useCase = new EssayCase(repository);
         const essay = await useCase.get({ id: 2 });
         expect(essay).toBeDefined();
         expect(essay?.id).toBe(2);
         done();
     });
     test('Atualização da redação', async done => {
-        const repository = new EssayTestRepository();
-        const useCase = new EssayCase(repository);
         const updated = await useCase.partialUpdate(1, { corrector: 0 });
         const essay = await useCase.get({ id: 1 });
         expect(updated).toBeDefined();
@@ -83,8 +75,6 @@ describe('#3 Redações', () => {
         done();
     });
     test('Gráfico de envios', async done => {
-        const repository = new EssayTestRepository();
-        const useCase = new EssayCase(repository);
         const chart = await useCase.sentChart({
             period: {
                 start: new Date(Date.now() - 2 * 360 * 24 * 60 * 60 * 1000),
