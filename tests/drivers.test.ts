@@ -508,7 +508,7 @@ describe('#3 Redações', () => {
         const service = () => UserService(db)
             .onConflict('user_id').merge();
         await saveUser(admin, service());
-        const repository = new EssayThemeRepository(await context);
+        const repository = new EssayThemeRepository(context);
         const themeData: EssayThemeCreation = {
             title: 'Título',
             endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
@@ -535,8 +535,8 @@ describe('#3 Redações', () => {
     test('Criação', async done => {
         const app = await appFactory();
         const api = supertest(app.server);
-        const subscriptionRepository = new SubscriptionRepository(await context);
-        const productRepository = new ProductRepository(await context);
+        const subscriptionRepository = new SubscriptionRepository(context);
+        const productRepository = new ProductRepository(context);
         const product = await productRepository.get({ course: 'esa' });
         await subscriptionRepository.create({
             expiration: faker.date.future(),
@@ -596,7 +596,7 @@ describe('#3 Redações', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(await context, user.user_id);
+        const base = await createEssay(context, user.user_id);
         const response = await api.get(`/essays/${base.id}/`)
             .set('Authorization', header);
         expect(response.status, jp(response.body)).toBe(200);
@@ -609,7 +609,7 @@ describe('#3 Redações', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(await context, user.user_id);
+        const base = await createEssay(context, user.user_id);
         const response = await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
         expect(response.status, jp(response.body)).toBe(201);
@@ -623,7 +623,7 @@ describe('#3 Redações', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(await context, user.user_id);
+        const base = await createEssay(context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
         const response = await api.delete(`/essays/${base.id}/corrector/`)
@@ -695,7 +695,7 @@ describe('#4 Invalidação da redação', () => {
         await saveUser(student, service());
         const themeService = EssayThemeService(db);
         await themeService.delete().del()
-        const repository = new EssayThemeRepository(await context);
+        const repository = new EssayThemeRepository(context);
         const themeData: EssayThemeCreation = {
             title: 'Título',
             endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
@@ -723,7 +723,7 @@ describe('#4 Invalidação da redação', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(await context, user.user_id);
+        const base = await createEssay(context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
         const response = await api.post(`/essays/${base.id}/invalidation/`)
@@ -740,7 +740,7 @@ describe('#4 Invalidação da redação', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(await context, user.user_id);
+        const base = await createEssay(context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
         const invalidation = await api.post(`/essays/${base.id}/invalidation/`)
@@ -761,7 +761,7 @@ describe('#5 Correção da redação', () => {
     beforeAll(async (done) => {
         const themeService = EssayThemeService(db);
         await themeService.delete().del()
-        const repository = new EssayThemeRepository(await context);
+        const repository = new EssayThemeRepository(context);
         const themeData: EssayThemeCreation = {
             title: 'Título',
             endDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 60),
@@ -792,7 +792,7 @@ describe('#5 Correção da redação', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(await context, user.user_id);
+        const base = await createEssay(context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
         const response = await api.post(`/essays/${base.id}/correction/`)
@@ -825,7 +825,7 @@ describe('#5 Correção da redação', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(await context, user.user_id);
+        const base = await createEssay(context, user.user_id);
         const data = {
             'accentuation': "Sim",
             'agreement': "Sim",
@@ -868,7 +868,7 @@ describe('#5 Correção da redação', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api)
         const header = `Bearer ${token}`;
-        const base = await createEssay(await context, user.user_id);
+        const base = await createEssay(context, user.user_id);
         const data = {
             'accentuation': "Sim",
             'agreement': "Sim",
@@ -924,7 +924,7 @@ describe('#6 Inscrições', () => {
     const admin: UserModel = userFactory({ permission: 1 });
     const user = userFactory({ email });
     const deleteAll = async (done: any) => {
-        const repository = new UserRepository(await context);
+        const repository = new UserRepository(context);
         await repository.query.whereIn('email', [email]).del();
         done();
     };
@@ -951,7 +951,7 @@ describe('#6 Inscrições', () => {
     test('#61 Criação', async done => {
         const app = await appFactory();
         const api = supertest(app.server);
-        const productRepository = new ProductRepository(await context);
+        const productRepository = new ProductRepository(context);
         const product = await productRepository.get({ course: 'espcex' });
         const response = await api.post('/subscriptions/')
             .type('application/x-www-form-urlencoded')
@@ -1009,7 +1009,7 @@ describe('#6 Inscrições', () => {
         await saveUser(user, UserService(db).onConflict('user_id').merge());
         const app = await appFactory();
         const api = supertest(app.server);
-        const productRepository = new ProductRepository(await context);
+        const productRepository = new ProductRepository(context);
         const product = await productRepository.get({ course: 'espcex' });
         await SubscriptionService(db).where('hotmart_id', 18).del();
         const [inserted] = await SubscriptionService(db).insert({
@@ -1087,7 +1087,7 @@ describe('#6 Inscrições', () => {
         done();
     });
     test('Criação manual', async done => {
-        const productRepository = new ProductRepository(await context);
+        const productRepository = new ProductRepository(context);
         const product = await productRepository.get({ course: 'esa' });
         const app = await appFactory();
         const api = supertest(app.server);
@@ -1108,9 +1108,9 @@ describe('#6 Inscrições', () => {
         done();
     });
     test('Atualização manual', async done => {
-        const productRepository = new ProductRepository(await context);
+        const productRepository = new ProductRepository(context);
         const product = await productRepository.get({ course: 'espcex' });
-        const subscriptionRepository = new SubscriptionRepository(await context);
+        const subscriptionRepository = new SubscriptionRepository(context);
         const [selected] = await subscriptionRepository.filter({ course: 'esa' });
         const app = await appFactory();
         const api = supertest(app.server);
@@ -1264,7 +1264,7 @@ describe('#8 Redações avulsas', () => {
         const api = supertest(app.server);
         const token = await authenticate(user, api);
         const header = `Bearer ${token}`;
-        const repository = new EssayThemeRepository(await context);
+        const repository = new EssayThemeRepository(context);
         const theme = await repository.create({
             title: 'Título',
             endDate: new Date(Date.now() - 150 * 24 * 60 * 60),

@@ -40,7 +40,7 @@ export default class ProductController extends Controller<ProductCreation> {
 
     public async list() {
         try {
-            const products = await this.useCase.list({});
+            const products = await this.useCase.list({}) as Product[];
             return Promise.all(products.map(async product => this.parseEntity(product)));
         } catch (error: any) {
             this.logger.error(error);

@@ -87,7 +87,7 @@ export async function deleteUser(user: any, service: Knex.QueryBuilder) {
         .del();
 }
 
-export async function smtpFactory(): Promise<Mail> {
+export function smtpFactory(): Mail {
     return {
         async sendMail(mail) {
             mails.push(mail);
@@ -119,7 +119,7 @@ export async function saveConfirmationToken(token: string, userId: number, db: K
 }
 
 export async function appFactory(db?: Knex, customSettings?: any) {
-    const context = await contextFactory();
+    const context = contextFactory();
     return new Application({ ...context, db: db || context.db, settings: customSettings || context.settings })
 }
 
@@ -151,8 +151,8 @@ export async function createEssay(context: Context, id: number) {
 export const db = dbFactory();
 export const hottok = faker.datatype.string();
 
-export async function contextFactory(inject = {}): Promise<Context> {
-    const smtp = await smtpFactory();
+export function contextFactory(inject = {}): Context {
+    const smtp = smtpFactory();
     const storage = createStorage(settings.storage);
     return Object.assign({
         db,
