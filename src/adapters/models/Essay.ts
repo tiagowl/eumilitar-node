@@ -71,7 +71,7 @@ const fieldParserDB: FieldsMap<EssayModel, EssayInterface> = [
     [['corrector', parseCorrector], ['corrector', parseCorrector],],
 ];
 
-export class EssayRepository extends Repository<EssayModel, EssayInterface> implements EssayRepositoryInterface {
+export class EssayRepository extends Repository<EssayModel, EssayInterface, Essay> implements EssayRepositoryInterface {
     public readonly themes: EssayThemeRepositoryInterface;
     public readonly users: UserRepositoryInterface;
     public readonly products: ProductRepositoryInterface;
@@ -79,7 +79,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
     public readonly singles: SingleEssayRepositoryInterface;
 
     constructor(context: Context) {
-        super(fieldParserDB, context, EssayService);
+        super(fieldParserDB, context, EssayService, Essay);
         this.themes = new EssayThemeRepository(context);
         this.users = new UserRepository(context);
         this.products = new ProductRepository(context);
@@ -153,15 +153,6 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
         return service;
     }
 
-    public async toDb(data: Partial<EssayInterface>) {
-        const parsed = await super.toDb(data);
-        if (parsed.file_url) return {
-            ...parsed,
-            file_path: parsed.file_url,
-        };
-        return parsed;
-    }
-
     public async get(filterData: EssayFilter) {
         const service = this.query;
         const { search, period, ...filter } = filterData;
@@ -176,19 +167,6 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
         if (!essayData) return undefined;
         const parsedData = await this.toEntity(essayData);
         return new Essay(parsedData);
-    }
-
-    public async create(data: EssayInsertionData) {
-        const error = 'Falha ao gravar no banco de dados';
-        const parsed = await this.toDb(data);
-        const [id] = await this.query.insert({ ...parsed, local: false, status: 'pending' })
-            .catch((err) => {
-                this.logger.error(err);
-                throw new Error(error);
-            });
-        const check = await this.get({ id });
-        if (!check) throw new Error(error);
-        return check;
     }
 
     public async exists(is: EssayFilter[]) {
@@ -240,25 +218,6 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
                 throw new Error('Erro ao consultar redaçoes no banco de dados');
             });
         return amount[0].count;
-    }
-
-    public async update(id: number, data: Partial<EssayInsertionData>) {
-        const updated = await this.query.where('essay_id', id).update(await this.toDb(data))
-            .catch((err) => {
-                this.logger.error(err);
-                throw { message: 'Erro ao atualizar redação', status: 500 };
-            });
-        if (updated < 1) throw { message: 'Erro ao atualizar redação', status: 404 };
-        if (updated > 1) throw { message: `${updated} redações afetadas!`, status: 500 };
-        const error = { message: 'Erro ao consultar redação no banco de dados' };
-        const essay = await this.query.where('essay_id', id).first()
-            .catch((err) => {
-                this.logger.error(err);
-                throw { ...error, status: 500 };
-            });
-        if (!essay) throw { ...error, status: 404 };
-        const parsed = await this.toEntity(essay);
-        return new Essay(parsed);
     }
 
     public async evaluatedChart(filter: EssayChartFilter) {
@@ -348,7 +307,8 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface> impl
     public async invalidiationIsExpired(essay: number) {
         try {
             const invalidations = new EssayInvalidationRepository(this.context);
-            const invalidation = await invalidations.get(essay);
+            const invalidation = await invalidations.get({ essay });
+            if (!invalidation) throw { message: 'Invalidação não econtrada', status: 400 };
             return invalidation.invalidationDate < new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
         } catch (error: any) {
             this.logger.error(error);

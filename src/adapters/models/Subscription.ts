@@ -71,12 +71,12 @@ const fieldsMap: FieldsMap<SubscriptionModel, SubscriptionInterface> = [
     [['course_tag', courseTagParser], ['course', courseParser]],
 ];
 
-export default class SubscriptionRepository extends Repository<SubscriptionModel, SubscriptionInterface> implements SubscriptionRepositoryInterface {
+export default class SubscriptionRepository extends Repository<SubscriptionModel, SubscriptionInterface, Subscription> implements SubscriptionRepositoryInterface {
     public readonly users: UserRepository;
     public readonly products: ProductRepositoryInterface;
 
     constructor(context: Context) {
-        super(fieldsMap, context, SubscriptionService);
+        super(fieldsMap, context, SubscriptionService, Subscription);
         this.users = new UserRepository(context);
         this.products = new ProductRepository(context);
     }

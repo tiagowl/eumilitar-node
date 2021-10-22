@@ -79,7 +79,9 @@ export default class CorrectionCase {
     }
 
     public async get(filter: Partial<CorrectionInterface>) {
-        return this.repository.get(filter);
+        const recovered = await this.repository.get(filter);
+        if (!recovered) throw new CaseError('Correção não encontrada', Errors.NOT_FOUND);
+        return recovered;
     }
 
     public async update(essayId: number, userId: number, data: Partial<CorrectionBase>) {

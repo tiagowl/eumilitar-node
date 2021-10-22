@@ -135,7 +135,7 @@ export async function createEssay(context: Context, id: number) {
         deactivated: false,
     }
     const exists = await themeRepository.hasActiveTheme(themeData);
-    const theme = await (exists ? themeRepository.get({ courses: themeData.courses }, true) : themeRepository.create(themeData));
+    const theme = await (exists ? themeRepository.get({ courses: themeData.courses }) : themeRepository.create(themeData));
     if (!theme) throw new Error('Falha ao recuperar tema');
     const repository = new EssayRepository(context);
     return repository.create({

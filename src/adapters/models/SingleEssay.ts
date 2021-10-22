@@ -32,51 +32,9 @@ const fieldsMap: FieldsMap<SingleEssayModel, SingleEssayInterface> = [
     [['essay_id', Number], ['essay', Number]],
 ];
 
-export default class SingleEssayRepository extends Repository<SingleEssayModel, SingleEssayInterface> implements SingleEssayRepositoryInterface {
+export default class SingleEssayRepository extends Repository<SingleEssayModel, SingleEssayInterface, SingleEssay> implements SingleEssayRepositoryInterface {
+
     constructor(context: Context) {
-        super(fieldsMap, context, SingleEssayService);
-    }
-
-    public async create(data: SingleEssayInsertionInterface) {
-        try {
-            const parsed = await this.toDb(data);
-            const [id] = await this.query.insert(parsed);
-            const recovered = await this.query.where('id', id).first();
-            if (!recovered) throw new Error('Erro ao salvar token');
-            const recoveredParsed = await this.toEntity(recovered);
-            return new SingleEssay(recoveredParsed);
-        } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: 'Erro ao salvar token', status: 500 };
-        }
-    }
-
-    public async get(filter: Partial<SingleEssayInterface>) {
-        try {
-            const parsed = await this.toDb(filter);
-            const recovered = await this.query.where(parsed).first();
-            if (!recovered) return;
-            const recoverdParsed = await this.toEntity(recovered);
-            return new SingleEssay(recoverdParsed);
-        } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: 'Erro ao consultar token', status: 500 };
-        }
-    }
-
-    public async update(id: number, data: Partial<SingleEssayInterface>) {
-        try {
-            const parsed = await this.toDb(data);
-            const updated = await this.query.where('id', id).update(parsed);
-            if (updated === 0) throw { message: 'Nenhum registro afetado', status: 500 };
-            if (updated > 1) throw { message: 'Mais de um registro afetado', status: 500 };
-            return this.get({ id });
-        } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: 'Erro ao consultar token', status: 500 };
-        }
+        super(fieldsMap, context, SingleEssayService, SingleEssay);
     }
 }

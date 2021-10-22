@@ -3,7 +3,7 @@ import { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeReposit
 import EssayTheme, { Course, EssayThemeInterface } from "../../entities/EssayTheme";
 import { Logger } from 'winston';
 import { Context } from "../interfaces";
-import Repository from "./Repository";
+import Repository, { FieldsMap, prsr } from "./Repository";
 
 export interface EssayThemeModel extends EssayThemeInsertion {
     id: number;
@@ -24,31 +24,22 @@ const divider = ', ';
 
 export const EssayThemeService = (db: Knex) => db<Partial<EssayThemeInsertion>, EssayThemeModel[]>('essay_themes');
 
-export default class EssayThemeRepository extends Repository<EssayThemeModel, EssayThemeInterface> implements EssayThemeRepositoryInterface {
+const fieldsMap: FieldsMap<EssayThemeModel, EssayThemeInterface> = [
+    [['id', prsr.nb], ['id', prsr.nb]],
+    [['title', prsr.st], ['title', prsr.st]],
+    [['helpText', prsr.st], ['helpText', prsr.st]],
+    [['file', prsr.st], ['file', prsr.st]],
+    [['deactivated', Boolean], ['deactivated', Boolean]],
+    [['endDate', prsr.dt], ['endDate', prsr.dt]],
+    [['startDate', prsr.dt], ['startDate', prsr.dt]],
+    [['lastModified', prsr.dt], ['lastModified', prsr.dt]],
+    [['courses', (val: Set<Course>) => [...val].join(divider)], ['courses', (val: string) => new Set(val.split(divider) as Course[])]],
+];
+
+export default class EssayThemeRepository extends Repository<EssayThemeModel, EssayThemeInterface, EssayTheme> implements EssayThemeRepositoryInterface {
 
     constructor(context: Context) {
-        super([], context, EssayThemeService);
-    }
-
-    private async parseToInsert(data: EssayThemeCreation): Promise<EssayThemeInsertion> {
-        return { ...data, courses: [...data.courses].join(divider) };
-    }
-
-    private async parseFromDB(data: EssayThemeModel): Promise<EssayThemeInterface> {
-        const courses = new Set<Course>(data.courses.split(divider) as Course[]);
-        return { ...data, courses, deactivated: !!data.deactivated };
-    }
-
-    private filter(filter: EssayThemeFilter, service: Knex.QueryBuilder) {
-        const entries = Object.entries(filter);
-        return entries.reduce((query, [key, value]) => {
-            if (key === 'courses') return query.where(function () {
-                [...value].forEach(course => {
-                    this.orWhere(key, 'like', `%${course}%`);
-                });
-            });
-            return query.where(key, value);
-        }, service);
+        super(fieldsMap, context, EssayThemeService, EssayTheme);
     }
 
     private filterByActive(service: Knex.QueryBuilder, active?: boolean): Knex.QueryBuilder {
@@ -75,35 +66,20 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
                     return query.where(...item);
                 }, service).then(data => !!data);
             }
-            return this.filter(filter, service).first().then(data => !!data);
+            const entries = Object.entries(filter);
+            const res = entries.reduce((query, [key, value]) => {
+                if (value instanceof Set) return query.where(function () {
+                    [...value].forEach(course => {
+                        this.orWhere(key, 'like', `%${course}%`);
+                    });
+                });
+                else return query.where(key, value);
+            }, service);
+            const [{ total }] = await res.count({ total: '*' });
+            return !!Number(total);
         } catch (error: any) {
             this.logger.error(error);
             throw new Error('Falha ao consultar o banco de dados');
-        }
-    }
-
-    public async get(filter: EssayThemeFilter, active?: boolean) {
-        try {
-            const service = this.filterByActive(this.query, active);
-            const theme = await this.filter(filter, service).first();
-            return !!theme ? this.parseFromDB(theme) : undefined;
-        } catch (error: any) {
-            this.logger.error(error);
-            throw new Error('Falha ao consultar o banco de dados');
-        }
-    }
-
-    public async create(data: EssayThemeCreation) {
-        try {
-            const parsed = await this.parseToInsert(data);
-            const service = this.query;
-            const ids = await service.insert(parsed);
-            const theme = await this.get({ id: ids[0] });
-            if (!theme) throw new Error('Falha ao salvar tema');
-            return theme;
-        } catch (error: any) {
-            this.logger.error(error);
-            throw new Error('Falha ao gravar no banco de dados');
         }
     }
 
@@ -153,26 +129,10 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
                 .offset(((page || 1) - 1) * (pageSize || 10))
                 .limit((pageSize || 10))
                 .select<EssayThemeModel[]>('*');
-            return Promise.all(themes.map(async theme => new EssayTheme(await this.parseFromDB(theme))));
+            return Promise.all(themes.map(async theme => new EssayTheme(await this.toEntity(theme))));
         } catch (error: any) {
             this.logger.error(error);
             throw new Error('Falha ao consultar o banco de dados');
-        }
-    }
-
-    public async update(id: number, data: EssayThemeCreation) {
-        try {
-            const parsedData = await this.parseToInsert(data);
-            const service = this.query;
-            const updated = await service.where('id', id).update(parsedData);
-            if (updated === 0) throw new Error('Falha ao atualizar tema');
-            if (updated > 1) throw new Error(`${updated} temas foram modificados!`);
-            const theme = await this.get({ id });
-            if (!theme) throw new Error('Falha ao recuperar tema');
-            return new EssayTheme(theme);
-        } catch (error: any) {
-            this.logger.error(error);
-            throw new Error('Falha ao atualizar no banco de dados');
         }
     }
 }

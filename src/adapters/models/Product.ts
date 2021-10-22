@@ -36,10 +36,10 @@ const parserMap: FieldsMap<ProductModel, ProductInterface> = [
 
 export const ProductService = (db: Knex) => db<Partial<ProductModel>, ProductModel[]>('products');
 
-export default class ProductRepository extends Repository<ProductModel, ProductInterface> implements ProductRepositoryInterface {
+export default class ProductRepository extends Repository<ProductModel, ProductInterface, Product> implements ProductRepositoryInterface {
 
     constructor(context: Context) {
-        super(parserMap, context, ProductService);
+        super(parserMap, context, ProductService, Product);
     }
 
     private async writeMessage(filter: Partial<ProductInterface>) {
@@ -56,61 +56,12 @@ export default class ProductRepository extends Repository<ProductModel, ProductI
     }
 
     public async get(filter: Partial<ProductInterface>) {
-        const parsed = await this.toDb(filter);
-        const product = await this.query
-            .where(parsed).first()
-            .catch((error) => {
-                this.logger.error(error);
-                throw { message: 'Erro ao consultar produto no banco de dados', status: 500 };
-            });
+        const product = await super.get(filter);
         if (!product) {
-            if (typeof filter.code === 'number') await this.notifyAdmins(filter);
+            await this.notifyAdmins(filter);
             throw { message: 'Produto não encontrado', status: 404 };
         }
-        const entityData = await this.toEntity(product);
-        return new Product(entityData);
+        return product;
     }
 
-    public async create(data: ProductCreation) {
-        const parsed = await this.toDb(data);
-        const err = { message: 'Erro ao salvar produto', status: 500 };
-        const [id] = await this.query.insert(parsed).catch(error => {
-            this.logger.error(error);
-            throw err;
-        });
-        if (typeof id !== 'number') throw err;
-        const productData = await this.query.where('product_id', id).first()
-            .catch((error) => {
-                this.logger.error(error);
-                throw { message: 'Erro ao consultar produto no banco de dados', status: 500 };
-            });
-        if (!productData) throw err;
-        const entityData = await this.toEntity(productData);
-        return new Product(entityData);
-    }
-
-    public async filter(filter: Partial<ProductInterface>) {
-        const parsed = await this.toDb(filter);
-        const filtered = await this.query.where(parsed)
-            .catch(error => {
-                this.logger.error(error);
-                throw { message: 'Erro ao consultar produtos no banco de dados', status: 500 };
-            });
-        return Promise.all(filtered.map(async item => {
-            const data = await this.toEntity(item);
-            return new Product(data);
-        }));
-    }
-
-    public async update(id: number, data: Partial<ProductInterface>) {
-        const parsed = await this.toDb(data);
-        const updated = await this.query.where('product_id', id).update(parsed)
-            .catch(error => {
-                this.logger.error(error);
-                throw { message: 'Erro ao atualizar produto', status: 500 };
-            });
-        if (updated > 1) throw { message: `${updated} registros afetados`, status: 500 };
-        if (updated === 0) throw { message: 'Erro ao atualizar produto', status: 500 };
-        return this.get({ id: data.id || id });
-    }
 }

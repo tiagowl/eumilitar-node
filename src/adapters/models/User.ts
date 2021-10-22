@@ -7,7 +7,7 @@ import { SessionService } from "./Session";
 import UserCreation, { Props as UserCreationProps } from '../views/UserCreation';
 import crypto from 'crypto';
 import { RecoveryService } from "./Recovery";
-import { Pagination } from "../../cases/interfaces";
+import { Filter, Paginated, Pagination } from "../../cases/interfaces";
 
 const statusMap: AccountStatus[] = ['inactive', 'active', 'pending'];
 const permissionMap: [number, AccountPermission][] = [
@@ -64,10 +64,10 @@ const fieldsMap: FieldsMap<UserModel, UserData> = [
     [['phone', val => !!val ? String(val) : val], ['phone', val => !!val ? String(val) : val]],
 ];
 
-export default class UserRepository extends Repository<UserModel, UserData> implements UserRepositoryInterface {
+export default class UserRepository extends Repository<UserModel, UserData, User> implements UserRepositoryInterface {
 
     constructor(context: Context) {
-        super(fieldsMap, context, UserService);
+        super(fieldsMap, context, UserService, User);
     }
 
     private async search(service: Knex.QueryBuilder<Partial<UserModel>, UserModel[]>, search?: string) {
@@ -91,7 +91,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
         }
     }
 
-    public async filter(filter: UserFilter) {
+    public async filter(filter: Filter<UserInterface>): Promise<Paginated<User> | User[]> {
         const { pagination, search, ...params } = filter;
         const parsedFilter = await this.toDb(params);
         const service = this.query;
@@ -181,22 +181,7 @@ export default class UserRepository extends Repository<UserModel, UserData> impl
         }
     }
 
-    public async update(id: number, data: UserFilter) {
-        try {
-            const parsedData = await this.toDb(data);
-            const updated = await this.query.where('user_id', id).update(parsedData)
-                .catch(error => {
-                    this.logger.error(error);
-                    throw { message: 'Erro ao gravar no banco de dados', status: 500 };
-                });
-            if (updated === 0) throw { message: 'Nenhum usuário atualizado', status: 500 };
-            if (updated > 1) throw { message: 'Mais de um registro afetado', status: 500 };
-            return updated;
-        } catch (error: any) {
-            this.logger.error(error);
-            throw { message: 'Falha ao gravar no banco de dados', status: 500 };
-        }
-    }
+
 
     public async get(filter: UserFilter) {
         try {

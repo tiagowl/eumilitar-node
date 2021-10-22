@@ -149,7 +149,7 @@ export default class EssayController extends Controller<EssayData> {
         try {
             const { ordering = 'sendDate', page = 1, pageSize = 10, ...filterData } = params;
             const filter = await this.castFilter(filterData, filterSchema);
-            const essays = await this.useCase.allEssays(filter, { ordering, page, pageSize });
+            const essays = await this.useCase.allEssays({ pagination: { page, ordering, pageSize }, ...filter });
             const count = await this.useCase.count(filter);
             const data = await Promise.all(essays.map(async essay => this.parseEntity(essay)));
             return {

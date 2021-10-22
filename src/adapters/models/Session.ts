@@ -24,53 +24,11 @@ const fieldsMap: FieldsMap<SessionModel, SessionInterface> = [
     [['user_agent', String], ['agent', String]],
 ];
 
-export default class SessionRepository extends Repository<SessionModel, SessionInterface> implements SessionRepositoryInterface {
+export default class SessionRepository extends Repository<SessionModel, SessionInterface, Session> implements SessionRepositoryInterface {
     public readonly users: UserRepositoryInterface;
 
     constructor(context: Context) {
-        super(fieldsMap, context, SessionService);
+        super(fieldsMap, context, SessionService, Session);
         this.users = new UserRepository(context);
-    }
-
-    public async create(data: SessionInsertionInterface) {
-        try {
-            const parsed = await this.toDb(data);
-            const [id] = await this.query.insert(parsed);
-            if (!id) throw new Error('Erro ao salvar token');
-            const recovered = await this.query.where('id', id).first();
-            if (!recovered) throw new Error('Erro ao salvar token');
-            const parsedData = await this.toEntity(recovered);
-            return new Session(parsedData);
-        } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: 'Erro ao gravar token no banco de dados', status: 500 };
-        }
-    }
-
-    public async delete(filter: Partial<SessionInterface>) {
-        try {
-            const parsed = await this.toDb(filter);
-            const deleted = await this.query.where(parsed).delete();
-            return deleted;
-        } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: 'Erro ao deletar token no banco de dados', status: 500 };
-        }
-    }
-
-    public async get(filter: Partial<SessionInterface>) {
-        try {
-            const parsed = await this.toDb(filter);
-            const data = await this.query.where(parsed).first();
-            if (!data) return;
-            const toEntity = await this.toEntity(data);
-            return new Session(toEntity);
-        } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: 'Erro ao consultar token no banco de dados', status: 500 };
-        }
     }
 }

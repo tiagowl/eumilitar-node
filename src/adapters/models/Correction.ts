@@ -57,12 +57,12 @@ const fieldsMap: FieldsMap<CorrectionModel, CorrectionInterface> = [
 
 export const CorrectionService = (db: Knex) => db<Partial<CorrectionModelInsertionData>, CorrectionModel[]>('essay_grading');
 
-export default class CorrectionRepository extends Repository<CorrectionModel, CorrectionInterface> implements CorrectionRepositoryInterface {
+export default class CorrectionRepository extends Repository<CorrectionModel, CorrectionInterface, Correction> implements CorrectionRepositoryInterface {
     public readonly users: UserRepositoryInterface;
     public readonly essays: EssayRepositoryInterface;
 
     constructor(context: Context) {
-        super(fieldsMap, context, CorrectionService);
+        super(fieldsMap, context, CorrectionService, Correction);
         this.users = new UserRepository(context);
         this.essays = new EssayRepository(context);
     }

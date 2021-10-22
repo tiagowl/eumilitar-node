@@ -19,15 +19,17 @@ export default class EssayThemeTestRepository extends TestRepository<EssayTheme,
             '<': (a: any, b: any) => (a < b),
         };
         if ('reduce' in filter) {
-            return filter.reduce((state, item) => {
-                return !!this.database.find((data) => operations[item[1]](data[item[0]], item[2])) || state;
+            return filter.reduce((state, [key, operator, val]) => {
+                // @ts-ignore
+                return !!this.database.find((data) => operations[operator](data[key], val)) || state;
             }, false);
         }
         return !!this.database.find((data) => {
             const keys = Object.entries(filter);
             // @ts-ignore
-            return keys.reduce((state, item) => {
-                return (data[item[0]] === item[1]) && state;
+            return keys.reduce((state, [key, val]) => {
+                // @ts-ignore
+                return (data[key] === val) && state;
             }, true);
         });
     }
@@ -46,14 +48,18 @@ export default class EssayThemeTestRepository extends TestRepository<EssayTheme,
         const start = ((page || 1) - 1) * (pageSize || 10);
         const end = pageSize || 10;
         const order = ordering || 'id';
+        // @ts-ignore
         const filtered = [...this.database].slice(start, end).sort((a, b) => a[order] > b[order] ? 1 : a[order] < b[order] ? -1 : 0);
         return filtered.map(item => new this.entity(item));
     }
 
     public async get(filter: EssayThemeFilter) {
         return new this.entity(this.database.find(item => {
+            // @ts-ignore
             return Object.entries(filter)
+                // @ts-ignore
                 .reduce((valid, field) => {
+                    // @ts-ignore
                     return valid && (item[field[0]] === field[1]);
                 }, true as boolean);
         }));
