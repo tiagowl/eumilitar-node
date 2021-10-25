@@ -65,30 +65,16 @@ const fieldsMap: FieldsMap<UserModel, UserData> = [
 ];
 
 export default class UserRepository extends Repository<UserModel, UserData, User> implements UserRepositoryInterface {
+    protected readonly fieldsMap = fieldsMap;
+    protected readonly service;
+    protected readonly entity;
+    protected readonly searchFields;
 
     constructor(context: Context) {
-        super(fieldsMap, context, UserService, User);
-    }
-
-    private async search(service: Knex.QueryBuilder<Partial<UserModel>, UserModel[]>, search?: string) {
-        if (!!search) {
-            service
-                .orWhere('first_name', 'like', `%${search}%`)
-                .orWhere('last_name', 'like', `%${search}%`)
-                .orWhere('email', 'like', `%${search}%`);
-            const terms = search.split(' ');
-            if (terms.length > 1) {
-                service.orWhere(function () {
-                    terms.forEach(val => {
-                        this.andWhere(function () {
-                            this.orWhere('first_name', 'like', `%${val}%`)
-                                .orWhere('last_name', 'like', `%${val}%`)
-                                .orWhere('email', 'like', `%${val}%`);
-                        });
-                    });
-                });
-            }
-        }
+        super(context);
+        this.service = UserService;
+        this.entity = User;
+        this.searchFields = ['firstName', 'lastName', 'email'] as (keyof UserModel)[];
     }
 
     public async filter(filter: Filter<UserInterface>): Promise<Paginated<User> | User[]> {

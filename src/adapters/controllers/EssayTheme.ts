@@ -5,6 +5,8 @@ import { Course } from '../../entities/EssayTheme';
 import EssayThemeCase, { EssayThemeFilter } from "../../cases/EssayTheme";
 import EssayThemeRepository, { EssayThemeModel } from '../models/EssayTheme';
 import { Context } from "../interfaces";
+import { Filter } from "../../cases/interfaces";
+import { EssayInterface } from "../../entities/Essay";
 
 interface EssayThemeBaseInterface {
     title: string;
@@ -176,9 +178,9 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
 
     public async get(filter: Partial<EssayThemeResponse>) {
         try {
-            const filterData = !!filter.courses ? { ...filter, courses: new Set(filter.courses) } : filter as EssayThemeFilter;
+            const filterData = !!filter.courses ? { ...filter, courses: new Set(filter.courses) } : filter as Filter<EssayThemeInterface>;
             const theme = await this.useCase.get(filterData);
-            if (!theme) return undefined;
+            if (!theme) return;
             const entity = new EssayTheme(theme);
             return this.parseEntity(entity);
         } catch (error: any) {

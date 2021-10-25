@@ -1,11 +1,12 @@
 import * as yup from 'yup';
 import UserUseCase, { UserCreation, UserFilter, UserUpdate } from '../../cases/User';
-import User, { AccountPermission, accountPermissions, accountStatus, AccountStatus } from '../../entities/User';
+import User, { AccountPermission, accountPermissions, accountStatus, AccountStatus, UserInterface } from '../../entities/User';
 import UserRepository from '../models/User';
 import Controller, { paginationSchema } from './Controller';
 import { Context } from '../interfaces';
 import { Paginated } from '../../cases/interfaces';
 import _ from 'lodash';
+import { Filter } from '../../cases/interfaces';
 
 export type UserResponse = {
     id: number;
@@ -75,10 +76,10 @@ export default class UserController extends Controller<any> {
     }
 
 
-    public async all(filter: UserFilter): Promise<UserResponse[] | Paginated<UserResponse>> {
+    public async all(filter: Filter<UserInterface>): Promise<UserResponse[] | Paginated<UserResponse>> {
         try {
             const parsedFilter = await this.castFilter(filter, filterSchema);
-            const users = await this.useCase.listAll(parsedFilter);
+            const users = await this.useCase.filter(parsedFilter);
             if (users instanceof Array) {
                 return Promise.all(users.map(UserController.parseEntity));
             }

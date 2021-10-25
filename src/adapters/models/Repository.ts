@@ -13,31 +13,37 @@ export const prsr = {
     st: (val: any) => !!val ? String(val) : val,
 };
 
-export default class Repository<Model, Interface, Entity> {
-    protected readonly fieldsMap: FieldsMap<Model, Interface>;
+export default abstract class Repository<Model, Interface, Entity> {
+    #selector?: string;
     protected readonly logger: Logger;
     protected readonly db: Knex;
     protected readonly context: Context;
-    protected readonly service: (db: Knex) => Knex.QueryBuilder<Partial<Model>, Model[]>;
-    protected readonly entity: Constructor<Entity>;
+    protected abstract readonly entity: Constructor<Entity>;
+    protected abstract readonly fieldsMap: FieldsMap<Model, Interface>;
+    protected abstract readonly searchFields: (keyof Model)[];
+    protected abstract readonly service: (db: Knex) => Knex.QueryBuilder<Partial<Model>, Model[]>;
 
-    constructor(fieldsMap: FieldsMap<Model, Interface>, context: Context, service: (db: Knex) => Knex.QueryBuilder<Partial<Model>, Model[]>, entity: Constructor<Entity>) {
+    constructor(context: Context) {
         const { logger, db } = context;
         this.context = context;
-        this.fieldsMap = fieldsMap;
         this.logger = logger;
         this.db = db;
-        this.service = service;
-        this.entity = entity;
     }
 
-    get query(): Knex.QueryBuilder<Partial<Model>, Model[]> {
+    protected get query(): Knex.QueryBuilder<Partial<Model>, Model[]> {
         try {
             return this.service(this.db);
         } catch (error: any) {
             this.logger.error(error);
             throw { message: 'Erro ao conectar com o banco de dados', status: 500 };
         }
+    }
+
+    protected get selector() {
+        if (!this.#selector) {
+            this.#selector = this.getDbFieldSync('id' as keyof Interface) as string;
+        }
+        return this.#selector as string;
     }
 
     protected async processError(error: any) {
@@ -73,6 +79,10 @@ export default class Repository<Model, Interface, Entity> {
     }
 
     protected async getDbField(field: keyof Interface): Promise<keyof Model> {
+        return this.getDbFieldSync(field);
+    }
+
+    protected getDbFieldSync(field: keyof Interface): keyof Model {
         const parsed = this.fieldsMap.find(([_, [key]]) => key === field);
         if (!parsed) throw { message: `Campo "${field}" não encontrado`, status: 400 };
         return parsed[0][0];
@@ -84,6 +94,27 @@ export default class Repository<Model, Interface, Entity> {
             service.offset(((page - 1) * (pageSize)))
                 .limit(pageSize);
             if (!!ordering) service.orderBy(await this.getDbField(ordering));
+        }
+    }
+
+    protected async search(service: Knex.QueryBuilder<Partial<Model>, Model[]>, search?: string) {
+        if (!!search) {
+            const { searchFields } = this;
+            await Promise.all(searchFields.map(async (field) => {
+                service.orWhere(field as string, 'like', `%${search}%`);
+            }));
+            const terms = search.split(' ');
+            if (terms.length > 1) {
+                service.orWhere(function () {
+                    terms.forEach(val => {
+                        this.andWhere(async function () {
+                            await Promise.all(searchFields.map(async (field) => {
+                                this.orWhere(field as string, 'like', `%${val}%`);
+                            }));
+                        });
+                    });
+                });
+            }
         }
     }
 
@@ -155,8 +186,7 @@ export default class Repository<Model, Interface, Entity> {
     public async update(id: number, data: Partial<Interface>) {
         try {
             const parsedData = await this.toDb(data);
-            const selector = await this.getDbField('id' as keyof Interface);
-            const updated = await this.query.where(selector as string, id).update(parsedData as any)
+            const updated = await this.query.where(this.selector, id).update(parsedData as any)
                 .catch(error => {
                     this.logger.error(error);
                     throw { message: 'Erro ao gravar no banco de dados', status: 500 };
@@ -176,7 +206,7 @@ export default class Repository<Model, Interface, Entity> {
         try {
             const parsed = await this.toDb(data);
             const [id] = await this.query.insert(parsed as any);
-            const recovered = await this.query.where('id', id).first();
+            const recovered = await this.query.where(this.selector, id).first();
             if (!recovered) throw new Error('Erro ao salvar no banco de dados');
             const recoveredParsed = await this.toEntity(recovered);
             return new this.entity(recoveredParsed);
@@ -189,12 +219,26 @@ export default class Repository<Model, Interface, Entity> {
 
     public async filter(filter: Filter<Interface>): Promise<Paginated<Entity> | Entity[]> {
         try {
-            const parsed = await this.toDb(filter);
-            const filtered = await this.query.where(parsed) as Model[];
-            return Promise.all(filtered.map(async item => {
-                const data = await this.toEntity(item);
-                return new this.entity(data);
+            const { pagination, search, ...params } = filter;
+            const parsedFilter = await this.toDb(params as Partial<Interface>);
+            const service = this.query;
+            await this.paginate(service, pagination as Pagination<Interface>);
+            await this.search(service, search);
+            const filtered = await service.where(parsedFilter) as Model[];
+            const users = await Promise.all(filtered.map(async (data: Model) => {
+                const parsedData = await this.toEntity(data as Model);
+                return new this.entity(parsedData);
             }));
+            if (!pagination) return users;
+            const counting = this.query;
+            await this.search(counting, search);
+            const { count } = await counting.where(parsedFilter).count('*', { as: 'count' }).first();
+            const counted = Number(count);
+            return {
+                page: users,
+                pages: Math.ceil(counted / (pagination.pageSize || 10)),
+                count: counted
+            };
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;

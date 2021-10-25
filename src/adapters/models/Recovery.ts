@@ -26,9 +26,16 @@ const fieldsMap: FieldsMap<RecoveryModel, RecoveryInterface> = [
 
 export default class RecoveryRepository extends Repository<RecoveryModel, RecoveryInterface, Recovery> implements RecoveryRepositoryInterface {
     public readonly users: UserRepository;
+    protected readonly fieldsMap;
+    protected readonly service;
+    protected readonly entity;
+    protected readonly searchFields = [];
 
     constructor(context: Context) {
-        super(fieldsMap, context, RecoveryService, Recovery);
+        super(context);
         this.users = new UserRepository(context);
+        this.service = RecoveryService;
+        this.entity = Recovery;
+        this.fieldsMap = fieldsMap;
     }
 }

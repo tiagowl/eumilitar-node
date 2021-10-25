@@ -26,7 +26,7 @@ export const courseParser = (val: 2 | 3) => {
     return parsed[0];
 };
 
-const parserMap: FieldsMap<ProductModel, ProductInterface> = [
+const fieldsMap: FieldsMap<ProductModel, ProductInterface> = [
     [['product_id', Number], ['id', Number]],
     [['product_name', String], ['name', String]],
     [['course_tag', courseTagParser], ['course', courseParser]],
@@ -37,9 +37,16 @@ const parserMap: FieldsMap<ProductModel, ProductInterface> = [
 export const ProductService = (db: Knex) => db<Partial<ProductModel>, ProductModel[]>('products');
 
 export default class ProductRepository extends Repository<ProductModel, ProductInterface, Product> implements ProductRepositoryInterface {
+    protected readonly fieldsMap;
+    protected readonly service;
+    protected readonly entity;
+    protected readonly searchFields = [];
 
     constructor(context: Context) {
-        super(parserMap, context, ProductService, Product);
+        super(context);
+        this.fieldsMap = fieldsMap;
+        this.service = ProductService;
+        this.entity = Product;
     }
 
     private async writeMessage(filter: Partial<ProductInterface>) {

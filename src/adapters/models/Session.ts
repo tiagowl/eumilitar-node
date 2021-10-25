@@ -26,9 +26,16 @@ const fieldsMap: FieldsMap<SessionModel, SessionInterface> = [
 
 export default class SessionRepository extends Repository<SessionModel, SessionInterface, Session> implements SessionRepositoryInterface {
     public readonly users: UserRepositoryInterface;
+    protected readonly fieldsMap;
+    protected readonly service;
+    protected readonly entity;
+    protected readonly searchFields = [];
 
     constructor(context: Context) {
-        super(fieldsMap, context, SessionService, Session);
+        super(context);
         this.users = new UserRepository(context);
+        this.service = SessionService;
+        this.entity = Session;
+        this.fieldsMap = fieldsMap;
     }
 }

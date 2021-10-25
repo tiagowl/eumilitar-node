@@ -59,9 +59,10 @@ const reverseCourseParser: Parser = (data: number) => {
 
 const parseCorrector = (value: null | number) => value === null ? value : Number(value);
 
-const fieldParserDB: FieldsMap<EssayModel, EssayInterface> = [
+const fieldsMap: FieldsMap<EssayModel, EssayInterface> = [
     [['essay_id', Number], ['id', Number],],
     [['file_url', String], ['file', String],],
+    [['file_path', String], ['file', String],],
     [['user_id', Number], ['student', Number],],
     [['course_tag', courseParser], ['course', reverseCourseParser],],
     [['theme', Number], ['theme', Number],],
@@ -77,18 +78,24 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface, Essa
     public readonly products: ProductRepositoryInterface;
     public readonly subscriptions: SubscriptionRepositoryInterface;
     public readonly singles: SingleEssayRepositoryInterface;
+    protected readonly fieldsMap;
+    protected readonly service;
+    protected readonly entity;
+    protected readonly searchFields = [];
 
     constructor(context: Context) {
-        super(fieldParserDB, context, EssayService, Essay);
+        super(context);
         this.themes = new EssayThemeRepository(context);
         this.users = new UserRepository(context);
         this.products = new ProductRepository(context);
         this.subscriptions = new SubscriptionRepository(context);
         this.singles = new SingleEssayRepository(context);
+        this.fieldsMap = fieldsMap;
+        this.service = EssayService;
+        this.entity = Essay;
     }
 
-
-    private search(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, search?: string) {
+    protected async search(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, search?: string) {
         if (!!search) {
             const userSubQuery = UserService(this.db)
                 .orWhere('first_name', 'like', `%${search}%`)
@@ -109,7 +116,6 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface, Essa
             }
             service.whereIn('user_id', userSubQuery);
         }
-        return service;
     }
 
     private period(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, period?: { start?: Date, end?: Date }) {
@@ -157,7 +163,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface, Essa
         const service = this.query;
         const { search, period, ...filter } = filterData;
         this.period(service, period);
-        this.search(service, search);
+        await this.search(service, search);
         const parsedFilter = await this.toDb(filter);
         const essayData = await service.where(parsedFilter).first()
             .catch((err) => {
@@ -191,7 +197,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface, Essa
             this.period(service, period);
             this.filterCorrectionPeriod(service, correctionPeriod);
             this.byStatus(service, status);
-            this.search(service, search);
+            await this.search(service, search);
             const parsedToDb = await this.toDb(filter);
             const essaysData = await service.where(parsedToDb);
             return Promise.all(essaysData?.map(async (data) => {
@@ -210,7 +216,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface, Essa
         this.filterCorrectionPeriod(service, correctionPeriod);
         this.period(service, period);
         this.byStatus(service, status);
-        this.search(service, search);
+        await this.search(service, search);
         const amount = await service.where(await this.toDb(filter))
             .count<Record<string, { count: number }>>('essay_id as count')
             .catch((err) => {

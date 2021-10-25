@@ -19,6 +19,7 @@ describe('#8 Inscrições', () => {
     beforeAll(async done => {
         const productRepository = new ProductRepository(context);
         const product = await productRepository.get({ course: 'espcex' });
+        await saveUser(user, UserService(db).onConflict().merge());
         await SubscriptionService(db).insert({
             hotmart_id: faker.datatype.number(),
             product: product.id,
@@ -27,8 +28,7 @@ describe('#8 Inscrições', () => {
             registrationDate: new Date(),
             active: true,
             course_tag: 2,
-        }).onConflict('hotmart_id').ignore();
-        await saveUser(user, UserService(db));
+        }).onConflict('hotmart_id').merge();
         done();
     }, 10000);
     test('#81 Criação', async done => {

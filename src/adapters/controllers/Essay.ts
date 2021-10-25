@@ -1,4 +1,4 @@
-import Essay, { status, Status } from "../../entities/Essay";
+import Essay, { EssayInterface, status, Status } from "../../entities/Essay";
 import Controller from "./Controller";
 import * as yup from 'yup';
 import { EssayRepository } from "../models/Essay";
@@ -10,6 +10,7 @@ import UserUseCase from "../../cases/User";
 import { AccountPermission } from "../../entities/User";
 import { Context } from "../interfaces";
 import CaseError, { Errors } from "../../cases/Error";
+import { Paginated } from "../../cases/interfaces";
 
 export interface EssayInput {
     file: Express.MulterS3.File;
@@ -103,7 +104,7 @@ export default class EssayController extends Controller<EssayData> {
         };
     }
 
-    private async parseEntity(essay: Essay): Promise<EssayResponse> {
+    private parseEntity = async (essay: Essay): Promise<EssayResponse> => {
         const themeController = new EssayThemeController(this.context);
         const parsed = {
             course: essay.course,
@@ -131,6 +132,7 @@ export default class EssayController extends Controller<EssayData> {
             if (error instanceof CaseError && error.code === Errors.EXPIRED) {
                 throw { message: error.message, status: 403 };
             }
+            if (error.status) throw error;
             throw { message: error.message || 'Falha ao salvar redação' };
         }
     }
@@ -138,9 +140,10 @@ export default class EssayController extends Controller<EssayData> {
     public async myEssays(userId: number): Promise<EssayResponse[]> {
         try {
             const essays = await this.useCase.myEssays(userId);
-            return Promise.all(essays.map(async essay => this.parseEntity(essay)));
+            return Promise.all(essays.map(this.parseEntity));
         } catch (error: any) {
             this.logger.error(error);
+            if (error.status) throw error;
             throw { message: error.message || 'Falha ao consultar redações', status: 500 };
         }
     }
@@ -149,16 +152,14 @@ export default class EssayController extends Controller<EssayData> {
         try {
             const { ordering = 'sendDate', page = 1, pageSize = 10, ...filterData } = params;
             const filter = await this.castFilter(filterData, filterSchema);
-            const essays = await this.useCase.allEssays({ pagination: { page, ordering, pageSize }, ...filter });
-            const count = await this.useCase.count(filter);
-            const data = await Promise.all(essays.map(async essay => this.parseEntity(essay)));
+            const essays = await this.useCase.allEssays({ pagination: { page, ordering, pageSize }, ...filter }) as Paginated<Essay>;
             return {
-                pages: Math.ceil(count / pageSize),
-                page: data,
-                count,
+                ...essays,
+                page: await Promise.all(essays.page.map(this.parseEntity))
             };
         } catch (error: any) {
             this.logger.error(error);
+            if (error.status) throw error;
             throw { message: error.message || 'Falha ao consultar redações', status: 500 };
         }
     }
@@ -171,6 +172,7 @@ export default class EssayController extends Controller<EssayData> {
             return this.parseEntity(essay);
         } catch (error: any) {
             this.logger.error(error);
+            if (error.status) throw error;
             throw { message: error.message || 'Falha ao consultar redações', status: error.status || 500 };
         }
     }
@@ -182,6 +184,7 @@ export default class EssayController extends Controller<EssayData> {
             return this.parseEntity(updated);
         } catch (error: any) {
             this.logger.error(error);
+            if (error.status) throw error;
             throw { message: error.message || 'Falha ao atualizar', status: error.status || 400 };
         }
     }
@@ -195,6 +198,7 @@ export default class EssayController extends Controller<EssayData> {
             return this.parseEntity(updated);
         } catch (error: any) {
             this.logger.error(error);
+            if (error.status) throw error;
             throw { message: error.message || 'Falha ao atualizar', status: error.status || 400 };
         }
     }

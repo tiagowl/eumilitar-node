@@ -6,6 +6,8 @@ import SubscriptionCase, { ChartFilter, SubscriptionCreation, SubscriptionFilter
 import Subscription, { SubscriptionInterface } from '../../entities/Subscription';
 import CaseError, { Errors } from '../../cases/Error';
 import ProductCase from '../../cases/Product';
+import Product from '../../entities/Product';
+import { Paginated } from '../../cases/interfaces';
 
 export interface OrderData {
     hottok: string;
@@ -181,19 +183,18 @@ export default class SubscriptionController extends Controller<OrderData> {
             const parsed = await this.castFilter<SubscriptionFilter>(filter, filterSchema);
             const filtered = await this.useCase.filter(parsed);
             const productCase = new ProductCase(this.repository.products);
-            const products = await productCase.list({});
-            const page = await Promise.all(filtered.map(async subscription => {
+            const products = await productCase.list({}) as Product[];
+            const isList = filtered instanceof Array;
+            const page = await Promise.all((isList ? (filtered as Subscription[]) : (filtered as Paginated<Subscription>).page).map(async subscription => {
                 const data = await this.parseEntity(subscription);
                 const product = products.find(({ id }) => id === data.product);
                 if (!product) throw { message: `Produto "${data.product}" não encontrado`, status: 500 };
                 return { ...data, product: { ...product } };
             }));
-            if (!parsed.pagination) return page;
-            const count = await this.useCase.count(parsed);
+            if (isList) return page;
             return {
+                ...filtered,
                 page,
-                count,
-                pages: Math.ceil(count / (parsed.pagination.pageSize || 10)),
             };
         } catch (error: any) {
             this.logger.error(error);

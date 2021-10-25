@@ -60,9 +60,13 @@ export const CorrectionService = (db: Knex) => db<Partial<CorrectionModelInserti
 export default class CorrectionRepository extends Repository<CorrectionModel, CorrectionInterface, Correction> implements CorrectionRepositoryInterface {
     public readonly users: UserRepositoryInterface;
     public readonly essays: EssayRepositoryInterface;
+    protected readonly fieldsMap = fieldsMap;
+    protected readonly service = CorrectionService;
+    protected readonly entity = Correction;
+    protected readonly searchFields = [];
 
     constructor(context: Context) {
-        super(fieldsMap, context, CorrectionService, Correction);
+        super(context);
         this.users = new UserRepository(context);
         this.essays = new EssayRepository(context);
     }

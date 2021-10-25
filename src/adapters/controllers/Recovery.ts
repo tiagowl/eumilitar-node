@@ -174,7 +174,7 @@ export default class RecoveryController extends Controller<RecoveryInterface> {
         try {
             const validated = await this.validate(data, updatePasswordSchema);
             const updated = await this.useCase.updatePassword(validated);
-            return { updated };
+            return { updated: !!updated };
         } catch (error: any) {
             this.logger.error(error);
             if (error instanceof CaseError) {

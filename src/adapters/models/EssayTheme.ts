@@ -37,9 +37,16 @@ const fieldsMap: FieldsMap<EssayThemeModel, EssayThemeInterface> = [
 ];
 
 export default class EssayThemeRepository extends Repository<EssayThemeModel, EssayThemeInterface, EssayTheme> implements EssayThemeRepositoryInterface {
+    protected readonly fieldsMap;
+    protected readonly service;
+    protected readonly entity;
+    protected readonly searchFields = [];
 
     constructor(context: Context) {
-        super(fieldsMap, context, EssayThemeService, EssayTheme);
+        super(context);
+        this.fieldsMap = fieldsMap;
+        this.service = EssayThemeService;
+        this.entity = EssayTheme;
     }
 
     private filterByActive(service: Knex.QueryBuilder, active?: boolean): Knex.QueryBuilder {

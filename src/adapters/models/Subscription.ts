@@ -74,11 +74,18 @@ const fieldsMap: FieldsMap<SubscriptionModel, SubscriptionInterface> = [
 export default class SubscriptionRepository extends Repository<SubscriptionModel, SubscriptionInterface, Subscription> implements SubscriptionRepositoryInterface {
     public readonly users: UserRepository;
     public readonly products: ProductRepositoryInterface;
+    protected readonly fieldsMap;
+    protected readonly service;
+    protected readonly entity;
+    protected readonly searchFields = [];
 
     constructor(context: Context) {
-        super(fieldsMap, context, SubscriptionService, Subscription);
+        super(context);
         this.users = new UserRepository(context);
         this.products = new ProductRepository(context);
+        this.service = SubscriptionService;
+        this.entity = Subscription;
+        this.fieldsMap = fieldsMap;
     }
 
     public async create(data: SubscriptionInsertionInterface, acceptDuplicate: boolean = false) {

@@ -10,6 +10,8 @@ const context = contextFactory();
 
 describe('#6 Correções', () => {
     const user = userFactory();
+    const controller = new CorrectionController(context);
+    const essays = new EssayController(context);
     beforeAll(async (done) => {
         const service = UserService(db)
             .onConflict('user_id').merge();
@@ -24,12 +26,10 @@ describe('#6 Correções', () => {
         done()
     })
     test('Correção', async done => {
-        const essays = new EssayController(context);
         const essay = await createEssay(context, user.user_id);
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
-        const controller = new CorrectionController(context);
         const data = {
             'essay': essay.id,
             'corrector': user.user_id,
@@ -61,12 +61,10 @@ describe('#6 Correções', () => {
         done();
     })
     test('Recuperar correção', async (done) => {
-        const essays = new EssayController(context);
         const essay = await createEssay(context, user.user_id);
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
-        const controller = new CorrectionController(context);
         const pre = {
             'essay': essay.id,
             'corrector': user.user_id,
@@ -100,7 +98,6 @@ describe('#6 Correções', () => {
         done();
     })
     test('Atualização', async done => {
-        const controller = new CorrectionController(context);
         const correction = await CorrectionService(db).first();
         if (!correction) throw new Error();
         const updatingData = {

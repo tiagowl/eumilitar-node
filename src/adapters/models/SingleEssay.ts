@@ -33,8 +33,15 @@ const fieldsMap: FieldsMap<SingleEssayModel, SingleEssayInterface> = [
 ];
 
 export default class SingleEssayRepository extends Repository<SingleEssayModel, SingleEssayInterface, SingleEssay> implements SingleEssayRepositoryInterface {
+    protected readonly searchFields = [];
+    protected readonly fieldsMap;
+    protected readonly service;
+    protected readonly entity;
 
     constructor(context: Context) {
-        super(fieldsMap, context, SingleEssayService, SingleEssay);
+        super(context);
+        this.service = SingleEssayService;
+        this.fieldsMap = fieldsMap;
+        this.entity = SingleEssay;
     }
 }
