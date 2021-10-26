@@ -55,7 +55,7 @@ export interface EssayRepositoryInterface {
     readonly singles: SingleEssayRepositoryInterface;
     readonly create: createMethod<EssayInsertionData, Essay>;
     readonly exists: existsMethod<EssayInterface>;
-    readonly filter: filterMethod<Essay, EssayInterface>;
+    readonly filter: filterMethod<Essay, EssayFilter>;
     readonly count: countMethod<EssayInterface>;
     readonly get: getMethod<Essay, EssayInterface>;
     readonly update: updateMethod<Essay, EssayInterface>;
@@ -214,7 +214,7 @@ export default class EssayCase {
 
     public async get(filter: EssayFilter) {
         const essay = await this.repository.get(filter);
-        if (!essay) throw new CaseError('Redação não encontrada', Errors.NOT_FOUND);
+        if (!essay) throw new CaseError('Redação não encontrada');
         return essay;
     }
 

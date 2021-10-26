@@ -16,6 +16,7 @@ import { CorrectionService } from "./Correction";
 import EssayInvalidationRepository, { EssayInvalidationService } from "./EssayInvalidation";
 import { SingleEssayRepositoryInterface } from "../../cases/SingleEssay";
 import SingleEssayRepository from "./SingleEssay";
+import { Filter } from "../../cases/interfaces";
 
 export interface EssayModel extends EssayInsertion {
     essay_id: number;
@@ -173,21 +174,34 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface, Essa
             });
     }
 
-    public async filter(filterData: EssayFilter, pagination?: EssayPagination) {
+    public async filter(filterData: Filter<EssayFilter>) {
         try {
-            const { search, period, status, correctionPeriod, ...filter } = filterData;
+            const { search, period, status, correctionPeriod, pagination, ...filter } = filterData;
             const service = this.query;
             this.paginate(service, pagination);
             this.period(service, period);
             this.filterCorrectionPeriod(service, correctionPeriod);
             this.byStatus(service, status);
             await this.search(service, search);
-            const parsedToDb = await this.toDb(filter);
-            const essaysData = await service.where(parsedToDb);
-            return Promise.all(essaysData?.map(async (data) => {
+            const parsedFilter = await this.toDb(filter);
+            const essaysData = await service.where(parsedFilter);
+            const essays = await Promise.all(essaysData?.map(async (data) => {
                 const parsed = await this.toEntity(data);
                 return new Essay(parsed);
-            }));
+            }) || []);
+            if (!pagination) return essays;
+            const counting = this.query;
+            await this.search(counting, search);
+            this.period(counting, period);
+            this.filterCorrectionPeriod(counting, correctionPeriod);
+            this.byStatus(counting, status);
+            const [{ count }] = await counting.where(parsedFilter).count({ count: '*' });
+            const counted = Number(count);
+            return {
+                page: essays,
+                pages: Math.ceil(counted / (pagination.pageSize || 10)),
+                count: counted
+            };
         } catch (error: any) {
             this.logger.error(error);
             throw new Error('Erro ao consultar redações no banco de dados');
