@@ -126,7 +126,7 @@ export default class EssayController extends Controller<EssayData> {
                 file: rawData.file.path || rawData.file.location,
             }) as EssayCreationData;
             const created = await this.useCase.create(data);
-            return this.parseEntity(created);
+            return await this.parseEntity(created);
         } catch (error: any) {
             this.logger.error(error);
             if (error instanceof CaseError && error.code === Errors.EXPIRED) {

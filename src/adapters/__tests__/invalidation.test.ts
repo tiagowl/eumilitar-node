@@ -9,6 +9,8 @@ const context = contextFactory();
 
 describe('#5 Invalidações', () => {
     const user = userFactory();
+    const controller = new EssayInvalidationController(context);
+    const essays = new EssayController(context);
     beforeAll(async (done) => {
         const service = UserService(db)
             .onConflict('user_id').merge();
@@ -23,12 +25,10 @@ describe('#5 Invalidações', () => {
         done()
     })
     test('Invalidação da redação', async done => {
-        const essays = new EssayController(context);
         const essay = await createEssay(context, user.user_id);
         await essays.partialUpdate(essay.id,
             { corrector: user.user_id, status: 'correcting' }
         );
-        const controller = new EssayInvalidationController(context);
         const created = await controller.create({ essay: essay.id, corrector: user.user_id, comment: faker.lorem.lines(7), reason: 'other' });
         expect(created).toBeDefined();
         expect(created.id).toBeDefined();
@@ -36,12 +36,8 @@ describe('#5 Invalidações', () => {
         done();
     }, 10000)
     test('Recuperação da invalidação', async done => {
-        const essays = new EssayController(context);
-        const essay = await createEssay(context, user.user_id);
-        await essays.partialUpdate(essay.id,
-            { corrector: user.user_id, status: 'correcting' }
-        );
-        const controller = new EssayInvalidationController(context);
+        const essay = await createEssay(context, user.user_id, { corrector: user.user_id, status: 'correcting' });
+        if(!essay) throw new Error();
         const created = await controller.create({ essay: essay.id, corrector: user.user_id, comment: faker.lorem.lines(7), reason: 'other' });
         expect(created).toBeDefined();
         const invalidation = await controller.get(essay.id);

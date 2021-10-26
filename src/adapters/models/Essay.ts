@@ -159,21 +159,21 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface, Essa
         return service;
     }
 
-    public async get(filterData: EssayFilter) {
-        const service = this.query;
-        const { search, period, ...filter } = filterData;
-        this.period(service, period);
-        await this.search(service, search);
-        const parsedFilter = await this.toDb(filter);
-        const essayData = await service.where(parsedFilter).first()
-            .catch((err) => {
-                this.logger.error(err);
-                throw new Error('Erro ao consultar redação no banco de dados');
-            });
-        if (!essayData) return undefined;
-        const parsedData = await this.toEntity(essayData);
-        return new Essay(parsedData);
-    }
+    // public async get(filterData: EssayFilter) {
+    //     const service = this.query;
+    //     const { search, period, ...filter } = filterData;
+    //     this.period(service, period);
+    //     await this.search(service, search);
+    //     const parsedFilter = await this.toDb(filter);
+    //     const essayData = await service.where(parsedFilter).first()
+    //         .catch((err) => {
+    //             this.logger.error(err);
+    //             throw new Error('Erro ao consultar redação no banco de dados');
+    //         });
+    //     if (!essayData) return undefined;
+    //     const parsedData = await this.toEntity(essayData);
+    //     return new Essay(parsedData);
+    // }
 
     public async exists(is: EssayFilter[]) {
         const service = this.query;

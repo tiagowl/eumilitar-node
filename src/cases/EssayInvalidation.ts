@@ -39,7 +39,7 @@ export default class EssayInvalidationCase {
     }
 
     public async get(essayId: number) {
-        return this.repository.get({ id: essayId });
+        return this.repository.get({ essay: essayId });
     }
 
 }

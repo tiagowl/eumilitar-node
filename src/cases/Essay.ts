@@ -214,7 +214,7 @@ export default class EssayCase {
 
     public async get(filter: EssayFilter) {
         const essay = await this.repository.get(filter);
-        if (!essay) throw new CaseError('Redação não encontrada');
+        if (!essay) throw new CaseError('Redação não encontrada', Errors.NOT_FOUND);
         return essay;
     }
 

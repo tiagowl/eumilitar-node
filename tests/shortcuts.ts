@@ -12,10 +12,11 @@ import { UserModel } from '../src/adapters/models/User';
 import { EssayRepository } from '../src/adapters/models/Essay';
 import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
 import { EssayThemeCreation } from '../src/cases/EssayTheme';
-import { Course } from '../src/entities/EssayTheme';
+import { Course, EssayThemeInterface } from '../src/entities/EssayTheme';
 import createLogger from '../src/drivers/context/logger';
 import { Context } from '../src/drivers/interfaces';
 import axios from 'axios';
+import { EssayInterface } from '../src/entities/Essay';
 
 export const now = new Date();
 export const logger = createLogger(settings.logger);
@@ -123,7 +124,7 @@ export async function appFactory(db?: Knex, customSettings?: any) {
     return new Application({ ...context, db: db || context.db, settings: customSettings || context.settings })
 }
 
-export async function createEssay(context: Context, id: number) {
+export async function createEssay(context: Context, id: number, inject: Partial<EssayInterface> = {}) {
     const themeRepository = new EssayThemeRepository(context);
     const themeData: EssayThemeCreation = {
         title: 'Título',
@@ -133,19 +134,19 @@ export async function createEssay(context: Context, id: number) {
         file: '/usr/share/data/theme.pdf',
         courses: new Set(['esa', 'espcex'] as Course[]),
         deactivated: false,
-    }
+    };
     const exists = await themeRepository.hasActiveTheme(themeData);
     const theme = await (exists ? themeRepository.get({ courses: themeData.courses }) : themeRepository.create(themeData));
     if (!theme) throw new Error('Falha ao recuperar tema');
     const repository = new EssayRepository(context);
-    return repository.create({
+    return repository.create(Object.assign({
         file: '/usr/share/data/theme.png',
         student: id,
         course: [...themeData.courses][0],
         sendDate: new Date(),
         status: 'pending',
         theme: theme.id,
-    });
+    }, inject));
 }
 
 export const db = dbFactory();
