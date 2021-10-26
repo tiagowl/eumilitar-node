@@ -156,7 +156,8 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
                 return query.where(key, value);
             }, service).first();
             if (!theme) return;
-            return new this.entity(theme);
+            const data = await this.toEntity(theme);
+            return new this.entity(data);
         } catch (error: any) {
             this.logger.error(error);
             throw new Error('Falha ao consultar o banco de dados');
