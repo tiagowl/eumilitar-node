@@ -40,10 +40,15 @@ export default abstract class Repository<Model, Interface, Entity> {
     }
 
     protected get selector() {
-        if (!this.#selector) {
-            this.#selector = this.getDbFieldSync('id' as keyof Interface) as string;
+        try {
+            if (!this.#selector) {
+                this.#selector = this.getDbFieldSync('id' as keyof Interface) as string;
+            }
+            return this.#selector as string;
+        } catch (error: any) {
+            this.logger.error(error);
+            throw { message: 'Erro ao conectar com o banco de dados', status: 500 };
         }
-        return this.#selector as string;
     }
 
     protected async processError(error: any) {
@@ -121,17 +126,12 @@ export default abstract class Repository<Model, Interface, Entity> {
     public async toDb(filter: Partial<Interface>): Promise<Partial<Model>> {
         try {
             const args = Object.entries(filter);
-            const parsedParams: Partial<Model> = {};
-            return args.reduce((params, param: [string, any]) => {
-                const [entityField, value] = param;
-                const [db] = this.fieldsMap.find(([_, [field]]) => field === entityField) || [];
-                if (db) {
-                    const [fieldName, parser] = db;
-                    params[fieldName] = parser(value);
-                    return params;
-                }
-                return params;
-            }, parsedParams);
+            return args.reduce((model, [entityField, value]: [string, any]) => {
+                this.fieldsMap.forEach(([[fieldName, parser], [field]]) => {
+                    if (field === entityField) model[fieldName] = parser(value);
+                });
+                return model;
+            }, {} as Partial<Model>);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;

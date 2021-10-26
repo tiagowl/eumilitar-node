@@ -76,7 +76,7 @@
   },
   "scripts": {
     "start": "node dist/index.js",
-    "test": "NODE_ENV=test; echo '' > ./logs/test/error.log; echo '' > ./logs/test/infow.log; yarn migrate:test && yarn lint && mkdir -p tmp/uploads && jest --coverage --detectOpenHandles",
+    "test": "NODE_ENV=test; echo '' > ./logs/test/error.log; echo '' > ./logs/test/info.log; yarn migrate:test && yarn lint && mkdir -p tmp/uploads && jest --coverage --detectOpenHandles",
     "build": "tsc",
     "migrate:test": "knex migrate:latest --env test",
     "migrate": "knex migrate:latest",

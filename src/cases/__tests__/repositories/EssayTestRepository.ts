@@ -52,6 +52,7 @@ export default class EssayTestRepository extends TestRepository<Essay, EssayInte
         return !!this.database.find(item => filters.reduce((status, filter) => {
             return status || Object.entries(filter)
                 .reduce((valid, field) => {
+                    // @ts-ignore
                     return valid && (item[field[0]] === field[1]);
                 }, true as boolean);
         }, false as boolean));
@@ -68,6 +69,7 @@ export default class EssayTestRepository extends TestRepository<Essay, EssayInte
     async invalidiationIsExpired(essay: number) {
         const invalidations = new EssayInvalidationTestRepository(this.db);
         const invalidation = await invalidations.get({ essay });
-        return invalidation.invalidationDate < new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+        // @ts-ignore
+        return invalidation?.invalidationDate < new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
     }
 }
