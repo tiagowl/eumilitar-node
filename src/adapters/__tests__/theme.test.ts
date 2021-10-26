@@ -57,7 +57,7 @@ describe('#2 Testes nos temas de redação', () => {
         const controller = new EssayThemeController(context);
         const created = await controller.create(data);
         expect(created.id).not.toBeNull();
-        expect(created.id).not.toBeUndefined();
+        expect(created.id, JSON.stringify(created)).toBeDefined();
         expect(created.title).toEqual(data.title);
         done();
     })

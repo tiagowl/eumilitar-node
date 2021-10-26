@@ -124,7 +124,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                 courses: new Set(data.courses),
             });
             return {
-                ...theme,
+                ...theme.data,
                 courses: [...theme.courses]
             } as EssayThemeResponse;
         } catch (error: any) {
