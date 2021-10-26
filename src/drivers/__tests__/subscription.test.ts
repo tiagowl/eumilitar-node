@@ -11,6 +11,8 @@ import { authenticate } from "./tools";
 const context = contextFactory();
 
 describe('#6 Inscrições', () => {
+    const app = appFactory();
+    const api = supertest(app.server);
     const email = 'teste.sandbox@hotmart.com';
     const student: UserModel = userFactory({ permission: 6 });
     const admin: UserModel = userFactory({ permission: 1 });
@@ -41,8 +43,6 @@ describe('#6 Inscrições', () => {
     beforeAll(deleteAll);
     afterAll(deleteAll);
     test('#61 Criação', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
         const productRepository = new ProductRepository(context);
         const product = await productRepository.get({ course: 'espcex' });
         const response = await api.post('/subscriptions/')
@@ -99,8 +99,6 @@ describe('#6 Inscrições', () => {
     });
     test('#62 Cancelamento', async done => {
         await saveUser(user, UserService(db).onConflict('user_id').merge());
-        const app = await appFactory();
-        const api = supertest(app.server);
         const productRepository = new ProductRepository(context);
         const product = await productRepository.get({ course: 'espcex' });
         await SubscriptionService(db).where('hotmart_id', 18).del();
@@ -136,11 +134,8 @@ describe('#6 Inscrições', () => {
         done();
     });
     test('Listagem ', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
         if (!student) throw new Error('Sem usuário');
-        const token = await authenticate(student, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(student, api);
         const response = await api.get('/users/profile/subscriptions/')
             .set('Authorization', header);
         expect(response.status, jp(response.body)).toBe(200);
@@ -148,11 +143,8 @@ describe('#6 Inscrições', () => {
         done();
     });
     test('Listagem ', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
         if (!admin) throw new Error('Sem usuário');
-        const token = await authenticate(admin, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(admin, api);
         const response = await api.get('/subscriptions/')
             .query({ pagination: { page: 1, pageSize: 10, ordering: 'id' } })
             .set('Authorization', header);
@@ -162,11 +154,8 @@ describe('#6 Inscrições', () => {
         done();
     });
     test('Filtragem', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
         if (!admin) throw new Error('Sem usuário');
-        const token = await authenticate(admin, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(admin, api);
         const response = await api.get('/subscriptions/')
             .query({ user: student.user_id })
             .set('Authorization', header);
@@ -181,11 +170,8 @@ describe('#6 Inscrições', () => {
     test('Criação manual', async done => {
         const productRepository = new ProductRepository(context);
         const product = await productRepository.get({ course: 'esa' });
-        const app = await appFactory();
-        const api = supertest(app.server);
         if (!admin) throw new Error('Sem usuário');
-        const token = await authenticate(admin, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(admin, api);
         const response = await api.get('/subscriptions/')
             .send({
                 'expiration': new Date(Date.now() + 10000),
@@ -204,11 +190,8 @@ describe('#6 Inscrições', () => {
         const product = await productRepository.get({ course: 'espcex' });
         const subscriptionRepository = new SubscriptionRepository(context);
         const [selected] = await subscriptionRepository.filter({ course: 'esa' }) as Subscription[];
-        const app = await appFactory();
-        const api = supertest(app.server);
         if (!admin) throw new Error('Sem usuário');
-        const token = await authenticate(admin, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(admin, api);
         const response = await api.put(`/subscriptions/${selected.id}/`)
             .send({
                 'expiration': new Date(Date.now() + 1000000),
@@ -224,11 +207,8 @@ describe('#6 Inscrições', () => {
         done();
     })
     test('Gráfico de ativas', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
         if (!admin) throw new Error('Sem usuário');
-        const token = await authenticate(admin, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(admin, api);
         const response = await api.get('/subscriptions/charts/actives/')
             .query({
                 period: {
@@ -248,11 +228,8 @@ describe('#6 Inscrições', () => {
         done();
     });
     test('Gráfico do tempo médio de correção', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
         if (!admin) throw new Error('Sem usuário');
-        const token = await authenticate(admin, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(admin, api);
         const response = await api.get('/essays/charts/avg-correction-time/')
             .query({
                 period: {

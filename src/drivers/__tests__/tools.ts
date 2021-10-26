@@ -14,5 +14,5 @@ export async function authenticate(user: UserModel, api: supertest.SuperTest<sup
     const { token } = auth.body;
     expect(token, jp(auth.body)).toBeDefined();
     expect(typeof token).toBe('string');
-    return token;
+    return `Bearer ${token}`;
 }

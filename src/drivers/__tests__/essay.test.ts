@@ -12,6 +12,8 @@ import { authenticate } from "./tools";
 const context = contextFactory();
 
 describe('#3 Redações', () => {
+    const app = appFactory();
+    const api = supertest(app.server);
     const user: UserModel = userFactory();
     const student: UserModel = userFactory({ permission: 6 });
     const admin: UserModel = userFactory({ permission: 1 });
@@ -46,8 +48,6 @@ describe('#3 Redações', () => {
         done()
     })
     test('Criação', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
         const subscriptionRepository = new SubscriptionRepository(context);
         const productRepository = new ProductRepository(context);
         const product = await productRepository.get({ course: 'esa' });
@@ -60,8 +60,7 @@ describe('#3 Redações', () => {
             course: 'espcex',
             active: true,
         });
-        const token = await authenticate(student, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(student, api)
         const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
         const { body, status, error } = await api.post('/essays/')
             .set('Authorization', header)
@@ -72,10 +71,7 @@ describe('#3 Redações', () => {
         done();
     })
     test('Listagem', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(student, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(student, api)
         const { body, status, error } = await api.get('/essays/')
             .set('Authorization', header);
         expect(body, jp({ body, error, header })).toBeInstanceOf(Array);
@@ -88,10 +84,7 @@ describe('#3 Redações', () => {
         done();
     })
     test('Listagem de todos', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api)
         const { body, status, error } = await api.get('/essays/')
             .set('Authorization', header);
         expect(body.page, jp({ body, error })).not.toBeUndefined();
@@ -105,10 +98,7 @@ describe('#3 Redações', () => {
         done();
     })
     test('Recuperação de uma redação', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api)
         const base = await createEssay(context, user.user_id);
         const response = await api.get(`/essays/${base.id}/`)
             .set('Authorization', header);
@@ -118,10 +108,7 @@ describe('#3 Redações', () => {
         done();
     })
     test('Início da correção da redação', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api)
         const base = await createEssay(context, user.user_id);
         const response = await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
@@ -132,10 +119,7 @@ describe('#3 Redações', () => {
         done();
     })
     test('Cancelamento da correção', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api)
         const base = await createEssay(context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
@@ -148,11 +132,8 @@ describe('#3 Redações', () => {
         done();
     });
     test('Gráfico de enviadas', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
         if (!admin) throw new Error('Sem usuário');
-        const token = await authenticate(admin, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(admin, api)
         const response = await api.get('/essays/charts/sent/')
             .query({
                 period: {
@@ -172,11 +153,8 @@ describe('#3 Redações', () => {
         done();
     });
     test('Gráfico de corrigidas', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
         if (!admin) throw new Error('Sem usuário');
-        const token = await authenticate(admin, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(admin, api)
         const response = await api.get('/essays/charts/evaluated/')
             .query({
                 period: {

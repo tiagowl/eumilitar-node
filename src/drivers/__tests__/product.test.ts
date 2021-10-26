@@ -6,6 +6,8 @@ import { UserModel, UserService } from "../../adapters/models/User";
 import { authenticate } from "./tools";
 
 describe('#7 Produtos', () => {
+    const app = appFactory();
+    const api = supertest(app.server);
     const user: UserModel = userFactory();
     const toDelete: number[] = []
     beforeAll(async (done) => {
@@ -21,16 +23,13 @@ describe('#7 Produtos', () => {
         done();
     });
     test('Criação', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
         const data = {
             code: faker.datatype.number(),
             course: 'esa',
             expirationTime: 30 * 24 * 60 * 60 * 1000,
             name: faker.company.companyName(),
         }
-        const token = await authenticate(user, api);
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api);
         const response = await api.post('/products/')
             .set('Authorization', header)
             .send(data);
@@ -41,10 +40,7 @@ describe('#7 Produtos', () => {
         done();
     });
     test('Listagem', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api);
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api);
         const response = await api.get('/products/')
             .set('Authorization', header);
         expect(response.status).toBe(200);
@@ -53,10 +49,7 @@ describe('#7 Produtos', () => {
         done();
     });
     test('Atualização', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api);
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api);
         const [id] = toDelete;
         const data = {
             code: faker.datatype.number(),

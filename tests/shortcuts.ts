@@ -119,9 +119,9 @@ export async function saveConfirmationToken(token: string, userId: number, db: K
     return service.insert(data);
 }
 
-export async function appFactory(db?: Knex, customSettings?: any) {
+export function appFactory(connection?: Knex, customSettings?: any) {
     const context = contextFactory();
-    return new Application({ ...context, db: db || context.db, settings: customSettings || context.settings })
+    return new Application({ ...context, db: connection || context.db, settings: customSettings || context.settings })
 }
 
 export async function createEssay(context: Context, id: number, inject: Partial<EssayInterface> = {}) {

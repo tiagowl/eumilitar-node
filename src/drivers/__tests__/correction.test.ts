@@ -13,6 +13,8 @@ const context = contextFactory();
 describe('#5 Correção da redação', () => {
     const user: UserModel = userFactory();
     const student: UserModel = userFactory({ permission: 6 });
+    const app = appFactory();
+    const api = supertest(app.server);
     beforeAll(async (done) => {
         const themeService = EssayThemeService(db);
         await themeService.delete().del()
@@ -43,10 +45,7 @@ describe('#5 Correção da redação', () => {
         done()
     })
     test('Criação', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api)
         const base = await createEssay(context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
@@ -76,10 +75,7 @@ describe('#5 Correção da redação', () => {
         done();
     }, 100000)
     test('Recuperação', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api)
         const base = await createEssay(context, user.user_id);
         const data = {
             'accentuation': "Sim",
@@ -119,10 +115,7 @@ describe('#5 Correção da redação', () => {
         done();
     }, 100000);
     test('Atualização', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api)
         const base = await createEssay(context, user.user_id);
         const data = {
             'accentuation': "Sim",

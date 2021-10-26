@@ -8,6 +8,8 @@ import { authenticate } from "./tools";
 
 describe('#2 Testes nos temas', () => {
     const user: UserModel = userFactory();
+    const app = appFactory();
+    const api = supertest(app.server);
     beforeAll(async (done) => {
         const service = UserService(db)
             .onConflict('user_id').merge();
@@ -23,8 +25,6 @@ describe('#2 Testes nos temas', () => {
         done()
     })
     test('Testes na criação de temas', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
         const credentials = {
             email: user.email,
             password: user.passwd,
@@ -35,7 +35,7 @@ describe('#2 Testes nos temas', () => {
         const { token } = auth.body;
         expect(token).not.toBeUndefined();
         expect(token).not.toBeNull();
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api);
         const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
         const theme = {
             title: 'Título',
@@ -60,8 +60,6 @@ describe('#2 Testes nos temas', () => {
         done();
     })
     test('Testes na listagem de temas', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
         const credentials = {
             email: user.email,
             password: user.passwd,
@@ -72,7 +70,7 @@ describe('#2 Testes nos temas', () => {
         const { token } = auth.body;
         expect(token).not.toBeUndefined();
         expect(token).not.toBeNull();
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api);
         const response = await api.get('/themes/')
             .set('Authorization', header);
         expect(response.body?.page, response.error.toString()).not.toBeUndefined()
@@ -81,12 +79,7 @@ describe('#2 Testes nos temas', () => {
         done()
     })
     test('Atualização de temas', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api);
-        expect(token).not.toBeUndefined();
-        expect(token).not.toBeNull();
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api);
         const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
         const themes = await api.get('/themes/')
             .set('Authorization', header);
@@ -113,10 +106,7 @@ describe('#2 Testes nos temas', () => {
         done();
     })
     test('Desativação do tema', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api);
         const themes = await api.get('/themes/')
             .set('Authorization', header);
         expect(themes.status, jp(themes.body)).toBe(200);
@@ -128,10 +118,7 @@ describe('#2 Testes nos temas', () => {
         done();
     })
     test('Listagem de temas ativos', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api);
         const themes = await api.get('/themes/?active=1')
             .set('Authorization', header);
         expect(themes.body.page).toBeInstanceOf(Array);

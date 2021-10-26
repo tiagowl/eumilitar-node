@@ -13,6 +13,8 @@ describe('#4 Invalidação da redação', () => {
     const user: UserModel = userFactory();
     const admin: UserModel = userFactory({ permission: 1 });
     const student: UserModel = userFactory({ permission: 6 });
+    const app = appFactory();
+    const api = supertest(app.server);
     beforeAll(async (done) => {
         const service = () => UserService(db)
             .onConflict('user_id').merge();
@@ -44,10 +46,7 @@ describe('#4 Invalidação da redação', () => {
         done()
     })
     test('Invalidação', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api)
         const base = await createEssay(context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
@@ -61,10 +60,7 @@ describe('#4 Invalidação da redação', () => {
         done();
     })
     test('Recuperação', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api)
-        const header = `Bearer ${token}`;
+        const header = await authenticate(user, api)
         const base = await createEssay(context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);

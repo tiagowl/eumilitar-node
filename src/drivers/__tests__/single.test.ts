@@ -9,20 +9,19 @@ import { authenticate } from "./tools";
 const context = contextFactory();
 
 describe('#8 Redações avulsas', () => {
-    const user: UserModel = userFactory();
+    const admin: UserModel = userFactory();
     const student: UserModel = userFactory({ permission: 6 });
+    const app = appFactory();
+    const api = supertest(app.server);
     beforeAll(async (done) => {
-        await saveUser(user, UserService(db)
+        await saveUser(admin, UserService(db)
             .onConflict('user_id').merge());
         await saveUser(student, UserService(db)
             .onConflict('user_id').merge());
         done()
     });
     test('Criação', async done => {
-        const app = await appFactory();
-        const api = supertest(app.server);
-        const token = await authenticate(user, api);
-        const header = `Bearer ${token}`;
+        const header = await authenticate(admin, api);
         const repository = new EssayThemeRepository(context);
         const theme = await repository.create({
             title: 'Título',
@@ -43,8 +42,8 @@ describe('#8 Redações avulsas', () => {
         };
         const response = await api.post('/single-essays/')
             .send(data).set('Authorization', header);
-        expect(response.status, jp(response.body)).toBe(201);
-        const checkingHeader = `Bearer ${await authenticate(student, api)}`;
+        expect(response.status, jp(response.body, header, admin)).toBe(201);
+        const checkingHeader = await authenticate(student, api);
         const checked = await api.get(`/single-essays/${response.body.token}/`)
             .set('Authorization', checkingHeader);
         expect(checked.status, jp(checked.body)).toBe(200);
