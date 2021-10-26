@@ -7,7 +7,7 @@ import Subscription, { SubscriptionInterface } from '../../entities/Subscription
 import CaseError, { Errors } from '../../cases/Error';
 import ProductCase from '../../cases/Product';
 import Product from '../../entities/Product';
-import { Paginated } from '../../cases/interfaces';
+import { Filter, Paginated } from '../../cases/interfaces';
 
 export interface OrderData {
     hottok: string;
@@ -178,9 +178,9 @@ export default class SubscriptionController extends Controller<OrderData> {
         }
     }
 
-    public async list(filter: SubscriptionFilter) {
+    public async list(filter: Filter<SubscriptionInterface>) {
         try {
-            const parsed = await this.castFilter<SubscriptionFilter>(filter, filterSchema);
+            const parsed = await this.castFilter<Filter<SubscriptionInterface>>(filter, filterSchema);
             const filtered = await this.useCase.filter(parsed);
             const productCase = new ProductCase(this.repository.products);
             const products = await productCase.list({}) as Product[];

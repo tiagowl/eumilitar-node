@@ -151,22 +151,6 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
         return Number(count);
     }
 
-    public async filter(filter: SubscriptionFilter) {
-        const { search, pagination, ...params } = filter;
-        const parsed = await this.toDb(params);
-        const service = this.query;
-        await this.paginate(service, pagination);
-        const subscriptions = await service.where(parsed)
-            .catch(error => {
-                this.logger.error(error);
-                throw { message: 'Erro ao consultar inscrições no banco de dados', status: 500 };
-            });
-        return Promise.all(subscriptions.map(async data => {
-            const parsedData = await this.toEntity(data);
-            return new Subscription(parsedData);
-        }));
-    }
-
     public async update(id: number, data: Partial<SubscriptionInterface>) {
         const parsed = await this.toDb(data);
         const updated = await this.query.where('id', id)

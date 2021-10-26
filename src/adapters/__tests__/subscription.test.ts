@@ -1,5 +1,6 @@
 import faker from "faker";
 import { userFactory, db, saveUser, hottok, mails, contextFactory } from "../../../tests/shortcuts";
+import { Paginated } from "../../cases/interfaces";
 import SubscriptionController from "../controllers/Subscription";
 import ProductRepository from "../models/Product";
 import { SubscriptionService } from "../models/Subscription";
@@ -121,7 +122,7 @@ describe('#8 Inscrições', () => {
     }, 100000);
     test('#86 Listagem de todas', async done => {
         const controller = new SubscriptionController(context);
-        const list = await controller.list({ pagination: { 'ordering': 'id', 'page': 1, 'pageSize': 10 } });
+        const list = await controller.list({ pagination: { 'ordering': 'id', 'page': 1, 'pageSize': 10 } }) as Paginated<any>;
         expect(list).not.toBeInstanceOf(Array);
         if (list instanceof Array) throw new Error();
         expect(list.page).toBeInstanceOf(Array);

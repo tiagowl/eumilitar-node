@@ -4,7 +4,7 @@ import UserUseCase, { UserRepositoryInterface } from "./User";
 import crypto from 'crypto';
 import { Course } from "../entities/Product";
 import CaseError, { Errors } from "./Error";
-import { Chart, countMethod, createMethod, filterMethod, Paginated, Pagination, updateMethod } from "./interfaces";
+import { Chart, countMethod, createMethod, Filter, filterMethod, Paginated, Pagination, updateMethod } from "./interfaces";
 
 export interface SubscriptionFilter extends Partial<SubscriptionInterface> {
     pagination?: Pagination<SubscriptionInterface>;
@@ -104,7 +104,7 @@ export default class SubscriptionCase {
         return this.repository.update(subscription.id, { active: false });
     }
 
-    public async filter(filter: SubscriptionFilter) {
+    public async filter(filter: Filter<SubscriptionInterface>) {
         return this.repository.filter(filter);
     }
 
