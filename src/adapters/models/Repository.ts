@@ -3,7 +3,7 @@ import { Logger } from "winston";
 import { Filter, Paginated, Pagination } from "../../cases/interfaces";
 import { Context } from "../interfaces";
 
-export type FieldsMap<Model, Interface> = [[keyof Model, (val: any) => any], [keyof Interface, (val: any) => any]][];
+export type FieldsMap<Model, Interface> = [[keyof Model | null, (val: any) => any], [keyof Interface | null, (val: any) => any]][];
 
 export type Constructor<T> = new (...args: any[]) => T;
 
@@ -89,8 +89,11 @@ export default abstract class Repository<Model, Interface, Entity> {
 
     protected getDbFieldSync(field: keyof Interface): keyof Model {
         const parsed = this.fieldsMap.find(([_, [key]]) => key === field);
-        if (!parsed) throw { message: `Campo "${field}" não encontrado`, status: 400 };
-        return parsed[0][0];
+        const error = { message: `Campo "${field}" não encontrado`, status: 400 };
+        if (!parsed) throw error;
+        const dbField = parsed[0][0];
+        if (!dbField) throw error;
+        return dbField;
     }
 
     protected async paginate(service: Knex.QueryBuilder<Partial<Model>, Model[]>, pagination?: Pagination<Interface> | undefined) {
@@ -128,7 +131,7 @@ export default abstract class Repository<Model, Interface, Entity> {
             const args = Object.entries(filter);
             return args.reduce((model, [entityField, value]: [string, any]) => {
                 this.fieldsMap.forEach(([[fieldName, parser], [field]]) => {
-                    if (field === entityField) model[fieldName] = parser(value);
+                    if (field === entityField && fieldName) model[fieldName] = parser(value);
                 });
                 return model;
             }, {} as Partial<Model>);
@@ -142,13 +145,13 @@ export default abstract class Repository<Model, Interface, Entity> {
     public async toEntity(user: Model): Promise<Interface> {
         try {
             const fields: [keyof Model, any][] = Object.entries(user) as [keyof Model, any][];
-            return fields.reduce((previous, field) => {
-                const [_db, entity] = this.fieldsMap.find(([db]) => db[0] === field[0]) || [];
-                if (entity) {
-                    const [name, parser] = entity;
-                    previous[name] = parser(field[1]) as never;
-                }
-                return previous;
+            return fields.reduce((obj, [key, value]) => {
+                this.fieldsMap.forEach(([db, [name, parser]]) => {
+                    if (db[0] === key && name) {
+                        obj[name] = parser(value) as never;
+                    }
+                });
+                return obj;
             }, {} as Interface);
         } catch (error: any) {
             this.logger.error(error);

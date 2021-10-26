@@ -142,4 +142,24 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
             throw new Error('Falha ao consultar o banco de dados');
         }
     }
+
+    public async get(filter: EssayThemeFilter & { active?: boolean }) {
+        try {
+            const service = this.filterByActive(this.query, filter.active);
+            const entries = Object.entries(filter);
+            const theme = await entries.reduce((query, [key, value]) => {
+                if (key === 'courses') return query.where(function () {
+                    [...value].forEach(course => {
+                        this.orWhere(key, 'like', `%${course}%`);
+                    });
+                });
+                return query.where(key, value);
+            }, service).first();
+            if (!theme) return;
+            return new this.entity(theme);
+        } catch (error: any) {
+            this.logger.error(error);
+            throw new Error('Falha ao consultar o banco de dados');
+        }
+    }
 }

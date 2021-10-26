@@ -79,7 +79,7 @@ export default class EssayThemeCase {
         return this.repository.update(id, theme.data);
     }
 
-    public async get(filter: Filter<EssayThemeInterface>) {
+    public async get(filter: Filter<EssayThemeInterface> & { active?: boolean }) {
         return this.repository.get(filter);
     }
 

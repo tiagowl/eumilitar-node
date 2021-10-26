@@ -43,7 +43,7 @@ export default class Controller<Fields> {
 
     protected async castFilter<T = any>(filter: T, schema: yup.ObjectSchema<any>) {
         try {
-            const parsedFilter = schema.cast(filter, { stripUnknown: true });
+            const parsedFilter = schema.cast(filter || {}, { stripUnknown: true });
             return this.removeVoidValues<T>(parsedFilter);
         } catch (error) {
             return {} as T;
