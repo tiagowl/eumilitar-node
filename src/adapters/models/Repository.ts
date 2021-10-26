@@ -30,7 +30,7 @@ export default abstract class Repository<Model, Interface, Entity> {
         this.db = db;
     }
 
-    protected get query(): Knex.QueryBuilder<Partial<Model>, Model[]> {
+    get query(): Knex.QueryBuilder<Partial<Model>, Model[]> {
         try {
             return this.service(this.db);
         } catch (error: any) {
