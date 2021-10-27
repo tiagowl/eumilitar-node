@@ -33,7 +33,7 @@ export interface EssayThemeRepositoryInterface {
     readonly count: countMethod<EssayTheme>;
     readonly update: updateMethod<EssayTheme, EssayThemeInterface>;
     readonly exists: (filter: EssayThemeFilter) => Promise<boolean> | ((filter: EssayThemeFilter) => Promise<boolean>);
-    readonly get: getMethod<EssayTheme, EssayThemeInterface>;
+    readonly get: getMethod<EssayTheme, EssayThemeInterface & { active?: boolean }>;
     readonly hasActiveTheme: (data: EssayThemeData, notCheckId?: number) => Promise<boolean>;
     readonly findAll: (page?: number, pageSize?: number, ordering?: keyof EssayThemeInterface, active?: boolean) => Promise<EssayTheme[]>;
 }

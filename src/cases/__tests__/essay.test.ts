@@ -90,4 +90,19 @@ describe('#3 Redações', () => {
         });
         done();
     });
+    test('Checkar se pode re-enviar redação', async done => {
+        const essay = await repository.create({
+            'corrector': 1,
+            'course': 'esa',
+            'file': '/file.png',
+            'lastModified': new Date(),
+            'sendDate': new Date(),
+            'status': 'invalid',
+            'student': 2,
+            'theme': 1
+        });
+        const can = await useCase.canResend(essay.id, essay.student);
+        expect(can).toBeTruthy();
+        done();
+    })
 });
