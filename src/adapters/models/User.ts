@@ -88,10 +88,7 @@ export default class UserRepository extends Repository<UserModel, UserData, User
                 this.logger.error(error);
                 throw { message: 'Erro ao consultar usuários no banco de dados', status: 400 };
             });
-        const users = await Promise.all(filtered.map(async data => {
-            const parsedData = await this.toEntity(data);
-            return new User(parsedData);
-        }));
+        const users = await Promise.all(filtered.map(async data => this.toEntity(data)));
         if (!pagination) return users;
         const counting = this.query;
         await this.search(counting, search);
@@ -175,8 +172,7 @@ export default class UserRepository extends Repository<UserModel, UserData, User
             const filtered = await this.query
                 .where(parsedFilter).first();
             if (!filtered) return;
-            const parsed = await this.toEntity(filtered);
-            return new User(parsed);
+            return await this.toEntity(filtered);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -188,8 +184,7 @@ export default class UserRepository extends Repository<UserModel, UserData, User
         try {
             const users = await this.query.select('*') as UserModel[];
             return Promise.all(users.map(async user => {
-                const data = await this.toEntity(user);
-                return new User(data);
+                return this.toEntity(user);
             }));
         } catch (error: any) {
             this.logger.error(error);
@@ -205,8 +200,7 @@ export default class UserRepository extends Repository<UserModel, UserData, User
             if (typeof saved !== 'number') throw error;
             const recovered = await this.query.where('user_id', saved).first();
             if (!recovered) throw error;
-            const entityData = await this.toEntity(recovered);
-            const entity = new User(entityData);
+            const entity = await this.toEntity(recovered);
             await this.notify(entity);
             return entity;
         } catch (error: any) {
@@ -226,8 +220,7 @@ export default class UserRepository extends Repository<UserModel, UserData, User
                 throw { message: 'Erro ao consultar usuário no banco de dados', status: 500 };
             });
         if (!user) throw { message: 'Token inválido', status: 400 };
-        const userData = await this.toEntity(user);
-        return new User(userData);
+        return await this.toEntity(user);
     }
 
     public async getUnsyncUsers() {

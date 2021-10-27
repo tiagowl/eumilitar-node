@@ -1,9 +1,10 @@
 import faker from "faker";
 import { userFactory, db, saveUser, deleteUser, createEssay, contextFactory } from "../../../tests/shortcuts";
+import User from "../../entities/User";
 import EssayController from "../controllers/Essay";
 import EssayInvalidationController from "../controllers/EssayInvalidation";
 import { EssayThemeService } from "../models/EssayTheme";
-import { UserService } from "../models/User";
+import UserRepository, { UserService } from "../models/User";
 
 const context = contextFactory();
 
@@ -11,10 +12,13 @@ describe('#5 Invalidações', () => {
     const user = userFactory();
     const controller = new EssayInvalidationController(context);
     const essays = new EssayController(context);
+    const userRepository = new UserRepository(context);
+    let agent: User;
     beforeAll(async (done) => {
         const service = UserService(db)
             .onConflict('user_id').merge();
         await saveUser(user, service);
+        agent = await userRepository.toEntity(user);
         done();
     });
     afterAll(async (done) => {
@@ -27,7 +31,8 @@ describe('#5 Invalidações', () => {
     test('Invalidação da redação', async done => {
         const essay = await createEssay(context, user.user_id);
         await essays.partialUpdate(essay.id,
-            { corrector: user.user_id, status: 'correcting' }
+            { corrector: user.user_id, status: 'correcting' },
+            agent
         );
         const created = await controller.create({ essay: essay.id, corrector: user.user_id, comment: faker.lorem.lines(7), reason: 'other' });
         expect(created).toBeDefined();
@@ -37,7 +42,7 @@ describe('#5 Invalidações', () => {
     }, 10000);
     test('Recuperação da invalidação', async done => {
         const essay = await createEssay(context, user.user_id, { corrector: user.user_id, status: 'correcting' });
-        if(!essay) throw new Error();
+        if (!essay) throw new Error();
         const created = await controller.create({ essay: essay.id, corrector: user.user_id, comment: faker.lorem.lines(7), reason: 'other' });
         expect(created).toBeDefined();
         const invalidation = await controller.get(essay.id);

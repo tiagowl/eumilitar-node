@@ -10,7 +10,7 @@ export default (context: Context) => {
         .post('/essays/', isAuthenticated(context), storage.single('file'), async (req, res) => {
             try {
                 if (!req.user) throw { message: 'Não autenticado', status: 401 };
-                const response = await controller.create({ ...req.body, file: (req.file as Express.MulterS3.File), student: req.user.id });
+                const response = await controller.create({ ...req.body, file: (req.file as Express.MulterS3.File), student: req.user.id }, req.user);
                 res.status(201).json(response);
             } catch (error: any) {
                 res.status(error.status || 400).json(error);
@@ -23,10 +23,10 @@ export default (context: Context) => {
                 const { user, query } = req;
                 if (!user) throw { message: 'Não autenticado', status: 401 };
                 if (['admin', 'corrector'].indexOf(user.permission) > -1) {
-                    const response = await controller.allEssays(query);
+                    const response = await controller.allEssays(query, user);
                     res.status(200).json(response);
                 } else {
-                    const response = await controller.myEssays(user.id);
+                    const response = await controller.myEssays(user);
                     res.status(200).json(response);
                 }
             } catch (error: any) {
@@ -38,7 +38,8 @@ export default (context: Context) => {
         .get('/essays/:id/', checkPermission(context, ['admin', 'corrector']), async (req, res) => {
             try {
                 const { id } = req.params;
-                const response = await controller.get(Number(id));
+                if (!req.user) throw { message: 'Não autenticado', status: 401 };
+                const response = await controller.get(Number(id), req.user);
                 res.status(200).json(response);
             } catch (error: any) {
                 res.status(error.status || 400).json(error);
@@ -50,7 +51,8 @@ export default (context: Context) => {
             try {
                 const { id } = req.params;
                 const { user } = req;
-                const response = await controller.partialUpdate(Number(id), { corrector: user?.id, status: 'correcting' });
+                if (!user) throw { message: 'Não autenticado', status: 401 };
+                const response = await controller.partialUpdate(Number(id), { corrector: user?.id, status: 'correcting' }, user);
                 res.status(201).json(response);
             } catch (error: any) {
                 res.status(error.status || 400).json(error);
@@ -62,7 +64,8 @@ export default (context: Context) => {
             try {
                 const { id } = req.params;
                 const { user } = req;
-                const response = await controller.cancelCorrecting(Number(id), user?.id as number);
+                if (!user) throw { message: 'Não autenticado', status: 401 };
+                const response = await controller.cancelCorrecting(Number(id), user?.id as number, user);
                 res.status(200).json(response);
             } catch (error: any) {
                 res.status(error.status || 400).json(error);

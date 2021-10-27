@@ -142,10 +142,10 @@ export default abstract class Repository<Model, Interface, Entity> {
         }
     }
 
-    public async toEntity(user: Model): Promise<Interface> {
+    public async toEntity(user: Model): Promise<Entity> {
         try {
             const fields: [keyof Model, any][] = Object.entries(user) as [keyof Model, any][];
-            return fields.reduce((obj, [key, value]) => {
+            const entity = fields.reduce((obj, [key, value]) => {
                 this.fieldsMap.forEach(([db, [name, parser]]) => {
                     if (db[0] === key && name) {
                         obj[name] = parser(value) as never;
@@ -153,6 +153,7 @@ export default abstract class Repository<Model, Interface, Entity> {
                 });
                 return obj;
             }, {} as Interface);
+            return new this.entity(entity);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -177,8 +178,7 @@ export default abstract class Repository<Model, Interface, Entity> {
             const parsed = await this.toDb(filter);
             const data = await this.query.where(parsed).first();
             if (!data) return;
-            const toEntity = await this.toEntity(data);
-            return new this.entity(toEntity);
+            return await this.toEntity(data);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -211,8 +211,7 @@ export default abstract class Repository<Model, Interface, Entity> {
             const [id] = await this.query.insert(parsed as any);
             const recovered = await this.query.where(this.selector, id).first();
             if (!recovered) throw new Error('Erro ao salvar no banco de dados');
-            const recoveredParsed = await this.toEntity(recovered);
-            return new this.entity(recoveredParsed);
+            return await this.toEntity(recovered);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -229,8 +228,7 @@ export default abstract class Repository<Model, Interface, Entity> {
             await this.search(service, search);
             const filtered = await service.where(parsedFilter) as Model[];
             const users = await Promise.all(filtered.map(async (data: Model) => {
-                const parsedData = await this.toEntity(data as Model);
-                return new this.entity(parsedData);
+                return this.toEntity(data as Model);
             }));
             if (!pagination) return users;
             const counting = this.query;

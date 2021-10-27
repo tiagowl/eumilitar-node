@@ -1,10 +1,11 @@
 import faker from "faker";
 import { userFactory, db, saveUser, deleteUser, createEssay, contextFactory } from "../../../tests/shortcuts";
+import User from "../../entities/User";
 import CorrectionController from "../controllers/Correction";
 import EssayController from "../controllers/Essay";
 import { CorrectionService } from "../models/Correction";
 import { EssayThemeService } from "../models/EssayTheme";
-import { UserService } from "../models/User";
+import UserRepository, { UserService } from "../models/User";
 
 const context = contextFactory();
 
@@ -12,10 +13,13 @@ describe('#6 Correções', () => {
     const user = userFactory();
     const controller = new CorrectionController(context);
     const essays = new EssayController(context);
+    const userRepository = new UserRepository(context);
+    let agent: User;
     beforeAll(async (done) => {
         const service = UserService(db)
             .onConflict('user_id').merge();
         await saveUser(user, service);
+        agent = await userRepository.toEntity(user);
         done();
     });
     afterAll(async (done) => {
@@ -28,7 +32,8 @@ describe('#6 Correções', () => {
     test('Correção', async done => {
         const essay = await createEssay(context, user.user_id);
         await essays.partialUpdate(essay.id,
-            { corrector: user.user_id, status: 'correcting' }
+            { corrector: user.user_id, status: 'correcting' },
+            agent,
         );
         const data = {
             'essay': essay.id,
@@ -63,7 +68,8 @@ describe('#6 Correções', () => {
     test('Recuperar correção', async (done) => {
         const essay = await createEssay(context, user.user_id);
         await essays.partialUpdate(essay.id,
-            { corrector: user.user_id, status: 'correcting' }
+            { corrector: user.user_id, status: 'correcting' },
+            agent,
         );
         const pre = {
             'essay': essay.id,

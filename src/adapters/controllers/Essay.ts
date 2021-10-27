@@ -7,7 +7,7 @@ import { Course } from "../../entities/EssayTheme";
 import EssayThemeController, { EssayThemeResponse } from "./EssayTheme";
 import UserRepository from "../models/User";
 import UserUseCase from "../../cases/User";
-import { AccountPermission } from "../../entities/User";
+import User, { AccountPermission } from "../../entities/User";
 import { Context } from "../interfaces";
 import CaseError, { Errors } from "../../cases/Error";
 import { Paginated } from "../../cases/interfaces";
@@ -42,6 +42,7 @@ export interface EssayResponse {
         name: string;
         permission: AccountPermission;
     };
+    canResend: boolean;
 }
 
 export interface EssayListResponse {
@@ -104,9 +105,9 @@ export default class EssayController extends Controller<EssayData> {
         };
     }
 
-    private parseEntity = async (essay: Essay): Promise<EssayResponse> => {
+    private parseEntity = async (essay: Essay, agent: User): Promise<EssayResponse> => {
         const themeController = new EssayThemeController(this.context);
-        const parsed = {
+        return {
             course: essay.course,
             file: essay.file,
             id: essay.id,
@@ -115,18 +116,18 @@ export default class EssayController extends Controller<EssayData> {
             theme: await themeController.get({ id: essay.theme }),
             student: await this.getUser(essay.student),
             corrector: !!essay.corrector ? await this.getUser(essay.corrector) : null,
+            canResend: await this.useCase.canResend(essay.id, agent.id),
         };
-        return parsed;
     }
 
-    public async create(rawData: EssayInput) {
+    public async create(rawData: EssayInput, agent: User) {
         try {
             const data = await this.validate({
                 ...rawData,
                 file: rawData.file.path || rawData.file.location,
             }) as EssayCreationData;
             const created = await this.useCase.create(data);
-            return await this.parseEntity(created);
+            return await this.parseEntity(created, agent);
         } catch (error: any) {
             this.logger.error(error);
             if (error instanceof CaseError && error.code === Errors.EXPIRED) {
@@ -137,10 +138,10 @@ export default class EssayController extends Controller<EssayData> {
         }
     }
 
-    public async myEssays(userId: number): Promise<EssayResponse[]> {
+    public async myEssays(agent: User): Promise<EssayResponse[]> {
         try {
-            const essays = await this.useCase.myEssays(userId);
-            return Promise.all(essays.map(this.parseEntity));
+            const essays = await this.useCase.myEssays(agent.id);
+            return Promise.all(essays.map((essay) => this.parseEntity(essay, agent)));
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -148,14 +149,14 @@ export default class EssayController extends Controller<EssayData> {
         }
     }
 
-    public async allEssays(params: ListEssayParams): Promise<EssayListResponse> {
+    public async allEssays(params: ListEssayParams, agent: User): Promise<EssayListResponse> {
         try {
             const { ordering = 'sendDate', page = 1, pageSize = 10, ...filterData } = params;
             const filter = await this.castFilter(filterData, filterSchema);
             const essays = await this.useCase.allEssays({ pagination: { page, ordering, pageSize }, ...filter }) as Paginated<Essay>;
             return {
                 ...essays,
-                page: await Promise.all(essays.page.map(this.parseEntity))
+                page: await Promise.all(essays.page.map((essay) => this.parseEntity(essay, agent)))
             };
         } catch (error: any) {
             this.logger.error(error);
@@ -164,12 +165,12 @@ export default class EssayController extends Controller<EssayData> {
         }
     }
 
-    public async get(id: number) {
+    public async get(id: number, agent: User) {
         try {
             await yup.number().required().validate(id);
             const essay = await this.useCase.get({ id });
             if (!essay) throw { message: 'Redação não encontrada', status: 404 };
-            return this.parseEntity(essay);
+            return this.parseEntity(essay, agent);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -177,11 +178,11 @@ export default class EssayController extends Controller<EssayData> {
         }
     }
 
-    public async partialUpdate(id: number, data: EssayPartialUpdate) {
+    public async partialUpdate(id: number, data: EssayPartialUpdate, agent: User) {
         try {
             const validated = await this.validate(data, partialUpdateSchema);
             const updated = await this.useCase.partialUpdate(id, validated);
-            return this.parseEntity(updated);
+            return this.parseEntity(updated, agent);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -189,13 +190,13 @@ export default class EssayController extends Controller<EssayData> {
         }
     }
 
-    public async cancelCorrecting(id: number, corrector: number) {
+    public async cancelCorrecting(id: number, corrector: number, agent: User) {
         try {
             const validation = yup.number().required();
             await validation.validate(id);
             await validation.validate(corrector);
             const updated = await this.useCase.cancelCorrecting(id, corrector);
-            return this.parseEntity(updated);
+            return this.parseEntity(updated, agent);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;

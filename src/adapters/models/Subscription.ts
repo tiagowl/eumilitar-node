@@ -110,7 +110,7 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
                 throw { message: 'Erro ao consultar inscrição no banco de dados', status: 500 };
             });
         if (!created) throw defaultError;
-        return new Subscription(await this.toEntity(created));
+        return await this.toEntity(created);
     }
 
     public async *getFromHotmart(filter: HotmartFilter): AsyncGenerator<HotmartSubscription> {
@@ -166,8 +166,7 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
                 throw { message: 'Erro ao ler banco de dados', status: 500 };
             });
         if (!subscriptionData) throw { message: 'Erro ao ler banco de dados', status: 500 };
-        const parsedData = await this.toEntity(subscriptionData);
-        return new Subscription(parsedData);
+        return await this.toEntity(subscriptionData);
     }
 
 }

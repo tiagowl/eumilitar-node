@@ -185,10 +185,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface, Essa
             await this.search(service, search);
             const parsedFilter = await this.toDb(filter);
             const essaysData = await service.where(parsedFilter);
-            const essays = await Promise.all(essaysData?.map(async (data) => {
-                const parsed = await this.toEntity(data);
-                return new Essay(parsed);
-            }) || []);
+            const essays = await Promise.all(essaysData?.map(async (data) => await this.toEntity(data)) || []);
             if (!pagination) return essays;
             const counting = this.query;
             await this.search(counting, search);

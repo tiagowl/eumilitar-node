@@ -284,8 +284,12 @@ export default class EssayCase {
     }
 
     public async canResend(id: number, student: number) {
-        const essay = await this.checkIfCanResend(id, student);
-        return !!essay;
+        try {
+            const essay = await this.checkIfCanResend(id, student);
+            return !!essay;
+        } catch {
+            return false;
+        }
     }
 
 }

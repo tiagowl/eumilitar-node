@@ -3,23 +3,28 @@ import { Readable } from "stream";
 import { userFactory, db, saveUser, deleteUser, createEssay, contextFactory } from "../../../tests/shortcuts";
 import { EssayThemeCreation } from "../../cases/EssayTheme";
 import { Course } from "../../entities/EssayTheme";
+import User from "../../entities/User";
 import EssayController, { EssayInput } from "../controllers/Essay";
 import SingleEssayController from "../controllers/SingleEssay";
 import EssayThemeRepository, { EssayThemeService } from "../models/EssayTheme";
 import ProductRepository from "../models/Product";
 import SubscriptionRepository from "../models/Subscription";
-import { UserService } from "../models/User";
+import UserRepository, { UserService } from "../models/User";
 
 const context = contextFactory();
 
 describe('#4 Redações', () => {
+    const controller = new EssayController(context);
     const user = userFactory({ permission: 6 });
     const corrector = userFactory({ permission: 5 });
+    const userRepository = new UserRepository(context);
+    let agent: User;
     beforeAll(async (done) => {
         const service = UserService(db)
             .onConflict('user_id').merge();
         await saveUser(user, service);
         await saveUser(corrector, service);
+        agent = await userRepository.toEntity(user);
         done();
     });
     afterAll(async (done) => {
@@ -77,43 +82,40 @@ describe('#4 Redações', () => {
             student: user.user_id,
             course: 'espcex',
         };
-        const controller = new EssayController(context);
-        const created = await controller.create(data);
+        const created = await controller.create(data, agent);
         expect(created.id, JSON.stringify(created)).not.toBeUndefined();
         expect(created.id, JSON.stringify(created)).not.toBeNaN();
         expect(created.course).toBe(data.course);
         done();
     }, 10000);
     test('Listagem', async done => {
-        const controller = new EssayController(context);
         const base = await createEssay(context, user.user_id);
-        const essays = await controller.myEssays(user.user_id);
+        const essays = await controller.myEssays(agent);
         expect(essays).not.toBeUndefined();
         expect(essays.length).not.toBeLessThan(1);
         expect(essays[0]).toMatchObject(base);
         done();
     }, 10000);
     test('Listagem de todos', async (done) => {
-        const controller = new EssayController(context);
-        const essays = await controller.allEssays({});
+        const essays = await controller.allEssays({}, agent);
         expect(essays).not.toBeUndefined();
         expect(essays.count).not.toBeLessThan(1);
         expect(essays.page.length).not.toBeLessThan(1);
         done();
     }, 10000);
     test('Recuperação de uma redação', async done => {
-        const controller = new EssayController(context);
         const base = await createEssay(context, user.user_id);
-        const essay = await controller.get(base.id);
+        const essay = await controller.get(base.id, agent);
         expect(essay).toMatchObject(base);
         expect(essay).toBeDefined();
+        expect(typeof essay.canResend).toBe('boolean');
         done();
     }, 10000);
     test('Atualização da redação', async done => {
-        const controller = new EssayController(context);
         const base = await createEssay(context, user.user_id);
         const essay = await controller.partialUpdate(base.id,
-            { corrector: corrector.user_id, status: 'correcting' }
+            { corrector: corrector.user_id, status: 'correcting' },
+            agent,
         );
         expect(essay).toBeDefined();
         expect(essay.status).toBe('correcting');
@@ -121,7 +123,6 @@ describe('#4 Redações', () => {
         done();
     }, 10000);
     test('gráfico das enviadas', async done => {
-        const controller = new EssayController(context);
         const chart = await controller.sentChart({
             period: {
                 start: new Date(Date.now() - 2 * 360 * 24 * 60 * 60 * 1000),
@@ -139,7 +140,6 @@ describe('#4 Redações', () => {
         done();
     });
     test('gráfico de correções', async done => {
-        const controller = new EssayController(context);
         const chart = await controller.evaluatedChart({
             period: {
                 start: new Date(Date.now() - 2 * 360 * 24 * 60 * 60 * 1000),
@@ -157,7 +157,6 @@ describe('#4 Redações', () => {
         done();
     });
     test('gráfico tempo de correção', async done => {
-        const controller = new EssayController(context);
         const chart = await controller.avgTimeCorrection({
             period: {
                 start: new Date(Date.now() - 2 * 360 * 24 * 60 * 60 * 1000),
@@ -227,8 +226,7 @@ describe('#4 Redações', () => {
             student: student.user_id,
             token: single.token,
         };
-        const controller = new EssayController(context);
-        const created = await controller.create(data);
+        const created = await controller.create(data, agent);
         expect(created.id, JSON.stringify(created)).not.toBeUndefined();
         expect(created.id, JSON.stringify(created)).not.toBeNaN();
         expect(created.course).toBe('blank');
