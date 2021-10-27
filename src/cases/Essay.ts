@@ -177,14 +177,19 @@ export default class EssayCase {
         });
     }
 
-    private async createWithInvalid(data: EssayCreationByInvalid) {
-        const { invalidEssay, student, file } = data;
-        const essay = await this.get({ id: invalidEssay, student });
+    private async checkIfCanResend(id: number, student: number) {
+        const essay = await this.get({ id, student });
         const expired = await this.repository.invalidiationIsExpired(essay.id);
         if (expired) throw new CaseError('Prazo de reenvio expirado', Errors.EXPIRED);
         const valids = await this.count({ student, theme: essay.theme, status: 'evaluated' });
         const pendings = await this.count({ student, theme: essay.theme, status: 'pending' });
         if (valids > 0 || pendings > 0) throw new CaseError('Já foi enviada uma redação para este tema', Errors.UNAUTHORIZED);
+        return essay;
+    }
+
+    private async createWithInvalid(data: EssayCreationByInvalid) {
+        const { invalidEssay, student, file } = data;
+        const essay = await this.checkIfCanResend(invalidEssay, student);
         return this.repository.create({
             course: essay.course, theme: essay.theme,
             sendDate: new Date(), status: 'pending',
@@ -276,6 +281,11 @@ export default class EssayCase {
 
     public async avgTimeCorrection(filter: EssayChartFilter) {
         return this.repository.avgTimeCorrection(filter);
+    }
+
+    public async canResend(id: number, student: number) {
+        const essay = await this.checkIfCanResend(id, student);
+        return !!essay;
     }
 
 }
