@@ -1,15 +1,10 @@
 import faker from "faker";
 import Essay, { EssayInterface } from "../../entities/Essay";
-import EssayTheme, { Course } from "../../entities/EssayTheme";
 import EssayCase, { EssayChartFilter, EssayCreationData, EssayInsertionData, EssayPagination, EssayRepositoryInterface } from "../Essay";
-import { EssayThemeRepositoryInterface } from "../EssayTheme";
-import { Chart } from "../interfaces";
-import { ProductRepositoryInterface } from "../Product";
-import { SingleEssayRepositoryInterface } from "../SingleEssay";
-import { SubscriptionRepositoryInterface } from "../Subscription";
-import { UserRepositoryInterface } from "../User";
+import EssayInvalidationCase from "../EssayInvalidation";
 import getDb from "./repositories/database";
 import EssayTestRepository from "./repositories/EssayTestRepository";
+import EssayInvalidationTestRepository from "./repositories/InvalidationTestRepository";
 import SingleEssayTestRepository from "./repositories/SingleTestRepository";
 
 const db = getDb();
@@ -18,6 +13,8 @@ describe('#3 Redações', () => {
     const repository = new EssayTestRepository(db);
     const useCase = new EssayCase(repository);
     const singles = new SingleEssayTestRepository(db);
+    const invalidations = new EssayInvalidationTestRepository(db);
+    const invalidationCase = new EssayInvalidationCase(invalidations);
     test('Criação', async done => {
         const data: EssayCreationData = {
             file: '/path/to/image.png',
@@ -90,19 +87,20 @@ describe('#3 Redações', () => {
         });
         done();
     });
-    test('Checkar se pode re-enviar redação', async done => {
-        const essay = await repository.create({
-            'corrector': 1,
-            'course': 'esa',
-            'file': '/file.png',
-            'lastModified': new Date(),
-            'sendDate': new Date(),
-            'status': 'invalid',
-            'student': 2,
-            'theme': 1
-        });
+    test('#35 Reenvio da redação', async done => {
+        const essay = await useCase.get({ 'status': 'pending' });
+        await useCase.partialUpdate(essay.id, { 'corrector': 0, 'status': 'correcting' });
+        await invalidationCase.create({ reason: 'invalid', corrector: 0, 'essay': essay.id, 'comment': faker.lorem.lines(5) });
         const can = await useCase.canResend(essay.id, essay.student);
         expect(can).toBeTruthy();
+        const data: EssayCreationData = {
+            file: '/path/to/image.png',
+            student: essay.student,
+            invalidEssay: essay.id,
+        };
+        const created = await useCase.create(data);
+        expect(created).toBeInstanceOf(Essay);
+        expect(typeof created.id).toBe('number');
         done();
-    })
+    });
 });
