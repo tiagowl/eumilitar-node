@@ -23,7 +23,7 @@ describe('#10 Redação avulsa', () => {
             file: '/usr/share/data/theme.pdf',
             courses: new Set(['esa', 'espcex'] as Course[]),
             deactivated: false,
-        }
+        };
         const theme = await repository.create(data);
         const controller = new SingleEssayController(context);
         const student = await UserService(db).where('permission', 6).first();

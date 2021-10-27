@@ -38,8 +38,8 @@ describe('#6 Inscrições', () => {
         });
         await saveUser(user, UserService(db).onConflict('user_id').merge());
         await SubscriptionService(db).where('hotmart_id', 18).del();
-        done()
-    }, 100000)
+        done();
+    }, 100000);
     beforeAll(deleteAll);
     afterAll(deleteAll);
     test('#61 Criação', async done => {
@@ -130,7 +130,7 @@ describe('#6 Inscrições', () => {
         expect(response.body.length).toBeGreaterThan(0);
         response.body.forEach((item: any) => {
             expect(item.active).toBeFalsy();
-        })
+        });
         done();
     });
     test('Listagem ', async done => {
@@ -164,7 +164,7 @@ describe('#6 Inscrições', () => {
         expect(response.body.length, jp(response.body)).toBeGreaterThan(0);
         response.body.forEach((item: any) => {
             expect(item.user).toBe(student.user_id);
-        })
+        });
         done();
     });
     test('Criação manual', async done => {
@@ -205,7 +205,7 @@ describe('#6 Inscrições', () => {
         expect(response.body.product, jp(response.body)).toBe(product.id);
         expect(response.body, jp(response.body)).not.toBeNull();
         done();
-    })
+    });
     test('Gráfico de ativas', async done => {
         if (!admin) throw new Error('Sem usuário');
         const header = await authenticate(admin, api);

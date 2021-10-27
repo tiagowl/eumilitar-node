@@ -10,8 +10,7 @@
     "rulesDirectory": [],
     "linterOptions": {
         "exclude": [
-            "./dist/**/*",
-            "**/__tests__/**/*"
+            "./dist/**/*"
         ]
     }
 }

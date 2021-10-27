@@ -7,7 +7,7 @@ export async function authenticate(user: UserModel, api: supertest.SuperTest<sup
     const credentials = {
         email: user.email,
         password: user.passwd,
-    }
+    };
     const auth = await api.post('/tokens/')
         .send(credentials)
         .set('User-Agent', faker.internet.userAgent());

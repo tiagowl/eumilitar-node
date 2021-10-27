@@ -21,7 +21,7 @@ describe('#4 Redações', () => {
         await saveUser(user, service);
         await saveUser(corrector, service);
         done();
-    })
+    });
     afterAll(async (done) => {
         const service = UserService(db)
             .onConflict('user_id').merge();
@@ -29,11 +29,11 @@ describe('#4 Redações', () => {
         await deleteUser(corrector, service);
         const themeService = EssayThemeService(db);
         await themeService.delete().del();
-        done()
-    })
+        done();
+    });
     test('#41 Criação de redações', async done => {
         const themeService = EssayThemeService(db);
-        await themeService.delete().del()
+        await themeService.delete().del();
         const repository = new EssayThemeRepository(context);
         const themeData: EssayThemeCreation = {
             title: 'Título',
@@ -43,13 +43,13 @@ describe('#4 Redações', () => {
             file: '/usr/share/data/theme.pdf',
             courses: new Set(['espcex'] as Course[]),
             deactivated: false,
-        }
+        };
         const theme = await repository.create(themeData);
         expect(theme.id).not.toBeUndefined();
         expect(theme.id).not.toBeNull();
         const subscriptionRepository = new SubscriptionRepository(context);
         const productRepository = new ProductRepository(context);
-        const product = await productRepository.get({ course: 'espcex' })
+        const product = await productRepository.get({ course: 'espcex' });
         await subscriptionRepository.create({
             expiration: faker.date.future(),
             product: product.id,
@@ -58,7 +58,7 @@ describe('#4 Redações', () => {
             code: faker.datatype.number(),
             course: 'esa',
             active: true,
-        })
+        });
         const data: EssayInput = {
             // @ts-ignore
             file: {
@@ -76,14 +76,14 @@ describe('#4 Redações', () => {
             },
             student: user.user_id,
             course: 'espcex',
-        }
+        };
         const controller = new EssayController(context);
         const created = await controller.create(data);
         expect(created.id, JSON.stringify(created)).not.toBeUndefined();
         expect(created.id, JSON.stringify(created)).not.toBeNaN();
         expect(created.course).toBe(data.course);
         done();
-    }, 10000)
+    }, 10000);
     test('Listagem', async done => {
         const controller = new EssayController(context);
         const base = await createEssay(context, user.user_id);
@@ -92,7 +92,7 @@ describe('#4 Redações', () => {
         expect(essays.length).not.toBeLessThan(1);
         expect(essays[0]).toMatchObject(base);
         done();
-    }, 10000)
+    }, 10000);
     test('Listagem de todos', async (done) => {
         const controller = new EssayController(context);
         const essays = await controller.allEssays({});
@@ -100,7 +100,7 @@ describe('#4 Redações', () => {
         expect(essays.count).not.toBeLessThan(1);
         expect(essays.page.length).not.toBeLessThan(1);
         done();
-    }, 10000)
+    }, 10000);
     test('Recuperação de uma redação', async done => {
         const controller = new EssayController(context);
         const base = await createEssay(context, user.user_id);
@@ -108,7 +108,7 @@ describe('#4 Redações', () => {
         expect(essay).toMatchObject(base);
         expect(essay).toBeDefined();
         done();
-    }, 10000)
+    }, 10000);
     test('Atualização da redação', async done => {
         const controller = new EssayController(context);
         const base = await createEssay(context, user.user_id);
@@ -155,7 +155,7 @@ describe('#4 Redações', () => {
             expect(item.value).not.toBeNaN();
         });
         done();
-    })
+    });
     test('gráfico tempo de correção', async done => {
         const controller = new EssayController(context);
         const chart = await controller.avgTimeCorrection({
@@ -173,10 +173,10 @@ describe('#4 Redações', () => {
             expect(item.value).not.toBeNaN();
         });
         done();
-    })
+    });
     test('Criação de redações com token', async done => {
         const themeService = EssayThemeService(db);
-        await themeService.delete().del()
+        await themeService.delete().del();
         const repository = new EssayThemeRepository(context);
         const themeData: EssayThemeCreation = {
             title: 'Título',
@@ -186,13 +186,13 @@ describe('#4 Redações', () => {
             file: '/usr/share/data/theme.pdf',
             courses: new Set(['espcex'] as Course[]),
             deactivated: false,
-        }
+        };
         const theme = await repository.create(themeData);
         expect(theme.id).not.toBeUndefined();
         expect(theme.id).not.toBeNull();
         const subscriptionRepository = new SubscriptionRepository(context);
         const productRepository = new ProductRepository(context);
-        const product = await productRepository.get({ course: 'espcex' })
+        const product = await productRepository.get({ course: 'espcex' });
         await subscriptionRepository.create({
             expiration: faker.date.future(),
             product: product.id,
@@ -201,7 +201,7 @@ describe('#4 Redações', () => {
             code: faker.datatype.number(),
             course: 'esa',
             active: true,
-        })
+        });
         const singleEssayController = new SingleEssayController(context);
         const student = await UserService(db).where('permission', 6).first();
         if (!theme || !student) {
@@ -226,12 +226,12 @@ describe('#4 Redações', () => {
             },
             student: student.user_id,
             token: single.token,
-        }
+        };
         const controller = new EssayController(context);
         const created = await controller.create(data);
         expect(created.id, JSON.stringify(created)).not.toBeUndefined();
         expect(created.id, JSON.stringify(created)).not.toBeNaN();
         expect(created.course).toBe('blank');
         done();
-    }, 10000)
-})
+    }, 10000);
+});

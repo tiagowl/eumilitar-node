@@ -19,7 +19,7 @@ describe('#9 Produtos', () => {
             'expiration_time': faker.datatype.number(),
             'id_hotmart': faker.datatype.number(),
             'product_name': faker.name.title(),
-        }
+        };
         const [id] = await ProductService(db).insert(product);
         toRemove.push(id);
         done();

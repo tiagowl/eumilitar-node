@@ -13,7 +13,7 @@ describe('#5 Correção', () => {
     const useCase = new CorrectionCase(repository);
     test('Criação', async done => {
         const essays = new EssayCase(repository.essays);
-        const essay = await essays.partialUpdate(1, { corrector: 0, status: 'correcting' })
+        const essay = await essays.partialUpdate(1, { corrector: 0, status: 'correcting' });
         const correction = await useCase.create({
             'essay': 1,
             'corrector': 0,

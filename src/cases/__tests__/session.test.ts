@@ -7,7 +7,7 @@ import { UserRepositoryInterface } from "../User";
 import getDb, { defaultPassword } from "./repositories/database";
 import SessionTestRepository from "./repositories/SessionTestRepository";
 
-const db = getDb()
+const db = getDb();
 
 describe('Sessões', () => {
     const repository = new SessionTestRepository(db);

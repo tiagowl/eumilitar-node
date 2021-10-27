@@ -17,7 +17,7 @@ describe('#5 Correção da redação', () => {
     const api = supertest(app.server);
     beforeAll(async (done) => {
         const themeService = EssayThemeService(db);
-        await themeService.delete().del()
+        await themeService.delete().del();
         const repository = new EssayThemeRepository(context);
         const themeData: EssayThemeCreation = {
             title: 'Título',
@@ -27,7 +27,7 @@ describe('#5 Correção da redação', () => {
             file: '/usr/share/data/theme.pdf',
             courses: new Set(['esa', 'espcex'] as Course[]),
             deactivated: false,
-        }
+        };
         const theme = await repository.create(themeData);
         expect(theme.id).not.toBeUndefined();
         expect(theme.id).not.toBeNull();
@@ -35,17 +35,17 @@ describe('#5 Correção da redação', () => {
             .onConflict('user_id').merge();
         await saveUser(user, service);
         await saveUser(student, service);
-        done()
-    }, 100000)
+        done();
+    }, 100000);
     afterAll(async (done) => {
         const service = UserService(db);
         await deleteUser(user, service);
         const themeService = EssayThemeService(db);
         await themeService.del().delete();
-        done()
-    })
+        done();
+    });
     test('Criação', async done => {
-        const header = await authenticate(user, api)
+        const header = await authenticate(user, api);
         const base = await createEssay(context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
@@ -73,9 +73,9 @@ describe('#5 Correção da redação', () => {
         expect(response.body, jp(response.body)).toBeDefined();
         expect(response.body.essay).toBe(base.id);
         done();
-    }, 100000)
+    }, 100000);
     test('Recuperação', async done => {
-        const header = await authenticate(user, api)
+        const header = await authenticate(user, api);
         const base = await createEssay(context, user.user_id);
         const data = {
             'accentuation': "Sim",
@@ -94,7 +94,7 @@ describe('#5 Correção da redação', () => {
             'repeated': "Não",
             'understoodTheme': "Sim",
             'veryShortSentences': "Não",
-        }
+        };
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
         const created = await api.post(`/essays/${base.id}/correction/`)
@@ -115,7 +115,7 @@ describe('#5 Correção da redação', () => {
         done();
     }, 100000);
     test('Atualização', async done => {
-        const header = await authenticate(user, api)
+        const header = await authenticate(user, api);
         const base = await createEssay(context, user.user_id);
         const data = {
             'accentuation': "Sim",
@@ -134,7 +134,7 @@ describe('#5 Correção da redação', () => {
             'repeated': "Não",
             'understoodTheme': "Sim",
             'veryShortSentences': "Não",
-        }
+        };
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
         const created = await api.post(`/essays/${base.id}/correction/`)
@@ -154,7 +154,7 @@ describe('#5 Correção da redação', () => {
             });
         const updatingData = {
             'comment': faker.lorem.lines(5),
-        }
+        };
         const updated = await api.patch(`/essays/${base.id}/correction/`)
             .send(updatingData)
             .set('Authorization', header);
@@ -162,5 +162,5 @@ describe('#5 Correção da redação', () => {
         expect(updated.body.id).toBe(created.body.id);
         expect(updated.body.comment).not.toEqual(created.body.comment);
         done();
-    })
-})
+    });
+});

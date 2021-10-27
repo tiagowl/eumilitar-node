@@ -12,22 +12,22 @@ import crypto from 'crypto';
 const context = contextFactory();
 
 describe('#1 Testes na autenticação', () => {
-    const user = userFactory()
+    const user = userFactory();
     beforeAll(async (done) => {
         const service = UserService(db)
             .onConflict().merge();
-        await saveUser(user, service)
+        await saveUser(user, service);
         const themeService = EssayThemeService(db);
-        await themeService.delete().del()
+        await themeService.delete().del();
         done();
-    })
+    });
     afterAll(async (done) => {
         const service = UserService(db);
-        await deleteUser(user, service)
+        await deleteUser(user, service);
         const themeService = EssayThemeService(db);
         await themeService.del().delete();
-        done()
-    })
+        done();
+    });
     test('Login correto', async (done) => {
         const credentials = {
             email: user.email,
@@ -38,10 +38,10 @@ describe('#1 Testes na autenticação', () => {
         expect(token.token).not.toBeNull();
         const sessionService = SessionService(db);
         sessionService.where('session_id', token.token).then(dbToken => {
-            expect(dbToken[0]).not.toBeNull()
+            expect(dbToken[0]).not.toBeNull();
             done();
-        })
-    })
+        });
+    });
     test('Recuperação de senha', async (done) => {
         await UserService(db).where('user_id', user.user_id).update({ phone: faker.phone.phoneNumber('3333333333333') });
         const userData = await UserService(db).where('email', user.email).first();
@@ -54,8 +54,8 @@ describe('#1 Testes na autenticação', () => {
         expect(token).not.toBeUndefined();
         expect(token?.token).not.toBeNull();
         expect(token?.token).not.toBeUndefined();
-        done()
-    })
+        done();
+    });
     test('Recuperação de senha com sms', async (done) => {
         const service = UserService(db);
         const userData = await service.where('email', user.email).first();
@@ -71,7 +71,7 @@ describe('#1 Testes na autenticação', () => {
         expect(token?.token).not.toBeUndefined();
         const long = await controller.checkShortToken({ session, token: token?.token || '' });
         expect(long.token.length).toBe(64);
-        done()
+        done();
     });
     test('Recuperação de senha com email errado', async (done) => {
         const controller = new RecoveryController(context);
@@ -80,8 +80,8 @@ describe('#1 Testes na autenticação', () => {
         } catch (error: any) {
             expect(error, JSON.stringify(error)).toEqual({ message: 'Email inválido', status: 400 });
         }
-        done()
-    })
+        done();
+    });
     test('Recuperação de senha com email inválido', async done => {
         const controller = new RecoveryController(context);
         try {
@@ -93,8 +93,8 @@ describe('#1 Testes na autenticação', () => {
                 status: 400,
             });
         }
-        done()
-    })
+        done();
+    });
     test('Verificar token de mudança de senha', async (done) => {
         const token = await generateConfirmationToken();
         const service = UserService(db);
@@ -102,9 +102,9 @@ describe('#1 Testes na autenticação', () => {
         await saveConfirmationToken(token, userData?.user_id || 0, db);
         const controller = new RecoveryController(context);
         const { isValid } = await controller.check({ token });
-        expect(isValid).toBeTruthy()
+        expect(isValid).toBeTruthy();
         done();
-    })
+    });
     test('Verificar token expirado de mudança de senha', async (done) => {
         const token = await generateConfirmationToken();
         const service = UserService(db);
@@ -112,9 +112,9 @@ describe('#1 Testes na autenticação', () => {
         await saveConfirmationToken(token, userData?.user_id || 0, db, new Date(Date.now() - 1000));
         const controller = new RecoveryController(context);
         const { isValid } = await controller.check({ token });
-        expect(isValid).toBeFalsy()
+        expect(isValid).toBeFalsy();
         done();
-    })
+    });
     test('Verificar token expirado de mudança de senha', async (done) => {
         const token = await generateConfirmationToken();
         const service = UserService(db);
@@ -122,48 +122,48 @@ describe('#1 Testes na autenticação', () => {
         await saveConfirmationToken(token, userData?.user_id || 0, db, new Date(0));
         const controller = new RecoveryController(context);
         const { isValid } = await controller.check({ token });
-        expect(isValid).toBeFalsy()
+        expect(isValid).toBeFalsy();
         done();
-    })
+    });
     test('Verificar token inválido de mudança de senha', async (done) => {
         const token = await generateConfirmationToken();
-        const invalidToken = await generateConfirmationToken()
+        const invalidToken = await generateConfirmationToken();
         const service = UserService(db);
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, db);
         const controller = new RecoveryController(context);
         const { isValid } = await controller.check({ token: invalidToken });
-        expect(isValid).toBeFalsy()
+        expect(isValid).toBeFalsy();
         done();
-    })
+    });
     test('Verificar token inválido de mudança de senha', async (done) => {
         const token = await generateConfirmationToken();
-        const invalidToken = (await generateConfirmationToken()).slice(0, 15)
+        const invalidToken = (await generateConfirmationToken()).slice(0, 15);
         const service = UserService(db);
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, db);
         const controller = new RecoveryController(context);
         const { isValid } = await controller.check({ token: invalidToken },);
-        expect(isValid).toBeFalsy()
+        expect(isValid).toBeFalsy();
         done();
-    })
+    });
     test('Mudar senha', async done => {
         const token = await generateConfirmationToken();
         const service = UserService(db);
         const userData = await service.where('email', user.email).first();
         await saveConfirmationToken(token, userData?.user_id || 0, db);
-        const newPassword = 'newPassword'
+        const newPassword = 'newPassword';
         const controller = new RecoveryController(context);
         const updated = await controller.updatePassword({
             password: newPassword,
             confirmPassword: newPassword,
             token,
         });
-        expect(updated).toEqual({ updated: true })
+        expect(updated).toEqual({ updated: true });
         const { isValid } = await controller.check({ token },);
-        expect(isValid).toBeFalsy()
+        expect(isValid).toBeFalsy();
         done();
-    })
+    });
     test('Verificar autenticação', async (done) => {
         const credentials = {
             email: user.email,
@@ -177,7 +177,7 @@ describe('#1 Testes na autenticação', () => {
         expect(response).not.toBeUndefined();
         expect(response?.email).toEqual(user.email);
         done();
-    })
+    });
     test('Verificar autenticação com token inválido', async (done) => {
         const token = crypto.randomBytes(32).toString('base64');
         const controller = new SessionController(context);
@@ -186,7 +186,7 @@ describe('#1 Testes na autenticação', () => {
             expect(error.status).toEqual(401);
         });
         done();
-    })
+    });
     test('logout', async done => {
         const credentials = {
             email: user.email,
@@ -196,5 +196,5 @@ describe('#1 Testes na autenticação', () => {
         const { token } = await controller.auth(credentials);
         await controller.delete(token);
         done();
-    })
-})
+    });
+});

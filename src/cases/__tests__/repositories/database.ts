@@ -112,6 +112,6 @@ const db = {
 
 export default function getDb() {
     return db;
-};
+}
 
 export type FakeDB = typeof db;

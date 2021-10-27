@@ -15,16 +15,16 @@ describe('#6 Correções', () => {
     beforeAll(async (done) => {
         const service = UserService(db)
             .onConflict('user_id').merge();
-        await saveUser(user, service)
+        await saveUser(user, service);
         done();
-    })
+    });
     afterAll(async (done) => {
         const service = UserService(db);
         await deleteUser(user, service);
         const themeService = EssayThemeService(db);
         await themeService.delete().del();
-        done()
-    })
+        done();
+    });
     test('Correção', async done => {
         const essay = await createEssay(context, user.user_id);
         await essays.partialUpdate(essay.id,
@@ -49,7 +49,7 @@ describe('#6 Correções', () => {
             'repeated': "Não",
             'understoodTheme': "Sim",
             'veryShortSentences': "Não",
-        }
+        };
         const created = await controller.create(data);
         expect(created.essay).toBe(essay.id);
         (Object.entries(data) as [keyof typeof data, any][])
@@ -57,9 +57,9 @@ describe('#6 Correções', () => {
                 if (key === 'corrector') return;
                 expect(created[key]).toBeDefined();
                 expect(created[key]).toBe(value);
-            })
+            });
         done();
-    })
+    });
     test('Recuperar correção', async (done) => {
         const essay = await createEssay(context, user.user_id);
         await essays.partialUpdate(essay.id,
@@ -84,7 +84,7 @@ describe('#6 Correções', () => {
             'repeated': "Não",
             'understoodTheme': "Sim",
             'veryShortSentences': "Não",
-        }
+        };
         await controller.create(pre);
         const data = await controller.get({ essay: essay.id });
         expect(data).toBeDefined();
@@ -94,9 +94,9 @@ describe('#6 Correções', () => {
                 if (key === 'corrector') return;
                 expect(data[key]).toBeDefined();
                 expect(data[key]).toBe(value);
-            })
+            });
         done();
-    })
+    });
     test('Atualização', async done => {
         const correction = await CorrectionService(db).first();
         if (!correction) throw new Error();
@@ -118,6 +118,6 @@ describe('#6 Correções', () => {
         expect(updated.accentuation).toBe('Sim');
         expect(updatingData.comment).toBe(updated.comment);
         done();
-    })
-})
+    });
+});
 

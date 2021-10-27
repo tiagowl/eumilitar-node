@@ -18,72 +18,72 @@ describe('#1 Teste na api do usuário', () => {
         const deleted = await UserService(db).where('user_id', user.user_id).delete();
         const [id] = await saveUser(user, UserService(db));
         await EssayThemeService(db).del().delete();
-        done()
-    })
+        done();
+    });
     afterAll(async (done) => {
         await deleteUser(user, UserService(db));
         const themeService = EssayThemeService(db);
-        await themeService.del().delete()
-        done()
-    })
+        await themeService.del().delete();
+        done();
+    });
     it('#11 Teste no login', async (done) => {
         const credentials = {
             email: user.email,
             password: user.passwd,
-        }
+        };
         const response = await api.post('/tokens/')
             .send(credentials)
             .set('User-Agent', faker.internet.userAgent());
         expect(response.status, JSON.stringify(response.body)).toBe(201);
-        expect(response.body.token).not.toBeNull()
-        done()
-    })
+        expect(response.body.token).not.toBeNull();
+        done();
+    });
     it('#12 Teste login falho', async (done) => {
         const wrongCredentials = {
             email: 'lsjflas@faldfjl.comdd',
             password: user.passwd,
-        }
+        };
         const response = await api.post('/tokens/')
             .send(wrongCredentials)
-            .set('User-Agent', faker.internet.userAgent())
-        expect(response.status, jp(response.body)).toBe(400)
-        expect(response.body.token).toBeUndefined()
-        expect(response.body.errors.length).toBe(1)
-        expect(response.body.errors).toEqual([['email', 'Email inválido']])
-        done()
-    })
+            .set('User-Agent', faker.internet.userAgent());
+        expect(response.status, jp(response.body)).toBe(400);
+        expect(response.body.token).toBeUndefined();
+        expect(response.body.errors.length).toBe(1);
+        expect(response.body.errors).toEqual([['email', 'Email inválido']]);
+        done();
+    });
     it('#13 Senha errada', async done => {
         const wrongPassword = {
             email: user.email,
             password: '454',
-        }
+        };
         const response = await api.post('/tokens/')
             .send(wrongPassword)
-            .set('User-Agent', faker.internet.userAgent())
-        expect(response.status, jp(response.body)).toBe(400)
-        expect(response.body.errors.length).toBe(1)
-        expect(response.body.token).toBeUndefined()
-        expect(response.body.errors).toEqual([['password', 'Senha inválida']])
-        done()
-    })
+            .set('User-Agent', faker.internet.userAgent());
+        expect(response.status, jp(response.body)).toBe(400);
+        expect(response.body.errors.length).toBe(1);
+        expect(response.body.token).toBeUndefined();
+        expect(response.body.errors).toEqual([['password', 'Senha inválida']]);
+        done();
+    });
     it('#14 Email errado', async (done) => {
         const wrongPassword = {
             email: 'fdd',
             password: '454',
-        }
+        };
         const response = await api.post('/tokens/')
             .send(wrongPassword)
-            .set('User-Agent', faker.internet.userAgent())
-        expect(response.status, jp(response.body)).toBe(400)
-        expect(response.body.errors.length).toBe(1)
-        expect(response.body.token).toBeUndefined()
-        expect(response.body.errors).toEqual([['email', 'Informe um email válido']])
-        done()
-    })
+            .set('User-Agent', faker.internet.userAgent());
+        expect(response.status, jp(response.body)).toBe(400);
+        expect(response.body.errors.length).toBe(1);
+        expect(response.body.token).toBeUndefined();
+        expect(response.body.errors).toEqual([['email', 'Informe um email válido']]);
+        done();
+    });
     it('#15 Recuperação de senha', async (done) => {
         const credentials = { email: user.email, type: 'email', session: v4() };
         const response = await api.post('/password-recoveries/')
-            .send(credentials)
+            .send(credentials);
         expect(response.body).toEqual({ message: "Email enviado! Verifique sua caixa de entrada." });
         expect(response.status).toBe(201);
         done();
@@ -97,7 +97,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ isValid: true });
         done();
-    })
+    });
     test('#17 Recuperar senha', async done => {
         const service = UserService(db);
         const userData = await service.where('email', user.email).first();
@@ -107,29 +107,29 @@ describe('#1 Teste na api do usuário', () => {
             token,
             password: 'abda143501',
             confirmPassword: 'abda143501',
-        }
+        };
         const response = await api.put('/users/profile/password/')
             .send(credentials);
         expect(response.status, jp(response.body)).toBe(200);
         expect(response.body).toEqual({ updated: true });
         const checkResponse = await api.get(`/password-recoveries/${encodeURIComponent(token)}/`);
-        expect(checkResponse.status).toBe(200)
+        expect(checkResponse.status).toBe(200);
         expect(checkResponse.body).toEqual({ isValid: false });
         done();
-    })
+    });
     test('#18 Recuperar senha com token inválido', async done => {
         const invalidToken = await generateConfirmationToken();
         const credentials = {
             token: invalidToken,
             password: 'abda143501',
             confirmPassword: 'abda143501',
-        }
+        };
         const response = await api.put('/users/profile/password/')
             .send(credentials);
         expect(response.status).toBe(400);
         expect(response.body).toEqual({ "message": "Token inválido", status: 400 });
         done();
-    })
+    });
     test('#19 Recuperar senha com token expirado', async done => {
         const service = UserService(db);
         const userData = await service.where('email', user.email).first();
@@ -139,34 +139,34 @@ describe('#1 Teste na api do usuário', () => {
             token,
             password: 'abda143501',
             confirmPassword: 'abda143501',
-        }
+        };
         const response = await api.put('/users/profile/password/')
             .send(credentials);
         expect(response.status).toBe(400);
         expect(response.body).toEqual({ "message": "Token expirado", status: 400 });
         done();
-    })
+    });
     test('#191 Verificação do perfil do usuário', async done => {
-        const header = await authenticate(user, api)
+        const header = await authenticate(user, api);
         const response = await api.get('/users/profile/')
             .set('Authorization', header);
         expect(response.body.message, jp({ header, body: response.body })).toBeUndefined();
         expect(response.status).toBe(200);
-        expect(response.body.email).toEqual(user.email)
+        expect(response.body.email).toEqual(user.email);
         expect(response.body.password).toBeUndefined();
         done();
-    })
+    });
     test('#192 Verificação do perfil do usuário não autenticado', async done => {
-        const response = await api.get('/users/profile/')
+        const response = await api.get('/users/profile/');
         expect(response.body.message).toEqual('Não autenticado');
         expect(response.status).toBe(401);
         done();
-    })
+    });
     test('#193 Verificação do perfil do usuário com token inválido', async done => {
         const token = crypto.randomBytes(32).toString('base64');
         expect(token).not.toBeUndefined();
         expect(token).not.toBeNull();
-        const header = `Bearer ${token}`
+        const header = `Bearer ${token}`;
         const response = await api.get('/users/profile/')
             .set('Authorization', header);
         expect(response.body.message).toEqual('Não autorizado');
@@ -174,7 +174,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(response.body.email).toBeUndefined();
         expect(response.body.password).toBeUndefined();
         done();
-    })
+    });
     test('#194 Logout', async done => {
         const header = await authenticate(user, api);
         const response = await api.delete('/tokens/')
@@ -184,7 +184,7 @@ describe('#1 Teste na api do usuário', () => {
             .set('Authorization', header);
         expect(notResponse.status).toEqual(401);
         done();
-    })
+    });
     test('#195 Listar usuários', async (done) => {
         const header = await authenticate(user, api);
         const { body, status, error } = await api.get('/users/')
@@ -237,7 +237,7 @@ describe('#1 Teste na api do usuário', () => {
         const { body, status } = await api.put(`/users/${user.user_id}/`)
             .send(data)
             .set('Authorization', header);
-        expect(body.message, jp({ header, body: body })).toBeUndefined();
+        expect(body.message, jp({ header, body })).toBeUndefined();
         expect(status).toBe(200);
         expect(body.password).toBeUndefined();
         Object.entries(data).forEach(([key, val]) => {
@@ -251,7 +251,7 @@ describe('#1 Teste na api do usuário', () => {
         const header = await authenticate(user, api);
         const { body, status } = await api.get(`/users/${user.user_id}/`)
             .set('Authorization', header);
-        expect(body.message, jp({ header, body: body })).toBeUndefined();
+        expect(body.message, jp({ header, body })).toBeUndefined();
         expect(status).toBe(200);
         expect(body.id).toBeDefined();
         expect(body.password).toBeUndefined();
@@ -261,7 +261,7 @@ describe('#1 Teste na api do usuário', () => {
         const session = v4();
         const credentials = { email: user.email, type: 'sms', session };
         const response = await api.post('/password-recoveries/')
-            .send(credentials)
+            .send(credentials);
         expect(response.body).toEqual({ message: "SMS enviado para +11 (22) 3 44xx-xx55, verifique sua caixa de mensagens" });
         expect(response.status).toBe(201);
         const token = await RecoveryService(db).where({ user_id: user.user_id, selector: session }).first();
@@ -273,4 +273,4 @@ describe('#1 Teste na api do usuário', () => {
         expect(validated.body.token.length).toBe(64);
         done();
     });
-})
+});

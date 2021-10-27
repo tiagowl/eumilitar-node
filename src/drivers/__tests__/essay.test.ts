@@ -32,21 +32,21 @@ describe('#3 Redações', () => {
             file: '/usr/share/data/theme.pdf',
             courses: new Set(['esa', 'espcex'] as Course[]),
             deactivated: false,
-        }
+        };
         const theme = await repository.create(themeData);
         expect(theme.id).not.toBeUndefined();
         expect(theme.id).not.toBeNull();
         await saveUser(user, service());
         await saveUser(student, service());
-        done()
-    })
+        done();
+    });
     afterAll(async (done) => {
         const service = UserService(db);
         await deleteUser(user, service);
         const themeService = EssayThemeService(db);
         await themeService.del().delete();
-        done()
-    })
+        done();
+    });
     test('Criação', async done => {
         const subscriptionRepository = new SubscriptionRepository(context);
         const productRepository = new ProductRepository(context);
@@ -60,18 +60,18 @@ describe('#3 Redações', () => {
             course: 'espcex',
             active: true,
         });
-        const header = await authenticate(student, api)
+        const header = await authenticate(student, api);
         const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
         const { body, status, error } = await api.post('/essays/')
             .set('Authorization', header)
             .field('course', 'esa')
-            .attach('file', buffer, { filename: 'file.png', contentType: 'image/png' })
+            .attach('file', buffer, { filename: 'file.png', contentType: 'image/png' });
         expect(body.id, jp({ body, error })).not.toBeUndefined();
         expect(status, jp({ body, error })).toBe(201);
         done();
-    })
+    });
     test('Listagem', async done => {
-        const header = await authenticate(student, api)
+        const header = await authenticate(student, api);
         const { body, status, error } = await api.get('/essays/')
             .set('Authorization', header);
         expect(body, jp({ body, error, header })).toBeInstanceOf(Array);
@@ -80,11 +80,11 @@ describe('#3 Redações', () => {
             expect(essay.course).toBeDefined();
             expect(essay.id).toBeDefined();
             expect(essay.file).toBeDefined();
-        })
+        });
         done();
-    })
+    });
     test('Listagem de todos', async done => {
-        const header = await authenticate(user, api)
+        const header = await authenticate(user, api);
         const { body, status, error } = await api.get('/essays/')
             .set('Authorization', header);
         expect(body.page, jp({ body, error })).not.toBeUndefined();
@@ -94,11 +94,11 @@ describe('#3 Redações', () => {
             expect(essay.course).toBeDefined();
             expect(essay.id).toBeDefined();
             expect(essay.file).toBeDefined();
-        })
+        });
         done();
-    })
+    });
     test('Recuperação de uma redação', async done => {
-        const header = await authenticate(user, api)
+        const header = await authenticate(user, api);
         const base = await createEssay(context, user.user_id);
         const response = await api.get(`/essays/${base.id}/`)
             .set('Authorization', header);
@@ -106,20 +106,20 @@ describe('#3 Redações', () => {
         expect(response.body).toBeDefined();
         expect(response.body).toMatchObject(base);
         done();
-    })
+    });
     test('Início da correção da redação', async done => {
-        const header = await authenticate(user, api)
+        const header = await authenticate(user, api);
         const base = await createEssay(context, user.user_id);
         const response = await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
         expect(response.status, jp(response.body)).toBe(201);
         expect(response.body).toBeDefined();
         expect(response.body).toMatchObject(base);
-        expect(response.body.corrector.id).toEqual(user.user_id)
+        expect(response.body.corrector.id).toEqual(user.user_id);
         done();
-    })
+    });
     test('Cancelamento da correção', async done => {
-        const header = await authenticate(user, api)
+        const header = await authenticate(user, api);
         const base = await createEssay(context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
@@ -133,7 +133,7 @@ describe('#3 Redações', () => {
     });
     test('Gráfico de enviadas', async done => {
         if (!admin) throw new Error('Sem usuário');
-        const header = await authenticate(admin, api)
+        const header = await authenticate(admin, api);
         const response = await api.get('/essays/charts/sent/')
             .query({
                 period: {
@@ -154,7 +154,7 @@ describe('#3 Redações', () => {
     });
     test('Gráfico de corrigidas', async done => {
         if (!admin) throw new Error('Sem usuário');
-        const header = await authenticate(admin, api)
+        const header = await authenticate(admin, api);
         const response = await api.get('/essays/charts/evaluated/')
             .query({
                 period: {
@@ -173,4 +173,4 @@ describe('#3 Redações', () => {
         });
         done();
     });
-})
+});

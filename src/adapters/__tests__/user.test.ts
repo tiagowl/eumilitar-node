@@ -8,38 +8,38 @@ import { UserService } from "../models/User";
 const context = contextFactory();
 
 describe('#7 Testes no usuário', () => {
-    const user = userFactory()
+    const user = userFactory();
     beforeAll(async (done) => {
         const service = UserService(db)
             .onConflict(['email', 'user_id'])
             .merge();
-        await saveUser(user, service)
+        await saveUser(user, service);
         const themeService = EssayThemeService(db);
-        await themeService.delete().del()
+        await themeService.delete().del();
         done();
-    })
+    });
     afterAll(async (done) => {
         const service = UserService(db);
-        await deleteUser(user, service)
+        await deleteUser(user, service);
         const themeService = EssayThemeService(db);
         await themeService.del().delete();
-        done()
-    })
+        done();
+    });
     test('#71 Listagem', async done => {
         const controller = new UserController(context);
         const users = await controller.all({ status: 'active' });
         expect(users).toBeDefined();
         if (!(users instanceof Array)) throw new Error();
         expect(users.length).toBeGreaterThan(0);
-        users.forEach(user => {
-            expect(user.status).toBe('active');
-            expect(user.id).toBeDefined();
-        })
+        users.forEach(item => {
+            expect(item.status).toBe('active');
+            expect(item.id).toBeDefined();
+        });
         done();
     });
     test('#71 Criação', async done => {
         const controller = new UserController(context);
-        const user = await controller.create({
+        const created = await controller.create({
             email: faker.internet.email(),
             firstName: faker.name.firstName(),
             lastName: faker.name.lastName(),
@@ -47,8 +47,8 @@ describe('#7 Testes no usuário', () => {
             permission: 'admin',
             status: 'active',
         });
-        expect(user).toBeDefined();
-        expect(user.id).toBeDefined();
+        expect(created).toBeDefined();
+        expect(created.id).toBeDefined();
         done();
     });
     test('#71 Listagem', async done => {
@@ -60,10 +60,10 @@ describe('#7 Testes no usuário', () => {
         expect(typeof page.count).toBe('number');
         expect(typeof page.pages).toBe('number');
         expect(users.length).toBeGreaterThan(0);
-        users.forEach(user => {
-            expect(user.status).toBe('active');
-            expect(user.id).toBeDefined();
-        })
+        users.forEach(item => {
+            expect(item.status).toBe('active');
+            expect(item.id).toBeDefined();
+        });
         done();
     });
     test('#72 Atualização', async done => {

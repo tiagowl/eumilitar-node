@@ -9,12 +9,12 @@ describe('#7 Produtos', () => {
     const app = appFactory();
     const api = supertest(app.server);
     const user: UserModel = userFactory();
-    const toDelete: number[] = []
+    const toDelete: number[] = [];
     beforeAll(async (done) => {
         const service = UserService(db)
             .onConflict('user_id').merge();
         await saveUser(user, service);
-        done()
+        done();
     });
     afterAll(async (done) => {
         const service = UserService(db);
@@ -28,7 +28,7 @@ describe('#7 Produtos', () => {
             course: 'esa',
             expirationTime: 30 * 24 * 60 * 60 * 1000,
             name: faker.company.companyName(),
-        }
+        };
         const header = await authenticate(user, api);
         const response = await api.post('/products/')
             .set('Authorization', header)
@@ -56,7 +56,7 @@ describe('#7 Produtos', () => {
             course: 'espcex',
             expirationTime: 8 * 24 * 60 * 60 * 1000,
             name: faker.company.companyName(),
-        }
+        };
         const response = await api.put(`/products/${id}/`)
             .send(data)
             .set('Authorization', header);

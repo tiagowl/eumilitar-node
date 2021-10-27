@@ -11,9 +11,9 @@ const context = contextFactory();
 describe('#2 Testes nos temas de redação', () => {
     afterAll(async (done) => {
         const themeService = EssayThemeService(db);
-        await themeService.delete().del()
+        await themeService.delete().del();
         done();
-    })
+    });
     test('#21 Teste no modelo', async done => {
         const repository = new EssayThemeRepository(context);
         const data: EssayThemeCreation = {
@@ -24,12 +24,12 @@ describe('#2 Testes nos temas de redação', () => {
             file: '/usr/share/data/theme.pdf',
             courses: new Set(['esa', 'espcex'] as Course[]),
             deactivated: false,
-        }
+        };
         const created = await repository.create(data);
         expect(created.id).not.toBeUndefined();
         expect(created.id).not.toBeNull();
-        done()
-    })
+        done();
+    });
     test('#22 Teste na criação pelo controller', async done => {
         const data: EssayThemeInput = {
             title: 'Título',
@@ -53,20 +53,20 @@ describe('#2 Testes nos temas de redação', () => {
                 location: faker.internet.url(),
             },
             courses: ['esa', 'espcex'] as Course[]
-        }
+        };
         const controller = new EssayThemeController(context);
         const created = await controller.create(data);
         expect(created.id).not.toBeNull();
         expect(created.id, JSON.stringify(created)).toBeDefined();
         expect(created.title).toEqual(data.title);
         done();
-    })
+    });
     test('#23 Lista todos os temas', async done => {
         const pagination: EssayThemePagination = {
             page: '1',
             size: '2',
             order: 'id',
-        }
+        };
         const data: EssayThemeInput = {
             title: faker.name.title(),
             endDate: new Date(Date.now() + 370 * 24 * 60 * 60),
@@ -88,7 +88,7 @@ describe('#2 Testes nos temas de redação', () => {
                 location: faker.internet.url(),
             },
             courses: ['esa', 'espcex'] as Course[],
-        }
+        };
         const controller = new EssayThemeController(context);
         await controller.create(data);
         await controller.create({ ...data, startDate: new Date(Date.now() + 790 * 24 * 60 * 60), endDate: new Date(Date.now() + 800 * 24 * 60 * 60) });
@@ -99,9 +99,9 @@ describe('#2 Testes nos temas de redação', () => {
         await Promise.all(themes.page.map(async theme => {
             expect(theme.id, JSON.stringify(theme)).not.toBeUndefined();
             expect(theme.active, JSON.stringify(theme)).not.toBeUndefined();
-        }))
-        done()
-    })
+        }));
+        done();
+    });
     test('#24 Atualização dos temas', async done => {
         const data: EssayThemeInput = {
             title: faker.name.title(),
@@ -124,18 +124,18 @@ describe('#2 Testes nos temas de redação', () => {
                 location: faker.internet.url(),
             },
             courses: ['esa'] as Course[],
-        }
+        };
         const controller = new EssayThemeController(context);
         const all = await controller.listAll();
         expect(all.pages).not.toBeLessThan(1);
         expect(all.page).toBeInstanceOf(Array);
-        expect(all.page.length).not.toBeLessThan(1)
-        const selected = all.page[0]
+        expect(all.page.length).not.toBeLessThan(1);
+        const selected = all.page[0];
         expect(selected.id).not.toBeUndefined();
         const updated = await controller.update(selected.id || 0, data);
         expect(data.title).toEqual(updated.title);
         expect(data.courses).toEqual(updated.courses);
         done();
-    })
-})
+    });
+});
 

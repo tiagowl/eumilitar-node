@@ -13,7 +13,7 @@ describe('#8 Inscrições', () => {
     const user = userFactory({ email });
     const deleteAll = async (done: any) => {
         await UserService(db).where('email', email).del();
-        done()
+        done();
     };
     afterAll(deleteAll);
     beforeAll(deleteAll);
@@ -59,7 +59,7 @@ describe('#8 Inscrições', () => {
             active: true,
             course_tag: 2,
         }).onConflict().merge();
-        expect(inserted).toBeDefined()
+        expect(inserted).toBeDefined();
         const controller = new SubscriptionController(context);
         const canceleds = await controller.cancel({
             hottok,
@@ -115,7 +115,7 @@ describe('#8 Inscrições', () => {
             last_name: 'Comprador',
             prod: 0,
             status: 'canceled',
-        })
+        });
         expect(notCanceled).toBeInstanceOf(Array);
         expect(notCanceled.length).toBe(0);
         done();

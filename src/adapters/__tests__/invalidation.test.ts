@@ -14,16 +14,16 @@ describe('#5 Invalidações', () => {
     beforeAll(async (done) => {
         const service = UserService(db)
             .onConflict('user_id').merge();
-        await saveUser(user, service)
+        await saveUser(user, service);
         done();
-    })
+    });
     afterAll(async (done) => {
         const service = UserService(db);
         await deleteUser(user, service);
         const themeService = EssayThemeService(db);
         await themeService.delete().del();
-        done()
-    })
+        done();
+    });
     test('Invalidação da redação', async done => {
         const essay = await createEssay(context, user.user_id);
         await essays.partialUpdate(essay.id,
@@ -34,7 +34,7 @@ describe('#5 Invalidações', () => {
         expect(created.id).toBeDefined();
         expect(created.essay).toBe(essay.id);
         done();
-    }, 10000)
+    }, 10000);
     test('Recuperação da invalidação', async done => {
         const essay = await createEssay(context, user.user_id, { corrector: user.user_id, status: 'correcting' });
         if(!essay) throw new Error();
@@ -46,5 +46,5 @@ describe('#5 Invalidações', () => {
         expect(invalidation.id).toBeDefined();
         expect(invalidation.essay).toBe(essay.id);
         done();
-    }, 10000)
-})
+    }, 10000);
+});

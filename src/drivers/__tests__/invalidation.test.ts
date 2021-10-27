@@ -21,7 +21,7 @@ describe('#4 Invalidação da redação', () => {
         await saveUser(admin, service());
         await saveUser(student, service());
         const themeService = EssayThemeService(db);
-        await themeService.delete().del()
+        await themeService.delete().del();
         const repository = new EssayThemeRepository(context);
         const themeData: EssayThemeCreation = {
             title: 'Título',
@@ -31,22 +31,22 @@ describe('#4 Invalidação da redação', () => {
             file: '/usr/share/data/theme.pdf',
             courses: new Set(['esa', 'espcex'] as Course[]),
             deactivated: false,
-        }
+        };
         const theme = await repository.create(themeData);
         expect(theme.id).not.toBeUndefined();
         expect(theme.id).not.toBeNull();
         await saveUser(user, service());
-        done()
-    })
+        done();
+    });
     afterAll(async (done) => {
         const service = UserService(db);
         await deleteUser(user, service);
         const themeService = EssayThemeService(db);
         await themeService.del().delete();
-        done()
-    })
+        done();
+    });
     test('Invalidação', async done => {
-        const header = await authenticate(user, api)
+        const header = await authenticate(user, api);
         const base = await createEssay(context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
@@ -58,9 +58,9 @@ describe('#4 Invalidação da redação', () => {
         expect(response.body.essay).toBe(base.id);
         expect(response.body.corrector).toBe(user.user_id);
         done();
-    })
+    });
     test('Recuperação', async done => {
-        const header = await authenticate(user, api)
+        const header = await authenticate(user, api);
         const base = await createEssay(context, user.user_id);
         await api.post(`/essays/${base.id}/corrector/`)
             .set('Authorization', header);
@@ -73,5 +73,5 @@ describe('#4 Invalidação da redação', () => {
         expect(body).toMatchObject(invalidation.body);
         expect(body.essay).toBe(base.id);
         done();
-    })
-})
+    });
+});

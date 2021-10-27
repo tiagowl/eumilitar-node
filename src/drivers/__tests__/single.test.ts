@@ -18,7 +18,7 @@ describe('#8 Redações avulsas', () => {
             .onConflict('user_id').merge());
         await saveUser(student, UserService(db)
             .onConflict('user_id').merge());
-        done()
+        done();
     });
     test('Criação', async done => {
         const header = await authenticate(admin, api);
