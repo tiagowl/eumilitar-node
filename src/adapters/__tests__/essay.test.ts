@@ -8,6 +8,7 @@ import User from "../../entities/User";
 import EssayController, { EssayInput } from "../controllers/Essay";
 import EssayInvalidationController from "../controllers/EssayInvalidation";
 import SingleEssayController from "../controllers/SingleEssay";
+import { EssayService } from "../models/Essay";
 import EssayThemeRepository, { EssayThemeService } from "../models/EssayTheme";
 import ProductRepository from "../models/Product";
 import SubscriptionRepository from "../models/Subscription";
@@ -241,6 +242,7 @@ describe('#4 Redações', () => {
         done();
     }, 10000);
     test('#50 Reenvio da redação', async done => {
+        await EssayService(db).where('user_id', student.user_id).del();
         const essay = await createEssay(context, student.user_id);
         await controller.partialUpdate(essay.id, { status: 'correcting' }, agentCorrector);
         const invalidationData: EssayInvalidationCreationData = { essay: essay.id, corrector: corrector.user_id, comment: faker.lorem.lines(7), reason: 'other' };
