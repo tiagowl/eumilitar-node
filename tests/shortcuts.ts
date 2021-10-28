@@ -124,7 +124,7 @@ export function appFactory(connection?: Knex, customSettings?: any) {
     return new Application({ ...context, db: connection || context.db, settings: customSettings || context.settings })
 }
 
-export async function createEssay(context: Context, id: number, inject: Partial<EssayInterface> = {}) {
+export async function createEssay(context: Context, student: number, inject: Partial<EssayInterface> = {}) {
     const themeRepository = new EssayThemeRepository(context);
     const themeData: EssayThemeCreation = {
         title: 'Título',
@@ -141,7 +141,7 @@ export async function createEssay(context: Context, id: number, inject: Partial<
     const repository = new EssayRepository(context);
     return repository.create(Object.assign({
         file: '/usr/share/data/theme.png',
-        student: id,
+        student,
         course: [...themeData.courses][0],
         sendDate: new Date(),
         status: 'pending',

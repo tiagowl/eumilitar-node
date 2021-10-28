@@ -14,9 +14,9 @@ import { Paginated } from "../../cases/interfaces";
 
 export interface EssayInput {
     file: Express.MulterS3.File;
-    student: number;
     course?: Course;
     token?: string;
+    invalidEssay?: number | string;
 }
 
 export interface EssayData {
@@ -129,6 +129,7 @@ export default class EssayController extends Controller<EssayData> {
         try {
             const data = await this.validate({
                 ...rawData,
+                student: agent.id,
                 file: rawData.file.path || rawData.file.location,
             }) as EssayCreationData;
             const created = await this.useCase.create(data);
@@ -175,7 +176,7 @@ export default class EssayController extends Controller<EssayData> {
             await yup.number().required().validate(id);
             const essay = await this.useCase.get({ id });
             if (!essay) throw { message: 'Redação não encontrada', status: 404 };
-            return this.parseEntity(essay, agent);
+            return await this.parseEntity(essay, agent);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -185,9 +186,9 @@ export default class EssayController extends Controller<EssayData> {
 
     public async partialUpdate(id: number, data: EssayPartialUpdate, agent: User) {
         try {
-            const validated = await this.validate(data, partialUpdateSchema);
+            const validated = await this.validate({ ...data, corrector: agent.id }, partialUpdateSchema);
             const updated = await this.useCase.partialUpdate(id, validated);
-            return this.parseEntity(updated, agent);
+            return await this.parseEntity(updated, agent);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -201,7 +202,7 @@ export default class EssayController extends Controller<EssayData> {
             await validation.validate(id);
             await validation.validate(corrector);
             const updated = await this.useCase.cancelCorrecting(id, corrector);
-            return this.parseEntity(updated, agent);
+            return await this.parseEntity(updated, agent);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;

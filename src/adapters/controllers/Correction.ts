@@ -110,7 +110,7 @@ export default class CorrectionController extends Controller<CorrectionData> {
             const validated = await this.validate(data);
             const created = await this.useCase.create(validated);
             this.notify(created.essay).catch(this.logger.error);
-            return this.parseEntity(created);
+            return await this.parseEntity(created);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -121,7 +121,7 @@ export default class CorrectionController extends Controller<CorrectionData> {
     public async get(filter: Partial<CorrectionInterface>) {
         try {
             const data = await this.useCase.get(filter);
-            return this.parseEntity(data);
+            return await this.parseEntity(data);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;

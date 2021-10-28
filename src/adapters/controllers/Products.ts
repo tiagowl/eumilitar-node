@@ -30,7 +30,7 @@ export default class ProductController extends Controller<ProductCreation> {
         try {
             const validated = await this.validate(data);
             const created = await this.useCase.create(validated);
-            return this.parseEntity(created);
+            return await this.parseEntity(created);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -53,7 +53,7 @@ export default class ProductController extends Controller<ProductCreation> {
         try {
             const validated = await this.validate(data);
             const product = await this.useCase.update(id, validated);
-            return this.parseEntity(product);
+            return await this.parseEntity(product);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;

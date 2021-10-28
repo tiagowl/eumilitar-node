@@ -83,6 +83,19 @@ describe('#3 Redações', () => {
         });
         done();
     });
+    test('Minhas redações', async done => {
+        const header = await authenticate(admin, api);
+        const { body, status, error } = await api.get('/essays/?my=1')
+            .set('Authorization', header);
+        expect(body, jp({ body, error, header })).toBeInstanceOf(Array);
+        expect(status, jp({ body, error })).toBe(200);
+        body.forEach((essay: any) => {
+            expect(essay.course).toBeDefined();
+            expect(essay.id).toBeDefined();
+            expect(essay.file).toBeDefined();
+        });
+        done();
+    });
     test('Listagem de todos', async done => {
         const header = await authenticate(user, api);
         const { body, status, error } = await api.get('/essays/')

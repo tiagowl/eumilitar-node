@@ -159,7 +159,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
                 ...data,
                 courses: new Set(data.courses),
             });
-            return this.parseEntity(theme);
+            return await this.parseEntity(theme);
         } catch (error: any) {
             this.logger.error(error);
             throw { message: error.message || 'Erro ao atualizar tema' };
@@ -169,7 +169,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
     public async deactivate(id: number) {
         try {
             const theme = await this.useCase.deactivate(id);
-            return this.parseEntity(theme);
+            return await this.parseEntity(theme);
         } catch (error: any) {
             this.logger.error(error);
             throw { message: error.message || 'Erro ao desativar tema' };
@@ -182,7 +182,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
             const theme = await this.useCase.get(filterData);
             if (!theme) return;
             const entity = new EssayTheme(theme);
-            return this.parseEntity(entity);
+            return await this.parseEntity(entity);
         } catch (error: any) {
             this.logger.error(error);
             throw { message: 'Erro ao consultar tema', status: error.status || 500 };

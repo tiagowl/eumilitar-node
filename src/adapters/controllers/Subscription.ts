@@ -207,7 +207,7 @@ export default class SubscriptionController extends Controller<OrderData> {
         try {
             const validated = await this.validate(data, manualCreationSchema);
             const created = await this.useCase.create(validated);
-            return this.parseEntity(created);
+            return await this.parseEntity(created);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -219,7 +219,7 @@ export default class SubscriptionController extends Controller<OrderData> {
         try {
             const validated = await this.validate(data, manualCreationSchema);
             const updated = await this.useCase.update(id, validated);
-            return this.parseEntity(updated);
+            return await this.parseEntity(updated);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;

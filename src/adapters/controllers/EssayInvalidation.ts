@@ -65,7 +65,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
             const users = new UserRepository(this.context);
             const user = await users.get({ id: essay?.student });
             if (!user) throw new Error(`Usuário "${essay?.student}", da redação "${essay?.id}" não encontrado`);
-            return this.smtp.sendMail({
+            return await this.smtp.sendMail({
                 from: this.config.sender,
                 to: { email: user.email, name: user.firstName },
                 subject: 'Redação Corrigida',
@@ -83,7 +83,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
             const validated = await this.validate(data);
             const created = await this.useCase.create(validated);
             this.notify(created.essay);
-            return this.parseEntity(created);
+            return await this.parseEntity(created);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -95,7 +95,7 @@ export default class EssayInvalidationController extends Controller<EssayInvalid
         try {
             const invalidation = await this.useCase.get(essayId);
             if (!invalidation) throw { message: 'Redação não encontrada', status: 404 };
-            return this.parseEntity(invalidation);
+            return await this.parseEntity(invalidation);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
