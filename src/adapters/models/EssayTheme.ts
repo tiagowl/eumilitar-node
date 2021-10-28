@@ -145,8 +145,9 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
 
     public async get(filter: EssayThemeFilter & { active?: boolean }) {
         try {
-            const service = this.filterByActive(this.query, filter.active);
-            const entries = Object.entries(filter);
+            const { active, ...params } = filter;
+            const service = this.filterByActive(this.query, active);
+            const entries = Object.entries(params);
             const theme = await entries.reduce((query, [key, value]) => {
                 if (key === 'courses') return query.where(function () {
                     [...value].forEach(course => {

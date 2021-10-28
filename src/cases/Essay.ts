@@ -125,10 +125,8 @@ export default class EssayCase {
     }
 
     private async getTheme(course: Course) {
-        const themeData = await this.repository.themes.get({ courses: new Set([course]) });
-        if (!themeData) throw new CaseError('Nenhum tema ativo para este curso', Errors.INVALID_THEME);
-        const theme = new EssayTheme(themeData);
-        if (!theme.active) throw new CaseError('Tema inválido', Errors.INVALID_THEME);
+        const theme = await this.repository.themes.get({ courses: new Set([course]), active: true });
+        if (!theme || !theme.active) throw new CaseError('Nenhum tema ativo para este curso', Errors.INVALID_THEME);
         return theme;
     }
 
@@ -181,9 +179,10 @@ export default class EssayCase {
         const essay = await this.get({ id, student });
         const expired = await this.repository.invalidiationIsExpired(essay.id);
         if (expired) throw new CaseError('Prazo de reenvio expirado', Errors.EXPIRED);
-        const valids = await this.count({ student, theme: essay.theme, status: 'evaluated' });
+        const valids = await this.count({ student, theme: essay.theme, status: 'revised' });
+        const correcting = await this.count({ student, theme: essay.theme, status: 'correcting' });
         const pendings = await this.count({ student, theme: essay.theme, status: 'pending' });
-        if (valids > 0 || pendings > 0) throw new CaseError('Já foi enviada uma redação para este tema', Errors.UNAUTHORIZED);
+        if (valids > 0 || pendings > 0 || correcting > 0) throw new CaseError('Já foi enviada uma redação para este tema', Errors.UNAUTHORIZED);
         return essay;
     }
 

@@ -309,7 +309,7 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface, Essa
         try {
             const invalidations = new EssayInvalidationRepository(this.context);
             const invalidation = await invalidations.get({ essay });
-            if (!invalidation) throw { message: 'Invalidação não econtrada', status: 400 };
+            if (!invalidation) return true;
             return invalidation.invalidationDate < new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
         } catch (error: any) {
             this.logger.error(error);

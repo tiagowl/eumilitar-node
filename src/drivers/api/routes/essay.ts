@@ -22,7 +22,7 @@ export default (context: Context) => {
             try {
                 const { user, query } = req;
                 if (!user) throw { message: 'Não autenticado', status: 401 };
-                if (['admin', 'corrector'].indexOf(user.permission) > -1) {
+                if (new Set(['admin', 'corrector']).has(user.permission) && !query.my) {
                     const response = await controller.allEssays(query, user);
                     res.status(200).json(response);
                 } else {

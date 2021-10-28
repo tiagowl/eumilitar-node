@@ -58,7 +58,10 @@ const schema = yup.object().shape({
     student: yup.number().required('É preciso informar o usuário'),
     course: yup.string().oneOf(['esa', 'espcex']).notRequired(),
     token: yup.string().length(64, 'Token inválido').notRequired(),
-    invalidEssay: yup.number().notRequired(),
+    invalidEssay: yup.mixed().test({
+        test: val => !val || /[0-9]{1,}/gm.test(val),
+        message: "Este campo precisa ser um número"
+    }).notRequired().transform(val => !!val ? Number(val) : val),
 });
 
 const partialUpdateSchema = yup.object().shape({
@@ -82,6 +85,8 @@ const filterSchema = yup.object().shape({
         start: yup.date(),
         end: yup.date(),
     }),
+    page: yup.number().default(1),
+    ordering: yup.string().default('sendDate')
 });
 
 export default class EssayController extends Controller<EssayData> {

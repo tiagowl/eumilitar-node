@@ -68,13 +68,13 @@ export default class UserRepository extends Repository<UserModel, UserData, User
     protected readonly fieldsMap = fieldsMap;
     protected readonly service;
     protected readonly entity;
-    protected readonly searchFields;
+    protected readonly searchFields: (keyof UserModel)[];
 
     constructor(context: Context) {
         super(context);
         this.service = UserService;
         this.entity = User;
-        this.searchFields = ['firstName', 'lastName', 'email'] as (keyof UserModel)[];
+        this.searchFields = ['first_name', 'last_name', 'email'];
     }
 
     public async filter(filter: Filter<UserInterface>): Promise<Paginated<User> | User[]> {
