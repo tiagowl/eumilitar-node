@@ -37,6 +37,11 @@ const schema = yup.object().shape({
     password: yup.string().required('O campo "Senha" é obrigatório'),
 });
 
+const updateProfileSchema = yup.object().shape({
+    firstName: yup.string().required('O campo "Nome" é obrigatório'),
+    lastName: yup.string().required('O campo "Sobrenome" é obrigatório'),
+    phone: yup.string().required('O campo "Telefone" é obrigatório'),
+});
 
 const filterSchema = yup.object().shape({
     id: yup.string(),
@@ -105,9 +110,10 @@ export default class UserController extends Controller<any> {
         }
     }
 
-    public async update(id: number, data: UserUpdate) {
+    public async update(id: number, data: UserUpdate, agent: User) {
         try {
-            const validated = await this.validate(data, updateSchema);
+            const validationSchema = agent.id === id ? updateProfileSchema : updateSchema;
+            const validated = await this.validate(data, validationSchema);
             const updated = await this.useCase.update(id, validated);
             return UserController.parseEntity(updated);
         } catch (error: any) {
