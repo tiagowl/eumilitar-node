@@ -11,7 +11,7 @@ SERVICE="eumilitar-$ENV_TYPE"
 USER_NAME="eumilitar-api"
 
 auto_test() {
-    yarn test
+    docker-compose run api yarn test
 }
 
 build() {
@@ -33,5 +33,5 @@ send_files() {
     scp -i $SSH_KEY -r ./migrations.prod $SERVER:/tmp/eumilitar/migrations
 }
 
-build && auto_test && send_files || exit
+build && send_files || exit
 ssh -i $SSH_KEY $SERVER "sudo bash /tmp/eumilitar/install.sh $ENV_TYPE"

@@ -28,6 +28,7 @@ export interface UserCreation {
     status: AccountStatus;
     permission: AccountPermission;
     password: string;
+    phone?: string;
 }
 
 export type UserUpdate = {
