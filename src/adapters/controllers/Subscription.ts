@@ -16,6 +16,7 @@ export interface OrderData {
     last_name: string;
     email: string;
     status: string;
+    phone_number: number;
 }
 
 export interface CancelData {
@@ -120,6 +121,7 @@ export default class SubscriptionController extends Controller<OrderData> {
                     lastName: validated.last_name,
                     product: validated.prod,
                     code: subscription.subscription_id,
+                    phone: !!validated.phone_number ? validated.phone_number.toString() : undefined,
                 });
                 if (!!created) {
                     const parsed = await this.parseEntity(created);

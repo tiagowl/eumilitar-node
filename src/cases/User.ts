@@ -28,6 +28,7 @@ export interface UserCreation {
     status: AccountStatus;
     permission: AccountPermission;
     password: string;
+    phone?: string;
 }
 
 export interface UserUpdate {
@@ -37,6 +38,7 @@ export interface UserUpdate {
     status: AccountStatus;
     permission: AccountPermission;
     password?: string;
+    phone?: string;
 }
 
 export interface UserSavingData {

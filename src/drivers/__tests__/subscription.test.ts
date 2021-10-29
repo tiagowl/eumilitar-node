@@ -91,6 +91,8 @@ describe('#6 Inscrições', () => {
                 last_name: 'Comprador',
                 phone_checkout_local_code: 999999999,
                 phone_checkout_number: '00',
+                phone_number: 99999999,
+                phone_local_code: 55,
                 sck: ''
             }));
         expect(response.body, jp(response.body)).toBeInstanceOf(Array);
