@@ -30,14 +30,15 @@ export interface UserCreation {
     password: string;
 }
 
-export interface UserUpdate {
+export type UserUpdate = {
     firstName: string;
     lastName: string;
-    email: string;
-    status: AccountStatus;
-    permission: AccountPermission;
+    email?: string;
+    status?: AccountStatus;
+    permission?: AccountPermission;
     password?: string;
-}
+    phone?: string
+};
 
 export interface UserSavingData {
     firstName: string;

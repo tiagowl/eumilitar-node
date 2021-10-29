@@ -77,6 +77,7 @@ export default class UserController extends Controller<any> {
             creationDate: entity.creationDate,
             lastModified: entity.lastModified,
             fullName: entity.fullName,
+            phone: entity.phone,
         };
     }
 

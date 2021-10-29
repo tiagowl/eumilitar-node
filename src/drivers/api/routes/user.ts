@@ -1,6 +1,6 @@
 import { Context } from "../../interfaces";
 import { Router } from 'express';
-import { checkAuth, checkPermission } from "./tools";
+import { checkAuth, checkPermission, isAuthenticated } from "./tools";
 import UserController from "../../../adapters/controllers/User";
 
 export default (context: Context) => {
@@ -47,10 +47,11 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .put('/users/:id/', checkPermission(context, ['admin']), async (req, res) => {
+        .put('/users/:id/', isAuthenticated(context), async (req, res) => {
             try {
-                const { id } = req.params;
-                const updated = await controller.update(Number(id), req.body);
+                const { params: { id }, body, user } = req;
+                if (!user) throw { message: 'Não autorizado', status: 403 };
+                const updated = await controller.update(Number(id), body, user);
                 res.status(200).json(updated);
             } catch (error: any) {
                 res.status(error.status || 500).json(error);

@@ -1,14 +1,22 @@
 import faker from "faker";
 import { userFactory, db, saveUser, deleteUser, contextFactory } from "../../../tests/shortcuts";
 import { UserUpdate } from "../../cases/User";
+import User from "../../entities/User";
 import UserController from "../controllers/User";
 import { EssayThemeService } from "../models/EssayTheme";
-import { UserService } from "../models/User";
+import UserRepository, { UserService } from "../models/User";
 
 const context = contextFactory();
 
 describe('#7 Testes no usuário', () => {
+    const repository = new UserRepository(context);
     const user = userFactory();
+    const student = userFactory({ permission: 6 });
+    const corrector = userFactory({ permission: 5 });
+    const admin = userFactory({ permission: 1 });
+    let agentStudent: User;
+    let agentAdmin: User;
+    let agentCorrector: User;
     beforeAll(async (done) => {
         const service = UserService(db)
             .onConflict(['email', 'user_id'])
@@ -16,6 +24,12 @@ describe('#7 Testes no usuário', () => {
         await saveUser(user, service);
         const themeService = EssayThemeService(db);
         await themeService.delete().del();
+        await saveUser(student, service);
+        await saveUser(admin, service);
+        await saveUser(corrector, service);
+        agentStudent = await repository.toEntity(student);
+        agentAdmin = await repository.toEntity(admin);
+        agentCorrector = await repository.toEntity(corrector);
         done();
     });
     afterAll(async (done) => {
@@ -75,7 +89,7 @@ describe('#7 Testes no usuário', () => {
             permission: 'student',
             status: 'active',
         };
-        const updated = await controller.update(user.user_id, data);
+        const updated = await controller.update(user.user_id, data, agentAdmin);
         Object.entries(data).forEach(([key, val]) => {
             if (key === 'password') expect(updated[key as keyof typeof updated]).toBeUndefined();
             else expect(updated[(key as keyof typeof updated)]).toBe(val);
@@ -88,4 +102,18 @@ describe('#7 Testes no usuário', () => {
         expect(recovered).toBeDefined();
         done();
     });
+    test('#74 atualizar o próprio perfil', async done => {
+        const controller = new UserController(context);
+        const data: UserUpdate = {
+            firstName: faker.name.firstName(),
+            lastName: faker.name.lastName(),
+            phone: faker.phone.phoneNumber(),
+        };
+        const updated = await controller.update(student.user_id, data, agentStudent);
+        Object.entries(data).forEach(([key, val]) => {
+            if (key === 'password') expect(updated[key as keyof typeof updated]).toBeUndefined();
+            else expect(updated[(key as keyof typeof updated)]).toBe(val);
+        });
+        done();
+    })
 });
