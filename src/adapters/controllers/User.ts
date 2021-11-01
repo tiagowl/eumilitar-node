@@ -22,7 +22,7 @@ export type UserResponse = {
 const updateSchemaBase = {
     firstName: yup.string().required('O campo "Nome" é obrigatório'),
     lastName: yup.string().required('O campo "Sobrenome" é obrigatório'),
-    email: yup.string().required('O campo "Email" é obrigatório'),
+    email: yup.string().email('Email inválido').required('O campo "Email" é obrigatório'),
     status: yup.string().required('O campo "Status" é obrigatório').is(accountStatus, 'Status inválido'),
     permission: yup.string().required('O campo "Permissão" é obrigatório').is(accountPermissions, 'Permissão inválida'),
 };
@@ -40,7 +40,10 @@ const schema = yup.object().shape({
 const updateProfileSchema = yup.object().shape({
     firstName: yup.string().required('O campo "Nome" é obrigatório'),
     lastName: yup.string().required('O campo "Sobrenome" é obrigatório'),
-    phone: yup.string().required('O campo "Telefone" é obrigatório'),
+    phone: yup.string().required('O campo "Telefone" é obrigatório')
+        .min(11, 'O telefone deve conter pelo menos 11 caracteres')
+        .max(13, 'O telefone deve conter até 13 caracteres')
+        .transform((val: string) => val.replace(/[^0-9]/gm, '')),
 });
 
 const filterSchema = yup.object().shape({
@@ -87,7 +90,7 @@ export default class UserController extends Controller<any> {
             const parsedFilter = await this.castFilter(filter, filterSchema);
             const users = await this.useCase.filter(parsedFilter);
             if (users instanceof Array) {
-                return Promise.all(users.map(UserController.parseEntity));
+                return await Promise.all(users.map(UserController.parseEntity));
             }
             return {
                 ...users,
@@ -103,7 +106,7 @@ export default class UserController extends Controller<any> {
         try {
             const validated = await this.validate(data);
             const created = await this.useCase.create(validated);
-            return UserController.parseEntity(created);
+            return await UserController.parseEntity(created);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -113,10 +116,11 @@ export default class UserController extends Controller<any> {
 
     public async update(id: number, data: UserUpdate, agent: User) {
         try {
+            if (agent.id !== id && agent.permission !== 'admin') throw { message: 'Não autorizado', status: 403 };
             const validationSchema = agent.id === id ? updateProfileSchema : updateSchema;
             const validated = await this.validate(data, validationSchema);
             const updated = await this.useCase.update(id, validated);
-            return UserController.parseEntity(updated);
+            return await UserController.parseEntity(updated);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -127,7 +131,7 @@ export default class UserController extends Controller<any> {
     public async get(id: number) {
         try {
             const user = await this.useCase.get(id);
-            return UserController.parseEntity(user);
+            return await UserController.parseEntity(user);
         } catch (error: any) {
             this.logger.error(error);
             if (error.code === 'not_found') throw { message: 'Usuário não encontrado', status: 404 };

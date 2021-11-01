@@ -16,6 +16,18 @@ export default (context: Context) => {
                 res.end();
             }
         })
+        .put('/users/profile/', isAuthenticated(context), async (req, res) => {
+            try {
+                const { body, user } = req;
+                if (!user) throw { message: 'Não autorizado', status: 403 };
+                const updated = await controller.update(user.id, body, user);
+                res.status(200).json(updated);
+            } catch (error: any) {
+                res.status(error.status || 500).json(error);
+            } finally {
+                res.end();
+            }
+        })
         .get('/users/', checkPermission(context, ['admin']), async (req, res) => {
             try {
                 const response = await controller.all(req.query || {});
@@ -47,7 +59,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .put('/users/:id/', isAuthenticated(context), async (req, res) => {
+        .put('/users/:id/', checkPermission(context, ['admin']), async (req, res) => {
             try {
                 const { params: { id }, body, user } = req;
                 if (!user) throw { message: 'Não autorizado', status: 403 };

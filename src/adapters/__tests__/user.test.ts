@@ -104,14 +104,14 @@ describe('#7 Testes no usuário', () => {
     });
     test('#74 atualizar o próprio perfil', async done => {
         const controller = new UserController(context);
-        const data: UserUpdate = {
+        const data = {
             firstName: faker.name.firstName(),
             lastName: faker.name.lastName(),
-            phone: faker.phone.phoneNumber(),
+            phone: faker.phone.phoneNumber('(##) 9 ####-####'),
         };
         const updated = await controller.update(student.user_id, data, agentStudent);
         Object.entries(data).forEach(([key, val]) => {
-            if (key === 'password') expect(updated[key as keyof typeof updated]).toBeUndefined();
+            if (key === 'phone') expect(updated[key as keyof typeof updated]).toBe(data.phone.replace(/[^0-9]/gm, ''));
             else expect(updated[(key as keyof typeof updated)]).toBe(val);
         });
         done();

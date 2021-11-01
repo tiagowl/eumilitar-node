@@ -15,16 +15,12 @@ export const paginationSchema = yup.object().shape({
     ordering: yup.string(),
 }).noUnknown();
 
-export default class Controller<Fields> {
-    protected readonly schema: yup.ObjectSchema<any>;
+export default abstract class Controller<Fields> {
     protected readonly db: Knex;
     protected readonly logger: Logger;
-    protected readonly context: Context;
 
-    constructor(context: Context, schema: yup.ObjectSchema<any>) {
+    constructor(protected readonly context: Context, protected readonly schema: yup.ObjectSchema<any>) {
         const { db, logger } = context;
-        this.context = context;
-        this.schema = schema;
         this.db = db;
         this.logger = logger;
     }
@@ -57,7 +53,8 @@ export default class Controller<Fields> {
     public async validate<Data = any>(rawData: Data, schema?: yup.ObjectSchema<any>): Promise<Data> {
         try {
             const validator = (!!schema ? schema : this.schema);
-            const validated = await validator.validate(rawData, {
+            const casted = validator.cast(rawData);
+            const validated = await validator.validate(casted, {
                 strict: true,
                 abortEarly: false,
                 stripUnknown: true,

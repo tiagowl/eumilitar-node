@@ -12,7 +12,7 @@ export async function authenticate(user: UserModel, api: supertest.SuperTest<sup
         .send(credentials)
         .set('User-Agent', faker.internet.userAgent());
     const { token } = auth.body;
-    expect(token, jp(auth.body)).toBeDefined();
+    expect(token, jp({ body: auth.body, credentials, })).toBeDefined();
     expect(typeof token).toBe('string');
     return `Bearer ${token}`;
 }

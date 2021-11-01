@@ -11,12 +11,19 @@ import crypto from "crypto";
 
 describe('#1 Teste na api do usuário', () => {
     const user = userFactory({ permission: 1 });
+    const admin = userFactory({ permission: 1 });
+    const student = userFactory({ permission: 6 });
+    const corrector = userFactory({ permission: 5 });
     const app = appFactory();
-
     const api = supertest(app.server);
     beforeAll(async (done) => {
-        const deleted = await UserService(db).where('user_id', user.user_id).delete();
-        const [id] = await saveUser(user, UserService(db));
+        await UserService(db).where('user_id', user.user_id).delete();
+        await UserService(db).where('user_id', admin.user_id).delete();
+        await UserService(db).where('user_id', student.user_id).delete();
+        await UserService(db).where('user_id', corrector.user_id).delete();
+        await saveUser(user, UserService(db));
+        await saveUser(student, UserService(db));
+        await saveUser(admin, UserService(db));
         await EssayThemeService(db).del().delete();
         done();
     });
@@ -226,7 +233,7 @@ describe('#1 Teste na api do usuário', () => {
         done();
     });
     test('#198 Atualização', async done => {
-        const header = await authenticate(user, api);
+        const header = await authenticate(admin, api);
         const data: UserUpdate = {
             email: faker.internet.email(),
             firstName: faker.name.firstName(),
@@ -237,13 +244,14 @@ describe('#1 Teste na api do usuário', () => {
         const { body, status } = await api.put(`/users/${user.user_id}/`)
             .send(data)
             .set('Authorization', header);
-        expect(body.message, jp({ header, body })).toBeUndefined();
+        expect(body.message, jp({ header, body, data })).toBeUndefined();
         expect(status).toBe(200);
         expect(body.password).toBeUndefined();
         Object.entries(data).forEach(([key, val]) => {
             if (key === 'password') expect(body[key as keyof typeof body]).toBeUndefined();
             else expect(body[(key as keyof typeof body)]).toBe(val);
         });
+        if (!data.email) throw new Error();
         user.email = data.email;
         done();
     });
@@ -271,6 +279,25 @@ describe('#1 Teste na api do usuário', () => {
         expect(validated.status, JSON.stringify({ body: validated.body, sent: smsToken })).toBe(201);
         expect(typeof validated.body.token).toBe('string');
         expect(validated.body.token.length).toBe(64);
+        done();
+    });
+    test('#1992 Atualização do perfil', async done => {
+        const header = await authenticate(student, api);
+        const data = {
+            firstName: faker.name.firstName(),
+            lastName: faker.name.lastName(),
+            phone: faker.phone.phoneNumber('+55 (##) 9 ####-####'),
+        };
+        const { body, status } = await api.put(`/users/profile/`)
+            .send(data)
+            .set('Authorization', header);
+        expect(body.message, jp({ header, body, data })).toBeUndefined();
+        expect(status).toBe(200);
+        expect(body.password).toBeUndefined();
+        Object.entries(data).forEach(([key, val]) => {
+            if (key === 'phone') expect(body[key as keyof typeof body]).toBe(data.phone.replace(/[^0-9]/gm, ''));
+            else expect(body[(key as keyof typeof body)]).toBe(val);
+        });
         done();
     });
 });
