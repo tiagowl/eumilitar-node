@@ -128,8 +128,6 @@ describe('#6 Inscrições', () => {
                 last_name: 'Comprador',
                 prod: 0,
                 status: 'canceled',
-                phone_number: 99999999,
-                phone_local_code: 55,
             });
         expect(response.status, jp(response.body)).toBe(200);
         expect(response.body).toBeInstanceOf(Array);

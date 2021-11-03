@@ -84,7 +84,7 @@ export default class SubscriptionCase {
     }
 
     public async exists(data: SubscriptionAutoCreationInterface) {
-        const subscription = (await this.repository.filter(data)) as Subscription[];
+        const subscription = (await this.repository.filter({ code: data.code })) as Subscription[];
         return subscription.length > 0;
     }
 
