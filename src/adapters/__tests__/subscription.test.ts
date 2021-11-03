@@ -70,8 +70,6 @@ describe('#8 Inscrições', () => {
             last_name: 'Comprador',
             prod: 0,
             status: 'canceled',
-            phone_number: Number(faker.phone.phoneNumber('#########')),
-            phone_local_code: Number(faker.phone.phoneNumber('##'))
         });
         expect(canceleds.length).toBeGreaterThan(0);
         canceleds.forEach(canceled => {
@@ -121,8 +119,6 @@ describe('#8 Inscrições', () => {
             last_name: 'Comprador',
             prod: 0,
             status: 'canceled',
-            phone_number: Number(faker.phone.phoneNumber('#########')),
-            phone_local_code: Number(faker.phone.phoneNumber('##'))
         });
         expect(notCanceled).toBeInstanceOf(Array);
         expect(notCanceled.length).toBe(0);
