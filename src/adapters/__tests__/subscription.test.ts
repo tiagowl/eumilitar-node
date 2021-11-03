@@ -42,7 +42,8 @@ describe('#8 Inscrições', () => {
             'last_name': faker.name.lastName(),
             'prod': 2,
             'status': 'ACTIVE',
-            'phone_number': Number(faker.phone.phoneNumber()),
+            phone_number: Number(faker.phone.phoneNumber('#########')),
+            phone_local_code: Number(faker.phone.phoneNumber('##'))
         });
         expect(created).toBeDefined();
         expect(created.length).toBe(1);
@@ -69,7 +70,8 @@ describe('#8 Inscrições', () => {
             last_name: 'Comprador',
             prod: 0,
             status: 'canceled',
-            'phone_number': Number(faker.phone.phoneNumber()),
+            phone_number: Number(faker.phone.phoneNumber('#########')),
+            phone_local_code: Number(faker.phone.phoneNumber('##'))
         });
         expect(canceleds.length).toBeGreaterThan(0);
         canceleds.forEach(canceled => {
@@ -89,7 +91,8 @@ describe('#8 Inscrições', () => {
             'last_name': faker.name.lastName(),
             'prod': product.code * 3,
             'status': 'ACTIVE',
-            'phone_number': Number(faker.phone.phoneNumber()),
+            phone_number: Number(faker.phone.phoneNumber('#########')),
+            phone_local_code: Number(faker.phone.phoneNumber('##'))
         }).catch((error) => {
             expect(error).toMatchObject({
                 "message": "Produto não encontrado",
@@ -118,7 +121,8 @@ describe('#8 Inscrições', () => {
             last_name: 'Comprador',
             prod: 0,
             status: 'canceled',
-            'phone_number': Number(faker.phone.phoneNumber()),
+            phone_number: Number(faker.phone.phoneNumber('#########')),
+            phone_local_code: Number(faker.phone.phoneNumber('##'))
         });
         expect(notCanceled).toBeInstanceOf(Array);
         expect(notCanceled.length).toBe(0);
