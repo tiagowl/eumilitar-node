@@ -37,4 +37,16 @@ export default class WarningController extends Controller {
             throw { message: error.message, status: 500 };
         }
     }
+
+    public async get() {
+        try {
+            const recovered = await this.useCase.get();
+            if (!recovered) return;
+            return await this.parseEntity(recovered);
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: error.message, status: 500 };
+        }
+    }
 }

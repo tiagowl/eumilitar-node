@@ -40,4 +40,14 @@ describe('Alertas', () => {
         expect(response.body.message).toBe(data.message);
         done();
     })
+    test('Recuperação', async done => {
+        const header = await authenticate(admin, api);
+        const response = await api.get('/warning/')
+            .set('Authorization', header);
+        expect(typeof response.body.id, jp(response.body)).toBe('number');
+        expect(typeof response.body.lastModified).toBe('string');
+        expect(typeof response.body.title).toBe('string');
+        expect(typeof response.body.message).toBe('string');
+        done();
+    })
 })

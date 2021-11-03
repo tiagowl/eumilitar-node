@@ -1,5 +1,6 @@
 import faker from 'faker';
 import { contextFactory } from '../../../tests/shortcuts';
+import Warning from '../../entities/Warning';
 import WarningController from '../controllers/Warning';
 
 const context = contextFactory();
@@ -19,4 +20,12 @@ describe('Alertas', () => {
         expect(created.message).toBe(data.message);
         done();
     });
+    test('Recuperação', async done => {
+        const recovered = await controller.get();
+        expect(typeof recovered?.id).toBe('number');
+        expect(typeof recovered?.lastModified).toBe('object');
+        expect(typeof recovered?.title).toBe('string');
+        expect(typeof recovered?.message).toBe('string');
+        done();
+    })
 });

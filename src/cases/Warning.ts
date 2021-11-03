@@ -34,4 +34,8 @@ export default class WarningCase {
             this.repository.update(exists.id, insertion) :
             this.repository.create(insertion);
     }
+
+    public async get() {
+        return this.repository.get({});
+    }
 }

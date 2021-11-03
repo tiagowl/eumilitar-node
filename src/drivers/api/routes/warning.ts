@@ -1,7 +1,7 @@
 import { Router } from "express";
 import WarningController from "../../../adapters/controllers/Warning";
 import { Context } from "../../interfaces";
-import { checkPermission } from "./tools";
+import { checkPermission, isAuthenticated } from "./tools";
 
 export default (context: Context) => {
     const controller = new WarningController(context);
@@ -11,7 +11,17 @@ export default (context: Context) => {
                 const created = await controller.createOrUpdate(req.body);
                 res.json(created).status(201);
             } catch (error: any) {
-                res.json(error).status(error.status);
+                res.json(error).status(error.status || 500);
+            } finally {
+                res.end();
+            }
+        })
+        .get('/warning/', isAuthenticated(context), async (req, res) => {
+            try {
+                const recovered = await controller.get();
+                res.json(recovered).status(200);
+            } catch (error: any) {
+                res.json(error).status(error.status || 500);
             } finally {
                 res.end();
             }

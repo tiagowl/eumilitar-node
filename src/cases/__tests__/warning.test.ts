@@ -34,5 +34,10 @@ describe("Alertas", () => {
         });
         expect(created).toBeInstanceOf(Warning);
         done();
+    });
+    test('Recuperação', async done => {
+        const warning = await useCase.get();
+        expect(warning).toBeInstanceOf(Warning);
+        done();
     })
 });
