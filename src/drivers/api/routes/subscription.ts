@@ -45,6 +45,8 @@ export default (context: Context) => {
                     const created = await controller.createFromHotmart({
                         ...body as OrderData,
                         'prod': Number(body.prod),
+                        phone_number: Number(body.phone_number),
+                        phone_local_code: Number(body.phone_local_code),
                     });
                     res.status(201).json(created);
                 }

@@ -17,9 +17,9 @@ describe('#6 Inscrições', () => {
     const student: UserModel = userFactory({ permission: 6 });
     const admin: UserModel = userFactory({ permission: 1 });
     const user = userFactory({ email });
+    const userRepository = new UserRepository(context);
     const deleteAll = async (done: any) => {
-        const repository = new UserRepository(context);
-        await repository.query.whereIn('email', [email]).del();
+        await userRepository.query.whereIn('email', [email]).del();
         done();
     };
     beforeAll(async (done) => {
@@ -97,6 +97,8 @@ describe('#6 Inscrições', () => {
             }));
         expect(response.body, jp(response.body)).toBeInstanceOf(Array);
         expect(response.body.length).toBeGreaterThan(0);
+        const user = await userRepository.get({ id: response.body[0].user });
+        expect(typeof user?.phone, JSON.stringify(user?.phone)).toBe('string');
         done();
     });
     test('#62 Cancelamento', async done => {
@@ -126,6 +128,8 @@ describe('#6 Inscrições', () => {
                 last_name: 'Comprador',
                 prod: 0,
                 status: 'canceled',
+                phone_number: 99999999,
+                phone_local_code: 55,
             });
         expect(response.status, jp(response.body)).toBe(200);
         expect(response.body).toBeInstanceOf(Array);

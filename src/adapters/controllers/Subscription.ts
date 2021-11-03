@@ -17,6 +17,7 @@ export interface OrderData {
     email: string;
     status: string;
     phone_number: number;
+    phone_local_code: number;
 }
 
 export interface CancelData {
@@ -73,6 +74,8 @@ const getSchema = (hottok: string) => yup.object().shape({
     last_name: yup.string().required(),
     email: yup.string().required(),
     status: yup.string().required(),
+    phone_number: yup.number().required(),
+    phone_local_code: yup.number().required(),
 });
 
 export default class SubscriptionController extends Controller<OrderData> {
@@ -121,7 +124,7 @@ export default class SubscriptionController extends Controller<OrderData> {
                     lastName: validated.last_name,
                     product: validated.prod,
                     code: subscription.subscription_id,
-                    phone: !!validated.phone_number ? validated.phone_number.toString() : undefined,
+                    phone: !!validated.phone_number ? `${validated.phone_local_code}${validated.phone_number}` : undefined,
                 });
                 if (!!created) {
                     const parsed = await this.parseEntity(created);
