@@ -9,6 +9,7 @@ export interface WarningModel {
     title: string;
     message: string;
     lastModified: Date;
+    active: boolean;
 }
 
 export const WarningService = (db: Knex) => db<Partial<WarningModel>, WarningModel[]>('warnings');
@@ -18,6 +19,7 @@ const fieldsMap: FieldsMap<WarningModel, WarningInterface> = [
     [['title', prsr.st], ['title', prsr.st]],
     [['message', prsr.st], ['message', prsr.st]],
     [['lastModified', prsr.dt], ['lastModified', prsr.dt]],
+    [['active', Boolean], ['active', Boolean]]
 ];
 
 export default class WarningRepository extends Repository<WarningModel, WarningInterface, Warning> implements WarningRepositoryInterface {

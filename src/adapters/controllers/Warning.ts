@@ -9,6 +9,7 @@ const schema = yup.object().shape({
     title: yup.string().required('O campo "Título" é obrigatório')
         .max(200, 'Máximo de 200 caractéres no título'),
     message: yup.string().required('O campo "Mensagem" é obrigatório'),
+    active: yup.bool().required('É preciso informar se estará ativo ou não'),
 });
 
 export default class WarningController extends Controller {

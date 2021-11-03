@@ -8,6 +8,7 @@ test('Testes na entidade Warning', () => {
         title: 'Tema da redação',
         message: faker.lorem.paragraph(3),
         lastModified: now,
+        active: true,
     });
     expect(theme.id).toBe(1);
     expect(theme.title).toBe('Tema da redação');

@@ -3,6 +3,7 @@ export interface WarningInterface {
     title: string;
     message: string;
     lastModified: Date;
+    active: boolean;
 }
 
 export default class Warning implements WarningInterface {
@@ -10,11 +11,13 @@ export default class Warning implements WarningInterface {
     public title: string;
     public message: string;
     public lastModified: Date;
+    public active: boolean;
 
     constructor(data: WarningInterface) {
         this.id = data.id;
         this.title = data.title;
         this.message = data.message;
         this.lastModified = data.lastModified;
+        this.active = data.active;
     }
 }

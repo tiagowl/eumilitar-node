@@ -15,6 +15,7 @@ describe("Alertas", () => {
         const data = {
             title: 'Novo título',
             message: faker.lorem.paragraph(4),
+            active: true,
         };
         const updated = await useCase.updateOrCreate(data);
         expect(updated.title).toBe(data.title);
@@ -29,6 +30,7 @@ describe("Alertas", () => {
         const created = await useCase.updateOrCreate({
             title: 'Novo título',
             message: faker.lorem.paragraph(4),
+            active: true,
         });
         expect(created).toBeInstanceOf(Warning);
         done();

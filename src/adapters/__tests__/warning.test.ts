@@ -10,6 +10,7 @@ describe('Alertas', () => {
         const data = {
             title: 'Título de teste',
             message: faker.lorem.paragraph(4),
+            active: true,
         };
         const created = await controller.createOrUpdate(data);
         expect(typeof created.id).toBe('number');

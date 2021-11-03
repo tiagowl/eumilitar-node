@@ -8,6 +8,7 @@ export async function up(knex: Knex): Promise<void> {
             table.string('title', 200).notNullable();
             table.text('message').notNullable();
             table.dateTime('lastModified').defaultTo(knex.fn.now()).notNullable();
+            table.boolean('active').notNullable();
         });
     } catch (error) {
         await down(knex);

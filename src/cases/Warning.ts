@@ -5,6 +5,7 @@ export interface WarningInsertionInterface {
     title: string;
     message: string;
     lastModified: Date;
+    active: boolean;
 }
 
 export interface WarningRepositoryInterface {
@@ -16,6 +17,7 @@ export interface WarningRepositoryInterface {
 export interface WarningCreation {
     title: string;
     message: string;
+    active: boolean;
 }
 
 export default class WarningCase {
