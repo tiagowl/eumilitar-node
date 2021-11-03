@@ -10,6 +10,7 @@ import recoveryRouter from './recovery';
 import subscriptionRouter from './subscription';
 import themeRouter from './theme';
 import singleEssayRouter from './singleEssay';
+import warningRouter from './warning';
 
 const routers = [
     userRouter,
@@ -22,10 +23,10 @@ const routers = [
     subscriptionRouter,
     themeRouter,
     singleEssayRouter,
+    warningRouter,
 ];
 
 export default function getRouter(context: Context) {
-    return routers.reduce((router, getRoutes) => {
-        return router.use(getRoutes(context));
-    }, Router({ mergeParams: true }));
+    const builded = routers.map(router => router(context));
+    return Router({ mergeParams: true }).use(builded);
 }
