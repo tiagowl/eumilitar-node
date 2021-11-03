@@ -24,7 +24,7 @@ export const logoutSchema = yup.object().shape({
     token: yup.string().required('O token é obrigatório'),
 });
 
-export default class SessionController extends Controller<AuthInterface> {
+export default class SessionController extends Controller {
     private readonly repository: SessionRepository;
     private readonly useCase: SessionCase;
 

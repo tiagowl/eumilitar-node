@@ -63,7 +63,7 @@ const updatePasswordSchema = yup.object().shape({
         .length(64, 'Token inválido')
 });
 
-export default class RecoveryController extends Controller<RecoveryInterface> {
+export default class RecoveryController extends Controller {
     private readonly smtp: Mail;
     private readonly repository: RecoveryRepository;
     private readonly config: MessageConfigInterface;

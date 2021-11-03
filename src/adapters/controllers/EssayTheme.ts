@@ -91,7 +91,7 @@ export const querySchema = yup.object({
         .default(undefined)
 }).noUnknown();
 
-export default class EssayThemeController extends Controller<EssayThemeData> {
+export default class EssayThemeController extends Controller {
     private readonly repository: EssayThemeRepository;
     private readonly useCase: EssayThemeCase;
 

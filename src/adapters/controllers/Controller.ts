@@ -15,7 +15,7 @@ export const paginationSchema = yup.object().shape({
     ordering: yup.string(),
 }).noUnknown();
 
-export default abstract class Controller<Fields> {
+export default abstract class Controller {
     protected readonly db: Knex;
     protected readonly logger: Logger;
 
@@ -46,7 +46,7 @@ export default abstract class Controller<Fields> {
         }
     }
 
-    public async isValid(data: Fields) {
+    public async isValid<T = any>(data: T) {
         return this.schema.isValid(data);
     }
 

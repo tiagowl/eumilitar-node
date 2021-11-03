@@ -98,7 +98,7 @@ const getCancelSchema = (hottok: string) => yup.object().shape({
     status: yup.string().required(),
 });
 
-export default class SubscriptionController extends Controller<OrderData> {
+export default class SubscriptionController extends Controller {
     private readonly repository: SubscriptionRepository;
     private readonly useCase: SubscriptionCase;
 

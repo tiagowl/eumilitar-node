@@ -12,7 +12,7 @@ const schema = yup.object().shape({
     expirationTime: yup.number().required('O campo "prazo de expiração" é obrigatório'),
 });
 
-export default class ProductController extends Controller<ProductCreation> {
+export default class ProductController extends Controller {
     private readonly useCase: ProductCase;
     private readonly repository: ProductRepository;
 

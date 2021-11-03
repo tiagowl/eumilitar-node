@@ -11,5 +11,5 @@ test('Testes na entidade Warning', () => {
     });
     expect(theme.id).toBe(1);
     expect(theme.title).toBe('Tema da redação');
-    expect(theme.lastModified).not.toEqual(now);
+    expect(theme.lastModified).toEqual(now);
 });

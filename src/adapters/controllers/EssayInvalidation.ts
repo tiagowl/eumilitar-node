@@ -19,7 +19,7 @@ const schema = yup.object().shape({
     }),
 });
 
-export default class EssayInvalidationController extends Controller<EssayInvalidationCreationData> {
+export default class EssayInvalidationController extends Controller {
     private readonly useCase: EssayInvalidationCase;
     private readonly repository: EssayInvalidationRepositoryInterface;
     private readonly smtp: Mail;

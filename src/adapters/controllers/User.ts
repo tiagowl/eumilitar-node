@@ -59,7 +59,7 @@ const filterSchema = yup.object().shape({
     search: yup.string(),
 }).noUnknown();
 
-export default class UserController extends Controller<any> {
+export default class UserController extends Controller {
     private readonly repository: UserRepository;
     private readonly useCase: UserUseCase;
 

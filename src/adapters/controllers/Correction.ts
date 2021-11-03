@@ -51,7 +51,7 @@ const updateSchema = yup.object().shape({
         .max(10, "A nota não pode ser maior que 10"),
 });
 
-export default class CorrectionController extends Controller<CorrectionData> {
+export default class CorrectionController extends Controller {
     private readonly repository: CorrectionRepositoryInterface;
     private readonly useCase: CorrectionCase;
     private readonly smtp: Mail;

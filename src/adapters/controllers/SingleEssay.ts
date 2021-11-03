@@ -16,7 +16,7 @@ const checkSchema = yup.object().shape({
     student: yup.number().required('É preciso informar o usuário'),
 });
 
-export default class SingleEssayController extends Controller<any> {
+export default class SingleEssayController extends Controller {
     private readonly repository: SingleEssayRepository;
     private readonly useCase: SingleEssayCase;
 

@@ -89,7 +89,7 @@ const filterSchema = yup.object().shape({
     ordering: yup.string().default('sendDate')
 });
 
-export default class EssayController extends Controller<EssayData> {
+export default class EssayController extends Controller {
     private readonly repository: EssayRepository;
     private readonly useCase: EssayCase;
 
