@@ -91,9 +91,7 @@ export default class SubscriptionCase {
     public async autoCreate(data: SubscriptionAutoCreationInterface) {
         if (await this.exists(data)) return;
         const user = await this.checkUser(data);
-        const products = new ProductCase(this.repository.products);
-        const product = await products.get({ code: data.product });
-        if (!product) throw new CaseError('Produto não encontrado', Errors.NOT_FOUND);
+        const product = await this.repository.products.get({ code: data.product });
         if (!product) throw new CaseError('Produto não econtrado', Errors.NOT_FOUND);
         return this.repository.create({
             user: user.id,
