@@ -61,21 +61,20 @@ export default class TestRespository<Entity, Interface>  {
             // @ts-ignore
             fields.reduce((state, [key, val]) => (item[key] !== val && state), true as boolean)
         )) : this.database;
-        return this.database.length - initial;
+        return initial - this.database.length;
     }
 
     public async update(id: number, data: Partial<Interface>) {
-        let subscription: Interface;
+        let value: Interface;
         this.database = this.database.map((item) => {
             // @ts-ignore
             if (item.id === id) {
-                Object.assign(item, data);
-                subscription = item;
+                value = Object.assign(item, data);
             }
             return item;
         });
         // @ts-ignore
-        return new this.entity(subscription);
+        return new this.entity(value);
     }
 
     public async count(filter: Partial<Interface>) {
