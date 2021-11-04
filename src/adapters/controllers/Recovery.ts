@@ -71,7 +71,7 @@ export default class RecoveryController extends Controller {
 
     constructor(context: Context) {
         const { smtp, settings } = context;
-        super(context, schema);
+        super(context);
         this.smtp = smtp;
         this.repository = new RecoveryRepository(context);
         this.config = settings.messageConfig;
@@ -141,14 +141,14 @@ export default class RecoveryController extends Controller {
         return { message: `SMS enviado para +${phone?.slice(0, 2)} (${phone?.slice(2, 4)}) ${phone?.slice(4, 5)} ${phone?.slice(5, 9)}-${phone?.slice(9, 13)}, verifique sua caixa de mensagens` };
     }
 
-    public async recover(rawData: RecoveryInterface): Promise<RecoveryResponse> {
+    public async recover(data: RecoveryInterface): Promise<RecoveryResponse> {
         try {
-            const { type, ...data } = await this.validate(rawData);
+            const { type, ...validated } = await this.validate(data, schema);
             const types = {
                 sms: async (val: RecoveryData) => this.recoveryBySMS(val),
                 email: async (val: RecoveryData) => this.recoveryByEmail(val),
             };
-            return await types[type](data);
+            return await types[type](validated);
         } catch (error: any) {
             if (error instanceof CaseError) {
                 throw { message: error.message, status: 400 };

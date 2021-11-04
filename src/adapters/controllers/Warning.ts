@@ -17,7 +17,7 @@ export default class WarningController extends Controller {
     private readonly repository: WarningRepositoryInterface;
 
     constructor(context: Context) {
-        super(context, schema);
+        super(context);
         this.repository = new WarningRepository(context);
         this.useCase = new WarningCase(this.repository);
     }
@@ -28,7 +28,7 @@ export default class WarningController extends Controller {
 
     public async createOrUpdate(data: WarningCreation) {
         try {
-            const validated = await this.validate(data);
+            const validated = await this.validate(data, schema);
             const created = await this.useCase.updateOrCreate(validated);
             return await this.parseEntity(created);
         } catch (error: any) {

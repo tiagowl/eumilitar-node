@@ -17,7 +17,7 @@ export default class ProductController extends Controller {
     private readonly repository: ProductRepository;
 
     constructor(context: Context) {
-        super(context, schema);
+        super(context);
         this.repository = new ProductRepository(context);
         this.useCase = new ProductCase(this.repository);
     }
@@ -28,7 +28,7 @@ export default class ProductController extends Controller {
 
     public async create(data: ProductCreation) {
         try {
-            const validated = await this.validate(data);
+            const validated = await this.validate(data, schema);
             const created = await this.useCase.create(validated);
             return await this.parseEntity(created);
         } catch (error: any) {
@@ -51,7 +51,7 @@ export default class ProductController extends Controller {
 
     public async fullUpdate(id: number, data: ProductCreation) {
         try {
-            const validated = await this.validate(data);
+            const validated = await this.validate(data, schema);
             const product = await this.useCase.update(id, validated);
             return await this.parseEntity(product);
         } catch (error: any) {

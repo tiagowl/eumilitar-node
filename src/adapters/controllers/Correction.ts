@@ -59,7 +59,7 @@ export default class CorrectionController extends Controller {
 
     constructor(context: Context) {
         const { smtp, settings } = context;
-        super(context, schema);
+        super(context);
         this.repository = new CorrectionRepository(context);
         this.useCase = new CorrectionCase(this.repository);
         this.smtp = smtp;
@@ -107,7 +107,7 @@ export default class CorrectionController extends Controller {
 
     public async create(data: CorrectionData) {
         try {
-            const validated = await this.validate(data);
+            const validated = await this.validate(data, schema);
             const created = await this.useCase.create(validated);
             this.notify(created.essay).catch(this.logger.error);
             return await this.parseEntity(created);

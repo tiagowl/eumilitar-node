@@ -94,7 +94,7 @@ export default class EssayController extends Controller {
     private readonly useCase: EssayCase;
 
     constructor(context: Context) {
-        super(context, schema);
+        super(context);
         this.repository = new EssayRepository(context);
         this.useCase = new EssayCase(this.repository);
     }
@@ -131,7 +131,7 @@ export default class EssayController extends Controller {
                 ...rawData,
                 student: agent.id,
                 file: rawData.file.path || rawData.file.location,
-            }) as EssayCreationData;
+            }, schema) as EssayCreationData;
             const created = await this.useCase.create(data);
             return await this.parseEntity(created, agent);
         } catch (error: any) {

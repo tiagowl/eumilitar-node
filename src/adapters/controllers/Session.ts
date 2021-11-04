@@ -29,14 +29,14 @@ export default class SessionController extends Controller {
     private readonly useCase: SessionCase;
 
     constructor(context: Context) {
-        super(context, schema);
+        super(context);
         this.repository = new SessionRepository(context);
         this.useCase = new SessionCase(this.repository);
     }
 
     public async auth(data: AuthInterface) {
         try {
-            const parsed = await this.validate(data);
+            const parsed = await this.validate(data, schema);
             const session = await this.useCase.auth(parsed);
             return { token: session.token };
         } catch (error: any) {

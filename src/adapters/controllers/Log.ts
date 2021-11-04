@@ -19,7 +19,7 @@ export default class LogController extends Controller {
     private readonly repository: LogRepository;
 
     constructor(context: Context) {
-        super(context, schema);
+        super(context);
         this.repository = new LogRepository(context);
         this.useCase = new LogCase(this.repository);
     }
@@ -30,7 +30,7 @@ export default class LogController extends Controller {
 
     public async create(data: LogCreation) {
         try {
-            const validated = await this.validate(data);
+            const validated = await this.validate(data, schema);
             const created = await this.useCase.create(validated);
             return await this.parseEntity(created);
         } catch (error: any) {

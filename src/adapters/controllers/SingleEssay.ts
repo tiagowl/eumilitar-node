@@ -21,7 +21,7 @@ export default class SingleEssayController extends Controller {
     private readonly useCase: SingleEssayCase;
 
     constructor(context: Context) {
-        super(context, schema);
+        super(context);
         this.repository = new SingleEssayRepository(context);
         const useCaseSettings = { expiration: context.settings.singleEssayExpiration * 60 * 60 * 1000 };
         this.useCase = new SingleEssayCase(this.repository, useCaseSettings);
@@ -33,7 +33,7 @@ export default class SingleEssayController extends Controller {
 
     public async create(data: SingleEssayCreation) {
         try {
-            const validated = await this.validate(data);
+            const validated = await this.validate(data, schema);
             const created = await this.useCase.create(validated);
             return await this.parseEntity(created);
         } catch (error: any) {

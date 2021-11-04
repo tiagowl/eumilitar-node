@@ -27,7 +27,7 @@ export default class EssayInvalidationController extends Controller {
 
     constructor(context: Context) {
         const { smtp, settings } = context;
-        super(context, schema);
+        super(context);
         this.repository = new EssayInvalidationRepository(context);
         this.useCase = new EssayInvalidationCase(this.repository);
         this.smtp = smtp;
@@ -80,7 +80,7 @@ export default class EssayInvalidationController extends Controller {
 
     public async create(data: EssayInvalidationCreationData) {
         try {
-            const validated = await this.validate(data);
+            const validated = await this.validate(data, schema);
             const created = await this.useCase.create(validated);
             this.notify(created.essay);
             return await this.parseEntity(created);

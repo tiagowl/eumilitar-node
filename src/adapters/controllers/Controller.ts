@@ -19,7 +19,7 @@ export default abstract class Controller {
     protected readonly db: Knex;
     protected readonly logger: Logger;
 
-    constructor(protected readonly context: Context, protected readonly schema: yup.ObjectSchema<any>) {
+    constructor(protected readonly context: Context) {
         const { db, logger } = context;
         this.db = db;
         this.logger = logger;
@@ -46,21 +46,16 @@ export default abstract class Controller {
         }
     }
 
-    public async isValid<T = any>(data: T) {
-        return this.schema.isValid(data);
-    }
-
-    public async validate<Data = any>(rawData: Data, schema?: yup.ObjectSchema<any>): Promise<Data> {
+    public async validate<Data = any>(rawData: Data, schema: yup.ObjectSchema<any>): Promise<Data> {
         try {
-            const validator = (!!schema ? schema : this.schema);
-            const casted = validator.cast(rawData);
-            const validated = await validator.validate(casted, {
+            const casted = schema.cast(rawData);
+            const validated = await schema.validate(casted, {
                 strict: true,
                 abortEarly: false,
                 stripUnknown: true,
                 recursive: true,
             });
-            return validator.noUnknown().cast(validated, { stripUnknown: true });
+            return schema.noUnknown().cast(validated, { stripUnknown: true });
         } catch (error: any) {
             if (error instanceof yup.ValidationError) {
                 const errors: yup.ValidationError = error;

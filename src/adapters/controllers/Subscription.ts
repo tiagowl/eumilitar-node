@@ -105,7 +105,7 @@ export default class SubscriptionController extends Controller {
     constructor(context: Context) {
         const { settings: { hotmart: { hottok } } } = context;
         const schema = getSchema(hottok);
-        super(context, schema);
+        super(context);
         this.repository = new SubscriptionRepository(context);
         this.useCase = new SubscriptionCase(this.repository);
     }
@@ -129,7 +129,9 @@ export default class SubscriptionController extends Controller {
 
     public async createFromHotmart(data: OrderData) {
         try {
-            const validated = await this.validate<OrderData>(data);
+            const { settings: { hotmart: { hottok } } } = this.context;
+            const schema = getSchema(hottok);
+            const validated = await this.validate<OrderData>(data, schema);
             const payload: HotmartFilter = {
                 'subscriber_email': validated.email,
                 'product_id': data.prod,
