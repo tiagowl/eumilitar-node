@@ -9,7 +9,7 @@ export interface LogModel {
     registrationDate: Date;
     event: EventType;
     userAgent?: string;
-    ip: string;
+    ip?: string;
     error?: string;
     details?: string;
 }

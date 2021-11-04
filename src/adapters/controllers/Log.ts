@@ -8,8 +8,8 @@ import Log, { eventTypes } from "../../entities/Log";
 const schema = yup.object().shape({
     user: yup.number(),
     event: yup.string().required().is([...eventTypes]),
-    userAgent: yup.string().required(),
-    ip: yup.string().required(),
+    userAgent: yup.string(),
+    ip: yup.string(),
     error: yup.string(),
     details: yup.string(),
 });

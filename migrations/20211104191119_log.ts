@@ -12,12 +12,12 @@ export async function up(knex: Knex): Promise<void> {
                 .defaultTo(knex.fn.now()).notNullable();
             table.string('event', 50).notNullable();
             table.string('userAgent', 200).nullable();
-            table.string('ip', 20).notNullable();
+            table.string('ip', 20).nullable();
             table.text('error').nullable();
             table.text('details').nullable();
         })
     } catch (error: any) {
-        down(knex);
+        await down(knex);
         throw error;
     }
 }
@@ -25,7 +25,7 @@ export async function up(knex: Knex): Promise<void> {
 
 export async function down(knex: Knex): Promise<void> {
     const exists = knex.schema.hasTable('logs');
-    if (exists) return;
+    if (!exists) return;
     await knex.schema.dropTable('logs');
 }
 

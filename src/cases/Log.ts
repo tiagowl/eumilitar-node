@@ -8,8 +8,8 @@ export interface LogRepositoryInterface {
 export interface LogCreation {
     user?: number;
     event: EventType;
-    userAgent: string;
-    ip: string;
+    userAgent?: string;
+    ip?: string;
     error?: string;
     details?: string;
 }

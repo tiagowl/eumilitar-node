@@ -8,20 +8,20 @@ export interface LogInterface {
     registrationDate: Date;
     event: EventType;
     userAgent?: string;
-    ip: string;
+    ip?: string;
     error?: string;
     details?: string;
 }
 
 export default class Log implements LogInterface {
-    public readonly id: number;
-    public user?: number;
-    public registrationDate: Date;
-    public event: EventType;
-    public userAgent?: string;
-    public ip: string;
-    public error?: string;
-    public details?: string;
+    readonly id: number;
+    user?: number;
+    registrationDate: Date;
+    event: EventType;
+    userAgent?: string;
+    ip?: string;
+    error?: string;
+    details?: string;
 
     constructor(data: LogInterface) {
         this.id = data.id;

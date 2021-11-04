@@ -11,6 +11,7 @@ import subscriptionRouter from './subscription';
 import themeRouter from './theme';
 import singleEssayRouter from './singleEssay';
 import warningRouter from './warning';
+import logRouter from './log';
 
 const routers = [
     userRouter,
@@ -24,6 +25,7 @@ const routers = [
     themeRouter,
     singleEssayRouter,
     warningRouter,
+    logRouter,
 ];
 
 export default function getRouter(context: Context) {
