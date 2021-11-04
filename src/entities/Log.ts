@@ -7,7 +7,7 @@ export interface LogInterface {
     user?: number;
     registrationDate: Date;
     event: EventType;
-    userAgent: string;
+    userAgent?: string;
     ip: string;
     error?: string;
     details?: string;
@@ -18,7 +18,7 @@ export default class Log implements LogInterface {
     public user?: number;
     public registrationDate: Date;
     public event: EventType;
-    public userAgent: string;
+    public userAgent?: string;
     public ip: string;
     public error?: string;
     public details?: string;

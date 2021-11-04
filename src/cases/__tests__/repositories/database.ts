@@ -5,6 +5,7 @@ import { CorrectionInterface } from "../../../entities/Correction";
 import { EssayInterface } from "../../../entities/Essay";
 import { EssayInvalidationInterface } from "../../../entities/EssayInvalidation";
 import { Course, EssayThemeInterface } from "../../../entities/EssayTheme";
+import Log from "../../../entities/Log";
 import { ProductInterface } from "../../../entities/Product";
 import { RecoveryInterface } from "../../../entities/Recovery";
 import { SessionInterface } from "../../../entities/Session";
@@ -108,7 +109,18 @@ export default function getDb() {
         lastModified: new Date(),
         active: true,
     })];
-    const logs = [];
+    const logs = [
+        new Log({
+            id: faker.datatype.number(),
+            user: faker.datatype.number(),
+            registrationDate: new Date(),
+            userAgent: faker.internet.userAgent(),
+            ip: faker.internet.ip(),
+            event: 'login',
+            details: faker.lorem.lines(4),
+            error: faker.lorem.lines(1),
+        }),
+    ];
     return {
         users,
         essayThemes,
