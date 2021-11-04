@@ -182,7 +182,7 @@ export default abstract class Repository<Model, Interface, Entity> {
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
-            throw { message: 'Erro ao consultar token no banco de dados', status: 500 };
+            throw { message: 'Erro ao consultar banco de dados', status: 500 };
         }
     }
 

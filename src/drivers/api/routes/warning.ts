@@ -16,7 +16,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/warning/', isAuthenticated(context), async (req, res) => {
+        .get('/warning/', isAuthenticated(context), async (_req, res) => {
             try {
                 const recovered = await controller.get();
                 res.json(recovered).status(200);

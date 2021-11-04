@@ -106,6 +106,7 @@ export default function getDb() {
         title: 'Alerta de teste',
         message: faker.lorem.paragraph(3),
         lastModified: new Date(),
+        active: true,
     })];
     return {
         users,
