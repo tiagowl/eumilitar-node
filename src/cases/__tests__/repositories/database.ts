@@ -108,6 +108,7 @@ export default function getDb() {
         lastModified: new Date(),
         active: true,
     })];
+    const logs = [];
     return {
         users,
         essayThemes,
@@ -120,5 +121,6 @@ export default function getDb() {
         recoveries,
         sessions,
         warnings,
+        logs,
     };
 }
