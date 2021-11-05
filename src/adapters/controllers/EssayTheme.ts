@@ -91,12 +91,12 @@ export const querySchema = yup.object({
         .default(undefined)
 }).noUnknown();
 
-export default class EssayThemeController extends Controller<EssayThemeData> {
+export default class EssayThemeController extends Controller {
     private readonly repository: EssayThemeRepository;
     private readonly useCase: EssayThemeCase;
 
     constructor(context: Context) {
-        super(context, schema);
+        super(context);
         this.repository = new EssayThemeRepository(context);
         this.useCase = new EssayThemeCase(this.repository);
     }
@@ -117,7 +117,7 @@ export default class EssayThemeController extends Controller<EssayThemeData> {
     }
 
     public async create(rawData: EssayThemeInput): Promise<EssayThemeResponse> {
-        const data = await this.validate({ ...rawData, file: rawData.file.path || rawData.file.location }) as EssayThemeData;
+        const data = await this.validate({ ...rawData, file: rawData.file.path || rawData.file.location }, schema) as EssayThemeData;
         try {
             const theme = await this.useCase.create({
                 ...data,

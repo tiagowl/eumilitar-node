@@ -51,7 +51,7 @@ const updateSchema = yup.object().shape({
         .max(10, "A nota não pode ser maior que 10"),
 });
 
-export default class CorrectionController extends Controller<CorrectionData> {
+export default class CorrectionController extends Controller {
     private readonly repository: CorrectionRepositoryInterface;
     private readonly useCase: CorrectionCase;
     private readonly smtp: Mail;
@@ -59,7 +59,7 @@ export default class CorrectionController extends Controller<CorrectionData> {
 
     constructor(context: Context) {
         const { smtp, settings } = context;
-        super(context, schema);
+        super(context);
         this.repository = new CorrectionRepository(context);
         this.useCase = new CorrectionCase(this.repository);
         this.smtp = smtp;
@@ -107,7 +107,7 @@ export default class CorrectionController extends Controller<CorrectionData> {
 
     public async create(data: CorrectionData) {
         try {
-            const validated = await this.validate(data);
+            const validated = await this.validate(data, schema);
             const created = await this.useCase.create(validated);
             this.notify(created.essay).catch(this.logger.error);
             return await this.parseEntity(created);

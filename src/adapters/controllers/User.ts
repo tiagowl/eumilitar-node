@@ -59,12 +59,12 @@ const filterSchema = yup.object().shape({
     search: yup.string(),
 }).noUnknown();
 
-export default class UserController extends Controller<any> {
+export default class UserController extends Controller {
     private readonly repository: UserRepository;
     private readonly useCase: UserUseCase;
 
     constructor(context: Context) {
-        super(context, schema);
+        super(context);
         this.repository = new UserRepository(context);
         this.useCase = new UserUseCase(this.repository);
     }
@@ -104,7 +104,7 @@ export default class UserController extends Controller<any> {
 
     public async create(data: UserCreation) {
         try {
-            const validated = await this.validate(data);
+            const validated = await this.validate(data, schema);
             const created = await this.useCase.create(validated);
             return await UserController.parseEntity(created);
         } catch (error: any) {

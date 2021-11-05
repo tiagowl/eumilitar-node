@@ -20,6 +20,15 @@ export interface OrderData {
     phone_local_code: number;
 }
 
+export interface CancelOrderData {
+    hottok: string;
+    prod: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+    status: string;
+}
+
 export interface CancelData {
     hottok: string;
     subscriptionId: number;
@@ -78,14 +87,25 @@ const getSchema = (hottok: string) => yup.object().shape({
     phone_local_code: yup.number().required(),
 });
 
-export default class SubscriptionController extends Controller<OrderData> {
+const getCancelSchema = (hottok: string) => yup.object().shape({
+    hottok: yup.string()
+        .required('O campo "hottok" é obrigatório')
+        .is([hottok], '"hottok" inválido'),
+    prod: yup.number().required(),
+    first_name: yup.string().required(),
+    last_name: yup.string().required(),
+    email: yup.string().required(),
+    status: yup.string().required(),
+});
+
+export default class SubscriptionController extends Controller {
     private readonly repository: SubscriptionRepository;
     private readonly useCase: SubscriptionCase;
 
     constructor(context: Context) {
         const { settings: { hotmart: { hottok } } } = context;
         const schema = getSchema(hottok);
-        super(context, schema);
+        super(context);
         this.repository = new SubscriptionRepository(context);
         this.useCase = new SubscriptionCase(this.repository);
     }
@@ -94,11 +114,11 @@ export default class SubscriptionController extends Controller<OrderData> {
         return { ...entity, };
     }
 
-    private async writeNotification(data: OrderData, error: any) {
+    private async writeNotification(data: OrderData | CancelOrderData, error: any) {
         return `${JSON.stringify(data)}\n${error.stack || JSON.stringify(error)}`;
     }
 
-    private async notifyAdmins(data: OrderData, error: any) {
+    private async notifyAdmins(data: OrderData | CancelOrderData, error: any) {
         return this.context.smtp.sendMail({
             subject: 'Erro ao criar usuário',
             to: { email: this.context.settings.messageConfig.adminMail, name: 'Admin' },
@@ -109,7 +129,9 @@ export default class SubscriptionController extends Controller<OrderData> {
 
     public async createFromHotmart(data: OrderData) {
         try {
-            const validated = await this.validate<OrderData>(data);
+            const { settings: { hotmart: { hottok } } } = this.context;
+            const schema = getSchema(hottok);
+            const validated = await this.validate<OrderData>(data, schema);
             const payload: HotmartFilter = {
                 'subscriber_email': validated.email,
                 'product_id': data.prod,
@@ -142,9 +164,9 @@ export default class SubscriptionController extends Controller<OrderData> {
         }
     }
 
-    public async cancel(data: OrderData) {
+    public async cancel(data: CancelOrderData) {
         try {
-            const validated = await this.validate(data);
+            const validated = await this.validate(data, getCancelSchema(this.context.settings.hotmart.hottok));
             const subscriptions = this.repository.getFromHotmart({
                 subscriber_email: validated.email,
                 status: ['INACTIVE', 'CANCELLED_BY_CUSTOMER', 'CANCELLED_BY_SELLER', 'CANCELLED_BY_ADMIN'],

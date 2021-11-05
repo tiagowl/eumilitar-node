@@ -89,12 +89,12 @@ const filterSchema = yup.object().shape({
     ordering: yup.string().default('sendDate')
 });
 
-export default class EssayController extends Controller<EssayData> {
+export default class EssayController extends Controller {
     private readonly repository: EssayRepository;
     private readonly useCase: EssayCase;
 
     constructor(context: Context) {
-        super(context, schema);
+        super(context);
         this.repository = new EssayRepository(context);
         this.useCase = new EssayCase(this.repository);
     }
@@ -131,7 +131,7 @@ export default class EssayController extends Controller<EssayData> {
                 ...rawData,
                 student: agent.id,
                 file: rawData.file.path || rawData.file.location,
-            }) as EssayCreationData;
+            }, schema) as EssayCreationData;
             const created = await this.useCase.create(data);
             return await this.parseEntity(created, agent);
         } catch (error: any) {
