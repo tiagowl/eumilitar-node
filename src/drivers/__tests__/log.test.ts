@@ -43,4 +43,18 @@ describe('Alertas', () => {
         expect(response.body.details).toBe(data.details);
         done();
     })
+    test('listagem', async done => {
+        const header = await authenticate(admin, api);
+        const response = await api.get('/logs/')
+            .set('Authorization', header)
+            .query({
+                pagination: {
+                    page: 1
+                }
+            });
+        expect(response.body).not.toBeInstanceOf(Array);
+        expect(response.body.page).toBeInstanceOf(Array);
+        expect(response.body.page.length).toBeGreaterThanOrEqual(10);
+        done();
+    })
 });
