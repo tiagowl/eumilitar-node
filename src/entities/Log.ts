@@ -1,6 +1,6 @@
-export type EventType = 'login' | 'sent-essay' | 'theme-preview' | 'correction-preview' | 'single-link-sent';
+export type EventType = 'login' | 'sent-essay' | 'theme-preview' | 'correction-preview' | 'single-link-sent' | 'user-creation' | 'user-updating';
 
-export const eventTypes = new Set<EventType>(['login', 'sent-essay', 'theme-preview', 'correction-preview', 'single-link-sent']);
+export const eventTypes = new Set<EventType>(['login', 'sent-essay', 'theme-preview', 'correction-preview', 'single-link-sent', 'user-creation', 'user-updating']);
 
 export interface LogInterface {
     readonly id: number;
