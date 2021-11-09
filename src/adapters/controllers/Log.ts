@@ -5,6 +5,7 @@ import Controller, { paginationSchema } from "./Controller";
 import * as yup from "yup";
 import Log, { eventTypes } from "../../entities/Log";
 import { Filter } from "../../cases/interfaces";
+import UserController from "./User";
 
 const baseSchema = {
     user: yup.number(),
@@ -41,7 +42,11 @@ export default class LogController extends Controller {
     }
 
     private parseEntity = async (entity: Log) => {
-        return { ...entity };
+        const users = new UserController(this.context);
+        return {
+            ...entity,
+            user: !!entity.user ? await users.get(entity.user) : undefined,
+        };
     }
 
     public async create(data: LogCreation) {
