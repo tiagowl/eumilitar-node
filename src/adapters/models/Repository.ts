@@ -47,13 +47,14 @@ export default abstract class Repository<Model, Interface, Entity> {
             return this.#selector as string;
         } catch (error: any) {
             this.logger.error(error);
+            if (error.status) throw error;
             throw { message: 'Erro ao conectar com o banco de dados', status: 500 };
         }
     }
 
     protected async processError(error: any) {
         this.logger.error(error);
-        throw { message: 'Erro ao acessar banco de dados', status: 500 };
+        return { message: 'Erro ao acessar banco de dados', status: 500 };
     }
 
     protected async authHotmart() {
