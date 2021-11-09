@@ -1,8 +1,9 @@
-import Log, { EventType } from "../entities/Log";
-import { createMethod } from "./interfaces";
+import Log, { EventType, LogInterface } from "../entities/Log";
+import { createMethod, Filter, filterMethod, PeriodFilter } from "./interfaces";
 
 export interface LogRepositoryInterface {
     readonly create: createMethod<LogInsertion, Log>;
+    readonly filter: filterMethod<Log, LogFilter>;
 }
 
 export interface LogCreation {
@@ -18,6 +19,10 @@ export interface LogInsertion extends LogCreation {
     registrationDate: Date;
 }
 
+export interface LogFilter extends LogInterface, PeriodFilter {
+    email?: string;
+}
+
 export default class LogCase {
 
     constructor(private readonly repository: LogRepositoryInterface) { }
@@ -27,5 +32,9 @@ export default class LogCase {
             ...data,
             registrationDate: new Date(),
         });
+    }
+
+    public async filter(filter: Filter<LogFilter>) {
+        return this.repository.filter(filter);
     }
 }

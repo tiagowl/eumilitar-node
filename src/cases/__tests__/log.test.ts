@@ -20,4 +20,9 @@ describe('logs', () => {
         expect(created).toBeInstanceOf(Log);
         done();
     });
+    test('listagem', async done => {
+        const list = await useCase.filter({});
+        expect(list).toBeInstanceOf(Array);
+        done();
+    });
 });
