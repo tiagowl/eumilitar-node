@@ -36,7 +36,7 @@ describe('Alertas', () => {
             .send(data);
         expect(response.status, jp(response.body)).toBe(201);
         expect(typeof response.body.id, jp(response.body)).toBe('number');
-        expect(typeof response.body.user, jp(response.body)).toBe('number');
+        expect(typeof response.body.user.id, jp(response.body)).toBe('number');
         expect(typeof response.body.registrationDate).toBe('string');
         expect(response.body.event).toBe(data.event);
         expect(response.body.error).toBe(data.error);
@@ -49,7 +49,7 @@ describe('Alertas', () => {
             .set('Authorization', header)
             .query({
                 pagination: {
-                    page: 1
+                    page: 2
                 }
             });
         expect(response.body).not.toBeInstanceOf(Array);

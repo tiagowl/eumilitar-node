@@ -38,7 +38,6 @@ export default class LogRepository extends Repository<LogModel, LogInterface, Lo
     private async filtering(query: Knex.QueryBuilder<Partial<LogModel>, LogModel[]>, filter: Filter<LogFilter>) {
         const { pagination, search, email, period, ...params } = filter;
         await this.search(query, search);
-        await this.paginate(query, pagination);
         const { start, end } = period || {};
         if (!!period) query.where(function () {
             if (!!end) this.where('registrationDate', '<', end);
@@ -54,13 +53,14 @@ export default class LogRepository extends Repository<LogModel, LogInterface, Lo
             const { pagination } = filter;
             const query = this.query;
             await this.filtering(query, filter);
+            await this.paginate(query, pagination);
             const filtered = await query;
             const data = await Promise.all(filtered.map(async item => new this.entity(item)));
             if (!pagination) return data;
             const counting = this.query;
             await this.filtering(counting, filter);
-            const [{ count }] = await counting.count({ count: '*' });
-            const counted = Number(count);
+            const { count } = await counting.count({ count: '*' }).first() || { count: 0 };
+            const counted = Number(count || 0);
             return {
                 page: data,
                 pages: Math.ceil(counted / (pagination.pageSize || 10)),
