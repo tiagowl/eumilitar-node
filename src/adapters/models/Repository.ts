@@ -99,10 +99,10 @@ export default abstract class Repository<Model, Interface, Entity> {
 
     protected async paginate(service: Knex.QueryBuilder<Partial<Model>, Model[]>, pagination?: Pagination<Interface> | undefined) {
         if (!!pagination) {
-            const { page = 1, pageSize = 10, ordering } = pagination;
+            const { page = 1, pageSize = 10, ordering, direction = 'asc' } = pagination;
             service.offset(((page - 1) * (pageSize)))
                 .limit(pageSize);
-            if (!!ordering) service.orderBy(await this.getDbField(ordering));
+            if (!!ordering) service.orderBy(await this.getDbField(ordering), direction);
         }
     }
 

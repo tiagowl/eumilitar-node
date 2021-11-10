@@ -2,6 +2,7 @@ export interface Pagination<T> {
     page?: number;
     pageSize?: number;
     ordering?: keyof T;
+    direction?: 'asc' | 'desc';
 }
 
 export interface Paginated<T> {

@@ -13,6 +13,7 @@ export const paginationSchema = yup.object().shape({
     page: yup.string(),
     pageSize: yup.string(),
     ordering: yup.string(),
+    direction: yup.string().notRequired().is(['asc', 'desc']),
 }).noUnknown();
 
 export default abstract class Controller {

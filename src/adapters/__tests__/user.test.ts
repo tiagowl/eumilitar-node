@@ -67,7 +67,7 @@ describe('#7 Testes no usuário', () => {
     });
     test('#71 Listagem', async done => {
         const controller = new UserController(context);
-        const page = await controller.all({ status: 'active', pagination: { 'page': 1, pageSize: 20, ordering: 'id' } });
+        const page = await controller.all({ status: 'active', pagination: { 'page': 1, pageSize: 20, ordering: 'id', direction: 'desc'} });
         expect(page).toBeDefined();
         if ((page instanceof Array)) throw new Error();
         const users = page.page;
