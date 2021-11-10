@@ -19,9 +19,7 @@ export interface LogInsertion extends LogCreation {
     registrationDate: Date;
 }
 
-export interface LogFilter extends LogInterface, PeriodFilter {
-    email?: string;
-}
+export interface LogFilter extends LogInterface, PeriodFilter {}
 
 export default class LogCase {
 

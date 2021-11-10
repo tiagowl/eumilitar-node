@@ -36,14 +36,16 @@ export default class LogRepository extends Repository<LogModel, LogInterface, Lo
     protected readonly service = LogService;
 
     private async filtering(query: Knex.QueryBuilder<Partial<LogModel>, LogModel[]>, filter: Filter<LogFilter>) {
-        const { pagination, search, email, period, ...params } = filter;
-        await this.search(query, search);
+        const { pagination, search, period, ...params } = filter;
+        query.leftJoin('users', function () {
+            this.on('users.user_id', '=', 'logs.user');
+        });
+        await this.search(query, search, ['email', 'first_name', 'last_name']);
         const { start, end } = period || {};
         if (!!period) query.where(function () {
             if (!!end) this.where('registrationDate', '<', end);
             if (!!start) this.where('registrationDate', '>', start);
         });
-        if (email) query.whereIn('user', UserService(this.db).where('email', 'like', email).select('user_id as user'));
         const parsed = await this.toDb(params);
         query.where(parsed);
     }
