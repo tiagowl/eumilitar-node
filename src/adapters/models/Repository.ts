@@ -230,7 +230,7 @@ export default abstract class Repository<Model, Interface, Entity> {
             const parsed = await this.toDb(data);
             const [id] = await this.query.insert(parsed as any);
             const recovered = await this.query.where(this.selector, id).first();
-            if (!recovered) throw new Error('Erro ao salvar no banco de dados');
+            if (!recovered) throw new Error();
             return await this.toEntity(recovered);
         } catch (error: any) {
             this.logger.error(error);

@@ -24,6 +24,7 @@ export interface Mail {
 export interface Settings {
     readonly messageConfig: MessageConfigInterface;
     readonly singleEssayExpiration: number;
+    readonly reviewExpiration: number;
     readonly hotmart: {
         readonly hottok: string;
         readonly token: string;

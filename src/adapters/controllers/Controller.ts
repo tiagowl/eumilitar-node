@@ -70,4 +70,9 @@ export default abstract class Controller {
         }
     }
 
+    protected async processError(error: any) {
+        this.logger.error(error);
+        return { message: 'Erro ao acessar banco de dados', status: 500 };
+    }
+
 }
