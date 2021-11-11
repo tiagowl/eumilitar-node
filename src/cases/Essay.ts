@@ -54,7 +54,7 @@ export interface EssayRepositoryInterface {
     readonly products: ProductRepositoryInterface;
     readonly singles: SingleEssayRepositoryInterface;
     readonly create: createMethod<EssayInsertionData, Essay>;
-    readonly exists: existsMethod<EssayInterface>;
+    readonly exists: existsMethod<EssayFilter>;
     readonly filter: filterMethod<Essay, EssayFilter>;
     readonly count: countMethod<EssayInterface>;
     readonly get: getMethod<Essay, EssayInterface>;

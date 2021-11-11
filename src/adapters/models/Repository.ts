@@ -84,11 +84,11 @@ export default abstract class Repository<Model, Interface, Entity> {
         }
     }
 
-    protected async getDbField(field: keyof Interface): Promise<keyof Model> {
+    protected getDbField = async (field: keyof Interface): Promise<keyof Model> => {
         return this.getDbFieldSync(field);
     }
 
-    protected getDbFieldSync(field: keyof Interface): keyof Model {
+    protected getDbFieldSync = (field: keyof Interface): keyof Model => {
         const parsed = this.fieldsMap.find(([_, [key]]) => key === field);
         const error = { message: `Campo "${field}" não encontrado`, status: 400 };
         if (!parsed) throw error;
@@ -126,6 +126,26 @@ export default abstract class Repository<Model, Interface, Entity> {
         }
     }
 
+    protected async filtering(query: Knex.QueryBuilder<Partial<Model>, Model[]>, filter: Filter<Interface>) {
+        const { pagination, search, operation = [], ...params } = filter;
+        await this.search(query, search);
+        query.andWhere(async (filtering) => {
+            await Promise.all(operation.map(async (field) => {
+                if (field instanceof Array) {
+                    const [key, operator, value] = field;
+                    const model = await this.toDb({ [key]: value } as Partial<Interface>);
+                    const [[modelKey, val]] = Object.entries(model);
+                    filtering.orWhere(modelKey as any, operator, val as any);
+                } else {
+                    const model = await this.toDb(field);
+                    filtering.orWhere(model);
+                }
+            }));
+        });
+        const parsed = await this.toDb(params as Partial<Interface>);
+        query.where(parsed);
+    }
+
     public async toDb(filter: Partial<Interface>): Promise<Partial<Model>> {
         try {
             const args = Object.entries(filter);
@@ -142,7 +162,7 @@ export default abstract class Repository<Model, Interface, Entity> {
         }
     }
 
-    public async toEntity(user: Model): Promise<Entity> {
+    public toEntity = async (user: Model): Promise<Entity> => {
         try {
             const fields: [keyof Model, any][] = Object.entries(user) as [keyof Model, any][];
             const entity = fields.reduce((obj, [key, value]) => {
@@ -221,19 +241,16 @@ export default abstract class Repository<Model, Interface, Entity> {
 
     public async filter(filter: Filter<Interface>): Promise<Paginated<Entity> | Entity[]> {
         try {
-            const { pagination, search, ...params } = filter;
-            const parsedFilter = await this.toDb(params as Partial<Interface>);
+            const { pagination, search, operation = [], ...params } = filter;
             const service = this.query;
+            await this.filtering(service, filter);
             await this.paginate(service, pagination as Pagination<Interface>);
-            await this.search(service, search);
-            const filtered = await service.where(parsedFilter) as Model[];
-            const users = await Promise.all(filtered.map(async (data: Model) => {
-                return this.toEntity(data as Model);
-            }));
+            const filtered = await service as Model[];
+            const users = await Promise.all(filtered.map(this.toEntity));
             if (!pagination) return users;
             const counting = this.query;
-            await this.search(counting, search);
-            const { count } = await counting.where(parsedFilter).count('*', { as: 'count' }).first();
+            await this.filtering(counting, filter);
+            const { count } = await counting.count('*', { as: 'count' }).first();
             const counted = Number(count);
             return {
                 page: users,
@@ -244,6 +261,20 @@ export default abstract class Repository<Model, Interface, Entity> {
             this.logger.error(error);
             if (error.status) throw error;
             throw { message: 'Erro ao constultar banco de dados', status: 500 };
+        }
+    }
+
+    public async exists(filter: Filter<Interface>) {
+        try {
+            const { pagination, search, operation = [], ...params } = filter;
+            const parsedFilter = await this.toDb(params as Partial<Interface>);
+            const service = this.query;
+            await this.filtering(service, filter);
+            await this.paginate(service, pagination as Pagination<Interface>);
+            const filtered = await service.where(parsedFilter).first();
+            return !!filtered;
+        } catch (error: any) {
+            throw await this.processError(error);
         }
     }
 }

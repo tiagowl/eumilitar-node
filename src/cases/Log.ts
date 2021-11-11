@@ -1,9 +1,9 @@
 import Log, { EventType, LogInterface } from "../entities/Log";
-import { createMethod, Filter, filterMethod, PeriodFilter } from "./interfaces";
+import { createMethod, Filter, filterMethod, Operator, PeriodFilter } from "./interfaces";
 
 export interface LogRepositoryInterface {
     readonly create: createMethod<LogInsertion, Log>;
-    readonly filter: filterMethod<Log, LogFilter>;
+    readonly filter: filterMethod<Log, LogInterface>;
 }
 
 export interface LogCreation {
@@ -19,7 +19,7 @@ export interface LogInsertion extends LogCreation {
     registrationDate: Date;
 }
 
-export interface LogFilter extends LogInterface, PeriodFilter {}
+export interface LogFilter extends LogInterface, PeriodFilter { }
 
 export default class LogCase {
 
@@ -33,6 +33,13 @@ export default class LogCase {
     }
 
     public async filter(filter: Filter<LogFilter>) {
-        return this.repository.filter(filter);
+        const { period, ...params } = filter;
+        const operation: [keyof LogInterface, Operator, any][] = [];
+        if (period?.start) operation.push(['registrationDate', '>=', period.start]);
+        if (period?.end) operation.push(['registrationDate', '<=', period.end]);
+        return this.repository.filter({
+            ...params,
+            operation,
+        });
     }
 }

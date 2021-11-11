@@ -35,41 +35,14 @@ export default class LogRepository extends Repository<LogModel, LogInterface, Lo
     protected readonly searchFields: (keyof LogModel)[] = ['details', 'error', 'ip', 'userAgent', 'event', 'id'];
     protected readonly service = LogService;
 
-    private async filtering(query: Knex.QueryBuilder<Partial<LogModel>, LogModel[]>, filter: Filter<LogFilter>) {
-        const { pagination, search, period, ...params } = filter;
+    protected async filtering(query: Knex.QueryBuilder<Partial<LogModel>, LogModel[]>, filter: Filter<LogInterface>) {
+        const { pagination, search, ...params } = filter;
         query.leftJoin('users', function () {
             this.on('users.user_id', '=', 'logs.user');
         });
         await this.search(query, search, ['email', 'first_name', 'last_name']);
-        const { start, end } = period || {};
-        if (!!period) query.where(function () {
-            if (!!end) this.where('registrationDate', '<', end);
-            if (!!start) this.where('registrationDate', '>', start);
-        });
         const parsed = await this.toDb(params);
         query.where(parsed);
     }
 
-    public async filter(filter: Filter<LogFilter>) {
-        try {
-            const { pagination } = filter;
-            const query = this.query;
-            await this.filtering(query, filter);
-            await this.paginate(query, pagination);
-            const filtered = await query;
-            const data = await Promise.all(filtered.map(async item => new this.entity(item)));
-            if (!pagination) return data;
-            const counting = this.query;
-            await this.filtering(counting, filter);
-            const { count } = await counting.count({ count: '*' }).first() || { count: 0 };
-            const counted = Number(count || 0);
-            return {
-                page: data,
-                pages: Math.ceil(counted / (pagination.pageSize || 10)),
-                count: counted
-            };
-        } catch (error: any) {
-            throw await this.processError(error);
-        }
-    }
 }

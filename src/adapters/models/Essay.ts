@@ -73,7 +73,7 @@ const fieldsMap: FieldsMap<EssayModel, EssayInterface> = [
     [['corrector', parseCorrector], ['corrector', parseCorrector],],
 ];
 
-export class EssayRepository extends Repository<EssayModel, EssayInterface, Essay> implements EssayRepositoryInterface {
+export class EssayRepository extends Repository<EssayModel, EssayFilter, Essay> implements EssayRepositoryInterface {
     public readonly themes: EssayThemeRepositoryInterface;
     public readonly users: UserRepositoryInterface;
     public readonly products: ProductRepositoryInterface;
@@ -119,15 +119,14 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface, Essa
         }
     }
 
-    private period(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, period?: { start?: Date, end?: Date }) {
+    private filterByPeriod(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, period?: { start?: Date, end?: Date }): Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]> {
         const { start, end } = period || {};
-        return !!period ? service.where(function () {
-            if (!!end) this.where('sent_date', '<', end);
-            if (!!start) this.where('sent_date', '>', start);
-        }) : service;
+        if (!!end) service.where('sent_date', '<', end);
+        if (!!start) service.where('sent_date', '>', start);
+        return service;
     }
 
-    private byStatus(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, status?: Status) {
+    private filterByStatus(service: Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]>, status?: Status): Knex.QueryBuilder<Partial<EssayModel>, EssayModel[]> {
         if (!status) return service;
         if (status === 'evaluated') {
             return service.where(function () {
@@ -160,28 +159,15 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface, Essa
         return service;
     }
 
-    public async exists(is: EssayFilter[]) {
-        const service = this.query;
-        await Promise.all(is.map(async (filterData) => {
-            const { search, ...filter } = filterData;
-            service.orWhere(await this.toDb(filter));
-        }));
-        return await service.first()
-            .then(data => !!data)
-            .catch((err) => {
-                this.logger.error(err);
-                throw new Error('Erro ao consultar redação no banco de dados');
-            });
-    }
 
     public async filter(filterData: Filter<EssayFilter>) {
         try {
             const { search, period, status, correctionPeriod, pagination, ...filter } = filterData;
             const service = this.query;
             this.paginate(service, pagination);
-            this.period(service, period);
+            this.filterByPeriod(service, period);
             this.filterCorrectionPeriod(service, correctionPeriod);
-            this.byStatus(service, status);
+            this.filterByStatus(service, status);
             await this.search(service, search);
             const parsedFilter = await this.toDb(filter);
             const essaysData = await service.where(parsedFilter);
@@ -189,9 +175,9 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface, Essa
             if (!pagination) return essays;
             const counting = this.query;
             await this.search(counting, search);
-            this.period(counting, period);
+            this.filterByPeriod(counting, period);
             this.filterCorrectionPeriod(counting, correctionPeriod);
-            this.byStatus(counting, status);
+            this.filterByStatus(counting, status);
             const [{ count }] = await counting.where(parsedFilter).count({ count: '*' });
             const counted = Number(count);
             return {
@@ -209,8 +195,8 @@ export class EssayRepository extends Repository<EssayModel, EssayInterface, Essa
         const { search, period, status, correctionPeriod, ...filter } = filterData;
         const service = this.query;
         this.filterCorrectionPeriod(service, correctionPeriod);
-        this.period(service, period);
-        this.byStatus(service, status);
+        this.filterByPeriod(service, period);
+        this.filterByStatus(service, status);
         await this.search(service, search);
         const amount = await service.where(await this.toDb(filter))
             .count<Record<string, { count: number }>>('essay_id as count')
