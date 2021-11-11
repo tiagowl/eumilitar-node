@@ -68,10 +68,6 @@ export const dbSetting: Knex.Config = {
     acquireConnectionTimeout: 10000
 }
 
-export const dbFactory = () => {
-    return knex(dbSetting);
-}
-
 export function hashPassword(password: string) {
     const salt = bcrypt.genSaltSync(0);
     return bcrypt.hashSync(password, salt);
@@ -149,7 +145,7 @@ export async function createEssay(context: Context, student: number, inject: Par
     }, inject));
 }
 
-export const db = dbFactory();
+export const db = knex(dbSetting);
 export const hottok = faker.datatype.string();
 
 export function contextFactory(inject = {}): Context {

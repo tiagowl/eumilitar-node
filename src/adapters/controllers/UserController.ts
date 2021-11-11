@@ -71,7 +71,6 @@ export default class UserController extends Controller {
     }
 
     public parseEntity = async (entity: User) => {
-        const reviewController = new ReviewController(this.context);
         return {
             id: entity.id,
             firstName: entity.firstName,
@@ -83,7 +82,6 @@ export default class UserController extends Controller {
             lastModified: entity.lastModified,
             fullName: entity.fullName,
             phone: entity.phone,
-            canReview: await reviewController.canReview(entity.id),
         };
     }
 
