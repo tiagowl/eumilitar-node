@@ -7,6 +7,7 @@ import { Context } from '../interfaces';
 import { Paginated } from '../../cases/interfaces';
 import _ from 'lodash';
 import { Filter } from '../../cases/interfaces';
+import ReviewController from './ReviewController';
 
 export type UserResponse = {
     id: number;
@@ -69,7 +70,8 @@ export default class UserController extends Controller {
         this.useCase = new UserUseCase(this.repository);
     }
 
-    static async parseEntity(entity: User) {
+    public parseEntity = async (entity: User) => {
+        const reviewController = new ReviewController(this.context);
         return {
             id: entity.id,
             firstName: entity.firstName,
@@ -81,6 +83,7 @@ export default class UserController extends Controller {
             lastModified: entity.lastModified,
             fullName: entity.fullName,
             phone: entity.phone,
+            canReview: await reviewController.canReview(entity.id),
         };
     }
 
@@ -90,11 +93,11 @@ export default class UserController extends Controller {
             const parsedFilter = await this.castFilter(filter, filterSchema);
             const users = await this.useCase.filter(parsedFilter);
             if (users instanceof Array) {
-                return await Promise.all(users.map(UserController.parseEntity));
+                return await Promise.all(users.map(this.parseEntity));
             }
             return {
                 ...users,
-                page: await Promise.all(users.page.map(UserController.parseEntity))
+                page: await Promise.all(users.page.map(this.parseEntity))
             };
         } catch (error: any) {
             this.logger.error(error);
@@ -106,7 +109,7 @@ export default class UserController extends Controller {
         try {
             const validated = await this.validate(data, schema);
             const created = await this.useCase.create(validated);
-            return await UserController.parseEntity(created);
+            return await this.parseEntity(created);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -120,7 +123,7 @@ export default class UserController extends Controller {
             const validationSchema = agent.id === id ? updateProfileSchema : updateSchema;
             const validated = await this.validate(data, validationSchema);
             const updated = await this.useCase.update(id, validated);
-            return await UserController.parseEntity(updated);
+            return await this.parseEntity(updated);
         } catch (error: any) {
             this.logger.error(error);
             if (error.status) throw error;
@@ -131,7 +134,7 @@ export default class UserController extends Controller {
     public async get(id: number) {
         try {
             const user = await this.useCase.get(id);
-            return await UserController.parseEntity(user);
+            return await this.parseEntity(user);
         } catch (error: any) {
             this.logger.error(error);
             if (error.code === 'not_found') throw { message: 'Usuário não encontrado', status: 404 };

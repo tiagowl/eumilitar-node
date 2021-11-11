@@ -1,5 +1,5 @@
 import faker from "faker";
-import { contextFactory } from "../../../tests/shortcuts";
+import { contextFactory, userFactory } from "../../../tests/shortcuts";
 import User from "../../entities/User";
 import ReviewController from '../controllers/ReviewController';
 import UserController from "../controllers/UserController";
@@ -11,12 +11,13 @@ describe('Teste nas avaliações', () => {
     const controller = new ReviewController(context);
     const users = new UserRepository(context);
     let student: User;
+    const base = userFactory({ permission: 6 });
     beforeAll(async done => {
-        const std = await users.get({ permission: 'student' });
-        if (!std) throw new Error();
-        student = std;
+        const entity = await users.toEntity(base);
+        const { id, ...data } = entity.data;
+        student = await users.create(data);
         done();
-    })
+    }, 10000)
     test('Criação', async done => {
         const data = {
             user: student.id,

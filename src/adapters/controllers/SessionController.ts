@@ -64,7 +64,8 @@ export default class SessionController extends Controller {
         try {
             const validated = await this.validate({ token }, logoutSchema);
             const user = await this.useCase.checkToken(validated.token);
-            return await UserController.parseEntity(user);
+            const users = new UserController(this.context);
+            return await users.parseEntity(user);
         } catch (error: any) {
             if (error instanceof CaseError) {
                 if (error.code === Errors.UNAUTHORIZED) throw { message: error.message, status: 401 };
