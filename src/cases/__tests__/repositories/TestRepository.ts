@@ -1,9 +1,21 @@
-import { Filter } from "../../interfaces";
+import { Filter, Operator } from "../../interfaces";
 import { FakeDB } from "./database";
 
 type Constructor<T> = new (...args: any[]) => T;
 
-export default class TestRespository<Entity, Interface>  {
+type Calculator = {
+    [s in Operator]: (a: any, b: any) => boolean;
+};
+
+export const operators: Calculator = {
+    '=': (a, b) => a === b,
+    '<=': (a, b) => a <= b,
+    '>=': (a, b) => a >= b,
+    '>': (a, b) => a > b,
+    '<': (a, b) => a < b,
+}
+
+export default class TestRepository<Entity, Interface>  {
     protected readonly entity: Constructor<Entity>;
     protected db: FakeDB;
     private readonly table: keyof FakeDB;
@@ -23,14 +35,25 @@ export default class TestRespository<Entity, Interface>  {
     }
 
     public async filter(filter: Filter<Interface>) {
-        const { pagination, search, ...params } = filter;
-        const { pageSize = 10, page = 1, ordering = 'id' } = pagination || {};
+        const { pagination, search, operation = [], ...params } = filter;
+        const { pageSize = 10, page = 1, ordering = 'id', direction } = pagination || {};
         const fields = Object.entries(params) as [keyof Entity, number | Date][];
-        const filtered = !!fields.length ? this.database.filter(essay => Object.entries(params)
-            .reduce((valid, [key, val]) => valid && (essay[key as keyof typeof params] === (val as any)), true as boolean)
-        )
+        const filtered = !!fields.length ? this.database.filter(item => {
+            const first = !Object.entries(params)
+                .find(([key, val]) => !(item[key as keyof typeof params] === (val as any)));
+            const second = !operation.find((filtering) => {
+                if (filtering instanceof Array) {
+                    const [key, operator, value] = filtering;
+                    return !operators[operator](item[key], value)
+                }
+                return !!Object.entries(filtering)
+                    // @ts-ignore
+                    .find(([field, value]) => !(item[field] === value));
+            })
+            return first && second;
+        })
             // @ts-ignore
-            .sort((a, b) => a[ordering] as any - (b[ordering] as any))
+            .sort((a, b) => direction === 'asc' ? a[ordering] as any - (b[ordering] as any) : b[ordering] as any - (a[ordering] as any))
             .slice((page - 1) * pageSize, ((page - 1) * pageSize) + pageSize,) : this.database;
         return filtered.map(data => new this.entity(data)) as Entity[];
     }
@@ -82,8 +105,8 @@ export default class TestRespository<Entity, Interface>  {
         return data.length;
     }
 
-    public async exists(filter: Partial<Interface>) {
-        const data = await this.filter(filter);
-        return !!data.length;
+    public async exists(filter: Filter<Interface>) {
+        const exists = await this.filter(filter);
+        return !!exists.length;
     }
 }

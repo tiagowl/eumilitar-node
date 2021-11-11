@@ -145,11 +145,14 @@ export default class EssayCase {
 
     private async checkPermission(theme: EssayTheme, student: User, course: Course) {
         const baseFilter = { theme: theme.id, student: student.id };
-        const cantSend = await this.repository.exists([
-            { ...baseFilter, status: 'pending' },
-            { ...baseFilter, status: 'revised' },
-            { ...baseFilter, status: 'correcting' },
-        ]);
+        const cantSend = await this.repository.exists({
+            ...baseFilter,
+            operation: [
+                { status: 'pending' },
+                { status: 'revised' },
+                { status: 'correcting' },
+            ]
+        });
         if (cantSend) throw new CaseError(`Já foi enviada uma redação do curso "${beautyCourse[course]}" para o tema vigente`);
     }
 

@@ -16,9 +16,12 @@ export type Chart = {
     value: number;
 }[];
 
+export type Operator = '=' | '<=' | '>=' | '<' | '>';
+
 export type Filter<T> = {
     pagination?: Pagination<T>;
     search?: string;
+    operation?: ([keyof T, Operator, any] | Partial<T>)[];
 } & Partial<T>;
 
 export interface PeriodFilter {
@@ -29,7 +32,7 @@ export interface PeriodFilter {
 }
 
 export type createMethod<Insertion, Entity> = (data: Insertion) => Promise<Entity>;
-export type existsMethod<Interface> = (is: Partial<Interface>[]) => Promise<boolean>;
+export type existsMethod<Interface> = (filter: Filter<Interface>) => Promise<boolean>;
 export type filterMethod<Entity, Interface> = (filter: Filter<Interface>) => Promise<Entity[] | Paginated<Entity>>;
 export type countMethod<Interface> = (filter: Partial<Interface>) => Promise<number>;
 export type getMethod<Entity, Interface> = (filter: Partial<Interface>) => Promise<Entity | undefined>;

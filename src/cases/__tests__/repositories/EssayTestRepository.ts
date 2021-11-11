@@ -1,7 +1,7 @@
 import faker from "faker";
 import Essay, { EssayInterface } from "../../../entities/Essay";
 import EssayTheme, { Course } from "../../../entities/EssayTheme";
-import { EssayRepositoryInterface, EssayInsertionData, EssayPagination, EssayChartFilter } from "../../Essay";
+import { EssayRepositoryInterface, EssayInsertionData, EssayPagination, EssayChartFilter, EssayFilter } from "../../Essay";
 import { EssayThemeRepositoryInterface } from "../../EssayTheme";
 import { Chart, Filter } from "../../interfaces";
 import { ProductRepositoryInterface } from "../../Product";
@@ -13,7 +13,7 @@ import EssayInvalidationTestRepository from "./InvalidationTestRepository";
 import ProductTestRepository from "./ProductTestRepository";
 import SingleEssayTestRepository from "./SingleTestRepository";
 import SubscriptionTestRepository from "./SubscriptionTestRepository";
-import TestRepository from "./TestRepository";
+import TestRepository, { operators } from "./TestRepository";
 import EssayThemeTestRepository from "./ThemeTestRepository";
 import UserTestRepository from "./UserTestRepository";
 
@@ -47,17 +47,6 @@ export default class EssayTestRepository extends TestRepository<Essay, EssayInte
         this.singles = new SingleEssayTestRepository(db);
     }
 
-    // @ts-ignore
-    public async exists(filters: Partial<EssayInterface>[]) {
-        return !!this.database.find(item => filters.reduce((status, filter) => {
-            return status || Object.entries(filter)
-                .reduce((valid, field) => {
-                    // @ts-ignore
-                    return valid && (item[field[0]] === field[1]);
-                }, true as boolean);
-        }, false as boolean));
-    }
-
     async evaluatedChart(_filter: EssayChartFilter): Promise<Chart> {
         return [{ key: '1-12', value: 55 }];
     }
@@ -71,5 +60,10 @@ export default class EssayTestRepository extends TestRepository<Essay, EssayInte
         const invalidation = await invalidations.get({ essay });
         // @ts-ignore
         return invalidation?.invalidationDate < new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+    }
+
+    // @ts-ignore
+    async filter(filter: Filter<EssayFilter>) {
+        return super.filter(filter as Filter<EssayInterface>);
     }
 }
