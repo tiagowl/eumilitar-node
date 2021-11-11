@@ -1,7 +1,7 @@
 import faker from 'faker';
 import { contextFactory } from '../../../tests/shortcuts';
 import Warning from '../../entities/Warning';
-import WarningController from '../controllers/Warning';
+import WarningController from '../controllers/WarningController';
 
 const context = contextFactory();
 

@@ -1,7 +1,7 @@
 import faker from "faker";
 import Session, { SessionInterface } from "../../../entities/Session";
-import { SessionRepositoryInterface, SessionInsertionInterface } from "../../Session";
-import { UserRepositoryInterface } from "../../User";
+import { SessionRepositoryInterface, SessionInsertionInterface } from "../../SessionCase";
+import { UserRepositoryInterface } from "../../UserCase";
 import { FakeDB } from "./database";
 import TestRepository from "./TestRepository";
 import UserTestRepository from "./UserTestRepository";

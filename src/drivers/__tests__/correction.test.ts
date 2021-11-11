@@ -1,9 +1,9 @@
 import faker from "faker";
 import supertest from "supertest";
 import { userFactory, db, saveUser, deleteUser, appFactory, createEssay, jp, contextFactory } from "../../../tests/shortcuts";
-import EssayThemeRepository, { EssayThemeService } from "../../adapters/models/EssayTheme";
-import { UserModel, UserService } from "../../adapters/models/User";
-import { EssayThemeCreation } from "../../cases/EssayTheme";
+import EssayThemeRepository, { EssayThemeService } from "../../adapters/models/EssayThemeRepository";
+import { UserModel, UserService } from "../../adapters/models/UserRepository";
+import { EssayThemeCreation } from "../../cases/EssayThemeCase";
 import { Course } from "../../entities/EssayTheme";
 import { authenticate } from "./tools";
 

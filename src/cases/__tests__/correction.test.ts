@@ -1,8 +1,8 @@
 import faker from "faker";
 import Correction, { CorrectionInterface } from "../../entities/Correction";
-import CorrectionCase, { CorrectionBase, CorrectionInsertionData, CorrectionRepositoryInterface } from "../Correction";
-import EssayCase, { EssayRepositoryInterface } from "../Essay";
-import { UserRepositoryInterface } from "../User";
+import CorrectionCase, { CorrectionBase, CorrectionInsertionData, CorrectionRepositoryInterface } from "../CorrectionCase";
+import EssayCase, { EssayRepositoryInterface } from "../EssayCase";
+import { UserRepositoryInterface } from "../UserCase";
 import CorrectionTestRepository from "./repositories/CorrectionTestRepository";
 import getDb from "./repositories/database";
 

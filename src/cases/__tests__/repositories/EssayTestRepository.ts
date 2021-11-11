@@ -1,13 +1,13 @@
 import faker from "faker";
 import Essay, { EssayInterface } from "../../../entities/Essay";
 import EssayTheme, { Course } from "../../../entities/EssayTheme";
-import { EssayRepositoryInterface, EssayInsertionData, EssayPagination, EssayChartFilter, EssayFilter } from "../../Essay";
-import { EssayThemeRepositoryInterface } from "../../EssayTheme";
+import { EssayRepositoryInterface, EssayInsertionData, EssayPagination, EssayChartFilter, EssayFilter } from "../../EssayCase";
+import { EssayThemeRepositoryInterface } from "../../EssayThemeCase";
 import { Chart, Filter } from "../../interfaces";
-import { ProductRepositoryInterface } from "../../Product";
-import { SingleEssayRepositoryInterface } from "../../SingleEssay";
-import { SubscriptionRepositoryInterface } from "../../Subscription";
-import { UserRepositoryInterface } from "../../User";
+import { ProductRepositoryInterface } from "../../ProductCase";
+import { SingleEssayRepositoryInterface } from "../../SingleEssayCase";
+import { SubscriptionRepositoryInterface } from "../../SubscriptionCase";
+import { UserRepositoryInterface } from "../../UserCase";
 import { FakeDB } from "./database";
 import EssayInvalidationTestRepository from "./InvalidationTestRepository";
 import ProductTestRepository from "./ProductTestRepository";
@@ -17,7 +17,7 @@ import TestRepository, { operators } from "./TestRepository";
 import EssayThemeTestRepository from "./ThemeTestRepository";
 import UserTestRepository from "./UserTestRepository";
 
-export default class EssayTestRepository extends TestRepository<Essay, EssayInterface> implements EssayRepositoryInterface {
+export default class EssayTestRepository extends TestRepository<Essay, EssayFilter> implements EssayRepositoryInterface {
     themes: EssayThemeRepositoryInterface;
     users: UserRepositoryInterface;
     products: ProductRepositoryInterface;
@@ -64,6 +64,6 @@ export default class EssayTestRepository extends TestRepository<Essay, EssayInte
 
     // @ts-ignore
     async filter(filter: Filter<EssayFilter>) {
-        return super.filter(filter as Filter<EssayInterface>);
+        return super.filter(filter);
     }
 }

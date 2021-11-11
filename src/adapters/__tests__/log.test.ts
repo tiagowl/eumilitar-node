@@ -1,7 +1,7 @@
 import faker from 'faker';
 import { contextFactory } from '../../../tests/shortcuts';
-import LogController from '../controllers/Log';
-import UserRepository from '../models/User';
+import LogController from '../controllers/LogController';
+import UserRepository from '../models/UserRepository';
 
 const context = contextFactory()
 

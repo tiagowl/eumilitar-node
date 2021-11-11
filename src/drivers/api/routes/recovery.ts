@@ -1,6 +1,6 @@
 import { Context } from "../../interfaces";
 import { Router } from 'express';
-import RecoveryController, { CheckInterface } from "../../../adapters/controllers/Recovery";
+import RecoveryController, { CheckInterface } from "../../../adapters/controllers/RecoveryController";
 
 export default (context: Context) => {
     const controller = new RecoveryController(context);

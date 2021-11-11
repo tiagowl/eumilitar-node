@@ -1,8 +1,8 @@
 import faker from "faker";
 import supertest from "supertest";
 import { userFactory, db, saveUser, deleteUser, appFactory, jp, contextFactory } from "../../../tests/shortcuts";
-import { ProductService } from "../../adapters/models/Product";
-import { UserModel, UserService } from "../../adapters/models/User";
+import { ProductService } from "../../adapters/models/ProductRepository";
+import { UserModel, UserService } from "../../adapters/models/UserRepository";
 import { authenticate } from "./tools";
 
 describe('#7 Produtos', () => {

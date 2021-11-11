@@ -1,7 +1,7 @@
 import faker from "faker";
 import { hashPassword, userEntityFactory } from "../../../tests/shortcuts";
 import User from "../../entities/User";
-import UserUseCase, { UserFilter, UserRepositoryInterface, UserSavingData } from "../User";
+import UserUseCase, { UserFilter, UserRepositoryInterface, UserSavingData } from "../UserCase";
 import getDb, { defaultPassword } from "./repositories/database";
 import UserTestRepository from "./repositories/UserTestRepository";
 

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import SingleEssayController from "../../../adapters/controllers/SingleEssay";
+import SingleEssayController from "../../../adapters/controllers/SingleEssayController";
 import { Context } from "../../interfaces";
 import { checkPermission, isAuthenticated } from "./tools";
 

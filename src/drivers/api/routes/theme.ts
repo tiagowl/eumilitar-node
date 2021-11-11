@@ -1,7 +1,7 @@
 import { Context } from "../../interfaces";
 import { Router } from 'express';
 import { checkPermission, isAuthenticated } from "./tools";
-import EssayThemeController from "../../../adapters/controllers/EssayTheme";
+import EssayThemeController from "../../../adapters/controllers/EssayThemeController";
 
 export default (context: Context) => {
     const { storage } = context;

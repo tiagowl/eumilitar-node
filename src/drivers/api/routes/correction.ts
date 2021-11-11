@@ -1,7 +1,7 @@
 import { Context } from "../../interfaces";
 import { Router } from 'express';
 import { checkPermission, isAuthenticated } from "./tools";
-import CorrectionController from "../../../adapters/controllers/Correction";
+import CorrectionController from "../../../adapters/controllers/CorrectionController";
 
 export default (context: Context) => {
     const controller = new CorrectionController(context);

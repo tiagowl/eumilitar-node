@@ -1,6 +1,6 @@
 import { Context } from "../../interfaces";
 import { Router } from 'express';
-import EssayInvalidationController from "../../../adapters/controllers/EssayInvalidation";
+import EssayInvalidationController from "../../../adapters/controllers/EssayInvalidationController";
 import { checkPermission, isAuthenticated } from "./tools";
 
 export default (context: Context) => {

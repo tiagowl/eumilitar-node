@@ -1,7 +1,7 @@
 import { Context } from "../../interfaces";
 import { Router } from 'express';
 import { checkAuth, checkPermission, isAuthenticated } from "./tools";
-import UserController from "../../../adapters/controllers/User";
+import UserController from "../../../adapters/controllers/UserController";
 
 export default (context: Context) => {
     const controller = new UserController(context);

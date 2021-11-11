@@ -1,7 +1,7 @@
 import faker from "faker";
 import { jp } from "../../../tests/shortcuts";
 import Warning from "../../entities/Warning";
-import WarningCase from "../Warning";
+import WarningCase from "../WarningCase";
 import getDb from "./repositories/database";
 import WarningTestRepository from "./repositories/WarningTestRepository";
 

@@ -1,5 +1,5 @@
 import Product, { ProductInterface } from "../../../entities/Product";
-import { ProductRepositoryInterface, ProductCreation } from "../../Product";
+import { ProductRepositoryInterface, ProductCreation } from "../../ProductCase";
 import { FakeDB } from "./database";
 import TestRepository from "./TestRepository";
 

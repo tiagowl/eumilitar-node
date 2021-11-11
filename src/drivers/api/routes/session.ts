@@ -1,6 +1,6 @@
 import { Context } from "../../interfaces";
 import { Router } from 'express';
-import SessionController from "../../../adapters/controllers/Session";
+import SessionController from "../../../adapters/controllers/SessionController";
 import { checkAuth, getToken } from "./tools";
 
 export default (context: Context) => {

@@ -1,8 +1,8 @@
 import faker from "faker";
 import { contextFactory, db } from "../../../tests/shortcuts";
-import { ProductCreation } from "../../cases/Product";
-import ProductController from "../controllers/Products";
-import { ProductService } from "../models/Product";
+import { ProductCreation } from "../../cases/ProductCase";
+import ProductController from "../controllers/ProductsController";
+import { ProductService } from "../models/ProductRepository";
 
 const context = contextFactory();
 

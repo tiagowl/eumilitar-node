@@ -2,8 +2,8 @@ import faker from "faker";
 import { v4 } from "uuid";
 import Recovery, { RecoveryInterface } from "../../entities/Recovery";
 import User from "../../entities/User";
-import RecoveryCase, { RecoveryRepositoryInterface, RecoveryInsertionInterface } from "../Recovery";
-import { UserRepositoryInterface } from "../User";
+import RecoveryCase, { RecoveryRepositoryInterface, RecoveryInsertionInterface } from "../RecoveryCase";
+import { UserRepositoryInterface } from "../UserCase";
 import getDb from "./repositories/database";
 import RecoveryTestRespository from "./repositories/RecoveryTestRepository";
 

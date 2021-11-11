@@ -1,6 +1,6 @@
 import faker from "faker";
 import Log from "../../entities/Log";
-import LogCase from "../Log"
+import LogCase from "../LogCase"
 import getDb from "./repositories/database"
 import LogTestRepository from "./repositories/LogTestRepository"
 

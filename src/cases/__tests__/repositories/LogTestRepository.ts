@@ -1,6 +1,6 @@
 import Log, { LogInterface } from "../../../entities/Log";
 import { Filter } from "../../interfaces";
-import { LogFilter, LogRepositoryInterface } from "../../Log";
+import { LogFilter, LogRepositoryInterface } from "../../LogCase";
 import { FakeDB } from "./database";
 import TestRepository from "./TestRepository";
 

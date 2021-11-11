@@ -1,6 +1,6 @@
 import faker from "faker";
 import Review from "../../entities/Review";
-import ReviewCase from "../Review";
+import ReviewCase from "../ReviewCase";
 import getDb from "./repositories/database";
 import ReviewTestRepository from "./repositories/ReviewTestRepository";
 

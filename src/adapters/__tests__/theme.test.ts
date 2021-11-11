@@ -1,10 +1,10 @@
 import faker from "faker";
 import { Readable } from "stream";
 import { contextFactory, db } from "../../../tests/shortcuts";
-import { EssayThemeCreation } from "../../cases/EssayTheme";
+import { EssayThemeCreation } from "../../cases/EssayThemeCase";
 import { Course } from "../../entities/EssayTheme";
-import EssayThemeController, { EssayThemeInput, EssayThemePagination } from "../controllers/EssayTheme";
-import EssayThemeRepository, { EssayThemeService } from "../models/EssayTheme";
+import EssayThemeController, { EssayThemeInput, EssayThemePagination } from "../controllers/EssayThemeController";
+import EssayThemeRepository, { EssayThemeService } from "../models/EssayThemeRepository";
 
 const context = contextFactory();
 

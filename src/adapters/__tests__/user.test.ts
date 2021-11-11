@@ -1,10 +1,10 @@
 import faker from "faker";
 import { userFactory, db, saveUser, deleteUser, contextFactory } from "../../../tests/shortcuts";
-import { UserUpdate } from "../../cases/User";
+import { UserUpdate } from "../../cases/UserCase";
 import User from "../../entities/User";
-import UserController from "../controllers/User";
-import { EssayThemeService } from "../models/EssayTheme";
-import UserRepository, { UserService } from "../models/User";
+import UserController from "../controllers/UserController";
+import { EssayThemeService } from "../models/EssayThemeRepository";
+import UserRepository, { UserService } from "../models/UserRepository";
 
 const context = contextFactory();
 
@@ -67,7 +67,7 @@ describe('#7 Testes no usuário', () => {
     });
     test('#71 Listagem', async done => {
         const controller = new UserController(context);
-        const page = await controller.all({ status: 'active', pagination: { 'page': 1, pageSize: 20, ordering: 'id', direction: 'desc'} });
+        const page = await controller.all({ status: 'active', pagination: { 'page': 1, pageSize: 20, ordering: 'id', direction: 'desc' } });
         expect(page).toBeDefined();
         if ((page instanceof Array)) throw new Error();
         const users = page.page;

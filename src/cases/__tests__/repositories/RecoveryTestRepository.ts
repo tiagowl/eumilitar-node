@@ -1,7 +1,7 @@
 import faker from "faker";
 import Recovery, { RecoveryInterface } from "../../../entities/Recovery";
-import { RecoveryRepositoryInterface, RecoveryInsertionInterface } from "../../Recovery";
-import { UserRepositoryInterface } from "../../User";
+import { RecoveryRepositoryInterface, RecoveryInsertionInterface } from "../../RecoveryCase";
+import { UserRepositoryInterface } from "../../UserCase";
 import { FakeDB } from "./database";
 import TestRepository from "./TestRepository";
 import UserTestRepository from "./UserTestRepository";

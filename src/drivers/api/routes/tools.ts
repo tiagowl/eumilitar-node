@@ -1,8 +1,8 @@
-import SessionController from "../../../adapters/controllers/Session";
+import SessionController from "../../../adapters/controllers/SessionController";
 import { Request, RequestHandler } from "express";
 import { Context } from "../../interfaces";
 import { AccountPermission } from "../../../entities/User";
-import UserRepository from "../../../adapters/models/User";
+import UserRepository from "../../../adapters/models/UserRepository";
 
 export async function getToken(header: string | undefined) {
     if (!header) throw { message: 'Não autenticado', status: 401 };

@@ -1,5 +1,5 @@
 import User, { UserInterface } from "../../../entities/User";
-import { UserRepositoryInterface, UserFilter, UserSavingData } from "../../User";
+import { UserRepositoryInterface, UserFilter, UserSavingData } from "../../UserCase";
 import { FakeDB } from "./database";
 import TestRepository from "./TestRepository";
 

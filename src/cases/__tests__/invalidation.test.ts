@@ -1,6 +1,6 @@
 import faker from "faker";
-import EssayCase, { EssayCreationData, EssayInvalidationData, EssayRepositoryInterface } from "../Essay";
-import EssayInvalidationCase, { EssayInvalidationRepositoryInterface } from "../EssayInvalidation";
+import EssayCase, { EssayCreationData, EssayInvalidationData, EssayRepositoryInterface } from "../EssayCase";
+import EssayInvalidationCase, { EssayInvalidationRepositoryInterface } from "../EssayInvalidationCase";
 import getDb from "./repositories/database";
 import EssayInvalidationTestRepository from "./repositories/InvalidationTestRepository";
 

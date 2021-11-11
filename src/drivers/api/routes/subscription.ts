@@ -1,8 +1,8 @@
 import { Context } from "../../interfaces";
 import { Router } from 'express';
-import SubscriptionController, { OrderData } from "../../../adapters/controllers/Subscription";
+import SubscriptionController, { OrderData } from "../../../adapters/controllers/SubscriptionController";
 import { checkAuth, checkPermission, isAuthenticated } from "./tools";
-import { SubscriptionCreation } from "../../../cases/Subscription";
+import { SubscriptionCreation } from "../../../cases/SubscriptionCase";
 
 export default (context: Context) => {
     const controller = new SubscriptionController(context);

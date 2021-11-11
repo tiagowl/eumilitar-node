@@ -1,5 +1,5 @@
 import { Router } from "express";
-import WarningController from "../../../adapters/controllers/Warning";
+import WarningController from "../../../adapters/controllers/WarningController";
 import { Context } from "../../interfaces";
 import { checkPermission, isAuthenticated } from "./tools";
 

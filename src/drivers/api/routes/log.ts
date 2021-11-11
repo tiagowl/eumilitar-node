@@ -1,5 +1,5 @@
 import { Router } from "express";
-import LogController from "../../../adapters/controllers/Log";
+import LogController from "../../../adapters/controllers/LogController";
 import { Context } from "../../interfaces";
 import { checkAuth, checkPermission } from "./tools";
 

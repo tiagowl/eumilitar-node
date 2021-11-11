@@ -5,14 +5,13 @@ import { CorrectionInterface } from "../../../entities/Correction";
 import { EssayInterface } from "../../../entities/Essay";
 import { EssayInvalidationInterface } from "../../../entities/EssayInvalidation";
 import { Course, EssayThemeInterface } from "../../../entities/EssayTheme";
-import Log, { LogInterface } from "../../../entities/Log";
+import { LogInterface } from "../../../entities/Log";
 import { ProductInterface } from "../../../entities/Product";
 import { RecoveryInterface } from "../../../entities/Recovery";
 import { SessionInterface } from "../../../entities/Session";
 import { SingleEssayInterface } from "../../../entities/SingleEssay";
 import { SubscriptionInterface } from "../../../entities/Subscription";
-import Warning, { WarningInterface } from "../../../entities/Warning";
-import Review from "../../Review";
+import { WarningInterface } from "../../../entities/Warning";
 
 export type FakeDB = ReturnType<typeof getDb>;
 

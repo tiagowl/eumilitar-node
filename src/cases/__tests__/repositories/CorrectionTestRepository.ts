@@ -1,7 +1,7 @@
 import Correction, { CorrectionInterface } from "../../../entities/Correction";
-import { CorrectionRepositoryInterface, CorrectionInsertionData, CorrectionBase } from "../../Correction";
-import { EssayRepositoryInterface } from "../../Essay";
-import { UserRepositoryInterface } from "../../User";
+import { CorrectionRepositoryInterface, CorrectionInsertionData, CorrectionBase } from "../../CorrectionCase";
+import { EssayRepositoryInterface } from "../../EssayCase";
+import { UserRepositoryInterface } from "../../UserCase";
 import { FakeDB } from "./database";
 import EssayTestRepository from "./EssayTestRepository";
 import TestRepository from "./TestRepository";

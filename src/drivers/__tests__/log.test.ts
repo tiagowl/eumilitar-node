@@ -1,7 +1,7 @@
 import faker from "faker";
 import supertest from "supertest";
 import { appFactory, contextFactory, jp, saveUser, userFactory } from "../../../tests/shortcuts";
-import { UserService } from "../../adapters/models/User";
+import { UserService } from "../../adapters/models/UserRepository";
 import { authenticate } from "./tools";
 
 const context = contextFactory();
