@@ -1,7 +1,7 @@
 import faker from "faker";
 import supertest from "supertest";
 import { jp } from "../../../tests/shortcuts";
-import { UserModel } from "../../adapters/models/User";
+import { UserModel } from "../../adapters/models/UserRepository";
 
 export async function authenticate(user: UserModel, api: supertest.SuperTest<supertest.Test>) {
     const credentials = {

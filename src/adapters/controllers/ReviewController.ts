@@ -39,7 +39,8 @@ export default class ReviewController extends Controller {
 
     public async canReview(user: number) {
         try {
-            return await this.useCase.canSend(user);
+            const can = await this.useCase.canSend(user);
+            return { can };
         } catch (error: any) {
             throw await this.processError(error);
         }
