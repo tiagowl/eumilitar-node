@@ -13,6 +13,7 @@ import singleEssayRouter from './singleEssay';
 import warningRouter from './warning';
 import logRouter from './log';
 import reviewRouter from './review';
+import settingsRouter from './settings';
 
 const routers = [
     userRouter,
@@ -28,6 +29,7 @@ const routers = [
     warningRouter,
     logRouter,
     reviewRouter,
+    settingsRouter,
 ];
 
 export default function getRouter(context: Context) {
