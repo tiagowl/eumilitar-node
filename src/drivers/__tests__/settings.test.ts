@@ -37,4 +37,13 @@ describe('Alertas', () => {
         expect(typeof response.body.lastModified, jp(response.body)).toBe('string');
         done();
     });
+    test('Recuperação', async done => {
+        const header = await authenticate(student, api);
+        const response = await api.get('/settings/')
+            .set('Authorization', header)
+        expect(response.status, jp(response.body)).toBe(200);
+        expect(typeof response.body.id, jp(response.body)).toBe('number');
+        expect(typeof response.body.lastModified, jp(response.body)).toBe('string');
+        done();
+    });
 });
