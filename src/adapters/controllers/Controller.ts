@@ -3,6 +3,7 @@ import * as yup from "yup";
 import { Logger } from "winston";
 import { Context } from "../interfaces";
 import _ from 'lodash';
+import CaseError, { Errors } from "../../cases/ErrorCase";
 
 export interface ResponseError {
     message?: string;
@@ -72,7 +73,10 @@ export default abstract class Controller {
 
     protected async processError(error: any) {
         this.logger.error(error);
-        return { message: 'Erro ao acessar banco de dados', status: 500 };
+        if (error instanceof CaseError) {
+            if (error.code === Errors.NOT_FOUND) return { message: error.message, status: 404 };
+        }
+        return { message: error.message || 'Erro interno', status: 500 };
     }
 
 }
