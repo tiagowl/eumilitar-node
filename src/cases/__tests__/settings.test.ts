@@ -16,5 +16,13 @@ describe('Teste nas configurações', () => {
         expect(created.id).toBe(db.settings[0].id);
         expect(db.settings.length).toBe(1);
         done();
-    })
-})
+    });
+    test('Recuperação', async done => {
+        const settings = await useCase.get();
+        expect(typeof settings.id).toBe('number');
+        expect(settings.reviewExpiration).toBe(10);
+        expect(settings.id).toBe(db.settings[0].id);
+        expect(db.settings.length).toBe(1);
+        done();
+    });
+});

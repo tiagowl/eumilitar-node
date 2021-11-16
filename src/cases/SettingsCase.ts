@@ -1,4 +1,5 @@
 import Settings, { SettingsInterface } from "../entities/Settings";
+import CaseError, { Errors } from "./ErrorCase";
 import { createMethod, getMethod, updateMethod } from "./interfaces";
 
 export interface SettingsRepositoryInterface {
@@ -24,5 +25,11 @@ export default class SettingsCase {
         const infos = { ...data, lastModified: new Date() };
         if (current) return this.repository.update(current.id, infos);
         return this.repository.create(infos);
+    }
+
+    public async get() {
+        const current = await this.repository.get({});
+        if (!current) throw new CaseError('Configurações não encontradas', Errors.NOT_FOUND);
+        return current;
     }
 }
