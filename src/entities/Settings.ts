@@ -2,7 +2,6 @@ export interface SettingsInterface {
     readonly id: number;
     lastModified: Date;
     reviewExpiration: number;
-
 }
 
 export default class Settings implements SettingsInterface {

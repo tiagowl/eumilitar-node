@@ -9,6 +9,7 @@ import { LogInterface } from "../../../entities/Log";
 import { ProductInterface } from "../../../entities/Product";
 import { RecoveryInterface } from "../../../entities/Recovery";
 import { SessionInterface } from "../../../entities/Session";
+import { SettingsInterface } from "../../../entities/Settings";
 import { SingleEssayInterface } from "../../../entities/SingleEssay";
 import { SubscriptionInterface } from "../../../entities/Subscription";
 import { WarningInterface } from "../../../entities/Warning";
@@ -130,6 +131,13 @@ export default function getDb() {
             description: faker.lorem.paragraph(19),
         }
     ]
+    const settings: SettingsInterface[] = [
+        {
+            id: 1,
+            lastModified: new Date(),
+            reviewExpiration: 5,
+        }
+    ]
     return {
         users,
         essayThemes,
@@ -144,5 +152,6 @@ export default function getDb() {
         warnings,
         logs,
         reviews,
+        settings,
     };
 }
