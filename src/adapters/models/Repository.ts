@@ -88,7 +88,7 @@ export default abstract class Repository<Model, Interface, Entity> {
         return this.getDbFieldSync(field);
     }
 
-    protected getDbFieldSync = (field: keyof Interface): keyof Model => {
+    protected readonly getDbFieldSync = (field: keyof Interface): keyof Model => {
         const parsed = this.fieldsMap.find(([_, [key]]) => key === field);
         const error = { message: `Campo "${field}" não encontrado`, status: 400 };
         if (!parsed) throw error;
@@ -129,24 +129,61 @@ export default abstract class Repository<Model, Interface, Entity> {
     protected async filtering(query: Knex.QueryBuilder<Partial<Model>, Model[]>, filter: Filter<Interface>) {
         const { pagination, search, operation = [], ...params } = filter;
         await this.search(query, search);
-        query.andWhere(async (filtering) => {
-            await Promise.all(operation.map(async (field) => {
+        query.andWhere((filtering) => {
+            operation.forEach((field) => {
                 if (field instanceof Array) {
                     const [key, operator, value] = field;
-                    const model = await this.toDb({ [key]: value } as Partial<Interface>);
+                    const model = this.toDbSync({ [key]: value } as Partial<Interface>);
                     const [[modelKey, val]] = Object.entries(model);
-                    filtering.orWhere(modelKey as any, operator, val as any);
+                    filtering.andWhere(modelKey as any, operator, val as any);
                 } else {
-                    const model = await this.toDb(field);
+                    const model = this.toDbSync(field);
                     filtering.orWhere(model);
                 }
-            }));
+            });
         });
         const parsed = await this.toDb(params as Partial<Interface>);
         query.where(parsed);
     }
 
-    public async toDb(filter: Partial<Interface>): Promise<Partial<Model>> {
+    public readonly toDb = async (filter: Partial<Interface>): Promise<Partial<Model>> => {
+        try {
+            const args = Object.entries(filter);
+            return await args.reduce(async (modelPromise, [entityField, value]: [string, any]) => {
+                const model = await modelPromise;
+                await Promise.all(this.fieldsMap.map(async ([[fieldName, parser], [field]]) => {
+                    if (field === entityField && fieldName) model[fieldName] = parser(value);
+                }));
+                return model;
+            }, Promise.resolve({}) as Promise<Partial<Model>>);
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao processar dados', status: 500 };
+        }
+    }
+
+    public readonly toEntity = async (user: Model): Promise<Entity> => {
+        try {
+            const fields: [keyof Model, any][] = Object.entries(user) as [keyof Model, any][];
+            const entity = await fields.reduce(async (objPromise, [key, value]) => {
+                const obj = await objPromise;
+                await Promise.all(this.fieldsMap.map(([db, [name, parser]]) => {
+                    if (db[0] === key && name) {
+                        obj[name] = parser(value) as never;
+                    }
+                }));
+                return obj;
+            }, Promise.resolve({}) as Promise<Interface>);
+            return new this.entity(entity);
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao processar dados', status: 500 };
+        }
+    }
+
+    public readonly toDbSync = (filter: Partial<Interface>): Partial<Model> => {
         try {
             const args = Object.entries(filter);
             return args.reduce((model, [entityField, value]: [string, any]) => {
@@ -162,7 +199,7 @@ export default abstract class Repository<Model, Interface, Entity> {
         }
     }
 
-    public toEntity = async (user: Model): Promise<Entity> => {
+    public readonly toEntitySync = (user: Model): Entity => {
         try {
             const fields: [keyof Model, any][] = Object.entries(user) as [keyof Model, any][];
             const entity = fields.reduce((obj, [key, value]) => {
@@ -241,7 +278,7 @@ export default abstract class Repository<Model, Interface, Entity> {
 
     public async filter(filter: Filter<Interface>): Promise<Paginated<Entity> | Entity[]> {
         try {
-            const { pagination, search, operation = [], ...params } = filter;
+            const { pagination } = filter;
             const service = this.query;
             await this.filtering(service, filter);
             await this.paginate(service, pagination as Pagination<Interface>);
