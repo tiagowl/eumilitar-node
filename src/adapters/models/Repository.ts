@@ -146,9 +146,9 @@ export default abstract class Repository<Model, Interface, Entity> {
         query.where(parsed);
     }
 
-    public readonly toDb = async (filter: Partial<Interface>): Promise<Partial<Model>> => {
+    public readonly toDb = async (entity: Partial<Interface>): Promise<Partial<Model>> => {
         try {
-            const args = Object.entries(filter);
+            const args = Object.entries(entity);
             return await args.reduce(async (modelPromise, [entityField, value]: [string, any]) => {
                 const model = await modelPromise;
                 await Promise.all(this.fieldsMap.map(async ([[fieldName, parser], [field]]) => {
@@ -163,16 +163,16 @@ export default abstract class Repository<Model, Interface, Entity> {
         }
     }
 
-    public readonly toEntity = async (user: Model): Promise<Entity> => {
+    public readonly toEntity = async (model: Model): Promise<Entity> => {
         try {
-            const fields: [keyof Model, any][] = Object.entries(user) as [keyof Model, any][];
+            const fields: [keyof Model, any][] = Object.entries(model) as [keyof Model, any][];
             const entity = await fields.reduce(async (objPromise, [key, value]) => {
                 const obj = await objPromise;
-                await Promise.all(this.fieldsMap.map(([db, [name, parser]]) => {
-                    if (db[0] === key && name) {
+                this.fieldsMap.forEach(([[dbField], [name, parser]]) => {
+                    if (dbField === key && name) {
                         obj[name] = parser(value) as never;
                     }
-                }));
+                });
                 return obj;
             }, Promise.resolve({}) as Promise<Interface>);
             return new this.entity(entity);
@@ -183,9 +183,9 @@ export default abstract class Repository<Model, Interface, Entity> {
         }
     }
 
-    public readonly toDbSync = (filter: Partial<Interface>): Partial<Model> => {
+    public readonly toDbSync = (entity: Partial<Interface>): Partial<Model> => {
         try {
-            const args = Object.entries(filter);
+            const args = Object.entries(entity);
             return args.reduce((model, [entityField, value]: [string, any]) => {
                 this.fieldsMap.forEach(([[fieldName, parser], [field]]) => {
                     if (field === entityField && fieldName) model[fieldName] = parser(value);
@@ -199,9 +199,9 @@ export default abstract class Repository<Model, Interface, Entity> {
         }
     }
 
-    public readonly toEntitySync = (user: Model): Entity => {
+    public readonly toEntitySync = (model: Model): Entity => {
         try {
-            const fields: [keyof Model, any][] = Object.entries(user) as [keyof Model, any][];
+            const fields: [keyof Model, any][] = Object.entries(model) as [keyof Model, any][];
             const entity = fields.reduce((obj, [key, value]) => {
                 this.fieldsMap.forEach(([db, [name, parser]]) => {
                     if (db[0] === key && name) {
