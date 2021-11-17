@@ -7,6 +7,7 @@ test('Recuperação de senha', () => {
             id: faker.datatype.number(),
             lastModified: new Date(),
             reviewExpiration: faker.datatype.number(),
+            reviewRecuseExpiration: faker.datatype.number(),
         });
     }).not.toThrowError();
 });

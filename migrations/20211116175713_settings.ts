@@ -8,6 +8,7 @@ export async function up(knex: Knex): Promise<void> {
             table.increments('id').index().primary().notNullable().unique();
             table.dateTime('lastModified').notNullable().defaultTo(knex.fn.now());
             table.integer('reviewExpiration').notNullable();
+            table.integer('reviewRecuseExpiration').notNullable();
         });
     } catch (error: any) {
         await down(knex);

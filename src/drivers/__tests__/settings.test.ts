@@ -28,6 +28,7 @@ describe('Alertas', () => {
         const header = await authenticate(admin, api);
         const data = {
             reviewExpiration: 12,
+            reviewRecuseExpiration: faker.datatype.number(),
         };
         const response = await api.put('/settings/')
             .set('Authorization', header)

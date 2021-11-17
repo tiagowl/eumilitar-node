@@ -1,3 +1,4 @@
+import faker from 'faker';
 import { contextFactory } from '../../../tests/shortcuts';
 import SettingsController from '../controllers/SettingsController';
 
@@ -8,6 +9,7 @@ describe('Configurações do sistema', () => {
     test('Criação', async done => {
         const settings = await controller.updateOrCreate({
             reviewExpiration: 5,
+            reviewRecuseExpiration: faker.datatype.number(),
         });
         expect(typeof settings.id).toBe('number');
         expect(settings.reviewExpiration).toBe(5);

@@ -1,3 +1,4 @@
+import faker from "faker";
 import SettingsCase from "../SettingsCase"
 import getDb from "./repositories/database"
 import SettingsTestRepository from "./repositories/SettingsTestRepository"
@@ -10,6 +11,7 @@ describe('Teste nas configurações', () => {
     test('Criação ou atualização', async done => {
         const created = await useCase.updateOrCreate({
             reviewExpiration: 10,
+            reviewRecuseExpiration: faker.datatype.number(),
         });
         expect(typeof created.id).toBe('number');
         expect(created.reviewExpiration).toBe(10);
