@@ -28,5 +28,16 @@ describe('Teste nas avaliações', () => {
         expect(typeof created).toBe('object');
         expect(typeof created.id).toBe('number');
         done();
+    });
+    test('Gráfico', async done => {
+        const chart = await controller.resultChart({});
+        expect(chart).toBeInstanceOf(Array);
+        chart.forEach(({ key, value }) => {
+            expect(typeof key).toBe('string');
+            expect(typeof value).toBe('number');
+            expect(value).not.toBeNaN();
+        });
+        expect(chart.length).toBe(12);
+        done();
     })
 });

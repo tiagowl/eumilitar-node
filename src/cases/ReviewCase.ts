@@ -79,7 +79,7 @@ export default class ReviewCase {
         return Promise.all(Array.from({ length: months }, async (_, index) => {
             const current = start.getMonth() + index;
             const date = new Date(start.getFullYear(), current, 1);
-            const month = date.getMonth() + 1;
+            const month = date.getMonth();
             const year = date.getFullYear();
             const startDate = new Date(year, month, 1, 0, 0, 0);
             const endDate = new Date(year, month + 1, 0, 23, 59, 59);

@@ -1,4 +1,4 @@
-import ReviewCase, { ReviewCreation } from "../../cases/ReviewCase";
+import ReviewCase, { ReviewChartFilter, ReviewCreation } from "../../cases/ReviewCase";
 import Review from "../../entities/Review";
 import { Context } from "../interfaces";
 import ReviewRepository from "../models/ReviewRepository";
@@ -9,6 +9,17 @@ const schema = yup.object().shape({
     grade: yup.number().required('O campo "nota" é obrigatório').min(1).max(10),
     user: yup.number().required('O campo "usuário" é obrigatório'),
     description: yup.string(),
+});
+
+const chartSchema = yup.object().shape({
+    grade: yup.number().nullable().min(1).max(10),
+    user: yup.number().nullable(),
+    registrationDate: yup.date().nullable(),
+    period: yup.object({
+        start: yup.date().nullable(),
+        end: yup.date().nullable(),
+    }),
+    type: yup.string().nullable().is(['detractor', 'neutral', 'booster'])
 });
 
 export default class ReviewController extends Controller {
@@ -39,6 +50,16 @@ export default class ReviewController extends Controller {
         try {
             const can = await this.useCase.canSend(user);
             return { can };
+        } catch (error: any) {
+            throw await this.processError(error);
+        }
+    }
+
+    public async resultChart(filter: ReviewChartFilter) {
+        try {
+            const validated = await this.castFilter(filter, chartSchema);
+            const chart = await this.useCase.resultChart(validated);
+            return chart;
         } catch (error: any) {
             throw await this.processError(error);
         }
