@@ -26,7 +26,6 @@ export interface ReviewSettings {
 }
 
 export interface ReviewChartFilter extends Partial<ReviewInterface> {
-    type?: keyof typeof typeFilters;
     period?: {
         start?: Date;
         end?: Date;
@@ -37,9 +36,13 @@ type FilterTypes = 'detractor' | 'neutral' | 'booster';
 
 const typeFilters: { [s in FilterTypes]: ([keyof ReviewInterface, Operator, any])[] } = {
     detractor: [['grade', '>=', 1], ['grade', '<=', 6]],
-    neutral: [['grade', '<=', 7], ['grade', '<=', 8]],
+    neutral: [['grade', '>=', 7], ['grade', '<=', 8]],
     booster: [['grade', '>=', 9], ['grade', '<=', 10]],
 };
+
+export type ReviewResultChart = {
+    [s in FilterTypes]: number;
+} & { key: string };
 
 export default class ReviewCase {
     private readonly settings: SettingsCase;
@@ -69,32 +72,36 @@ export default class ReviewCase {
         });
     }
 
-    public async resultChart(filter: ReviewChartFilter) {
-        const { period = {}, type, ...params } = filter;
+    public async resultChart(filter: ReviewChartFilter): Promise<ReviewResultChart[]> {
+        const { period = {}, ...params } = filter;
         const now = new Date();
-        const defaultStart = new Date();
-        defaultStart.setMonth(now.getMonth() - 12);
+        const defaultStart = new Date(now.getFullYear(), now.getMonth() - 12);
         const { start = defaultStart, end = now } = period;
         const months = Math.round((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000));
         return Promise.all(Array.from({ length: months }, async (_, index) => {
-            const current = start.getMonth() + index;
-            const date = new Date(start.getFullYear(), current, 1);
+            const date = new Date(start.getFullYear(), start.getMonth() + index, 1);
             const month = date.getMonth();
             const year = date.getFullYear();
-            const startDate = new Date(year, month, 1, 0, 0, 0);
-            const endDate = new Date(year, month + 1, 0, 23, 59, 59);
-            const value = await this.repository.count({
-                ...params,
-                operation: [
-                    ['registrationDate', '>=', startDate],
-                    ['registrationDate', '<=', endDate],
-                    ...(!!type ? typeFilters[type] : []),
-                ],
-            });
+            const types = Object.entries(typeFilters) as [FilterTypes, [keyof ReviewInterface, Operator, any][]][];
+            const { detractor = 0, booster = 0, neutral = 0 } = await types.reduce(async (objPromise, [type, typeFilter]) => {
+                const obj = await objPromise;
+                const value = await this.repository.count({
+                    ...params,
+                    operation: [
+                        ['registrationDate', '>=', new Date(year, month, 1, 0, 0, 0)],
+                        ['registrationDate', '<=', new Date(year, month + 1, 0, 23, 59, 59)],
+                        ...typeFilter,
+                    ],
+                });
+                return { ...obj, [type]: value };
+            }, Promise.resolve({} as { [s in FilterTypes]: number }));
+            const total = (detractor + booster + neutral) || 1;
             return {
                 key: `${month + 1}-${year}`,
-                value,
-            };
+                detractor: detractor * 100 / total,
+                neutral: neutral * 100 / total,
+                booster: booster * 100 / total,
+            } as ReviewResultChart;
         }));
     }
 }

@@ -32,10 +32,14 @@ describe('Teste nas avaliações', () => {
     test('Gráfico', async done => {
         const chart = await controller.resultChart({});
         expect(chart).toBeInstanceOf(Array);
-        chart.forEach(({ key, value }) => {
+        chart.forEach(({ key, booster, detractor, neutral }) => {
             expect(typeof key).toBe('string');
-            expect(typeof value).toBe('number');
-            expect(value).not.toBeNaN();
+            expect(typeof booster).toBe('number');
+            expect(typeof neutral).toBe('number');
+            expect(typeof detractor).toBe('number');
+            expect(booster).not.toBeNaN();
+            expect(neutral).not.toBeNaN();
+            expect(detractor).not.toBeNaN();
         });
         expect(chart.length).toBe(12);
         done();
