@@ -122,20 +122,19 @@ export default function getDb() {
             error: faker.lorem.lines(1),
         },
     ];
-    const reviews = [
-        {
-            id: 20,
-            user: 10,
-            grade: 5,
-            registrationDate: new Date(),
-            description: faker.lorem.paragraph(19),
-        }
-    ]
+    const reviews = Array.from({ length: 50 }, (_, id) => ({
+        id,
+        user: faker.datatype.number(users.length),
+        grade: Math.floor(Math.random() * 10) + 1,
+        registrationDate: faker.date.past(),
+        description: faker.lorem.paragraph(19),
+    }));
     const settings: SettingsInterface[] = [
         {
             id: 1,
             lastModified: new Date(),
             reviewExpiration: 5,
+            reviewRecuseExpiration: 10,
         }
     ]
     return {

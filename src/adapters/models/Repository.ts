@@ -285,10 +285,7 @@ export default abstract class Repository<Model, Interface, Entity> {
             const filtered = await service as Model[];
             const users = await Promise.all(filtered.map(this.toEntity));
             if (!pagination) return users;
-            const counting = this.query;
-            await this.filtering(counting, filter);
-            const { count } = await counting.count('*', { as: 'count' }).first();
-            const counted = Number(count);
+            const counted = await this.count(filter);
             return {
                 page: users,
                 pages: Math.ceil(counted / (pagination.pageSize || 10)),
@@ -303,15 +300,24 @@ export default abstract class Repository<Model, Interface, Entity> {
 
     public async exists(filter: Filter<Interface>) {
         try {
-            const { pagination, search, operation = [], ...params } = filter;
-            const parsedFilter = await this.toDb(params as Partial<Interface>);
             const service = this.query;
             await this.filtering(service, filter);
-            await this.paginate(service, pagination as Pagination<Interface>);
-            const filtered = await service.where(parsedFilter).first();
+            const filtered = await service.first();
             return !!filtered;
         } catch (error: any) {
             throw await this.processError(error);
         }
     }
+
+    public async count(filter: Filter<Interface>) {
+        try {
+            const service = this.query;
+            await this.filtering(service, filter);
+            const { count } = await service.count('*', { as: 'count' }).first();
+            return Number(count || 0);
+        } catch (error: any) {
+            throw await this.processError(error);
+        }
+    }
+
 }

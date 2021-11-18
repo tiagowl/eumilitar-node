@@ -18,9 +18,7 @@ export default class ReviewController extends Controller {
     constructor(context: Context) {
         super(context);
         this.repository = new ReviewRepository(context);
-        this.useCase = new ReviewCase(this.repository, {
-            expiration: context.settings.reviewExpiration,
-        });
+        this.useCase = new ReviewCase(this.repository);
     }
 
     private async parseEntity(entity: Review) {
