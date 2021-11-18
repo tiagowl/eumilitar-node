@@ -45,5 +45,20 @@ describe('Alertas', () => {
             .set('Authorization', header);
         expect(response.body.can).toBeTruthy();
         done();
+    });
+    test('Gráfico', async done => {
+        const header = await authenticate(admin, api);
+        const { body, status } = await api.get('/reviews/charts/result/')
+            .set('Authorization', header);
+        expect(status, jp(body)).toBe(200);
+        expect(body).toBeInstanceOf(Array);
+        if (!(body instanceof Array)) throw new Error();
+        body.forEach(({ key, value }) => {
+            expect(typeof key).toBe('string');
+            expect(typeof value).toBe('number');
+            expect(value).not.toBeNaN();
+        });
+        expect(body.length).toBe(12);
+        done();
     })
 });

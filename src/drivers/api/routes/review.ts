@@ -1,7 +1,7 @@
 import { Router } from "express";
 import ReviewController from "../../../adapters/controllers/ReviewController";
 import { Context } from "../../interfaces";
-import { isAuthenticated } from "./tools";
+import { checkPermission, isAuthenticated } from "./tools";
 
 export default (context: Context) => {
     const controller = new ReviewController(context);
@@ -27,6 +27,16 @@ export default (context: Context) => {
                 res.status(201).json(created);
             } catch (error: any) {
                 res.status(error.status || 500).json(error);
+            } finally {
+                res.end();
+            }
+        })
+        .get('/reviews/charts/result/', checkPermission(context, ['admin']), async (req, res) => {
+            try {
+                const chart = await controller.resultChart(req.query);
+                res.json(chart).status(200);
+            } catch (error: any) {
+                res.json(error).status(error.status || 500);
             } finally {
                 res.end();
             }
