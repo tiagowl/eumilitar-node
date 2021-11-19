@@ -114,11 +114,11 @@ export default class ReviewCase {
             });
             return { ...obj, [type]: value };
         }, Promise.resolve({} as { [s in FilterTypes]: number }));
-        const total = (detractor + booster + neutral) || 1;
+        const total = (detractor + booster + neutral);
         return {
-            detractor: { percentage: detractor * 100 / total, total: detractor },
-            neutral: { percentage: neutral * 100 / total, total: neutral },
-            booster: { percentage: booster * 100 / total, total: booster },
+            detractor: { percentage: detractor * 100 / (total || 1), total: detractor },
+            neutral: { percentage: neutral * 100 / (total || 1), total: neutral },
+            booster: { percentage: booster * 100 / (total || 1), total: booster },
             total,
         };
     }
