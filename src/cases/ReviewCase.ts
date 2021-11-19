@@ -34,11 +34,13 @@ export interface ReviewChartFilter extends Partial<ReviewInterface> {
 
 type FilterTypes = 'detractor' | 'neutral' | 'booster';
 
-const typeFilters: { [s in FilterTypes]: ([keyof ReviewInterface, Operator, any])[] } = {
+export const typeFilters: Readonly<{ [s in FilterTypes]: ([keyof ReviewInterface, Operator, any])[] }> = Object.freeze({
     detractor: [['grade', '>=', 1], ['grade', '<=', 6]],
     neutral: [['grade', '>=', 7], ['grade', '<=', 8]],
     booster: [['grade', '>=', 9], ['grade', '<=', 10]],
-};
+});
+
+export const types = Object.freeze(Object.entries(typeFilters)) as Readonly<[FilterTypes, [keyof ReviewInterface, Operator, any][]][]>;
 
 export type ReviewResultChart = {
     [s in FilterTypes]: number;
@@ -75,33 +77,49 @@ export default class ReviewCase {
     public async resultChart(filter: ReviewChartFilter): Promise<ReviewResultChart[]> {
         const { period = {}, ...params } = filter;
         const now = new Date();
-        const defaultStart = new Date(now.getFullYear(), now.getMonth() - 12);
+        const defaultStart = new Date(now.getFullYear(), now.getMonth() - 11);
         const { start = defaultStart, end = now } = period;
         const months = Math.round((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000));
         return Promise.all(Array.from({ length: months }, async (_, index) => {
             const date = new Date(start.getFullYear(), start.getMonth() + index, 1);
             const month = date.getMonth();
             const year = date.getFullYear();
-            const types = Object.entries(typeFilters) as [FilterTypes, [keyof ReviewInterface, Operator, any][]][];
-            const { detractor = 0, booster = 0, neutral = 0 } = await types.reduce(async (objPromise, [type, typeFilter]) => {
-                const obj = await objPromise;
-                const value = await this.repository.count({
-                    ...params,
-                    operation: [
-                        ['registrationDate', '>=', new Date(year, month, 1, 0, 0, 0)],
-                        ['registrationDate', '<=', new Date(year, month + 1, 0, 23, 59, 59)],
-                        ...typeFilter,
-                    ],
-                });
-                return { ...obj, [type]: value };
-            }, Promise.resolve({} as { [s in FilterTypes]: number }));
-            const total = (detractor + booster + neutral) || 1;
+            const { detractor, booster, neutral } = await this.score({
+                ...params,
+                period: { start: new Date(year, month, 1, 0, 0, 0), end: new Date(year, month + 1, 0, 23, 59, 59) }
+            });
             return {
                 key: `${month + 1}-${year}`,
-                detractor: detractor * 100 / total,
-                neutral: neutral * 100 / total,
-                booster: booster * 100 / total,
+                detractor: detractor.percentage,
+                neutral: neutral.percentage,
+                booster: booster.percentage,
             } as ReviewResultChart;
         }));
+    }
+
+    public async score(filter: ReviewChartFilter) {
+        const { period = {}, ...params } = filter;
+        const now = new Date();
+        const defaultStart = new Date(now.getFullYear(), now.getMonth() - 12);
+        const { start = defaultStart, end = now } = period;
+        const { detractor = 0, booster = 0, neutral = 0 } = await types.reduce(async (objPromise, [type, typeFilter]) => {
+            const obj = await objPromise;
+            const value = await this.repository.count({
+                ...params,
+                operation: [
+                    ['registrationDate', '>=', start],
+                    ['registrationDate', '<=', end],
+                    ...typeFilter,
+                ],
+            });
+            return { ...obj, [type]: value };
+        }, Promise.resolve({} as { [s in FilterTypes]: number }));
+        const total = (detractor + booster + neutral) || 1;
+        return {
+            detractor: { percentage: detractor * 100 / total, total: detractor },
+            neutral: { percentage: neutral * 100 / total, total: neutral },
+            booster: { percentage: booster * 100 / total, total: booster },
+            total,
+        };
     }
 }

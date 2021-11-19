@@ -1,6 +1,6 @@
 import faker from "faker";
 import Review from "../../entities/Review";
-import ReviewCase from "../ReviewCase";
+import ReviewCase, { types } from "../ReviewCase";
 import getDb from "./repositories/database";
 import ReviewTestRepository from "./repositories/ReviewTestRepository";
 
@@ -33,6 +33,18 @@ describe("Testes nas avaliações", () => {
             expect(total === 100 || total === 0).toBeTruthy();
         });
         expect(chart.length).toBe(12);
+        done();
+    });
+    test('Score', async done => {
+        const score = await useCase.score({});
+        types.forEach(([key]) => {
+            ['percentage', 'total'].forEach((item) => {
+                // @ts-ignore
+                expect(typeof score[key][item]).toBe('number');
+                // @ts-ignore
+                expect(score[key][item]).not.toBeNaN();
+            })
+        })
         done();
     })
 })
