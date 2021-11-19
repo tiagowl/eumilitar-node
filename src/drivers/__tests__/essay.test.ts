@@ -1,11 +1,11 @@
 import faker from "faker";
 import supertest from "supertest";
 import { userFactory, db, saveUser, deleteUser, appFactory, jp, createEssay, contextFactory } from "../../../tests/shortcuts";
-import EssayThemeRepository, { EssayThemeService } from "../../adapters/models/EssayTheme";
-import ProductRepository from "../../adapters/models/Product";
-import SubscriptionRepository from "../../adapters/models/Subscription";
-import { UserModel, UserService } from "../../adapters/models/User";
-import { EssayThemeCreation } from "../../cases/EssayTheme";
+import EssayThemeRepository, { EssayThemeService } from "../../adapters/models/EssayThemeRepository";
+import ProductRepository from "../../adapters/models/ProductRepository";
+import SubscriptionRepository from "../../adapters/models/SubscriptionRepository";
+import { UserModel, UserService } from "../../adapters/models/UserRepository";
+import { EssayThemeCreation } from "../../cases/EssayThemeCase";
 import { Course } from "../../entities/EssayTheme";
 import { authenticate } from "./tools";
 

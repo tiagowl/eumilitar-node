@@ -1,7 +1,7 @@
 import faker from "faker";
 import supertest from "supertest";
 import { appFactory, contextFactory, jp, saveUser, userFactory } from "../../../tests/shortcuts";
-import { UserService } from "../../adapters/models/User";
+import { UserService } from "../../adapters/models/UserRepository";
 import { authenticate } from "./tools";
 
 const context = contextFactory();
@@ -36,11 +36,25 @@ describe('Alertas', () => {
             .send(data);
         expect(response.status, jp(response.body)).toBe(201);
         expect(typeof response.body.id, jp(response.body)).toBe('number');
-        expect(typeof response.body.user, jp(response.body)).toBe('number');
+        expect(typeof response.body.user.id, jp(response.body)).toBe('number');
         expect(typeof response.body.registrationDate).toBe('string');
         expect(response.body.event).toBe(data.event);
         expect(response.body.error).toBe(data.error);
         expect(response.body.details).toBe(data.details);
+        done();
+    })
+    test('listagem', async done => {
+        const header = await authenticate(admin, api);
+        const response = await api.get('/logs/')
+            .set('Authorization', header)
+            .query({
+                pagination: {
+                    page: 2
+                }
+            });
+        expect(response.body).not.toBeInstanceOf(Array);
+        expect(response.body.page).toBeInstanceOf(Array);
+        expect(response.body.page.length).toBeGreaterThanOrEqual(10);
         done();
     })
 });

@@ -1,6 +1,6 @@
 import faker from "faker";
 import Product, { ProductInterface } from "../../entities/Product";
-import ProductCase, { ProductRepositoryInterface, ProductCreation } from "../Product";
+import ProductCase, { ProductRepositoryInterface, ProductCreation } from "../ProductCase";
 import getDb from "./repositories/database";
 import ProductTestRepository from "./repositories/ProductTestRepository";
 

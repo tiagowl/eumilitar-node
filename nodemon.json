@@ -12,5 +12,5 @@
         "tests/*",
         "node_modules"
     ],
-    "exec": "yarn lint && tsc && node --inspect=0.0.0.0:9229 ./dist/index.js || exit 1"
+    "exec": "yarn lint && tsc --incremental && node --inspect=0.0.0.0:9229 ./dist/index.js || exit 1"
 }

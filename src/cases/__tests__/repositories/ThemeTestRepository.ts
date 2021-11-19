@@ -1,5 +1,5 @@
 import EssayTheme, { EssayThemeInterface } from "../../../entities/EssayTheme";
-import { EssayThemeRepositoryInterface, EssayThemeCreation, EssayThemeFilter, EssayThemeData } from "../../EssayTheme";
+import { EssayThemeRepositoryInterface, EssayThemeCreation, EssayThemeFilter, EssayThemeData } from "../../EssayThemeCase";
 import { FakeDB } from "./database";
 import TestRepository from "./TestRepository";
 

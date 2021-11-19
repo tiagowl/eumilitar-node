@@ -1,8 +1,8 @@
 import faker from "faker";
 import supertest from "supertest";
 import { userFactory, db, saveUser, deleteUser, appFactory, jp } from "../../../tests/shortcuts";
-import { EssayThemeService } from "../../adapters/models/EssayTheme";
-import { UserModel, UserService } from "../../adapters/models/User";
+import { EssayThemeService } from "../../adapters/models/EssayThemeRepository";
+import { UserModel, UserService } from "../../adapters/models/UserRepository";
 import { authenticate } from "./tools";
 
 

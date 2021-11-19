@@ -1,7 +1,7 @@
 import Subscription, { SubscriptionInterface } from "../../../entities/Subscription";
-import { ProductRepositoryInterface } from "../../Product";
-import { SubscriptionRepositoryInterface, SubscriptionInsertionInterface } from "../../Subscription";
-import { UserRepositoryInterface } from "../../User";
+import { ProductRepositoryInterface } from "../../ProductCase";
+import { SubscriptionRepositoryInterface, SubscriptionInsertionInterface } from "../../SubscriptionCase";
+import { UserRepositoryInterface } from "../../UserCase";
 import { FakeDB } from "./database";
 import ProductTestRepository from "./ProductTestRepository";
 import TestRepository from "./TestRepository";

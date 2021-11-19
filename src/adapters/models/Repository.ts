@@ -47,13 +47,14 @@ export default abstract class Repository<Model, Interface, Entity> {
             return this.#selector as string;
         } catch (error: any) {
             this.logger.error(error);
+            if (error.status) throw error;
             throw { message: 'Erro ao conectar com o banco de dados', status: 500 };
         }
     }
 
     protected async processError(error: any) {
         this.logger.error(error);
-        throw { message: 'Erro ao acessar banco de dados', status: 500 };
+        return { message: 'Erro ao acessar banco de dados', status: 500 };
     }
 
     protected async authHotmart() {
@@ -83,11 +84,11 @@ export default abstract class Repository<Model, Interface, Entity> {
         }
     }
 
-    protected async getDbField(field: keyof Interface): Promise<keyof Model> {
+    protected getDbField = async (field: keyof Interface): Promise<keyof Model> => {
         return this.getDbFieldSync(field);
     }
 
-    protected getDbFieldSync(field: keyof Interface): keyof Model {
+    protected readonly getDbFieldSync = (field: keyof Interface): keyof Model => {
         const parsed = this.fieldsMap.find(([_, [key]]) => key === field);
         const error = { message: `Campo "${field}" não encontrado`, status: 400 };
         if (!parsed) throw error;
@@ -98,37 +99,93 @@ export default abstract class Repository<Model, Interface, Entity> {
 
     protected async paginate(service: Knex.QueryBuilder<Partial<Model>, Model[]>, pagination?: Pagination<Interface> | undefined) {
         if (!!pagination) {
-            const { page = 1, pageSize = 10, ordering } = pagination;
+            const { page = 1, pageSize = 10, ordering, direction = 'asc' } = pagination;
             service.offset(((page - 1) * (pageSize)))
                 .limit(pageSize);
-            if (!!ordering) service.orderBy(await this.getDbField(ordering));
+            if (!!ordering) service.orderBy(await this.getDbField(ordering), direction);
         }
     }
 
-    protected async search(service: Knex.QueryBuilder<Partial<Model>, Model[]>, search?: string) {
-        if (!!search) {
-            const { searchFields } = this;
-            await Promise.all(searchFields.map(async (field) => {
-                service.orWhere(field as string, 'like', `%${search}%`);
-            }));
-            const terms = search.split(' ');
-            if (terms.length > 1) {
-                service.orWhere(function () {
-                    terms.forEach(val => {
-                        this.andWhere(async function () {
-                            await Promise.all(searchFields.map(async (field) => {
-                                this.orWhere(field as string, 'like', `%${val}%`);
-                            }));
-                        });
+    protected async search(service: Knex.QueryBuilder<Partial<Model>, Model[]>, search?: string, fields?: string[]) {
+        if (!search) return;
+        const searchFields = fields || this.searchFields;
+        await Promise.all(searchFields.map(async (field: string | keyof Model) => {
+            service.orWhere(field as string, 'like', `%${search}%`);
+        }));
+        const terms = search.split(' ');
+        if (terms.length > 1) {
+            service.orWhere(function () {
+                terms.forEach(val => {
+                    this.andWhere(async function () {
+                        await Promise.all(searchFields.map(async (field: string | keyof Model) => {
+                            this.orWhere(field as string, 'like', `%${val}%`);
+                        }));
                     });
                 });
-            }
+            });
         }
     }
 
-    public async toDb(filter: Partial<Interface>): Promise<Partial<Model>> {
+    protected async filtering(query: Knex.QueryBuilder<Partial<Model>, Model[]>, filter: Filter<Interface>) {
+        const { pagination, search, operation = [], ...params } = filter;
+        await this.search(query, search);
+        query.andWhere((filtering) => {
+            operation.forEach((field) => {
+                if (field instanceof Array) {
+                    const [key, operator, value] = field;
+                    const model = this.toDbSync({ [key]: value } as Partial<Interface>);
+                    const [[modelKey, val]] = Object.entries(model);
+                    filtering.andWhere(modelKey as any, operator, val as any);
+                } else {
+                    const model = this.toDbSync(field);
+                    filtering.orWhere(model);
+                }
+            });
+        });
+        const parsed = await this.toDb(params as Partial<Interface>);
+        query.where(parsed);
+    }
+
+    public readonly toDb = async (entity: Partial<Interface>): Promise<Partial<Model>> => {
         try {
-            const args = Object.entries(filter);
+            const args = Object.entries(entity);
+            return await args.reduce(async (modelPromise, [entityField, value]: [string, any]) => {
+                const model = await modelPromise;
+                await Promise.all(this.fieldsMap.map(async ([[fieldName, parser], [field]]) => {
+                    if (field === entityField && fieldName) model[fieldName] = parser(value);
+                }));
+                return model;
+            }, Promise.resolve({}) as Promise<Partial<Model>>);
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao processar dados', status: 500 };
+        }
+    }
+
+    public readonly toEntity = async (model: Model): Promise<Entity> => {
+        try {
+            const fields: [keyof Model, any][] = Object.entries(model) as [keyof Model, any][];
+            const entity = await fields.reduce(async (objPromise, [key, value]) => {
+                const obj = await objPromise;
+                this.fieldsMap.forEach(([[dbField], [name, parser]]) => {
+                    if (dbField === key && name) {
+                        obj[name] = parser(value) as never;
+                    }
+                });
+                return obj;
+            }, Promise.resolve({}) as Promise<Interface>);
+            return new this.entity(entity);
+        } catch (error: any) {
+            this.logger.error(error);
+            if (error.status) throw error;
+            throw { message: 'Erro ao processar dados', status: 500 };
+        }
+    }
+
+    public readonly toDbSync = (entity: Partial<Interface>): Partial<Model> => {
+        try {
+            const args = Object.entries(entity);
             return args.reduce((model, [entityField, value]: [string, any]) => {
                 this.fieldsMap.forEach(([[fieldName, parser], [field]]) => {
                     if (field === entityField && fieldName) model[fieldName] = parser(value);
@@ -142,9 +199,9 @@ export default abstract class Repository<Model, Interface, Entity> {
         }
     }
 
-    public async toEntity(user: Model): Promise<Entity> {
+    public readonly toEntitySync = (model: Model): Entity => {
         try {
-            const fields: [keyof Model, any][] = Object.entries(user) as [keyof Model, any][];
+            const fields: [keyof Model, any][] = Object.entries(model) as [keyof Model, any][];
             const entity = fields.reduce((obj, [key, value]) => {
                 this.fieldsMap.forEach(([db, [name, parser]]) => {
                     if (db[0] === key && name) {
@@ -210,7 +267,7 @@ export default abstract class Repository<Model, Interface, Entity> {
             const parsed = await this.toDb(data);
             const [id] = await this.query.insert(parsed as any);
             const recovered = await this.query.where(this.selector, id).first();
-            if (!recovered) throw new Error('Erro ao salvar no banco de dados');
+            if (!recovered) throw new Error();
             return await this.toEntity(recovered);
         } catch (error: any) {
             this.logger.error(error);
@@ -221,20 +278,14 @@ export default abstract class Repository<Model, Interface, Entity> {
 
     public async filter(filter: Filter<Interface>): Promise<Paginated<Entity> | Entity[]> {
         try {
-            const { pagination, search, ...params } = filter;
-            const parsedFilter = await this.toDb(params as Partial<Interface>);
+            const { pagination } = filter;
             const service = this.query;
+            await this.filtering(service, filter);
             await this.paginate(service, pagination as Pagination<Interface>);
-            await this.search(service, search);
-            const filtered = await service.where(parsedFilter) as Model[];
-            const users = await Promise.all(filtered.map(async (data: Model) => {
-                return this.toEntity(data as Model);
-            }));
+            const filtered = await service as Model[];
+            const users = await Promise.all(filtered.map(this.toEntity));
             if (!pagination) return users;
-            const counting = this.query;
-            await this.search(counting, search);
-            const { count } = await counting.where(parsedFilter).count('*', { as: 'count' }).first();
-            const counted = Number(count);
+            const counted = await this.count(filter);
             return {
                 page: users,
                 pages: Math.ceil(counted / (pagination.pageSize || 10)),
@@ -246,4 +297,27 @@ export default abstract class Repository<Model, Interface, Entity> {
             throw { message: 'Erro ao constultar banco de dados', status: 500 };
         }
     }
+
+    public async exists(filter: Filter<Interface>) {
+        try {
+            const service = this.query;
+            await this.filtering(service, filter);
+            const filtered = await service.first();
+            return !!filtered;
+        } catch (error: any) {
+            throw await this.processError(error);
+        }
+    }
+
+    public async count(filter: Filter<Interface>) {
+        try {
+            const service = this.query;
+            await this.filtering(service, filter);
+            const { count } = await service.count('*', { as: 'count' }).first();
+            return Number(count || 0);
+        } catch (error: any) {
+            throw await this.processError(error);
+        }
+    }
+
 }

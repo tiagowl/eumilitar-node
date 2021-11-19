@@ -1,18 +1,18 @@
 import faker from "faker";
 import { Readable } from "stream";
 import { userFactory, db, saveUser, deleteUser, createEssay, contextFactory, jp } from "../../../tests/shortcuts";
-import { EssayInvalidationCreationData } from "../../cases/EssayInvalidation";
-import { EssayThemeCreation } from "../../cases/EssayTheme";
+import { EssayInvalidationCreationData } from "../../cases/EssayInvalidationCase";
+import { EssayThemeCreation } from "../../cases/EssayThemeCase";
 import { Course } from "../../entities/EssayTheme";
 import User from "../../entities/User";
-import EssayController, { EssayInput } from "../controllers/Essay";
-import EssayInvalidationController from "../controllers/EssayInvalidation";
-import SingleEssayController from "../controllers/SingleEssay";
-import { EssayService } from "../models/Essay";
-import EssayThemeRepository, { EssayThemeService } from "../models/EssayTheme";
-import ProductRepository from "../models/Product";
-import SubscriptionRepository from "../models/Subscription";
-import UserRepository, { UserService } from "../models/User";
+import EssayController, { EssayInput } from "../controllers/EssayController";
+import EssayInvalidationController from "../controllers/EssayInvalidationController";
+import SingleEssayController from "../controllers/SingleEssayController";
+import { EssayService } from "../models/EssayRepository";
+import EssayThemeRepository, { EssayThemeService } from "../models/EssayThemeRepository";
+import ProductRepository from "../models/ProductRepository";
+import SubscriptionRepository from "../models/SubscriptionRepository";
+import UserRepository, { UserService } from "../models/UserRepository";
 
 const context = contextFactory();
 

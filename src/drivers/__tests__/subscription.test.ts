@@ -2,9 +2,9 @@ import faker from "faker";
 import qs from "qs";
 import supertest from "supertest";
 import { userFactory, db, saveUser, appFactory, hottok, jp, contextFactory } from "../../../tests/shortcuts";
-import ProductRepository from "../../adapters/models/Product";
-import SubscriptionRepository, { SubscriptionService } from "../../adapters/models/Subscription";
-import UserRepository, { UserModel, UserService } from "../../adapters/models/User";
+import ProductRepository from "../../adapters/models/ProductRepository";
+import SubscriptionRepository, { SubscriptionService } from "../../adapters/models/SubscriptionRepository";
+import UserRepository, { UserModel, UserService } from "../../adapters/models/UserRepository";
 import Subscription from "../../entities/Subscription";
 import { authenticate } from "./tools";
 

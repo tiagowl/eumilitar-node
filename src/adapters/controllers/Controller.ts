@@ -3,6 +3,7 @@ import * as yup from "yup";
 import { Logger } from "winston";
 import { Context } from "../interfaces";
 import _ from 'lodash';
+import CaseError, { Errors } from "../../cases/ErrorCase";
 
 export interface ResponseError {
     message?: string;
@@ -13,6 +14,7 @@ export const paginationSchema = yup.object().shape({
     page: yup.string(),
     pageSize: yup.string(),
     ordering: yup.string(),
+    direction: yup.string().notRequired().is(['asc', 'desc']),
 }).noUnknown();
 
 export default abstract class Controller {
@@ -67,6 +69,14 @@ export default abstract class Controller {
             }
             throw { message: 'Erro ao validar dados', status: 500 };
         }
+    }
+
+    protected async processError(error: any) {
+        this.logger.error(error);
+        if (error instanceof CaseError) {
+            if (error.code === Errors.NOT_FOUND) return { message: error.message, status: 404 };
+        }
+        return { message: error.message || 'Erro interno', status: 500 };
     }
 
 }

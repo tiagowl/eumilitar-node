@@ -1,6 +1,6 @@
 import faker from "faker";
 import EssayTheme, { Course } from "../../entities/EssayTheme";
-import EssayThemeCase, { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeRepositoryInterface } from "../EssayTheme";
+import EssayThemeCase, { EssayThemeCreation, EssayThemeData, EssayThemeFilter, EssayThemeRepositoryInterface } from "../EssayThemeCase";
 import getDb from "./repositories/database";
 import EssayThemeTestRepository from "./repositories/ThemeTestRepository";
 

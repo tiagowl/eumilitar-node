@@ -1,6 +1,6 @@
 import { SessionInterface } from "../../entities/Session";
 import SingleEssay, { SingleEssayInterface } from "../../entities/SingleEssay";
-import SingleEssayCase, { SingleEssayInsertionInterface, SingleEssayRepositoryInterface } from "../SingleEssay";
+import SingleEssayCase, { SingleEssayInsertionInterface, SingleEssayRepositoryInterface } from "../SingleEssayCase";
 import getDb from "./repositories/database";
 import SingleEssayTestRepository from "./repositories/SingleTestRepository";
 

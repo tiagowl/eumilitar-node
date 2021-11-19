@@ -1,6 +1,6 @@
 import getContext from '../context';
 import settings from '../../settings';
-import SubscriptionController from '../../adapters/controllers/Subscription';
+import SubscriptionController from '../../adapters/controllers/SubscriptionController';
 
 const context = getContext(settings);
 const controller = new SubscriptionController(context);

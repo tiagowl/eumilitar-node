@@ -1,10 +1,10 @@
 import faker from "faker";
 import { contextFactory, db } from "../../../tests/shortcuts";
-import { EssayThemeCreation } from "../../cases/EssayTheme";
+import { EssayThemeCreation } from "../../cases/EssayThemeCase";
 import { Course } from "../../entities/EssayTheme";
-import SingleEssayController from "../controllers/SingleEssay";
-import EssayThemeRepository, { EssayThemeService } from "../models/EssayTheme";
-import { UserService } from "../models/User";
+import SingleEssayController from "../controllers/SingleEssayController";
+import EssayThemeRepository, { EssayThemeService } from "../models/EssayThemeRepository";
+import { UserService } from "../models/UserRepository";
 
 const context = contextFactory();
 

@@ -2,8 +2,8 @@ import faker from "faker";
 import Session from "../../entities/Session";
 import { SessionInterface } from "../../entities/Session";
 import User from "../../entities/User";
-import SessionCase, { SessionRepositoryInterface, SessionInsertionInterface } from "../Session";
-import { UserRepositoryInterface } from "../User";
+import SessionCase, { SessionRepositoryInterface, SessionInsertionInterface } from "../SessionCase";
+import { UserRepositoryInterface } from "../UserCase";
 import getDb, { defaultPassword } from "./repositories/database";
 import SessionTestRepository from "./repositories/SessionTestRepository";
 

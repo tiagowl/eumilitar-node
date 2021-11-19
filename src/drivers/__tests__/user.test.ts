@@ -2,10 +2,10 @@ import faker from "faker";
 import supertest from "supertest";
 import { v4 } from "uuid";
 import { userFactory, db, saveUser, deleteUser, appFactory, jp, generateConfirmationToken, saveConfirmationToken } from "../../../tests/shortcuts";
-import { EssayThemeService } from "../../adapters/models/EssayTheme";
-import { RecoveryService } from "../../adapters/models/Recovery";
-import { UserService } from "../../adapters/models/User";
-import { UserUpdate } from "../../cases/User";
+import { EssayThemeService } from "../../adapters/models/EssayThemeRepository";
+import { RecoveryService } from "../../adapters/models/RecoveryRepository";
+import { UserService } from "../../adapters/models/UserRepository";
+import { UserUpdate } from "../../cases/UserCase";
 import { authenticate } from "./tools";
 import crypto from "crypto";
 

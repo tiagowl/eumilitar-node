@@ -1,10 +1,10 @@
 import faker from "faker";
 import { userFactory, db, saveUser, hottok, mails, contextFactory } from "../../../tests/shortcuts";
 import { Paginated } from "../../cases/interfaces";
-import SubscriptionController from "../controllers/Subscription";
-import ProductRepository from "../models/Product";
-import { SubscriptionService } from "../models/Subscription";
-import { UserService } from "../models/User";
+import SubscriptionController from "../controllers/SubscriptionController";
+import ProductRepository from "../models/ProductRepository";
+import { SubscriptionService } from "../models/SubscriptionRepository";
+import { UserService } from "../models/UserRepository";
 
 const context = contextFactory();
 

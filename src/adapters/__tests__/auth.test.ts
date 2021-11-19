@@ -1,12 +1,12 @@
 import faker from "faker";
 import { v4 } from "uuid";
 import { userFactory, db, saveUser, deleteUser, generateConfirmationToken, saveConfirmationToken, contextFactory } from "../../../tests/shortcuts";
-import RecoveryController from "../controllers/Recovery";
-import SessionController from "../controllers/Session";
-import { EssayThemeService } from "../models/EssayTheme";
-import { RecoveryService } from "../models/Recovery";
-import { SessionService } from "../models/Session";
-import { UserService } from "../models/User";
+import RecoveryController from "../controllers/RecoveryController";
+import SessionController from "../controllers/SessionController";
+import { EssayThemeService } from "../models/EssayThemeRepository";
+import { RecoveryService } from "../models/RecoveryRepository";
+import { SessionService } from "../models/SessionRepository";
+import { UserService } from "../models/UserRepository";
 import crypto from 'crypto';
 
 const context = contextFactory();

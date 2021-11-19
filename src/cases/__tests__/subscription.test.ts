@@ -1,8 +1,8 @@
 import faker from "faker";
 import Subscription, { SubscriptionInterface } from "../../entities/Subscription";
-import { ProductRepositoryInterface } from "../Product";
-import SubscriptionCase, { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from "../Subscription";
-import { UserRepositoryInterface } from "../User";
+import { ProductRepositoryInterface } from "../ProductCase";
+import SubscriptionCase, { SubscriptionInsertionInterface, SubscriptionRepositoryInterface } from "../SubscriptionCase";
+import { UserRepositoryInterface } from "../UserCase";
 import getDb from "./repositories/database";
 import SubscriptionTestRepository from "./repositories/SubscriptionTestRepository";
 

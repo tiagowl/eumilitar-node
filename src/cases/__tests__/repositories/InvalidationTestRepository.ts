@@ -1,6 +1,6 @@
 import EssayInvalidation, { EssayInvalidationInterface } from "../../../entities/EssayInvalidation";
-import { EssayRepositoryInterface, EssayInvalidationData } from "../../Essay";
-import { EssayInvalidationRepositoryInterface } from "../../EssayInvalidation";
+import { EssayRepositoryInterface, EssayInvalidationData } from "../../EssayCase";
+import { EssayInvalidationRepositoryInterface } from "../../EssayInvalidationCase";
 import { FakeDB } from "./database";
 import EssayTestRepository from "./EssayTestRepository";
 import TestRepository from "./TestRepository";

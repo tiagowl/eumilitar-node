@@ -5,13 +5,14 @@ import { CorrectionInterface } from "../../../entities/Correction";
 import { EssayInterface } from "../../../entities/Essay";
 import { EssayInvalidationInterface } from "../../../entities/EssayInvalidation";
 import { Course, EssayThemeInterface } from "../../../entities/EssayTheme";
-import Log from "../../../entities/Log";
+import { LogInterface } from "../../../entities/Log";
 import { ProductInterface } from "../../../entities/Product";
 import { RecoveryInterface } from "../../../entities/Recovery";
 import { SessionInterface } from "../../../entities/Session";
+import { SettingsInterface } from "../../../entities/Settings";
 import { SingleEssayInterface } from "../../../entities/SingleEssay";
 import { SubscriptionInterface } from "../../../entities/Subscription";
-import Warning from "../../../entities/Warning";
+import { WarningInterface } from "../../../entities/Warning";
 
 export type FakeDB = ReturnType<typeof getDb>;
 
@@ -102,15 +103,15 @@ export default function getDb() {
         loginTime: new Date(),
         agent: faker.internet.userAgent(),
     }) as SessionInterface);
-    const warnings = [new Warning({
+    const warnings: WarningInterface[] = [{
         id: 0,
         title: 'Alerta de teste',
         message: faker.lorem.paragraph(3),
         lastModified: new Date(),
         active: true,
-    })];
-    const logs = [
-        new Log({
+    }];
+    const logs: LogInterface[] = [
+        {
             id: faker.datatype.number(),
             user: faker.datatype.number(),
             registrationDate: new Date(),
@@ -119,8 +120,23 @@ export default function getDb() {
             event: 'login',
             details: faker.lorem.lines(4),
             error: faker.lorem.lines(1),
-        }),
+        },
     ];
+    const reviews = Array.from({ length: 50 }, (_, id) => ({
+        id,
+        user: faker.datatype.number(users.length),
+        grade: Math.floor(Math.random() * 10) + 1,
+        registrationDate: faker.date.past(),
+        description: faker.lorem.paragraph(19),
+    }));
+    const settings: SettingsInterface[] = [
+        {
+            id: 1,
+            lastModified: new Date(),
+            reviewExpiration: 5,
+            reviewRecuseExpiration: 10,
+        }
+    ]
     return {
         users,
         essayThemes,
@@ -134,5 +150,7 @@ export default function getDb() {
         sessions,
         warnings,
         logs,
+        reviews,
+        settings,
     };
 }

@@ -1,7 +1,7 @@
 import { Context } from "../../interfaces";
 import { Router } from 'express';
 import { checkPermission } from "./tools";
-import ProductController from "../../../adapters/controllers/Products";
+import ProductController from "../../../adapters/controllers/ProductsController";
 
 export default (context: Context) => {
     const controller = new ProductController(context);

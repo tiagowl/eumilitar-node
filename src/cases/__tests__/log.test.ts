@@ -1,6 +1,6 @@
 import faker from "faker";
 import Log from "../../entities/Log";
-import LogCase from "../Log"
+import LogCase from "../LogCase"
 import getDb from "./repositories/database"
 import LogTestRepository from "./repositories/LogTestRepository"
 
@@ -18,6 +18,11 @@ describe('logs', () => {
             error: faker.lorem.lines(1),
         });
         expect(created).toBeInstanceOf(Log);
+        done();
+    });
+    test('listagem', async done => {
+        const list = await useCase.filter({});
+        expect(list).toBeInstanceOf(Array);
         done();
     });
 });

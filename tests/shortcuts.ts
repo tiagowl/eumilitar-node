@@ -4,14 +4,14 @@ import bcrypt from 'bcrypt';
 import settings from '../src/settings';
 import { Mail, MailData } from '../src/adapters/interfaces';
 import crypto from 'crypto';
-import { RecoveryService } from '../src/adapters/models/Recovery';
+import { RecoveryService } from '../src/adapters/models/RecoveryRepository';
 import User, { UserData, UserInterface } from '../src/entities/User';
 import createStorage from '../src/drivers/context/storage';
 import Application from '../src/drivers/api';
-import { UserModel } from '../src/adapters/models/User';
-import { EssayRepository } from '../src/adapters/models/Essay';
-import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayTheme';
-import { EssayThemeCreation } from '../src/cases/EssayTheme';
+import { UserModel } from '../src/adapters/models/UserRepository';
+import { EssayRepository } from '../src/adapters/models/EssayRepository';
+import EssayThemeRepository, { EssayThemeService } from '../src/adapters/models/EssayThemeRepository';
+import { EssayThemeCreation } from '../src/cases/EssayThemeCase';
 import { Course, EssayThemeInterface } from '../src/entities/EssayTheme';
 import createLogger from '../src/drivers/context/logger';
 import { Context } from '../src/drivers/interfaces';
@@ -66,10 +66,6 @@ export const dbSetting: Knex.Config = {
     },
     pool: { min: 0, max: 5 },
     acquireConnectionTimeout: 10000
-}
-
-export const dbFactory = () => {
-    return knex(dbSetting);
 }
 
 export function hashPassword(password: string) {
@@ -149,7 +145,7 @@ export async function createEssay(context: Context, student: number, inject: Par
     }, inject));
 }
 
-export const db = dbFactory();
+export const db = knex(dbSetting);
 export const hottok = faker.datatype.string();
 
 export function contextFactory(inject = {}): Context {

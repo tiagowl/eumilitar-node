@@ -1,6 +1,6 @@
 import Warning, { WarningInterface } from "../../../entities/Warning";
 import TestRepository from "./TestRepository";
-import { WarningRepositoryInterface } from '../../Warning';
+import { WarningRepositoryInterface } from '../../WarningCase';
 import { FakeDB } from "./database";
 
 
