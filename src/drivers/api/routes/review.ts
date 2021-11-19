@@ -40,5 +40,15 @@ export default (context: Context) => {
             } finally {
                 res.end();
             }
+        })
+        .get('/reviews/score/', checkPermission(context, ['admin']), async (req, res) => {
+            try {
+                const score = await controller.score(req.query);
+                res.json(score).status(200);
+            } catch (error: any) {
+                res.json(error).status(error.status || 500);
+            } finally {
+                res.end();
+            }
         });
 };

@@ -2,6 +2,7 @@ import faker from "faker";
 import supertest from "supertest";
 import { appFactory, contextFactory, jp, saveUser, userFactory } from "../../../tests/shortcuts";
 import { UserService } from "../../adapters/models/UserRepository";
+import { types } from "../../cases/ReviewCase";
 import { authenticate } from "./tools";
 
 const context = contextFactory();
@@ -63,6 +64,21 @@ describe('Alertas', () => {
             expect(detractor).not.toBeNaN();
         });
         expect(body.length).toBe(12);
+        done();
+    })
+    test('Score', async done => {
+        const header = await authenticate(admin, api);
+        const { body, status } = await api.get('/reviews/score/')
+            .set('Authorization', header);
+        expect(status, jp(body)).toBe(200);
+        types.forEach(([key]) => {
+            ['percentage', 'total'].forEach((item) => {
+                // @ts-ignore
+                expect(typeof body[key][item]).toBe('number');
+                // @ts-ignore
+                expect(body[key][item]).not.toBeNaN();
+            })
+        })
         done();
     })
 });
