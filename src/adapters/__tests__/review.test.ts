@@ -33,13 +33,13 @@ describe('Teste nas avaliações', () => {
     test('Gráfico', async done => {
         const chart = await controller.resultChart({});
         expect(chart).toBeInstanceOf(Array);
-        chart.forEach(({ key, booster, detractor, neutral }) => {
+        chart.forEach(({ key, promoter, detractor, passive }) => {
             expect(typeof key).toBe('string');
-            expect(typeof booster).toBe('number');
-            expect(typeof neutral).toBe('number');
+            expect(typeof promoter).toBe('number');
+            expect(typeof passive).toBe('number');
             expect(typeof detractor).toBe('number');
-            expect(booster).not.toBeNaN();
-            expect(neutral).not.toBeNaN();
+            expect(promoter).not.toBeNaN();
+            expect(passive).not.toBeNaN();
             expect(detractor).not.toBeNaN();
         });
         expect(chart.length).toBe(12);

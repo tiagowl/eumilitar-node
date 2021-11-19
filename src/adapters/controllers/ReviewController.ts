@@ -19,7 +19,7 @@ const chartSchema = yup.object().shape({
         start: yup.date().nullable(),
         end: yup.date().nullable(),
     }),
-    type: yup.string().nullable().is(['detractor', 'neutral', 'booster'])
+    type: yup.string().nullable().is(['detractor', 'passive', 'promoter'])
 });
 
 export default class ReviewController extends Controller {

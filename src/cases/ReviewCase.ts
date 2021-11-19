@@ -32,12 +32,12 @@ export interface ReviewChartFilter extends Partial<ReviewInterface> {
     };
 }
 
-type FilterTypes = 'detractor' | 'neutral' | 'booster';
+type FilterTypes = 'detractor' | 'passive' | 'promoter';
 
 export const typeFilters: Readonly<{ [s in FilterTypes]: ([keyof ReviewInterface, Operator, any])[] }> = Object.freeze({
     detractor: [['grade', '>=', 1], ['grade', '<=', 6]],
-    neutral: [['grade', '>=', 7], ['grade', '<=', 8]],
-    booster: [['grade', '>=', 9], ['grade', '<=', 10]],
+    passive: [['grade', '>=', 7], ['grade', '<=', 8]],
+    promoter: [['grade', '>=', 9], ['grade', '<=', 10]],
 });
 
 export const types = Object.freeze(Object.entries(typeFilters)) as Readonly<[FilterTypes, [keyof ReviewInterface, Operator, any][]][]>;
@@ -84,15 +84,15 @@ export default class ReviewCase {
             const date = new Date(start.getFullYear(), start.getMonth() + index, 1);
             const month = date.getMonth();
             const year = date.getFullYear();
-            const { detractor, booster, neutral } = await this.score({
+            const { detractor, promoter, passive } = await this.score({
                 ...params,
                 period: { start: new Date(year, month, 1, 0, 0, 0), end: new Date(year, month + 1, 0, 23, 59, 59) }
             });
             return {
                 key: `${month + 1}-${year}`,
                 detractor: detractor.percentage,
-                neutral: neutral.percentage,
-                booster: booster.percentage,
+                passive: passive.percentage,
+                promoter: promoter.percentage,
             } as ReviewResultChart;
         }));
     }
@@ -102,7 +102,7 @@ export default class ReviewCase {
         const now = new Date();
         const defaultStart = new Date(now.getFullYear(), now.getMonth() - 12);
         const { start = defaultStart, end = now } = period;
-        const { detractor = 0, booster = 0, neutral = 0 } = await types.reduce(async (objPromise, [type, typeFilter]) => {
+        const { detractor = 0, promoter = 0, passive = 0 } = await types.reduce(async (objPromise, [type, typeFilter]) => {
             const obj = await objPromise;
             const value = await this.repository.count({
                 ...params,
@@ -114,11 +114,11 @@ export default class ReviewCase {
             });
             return { ...obj, [type]: value };
         }, Promise.resolve({} as { [s in FilterTypes]: number }));
-        const total = (detractor + booster + neutral);
+        const total = (detractor + promoter + passive);
         return {
             detractor: { percentage: detractor * 100 / (total || 1), total: detractor },
-            neutral: { percentage: neutral * 100 / (total || 1), total: neutral },
-            booster: { percentage: booster * 100 / (total || 1), total: booster },
+            passive: { percentage: passive * 100 / (total || 1), total: passive },
+            promoter: { percentage: promoter * 100 / (total || 1), total: promoter },
             total,
         };
     }
