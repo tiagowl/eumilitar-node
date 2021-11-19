@@ -64,4 +64,14 @@ export default class ReviewController extends Controller {
             throw await this.processError(error);
         }
     }
+
+    public async score(filter: ReviewChartFilter) {
+        try {
+            const validated = await this.castFilter(filter, chartSchema);
+            const score = await this.useCase.score(validated);
+            return score;
+        } catch (error: any) {
+            throw await this.processError(error);
+        }
+    }
 }

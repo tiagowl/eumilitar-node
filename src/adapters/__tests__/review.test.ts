@@ -1,5 +1,6 @@
 import faker from "faker";
 import { contextFactory, userFactory } from "../../../tests/shortcuts";
+import { types } from "../../cases/ReviewCase";
 import User from "../../entities/User";
 import ReviewController from '../controllers/ReviewController';
 import UserController from "../controllers/UserController";
@@ -42,6 +43,18 @@ describe('Teste nas avaliações', () => {
             expect(detractor).not.toBeNaN();
         });
         expect(chart.length).toBe(12);
+        done();
+    })
+    test('Score', async done => {
+        const score = await controller.score({});
+        types.forEach(([key]) => {
+            ['percentage', 'total'].forEach((item) => {
+                // @ts-ignore
+                expect(typeof score[key][item]).toBe('number');
+                // @ts-ignore
+                expect(score[key][item]).not.toBeNaN();
+            })
+        })
         done();
     })
 });
