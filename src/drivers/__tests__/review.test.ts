@@ -54,13 +54,13 @@ describe('Alertas', () => {
         expect(status, jp(body)).toBe(200);
         expect(body).toBeInstanceOf(Array);
         if (!(body instanceof Array)) throw new Error();
-        body.forEach(({ key, booster, detractor, neutral }) => {
+        body.forEach(({ key, promoter, detractor, passive }) => {
             expect(typeof key).toBe('string');
-            expect(typeof booster).toBe('number');
-            expect(typeof neutral).toBe('number');
+            expect(typeof promoter).toBe('number');
+            expect(typeof passive).toBe('number');
             expect(typeof detractor).toBe('number');
-            expect(booster).not.toBeNaN();
-            expect(neutral).not.toBeNaN();
+            expect(promoter).not.toBeNaN();
+            expect(passive).not.toBeNaN();
             expect(detractor).not.toBeNaN();
         });
         expect(body.length).toBe(12);
