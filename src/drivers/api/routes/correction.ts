@@ -41,7 +41,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .post('/correction/purchases/', isAuthenticated(context), async (req, res) => {
+        .post('/corrections/purchases/', isAuthenticated(context), async (req, res) => {
             try {
                 const { user } = req;
                 if (!user) throw { message: 'Não autorizado', status: 401 };

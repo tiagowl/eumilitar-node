@@ -165,7 +165,7 @@ describe('#5 Correção da redação', () => {
     });
     test('compra de mais correções', async done => {
         const header = await authenticate(user, api);
-        const response = await api.post(`/correction/purchases/`)
+        const response = await api.post(`/corrections/purchases/`)
             .set('Authorization', header);
         expect(response.status, jp(response.body)).toBe(204);
         done();
