@@ -1,5 +1,6 @@
 import Correction, { CorrectionInterface } from "../entities/Correction";
 import Essay from "../entities/Essay";
+import User from "../entities/User";
 import CaseError, { Errors } from "./ErrorCase";
 import { EssayRepositoryInterface } from "./EssayCase";
 import { createMethod, filterMethod, getMethod, updateMethod } from "./interfaces";
@@ -95,4 +96,7 @@ export default class CorrectionCase {
         if (user.permission === 'corrector' && essay.corrector !== userId) throw new CaseError('Corretor inválido', Errors.UNAUTHORIZED);
         return this.repository.update(correction.id, data);
     }
+
+    // public async buyMore(agent: User) {
+    // }
 }

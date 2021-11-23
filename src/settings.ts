@@ -91,7 +91,7 @@ const settings = Object.freeze<Settings>({
         },
         url: PASSWORD_RECOVERY_URL,
         expirationTime: Number(EXPIRATION_TIME),
-        adminMail: ADMIN_MAIL,
+        supportMail: ADMIN_MAIL,
     },
     storage: {
         bucket: BUCKET_NAME,

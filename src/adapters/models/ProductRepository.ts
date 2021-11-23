@@ -53,9 +53,9 @@ export default class ProductRepository extends Repository<ProductModel, ProductI
         return `Produto não cadastrado: ${JSON.stringify(filter)}`;
     }
 
-    private async notifyAdmins(filter: Partial<ProductInterface>) {
+    private async notifySupport(filter: Partial<ProductInterface>) {
         return this.context.smtp.sendMail({
-            to: { email: this.context.settings.messageConfig.adminMail, name: 'Admin' },
+            to: { email: this.context.settings.messageConfig.supportMail, name: 'Admin' },
             from: this.context.settings.messageConfig.sender,
             subject: 'Produto não cadastrado',
             text: await this.writeMessage(filter),
@@ -65,7 +65,7 @@ export default class ProductRepository extends Repository<ProductModel, ProductI
     public async get(filter: Partial<ProductInterface>) {
         const product = await super.get(filter);
         if (!product) {
-            await this.notifyAdmins(filter);
+            await this.notifySupport(filter);
             throw { message: 'Produto não encontrado', status: 404 };
         }
         return product;
