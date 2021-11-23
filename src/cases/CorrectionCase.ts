@@ -108,6 +108,6 @@ export default class CorrectionCase {
 
             Telefone: ${agent.phone || ''}
         `;
-        return this.repository.notifyAdmin({ text: message, subject: 'Compra de correções' });
+        return this.repository.notifyAdmin({ text: message, subject: 'Solicitação de compra de correção extra' });
     }
 }
