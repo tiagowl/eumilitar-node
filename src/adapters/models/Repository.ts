@@ -320,4 +320,17 @@ export default abstract class Repository<Model, Interface, Entity> {
         }
     }
 
+    public async notifyAdmin(message: { text: string, subject: string }) {
+        try {
+            const { messageConfig } = this.context.settings;
+            return this.context.smtp.sendMail({
+                from: messageConfig.sender,
+                to: { email: messageConfig.adminMail, name: 'Admin' },
+                ...message,
+            });
+        } catch (error: any) {
+            throw await this.processError(error);
+        }
+    }
+
 }

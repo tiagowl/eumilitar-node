@@ -7,6 +7,7 @@ import { Mail, MessageConfigInterface } from "../interfaces";
 import message from '../views/CorrectionNotification';
 import { Context } from '../interfaces';
 import CaseError, { Errors } from "../../cases/ErrorCase";
+import User from "../../entities/User";
 
 const schema = yup.object().shape({
     essay: yup.number().required('É preciso informar qual redação será corrigida'),
@@ -143,6 +144,14 @@ export default class CorrectionController extends Controller {
             }
             if (error.status) throw error;
             throw { message: error.message || "Falha ao atualizar correção", status: 500 };
+        }
+    }
+
+    public async buyMore(agent: User) {
+        try {
+            await this.useCase.buyMore(agent);
+        } catch (error: any) {
+            throw await this.processError(error);
         }
     }
 }

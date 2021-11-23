@@ -19,7 +19,7 @@ export default class TestRepository<Entity, Interface>  {
     protected readonly entity: Constructor<Entity>;
     protected db: FakeDB;
     private readonly table: keyof FakeDB;
-    public readonly smtp: string[] = [];
+    public readonly smtp: { text: string, subject: string }[] = [];
 
     constructor(db: FakeDB, entity: Constructor<Entity>, table: keyof FakeDB) {
         this.db = db;
@@ -111,7 +111,7 @@ export default class TestRepository<Entity, Interface>  {
         return !!exists.length;
     }
 
-    public async notifyAdmin(message: string) {
+    public async notifyAdmin(message: { text: string, subject: string }) {
         this.smtp.push(message);
     }
 }

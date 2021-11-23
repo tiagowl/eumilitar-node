@@ -93,7 +93,7 @@ describe('#5 Correção', () => {
     test('Compra de mais correções', async done => {
         const [user] = db.users;
         await useCase.buyMore(new User(user));
-        expect(typeof repository.smtp[0]).toBe('string');
+        expect(typeof repository.smtp[0]?.text).toBe('string');
         done();
     });
 });

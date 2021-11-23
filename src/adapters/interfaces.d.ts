@@ -52,6 +52,7 @@ export interface MessageConfigInterface {
     readonly url: string;
     readonly expirationTime: number;
     readonly supportMail: string;
+    readonly adminMail: string;
 }
 
 export interface SMS {

@@ -41,7 +41,7 @@ export interface CorrectionRepositoryInterface {
     readonly create: createMethod<CorrectionInsertionData, Correction>;
     readonly update: updateMethod<Correction, CorrectionInterface>;
     readonly get: getMethod<Correction, CorrectionInterface>;
-    readonly notifyAdmin: (message: string) => void;
+    readonly notifyAdmin: (message: { text: string, subject: string }) => void;
 }
 
 export default class CorrectionCase {
@@ -108,6 +108,6 @@ export default class CorrectionCase {
 
             Telefone: ${agent.phone || ''}
         `;
-        return this.repository.notifyAdmin(message);
+        return this.repository.notifyAdmin({ text: message, subject: 'Compra de correções' });
     }
 }
