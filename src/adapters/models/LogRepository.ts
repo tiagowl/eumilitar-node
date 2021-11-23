@@ -32,7 +32,7 @@ const fieldsMap: FieldsMap<LogModel, LogInterface> = [
 export default class LogRepository extends Repository<LogModel, LogInterface, Log> implements LogRepositoryInterface {
     protected readonly entity = Log;
     protected readonly fieldsMap = fieldsMap;
-    protected readonly searchFields: (keyof LogModel)[] = ['details', 'error', 'ip', 'userAgent', 'event', 'id'];
+    protected readonly searchFields: (keyof LogModel)[] = [];
     protected readonly service = LogService;
 
     protected async filtering(query: Knex.QueryBuilder<Partial<LogModel>, LogModel[]>, filter: Filter<LogInterface>) {
