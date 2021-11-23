@@ -19,6 +19,7 @@ export default class TestRepository<Entity, Interface>  {
     protected readonly entity: Constructor<Entity>;
     protected db: FakeDB;
     private readonly table: keyof FakeDB;
+    public readonly smtp: string[] = [];
 
     constructor(db: FakeDB, entity: Constructor<Entity>, table: keyof FakeDB) {
         this.db = db;
@@ -108,5 +109,9 @@ export default class TestRepository<Entity, Interface>  {
     public async exists(filter: Filter<Interface>) {
         const exists = await this.filter(filter);
         return !!exists.length;
+    }
+
+    public async notifyAdmin(message: string) {
+        this.smtp.push(message);
     }
 }

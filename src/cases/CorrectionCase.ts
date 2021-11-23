@@ -41,6 +41,7 @@ export interface CorrectionRepositoryInterface {
     readonly create: createMethod<CorrectionInsertionData, Correction>;
     readonly update: updateMethod<Correction, CorrectionInterface>;
     readonly get: getMethod<Correction, CorrectionInterface>;
+    readonly notifyAdmin: (message: string) => void;
 }
 
 export default class CorrectionCase {
@@ -97,6 +98,16 @@ export default class CorrectionCase {
         return this.repository.update(correction.id, data);
     }
 
-    // public async buyMore(agent: User) {
-    // }
+    public async buyMore(agent: User) {
+        const message = `
+        Nova solicitação de compra de correção extra:
+
+            Nome do aluno: ${agent.fullName}
+
+            Email: ${agent.email}
+
+            Telefone: ${agent.phone || ''}
+        `;
+        return this.repository.notifyAdmin(message);
+    }
 }
