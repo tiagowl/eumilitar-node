@@ -8,6 +8,7 @@ import Repository, { FieldsMap, prsr } from "./Repository";
 export interface EssayThemeModel extends EssayThemeInsertion {
     id: number;
     lastModified: Date;
+    videoUrl?: string;
 }
 
 export interface EssayThemeInsertion {
@@ -18,6 +19,7 @@ export interface EssayThemeInsertion {
     file: string;
     courses: string;
     deactivated: boolean;
+    videoUrl?: string;
 }
 
 const divider = ', ';
@@ -34,6 +36,7 @@ const fieldsMap: FieldsMap<EssayThemeModel, EssayThemeInterface> = [
     [['startDate', prsr.dt], ['startDate', prsr.dt]],
     [['lastModified', prsr.dt], ['lastModified', prsr.dt]],
     [['courses', (val: Set<Course>) => [...val].join(divider)], ['courses', (val: string) => new Set(val.split(divider) as Course[])]],
+    [['videoUrl', prsr.st], ['videoUrl', prsr.st]],
 ];
 
 export default class EssayThemeRepository extends Repository<EssayThemeModel, EssayThemeInterface, EssayTheme> implements EssayThemeRepositoryInterface {

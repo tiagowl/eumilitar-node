@@ -15,6 +15,7 @@ interface EssayThemeBaseInterface {
     helpText: string;
     deactivated: boolean;
     courses: Course[];
+    videoUrl?: string;
 }
 
 export interface EssayThemeInput extends EssayThemeBaseInterface {
@@ -71,6 +72,8 @@ export const updatingSchema = yup.object({
 export const schema = yup.object({
     ...baseSchema,
     file: yup.string().required('O arquivo do tema é obrigatório'),
+    videoUrl: yup.string().url().notRequired().nullable(true)
+        .matches(/^((http|https)\:\/\/)?(www\.youtube\.com|youtu\.?be)\/((watch\?v=)?([a-zA-Z0-9]{11}))(&.*)*$/),
 });
 
 const toNumber = (data: string) => !!data ? Number(data) : undefined;
@@ -113,6 +116,7 @@ export default class EssayThemeController extends Controller {
             helpText: theme.helpText,
             courses: [...theme.courses],
             deactivated: theme.deactivated,
+            videoUrl: theme.videoUrl,
         };
     }
 

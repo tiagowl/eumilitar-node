@@ -37,6 +37,7 @@ describe('#2 Testes nos temas de redação', () => {
             startDate: new Date(Date.now() - 70 * 24 * 60 * 60),
             helpText: faker.lorem.lines(3),
             deactivated: false,
+            videoUrl: 'https://www.youtube.com/watch?v=3dPSDDgYnJY',
             // @ts-ignore
             file: {
                 path: '/usr/share/data/theme.pdf',

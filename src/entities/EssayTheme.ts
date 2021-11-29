@@ -10,6 +10,7 @@ export interface EssayThemeInterface {
     file: string;
     courses: Set<Course>;
     deactivated: boolean;
+    videoUrl?: string;
 }
 
 export interface EssayUpdate {
@@ -21,6 +22,7 @@ export interface EssayUpdate {
     file?: string;
     courses?: Set<Course>;
     deactivated?: boolean;
+    videoUrl?: string;
 }
 
 export default class EssayTheme implements EssayThemeInterface {
@@ -33,6 +35,7 @@ export default class EssayTheme implements EssayThemeInterface {
     #file: string;
     #courses: Set<Course>;
     #deactivated: boolean;
+    #videoUrl?: string;
 
     constructor(data: EssayThemeInterface) {
         this.#id = data.id;
@@ -44,6 +47,7 @@ export default class EssayTheme implements EssayThemeInterface {
         this.#file = data.file;
         this.#courses = new Set(data.courses);
         this.#deactivated = data.deactivated;
+        this.#videoUrl = data.videoUrl;
     }
 
     get data() {
@@ -57,6 +61,7 @@ export default class EssayTheme implements EssayThemeInterface {
             file: this.#file,
             courses: this.#courses,
             deactivated: this.#deactivated,
+            videoUrl: this.#videoUrl,
         };
     }
 
@@ -114,6 +119,12 @@ export default class EssayTheme implements EssayThemeInterface {
         this.updateLastModified();
     }
 
+    get videoUrl() { return this.#videoUrl; }
+    set videoUrl(value: string | undefined) {
+        this.#videoUrl = value;
+        this.updateLastModified();
+    }
+
     private updateLastModified() {
         this.#lastModified = new Date();
     }
@@ -127,6 +138,7 @@ export default class EssayTheme implements EssayThemeInterface {
         this.#courses = data.courses || this.#courses;
         this.#deactivated = data.deactivated || this.#deactivated;
         this.#startDate = data.startDate || this.#startDate;
+        this.#videoUrl = data.videoUrl || this.#videoUrl;
         this.updateLastModified();
     }
 
