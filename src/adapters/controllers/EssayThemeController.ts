@@ -62,6 +62,8 @@ const baseSchema = {
     endDate: yup.date().required().min(
         yup.ref('startDate'), 'A data de início deve ser anterior a data final'
     ),
+    videoUrl: yup.string().url().notRequired().nullable(true)
+        .matches(/^((http|https)\:\/\/)?(www\.youtube\.com|youtu\.?be)\/((watch\?v=)?([a-zA-Z0-9]{11}))(&.*)*$/),
 };
 
 export const updatingSchema = yup.object({
@@ -72,8 +74,6 @@ export const updatingSchema = yup.object({
 export const schema = yup.object({
     ...baseSchema,
     file: yup.string().required('O arquivo do tema é obrigatório'),
-    videoUrl: yup.string().url().notRequired().nullable(true)
-        .matches(/^((http|https)\:\/\/)?(www\.youtube\.com|youtu\.?be)\/((watch\?v=)?([a-zA-Z0-9]{11}))(&.*)*$/),
 });
 
 const toNumber = (data: string) => !!data ? Number(data) : undefined;
