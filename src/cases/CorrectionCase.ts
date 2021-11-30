@@ -1,5 +1,6 @@
 import Correction, { CorrectionInterface } from "../entities/Correction";
 import Essay from "../entities/Essay";
+import User from "../entities/User";
 import CaseError, { Errors } from "./ErrorCase";
 import { EssayRepositoryInterface } from "./EssayCase";
 import { createMethod, filterMethod, getMethod, updateMethod } from "./interfaces";
@@ -40,6 +41,7 @@ export interface CorrectionRepositoryInterface {
     readonly create: createMethod<CorrectionInsertionData, Correction>;
     readonly update: updateMethod<Correction, CorrectionInterface>;
     readonly get: getMethod<Correction, CorrectionInterface>;
+    readonly notifyAdmin: (message: { text: string, subject: string }) => void;
 }
 
 export default class CorrectionCase {
@@ -94,5 +96,18 @@ export default class CorrectionCase {
         if (!essay) throw new CaseError('Redação inexistente', Errors.NOT_FOUND);
         if (user.permission === 'corrector' && essay.corrector !== userId) throw new CaseError('Corretor inválido', Errors.UNAUTHORIZED);
         return this.repository.update(correction.id, data);
+    }
+
+    public async buyMore(agent: User) {
+        const message = `
+        Nova solicitação de compra de correção extra:
+
+            Nome do aluno: ${agent.fullName}
+
+            Email: ${agent.email}
+
+            Telefone: ${agent.phone || ''}
+        `;
+        return this.repository.notifyAdmin({ text: message, subject: 'Solicitação de compra de correção extra' });
     }
 }

@@ -104,7 +104,6 @@ export default class SubscriptionController extends Controller {
 
     constructor(context: Context) {
         const { settings: { hotmart: { hottok } } } = context;
-        const schema = getSchema(hottok);
         super(context);
         this.repository = new SubscriptionRepository(context);
         this.useCase = new SubscriptionCase(this.repository);
@@ -118,10 +117,10 @@ export default class SubscriptionController extends Controller {
         return `${JSON.stringify(data)}\n${error.stack || JSON.stringify(error)}`;
     }
 
-    private async notifyAdmins(data: OrderData | CancelOrderData, error: any) {
+    private async notifySupport(data: OrderData | CancelOrderData, error: any) {
         return this.context.smtp.sendMail({
             subject: 'Erro ao criar usuário',
-            to: { email: this.context.settings.messageConfig.adminMail, name: 'Admin' },
+            to: { email: this.context.settings.messageConfig.supportMail, name: 'Admin' },
             from: this.context.settings.messageConfig.sender,
             text: await this.writeNotification(data, error),
         });
@@ -156,7 +155,7 @@ export default class SubscriptionController extends Controller {
             return createdList;
         } catch (error: any) {
             this.logger.error(error, { data: error?.response?.body });
-            this.notifyAdmins(data, error).catch(this.logger.error);
+            this.notifySupport(data, error).catch(this.logger.error);
             throw {
                 message: error.message,
                 status: error.status || 400
@@ -187,7 +186,7 @@ export default class SubscriptionController extends Controller {
             return canceledList;
         } catch (error: any) {
             this.logger.error(error);
-            this.notifyAdmins(data, error).catch(this.logger.error);
+            this.notifySupport(data, error).catch(this.logger.error);
             if (error.status) throw error;
             throw { message: 'Erro ao cancelar inscrição', status: 500 };
         }

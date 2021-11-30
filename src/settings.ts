@@ -29,6 +29,7 @@ const {
     NAME_SENDER = '',
     PASSWORD_RECOVERY_URL = '',
     EXPIRATION_TIME = 4,
+    SUPPORT_MAIL = '',
     ADMIN_MAIL = '',
     BUCKET_NAME = '',
     S3_DESTINATION = '',
@@ -91,6 +92,7 @@ const settings = Object.freeze<Settings>({
         },
         url: PASSWORD_RECOVERY_URL,
         expirationTime: Number(EXPIRATION_TIME),
+        supportMail: SUPPORT_MAIL,
         adminMail: ADMIN_MAIL,
     },
     storage: {

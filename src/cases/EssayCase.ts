@@ -126,7 +126,7 @@ export default class EssayCase {
 
     private async getTheme(course: Course) {
         const theme = await this.repository.themes.get({ courses: new Set([course]), active: true });
-        if (!theme || !theme.active) throw new CaseError('Nenhum tema ativo para este curso', Errors.INVALID_THEME);
+        if (!theme || !theme.active) throw new CaseError('Nenhum tema ativo para este curso', Errors.INVALID);
         return theme;
     }
 

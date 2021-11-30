@@ -15,6 +15,7 @@ interface EssayThemeBaseInterface {
     helpText: string;
     deactivated: boolean;
     courses: Course[];
+    videoUrl?: string;
 }
 
 export interface EssayThemeInput extends EssayThemeBaseInterface {
@@ -61,6 +62,8 @@ const baseSchema = {
     endDate: yup.date().required().min(
         yup.ref('startDate'), 'A data de início deve ser anterior a data final'
     ),
+    videoUrl: yup.string().url().notRequired().nullable(true)
+        .matches(/^((http|https)\:\/\/)?(www\.youtube\.com|youtu\.?be)\/((watch\?v=)?([a-zA-Z0-9]{11}))(&.*)*$/),
 };
 
 export const updatingSchema = yup.object({
@@ -113,6 +116,7 @@ export default class EssayThemeController extends Controller {
             helpText: theme.helpText,
             courses: [...theme.courses],
             deactivated: theme.deactivated,
+            videoUrl: theme.videoUrl,
         };
     }
 

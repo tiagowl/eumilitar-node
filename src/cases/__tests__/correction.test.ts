@@ -1,5 +1,6 @@
 import faker from "faker";
 import Correction, { CorrectionInterface } from "../../entities/Correction";
+import User from "../../entities/User";
 import CorrectionCase, { CorrectionBase, CorrectionInsertionData, CorrectionRepositoryInterface } from "../CorrectionCase";
 import EssayCase, { EssayRepositoryInterface } from "../EssayCase";
 import { UserRepositoryInterface } from "../UserCase";
@@ -87,6 +88,12 @@ describe('#5 Correção', () => {
             'veryShortSentences': "Não",
         });
         expect(updated).toBeInstanceOf(Correction);
+        done();
+    });
+    test('Compra de mais correções', async done => {
+        const [user] = db.users;
+        await useCase.buyMore(new User(user));
+        expect(typeof repository.smtp[0]?.text).toBe('string');
         done();
     });
 });

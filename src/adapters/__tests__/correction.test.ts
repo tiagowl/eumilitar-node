@@ -1,5 +1,5 @@
 import faker from "faker";
-import { userFactory, db, saveUser, deleteUser, createEssay, contextFactory } from "../../../tests/shortcuts";
+import { userFactory, db, saveUser, deleteUser, createEssay, contextFactory, mails } from "../../../tests/shortcuts";
 import User from "../../entities/User";
 import CorrectionController from "../controllers/CorrectionController";
 import EssayController from "../controllers/EssayController";
@@ -125,5 +125,11 @@ describe('#6 Correções', () => {
         expect(updatingData.comment).toBe(updated.comment);
         done();
     });
+    test('comprar mais correções', async done => {
+        const mailsCount = Number(mails.length);
+        await controller.buyMore(agent);
+        expect(mailsCount + 1).toBe(mails.length);
+        done();
+    })
 });
 
