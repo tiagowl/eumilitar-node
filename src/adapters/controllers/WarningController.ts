@@ -22,7 +22,7 @@ const schema = yup.object().shape({
         is: (val: any) => !!val,
         then: yup.string().nullable().default(null).transform(() => null),
     }),
-    image: yup.string().max(300),
+    image: yup.string().max(300).nullable(true).default(null),
     active: yup.bool().required('É preciso informar se estará ativo ou não'),
 });
 

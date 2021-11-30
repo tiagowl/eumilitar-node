@@ -50,7 +50,7 @@ describe('Alertas', () => {
         expect(typeof response.body.id, jp(response.body)).toBe('number');
         expect(typeof response.body.lastModified).toBe('string');
         expect(typeof response.body.title).toBe('string');
-        expect(typeof response.body.message).toBe('string');
+        expect(response.body.message).toBe(null);
         done();
     })
 })
