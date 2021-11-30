@@ -26,18 +26,20 @@ describe('Alertas', () => {
     });
     test('Criação', async done => {
         const header = await authenticate(admin, api);
+        const buffer = Buffer.from(new ArrayBuffer(10), 0, 2);
         const data = {
             title: 'Título de teste',
-            message: faker.lorem.paragraph(4),
             active: true,
         };
-        const response = await api.post('/warning/')
+        const request = api.post('/warning/')
             .set('Authorization', header)
-            .send(data);
+            .attach('image', buffer, { filename: 'file.png', contentType: 'image/png' });
+        Object.entries(data).forEach(([key, val]) => request.field(key, val));
+        const response = await request;
         expect(typeof response.body.id, jp(response.body)).toBe('number');
         expect(typeof response.body.lastModified).toBe('string');
         expect(response.body.title).toBe(data.title);
-        expect(response.body.message).toBe(data.message);
+        expect(typeof response.body.image).toBe('string');
         done();
     })
     test('Recuperação', async done => {

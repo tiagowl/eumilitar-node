@@ -1,11 +1,13 @@
 import Warning, { WarningInterface } from "../entities/Warning";
+import CaseError, { Errors } from "./ErrorCase";
 import { createMethod, getMethod, updateMethod } from "./interfaces";
 
 export interface WarningInsertionInterface {
     title: string;
-    message: string;
     lastModified: Date;
     active: boolean;
+    message?: string;
+    image?: string;
 }
 
 export interface WarningRepositoryInterface {
@@ -16,8 +18,9 @@ export interface WarningRepositoryInterface {
 
 export interface WarningCreation {
     title: string;
-    message: string;
     active: boolean;
+    message?: string;
+    image?: string;
 }
 
 export default class WarningCase {
@@ -28,6 +31,8 @@ export default class WarningCase {
     }
 
     public async updateOrCreate(data: WarningCreation) {
+        if (!data.image && !data.message) throw new CaseError('É preciso informar a mensagem ou uma imagem', Errors.INVALID);
+        if (data.image && data.message) throw new CaseError('Informe apenas uma mensagem ou uma imagem', Errors.INVALID);
         const exists = await this.repository.get({});
         const insertion = { ...data, lastModified: new Date(), };
         return !!exists ?
