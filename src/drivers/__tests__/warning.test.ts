@@ -40,6 +40,7 @@ describe('Alertas', () => {
         expect(typeof response.body.lastModified).toBe('string');
         expect(response.body.title).toBe(data.title);
         expect(typeof response.body.image).toBe('string');
+        expect(response.body.message).toBe(null);
         done();
     })
     test('Recuperação', async done => {

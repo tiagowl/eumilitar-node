@@ -18,6 +18,9 @@ const schema = yup.object().shape({
     message: yup.string().when('image', {
         is: (val: any) => !val,
         then: yup.string().required('A mensagem é obrigatória'),
+    }).when('image', {
+        is: (val: any) => !!val,
+        then: yup.string().nullable().default(null).transform(() => null),
     }),
     image: yup.string().max(300),
     active: yup.bool().required('É preciso informar se estará ativo ou não'),
