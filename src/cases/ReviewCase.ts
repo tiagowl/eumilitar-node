@@ -77,7 +77,7 @@ export default class ReviewCase {
     public async resultChart(filter: ReviewChartFilter): Promise<ReviewResultChart[]> {
         const { period = {}, ...params } = filter;
         const now = new Date();
-        const defaultStart = new Date(now.getFullYear(), now.getMonth() - 11);
+        const defaultStart = new Date(now.getFullYear(), now.getMonth() - 12);
         const { start = defaultStart, end = now } = period;
         const months = Math.round((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000));
         return Promise.all(Array.from({ length: months }, async (_, index) => {
