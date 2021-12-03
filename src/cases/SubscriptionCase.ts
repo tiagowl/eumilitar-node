@@ -145,7 +145,7 @@ export default class SubscriptionCase {
         const subscriptions = await this.repository.filter(filterData) as Subscription[];
         const data = new Array(months).fill(0)
             .map(async (_, index) => {
-                const current = start.getMonth() + index;
+                const current = start.getMonth() + index + 1;
                 const date = new Date(start.getFullYear(), current, 1);
                 const month = date.getMonth();
                 const year = date.getFullYear();

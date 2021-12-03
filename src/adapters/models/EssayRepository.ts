@@ -216,7 +216,7 @@ export class EssayRepository extends Repository<EssayModel, EssayFilter, Essay> 
             const parsed = await this.toDb(filterData);
             const chart = new Array(months).fill(0)
                 .map(async (_, index) => {
-                    const current = start.getMonth() + index;
+                    const current = start.getMonth() + index + 1;
                     const date = new Date(start.getFullYear(), current, 1);
                     const month = date.getMonth() + 1;
                     const year = date.getFullYear();
@@ -255,7 +255,7 @@ export class EssayRepository extends Repository<EssayModel, EssayFilter, Essay> 
             const parsed = await this.toDb(filterData);
             const chart = new Array(months).fill(undefined)
                 .map(async (_, index) => {
-                    const current = start.getMonth() + index;
+                    const current = start.getMonth() + index + 1;
                     const date = new Date(start.getFullYear(), current, 1);
                     const month = date.getMonth() + 1;
                     const year = date.getFullYear();

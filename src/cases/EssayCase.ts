@@ -262,7 +262,7 @@ export default class EssayCase {
         const essays = await this.repository.filter(filterData) as Essay[];
         const chart = new Array(months).fill(0)
             .map(async (_, index) => {
-                const current = start.getMonth() + index;
+                const current = start.getMonth() + index + 1;
                 const date = new Date(start.getFullYear(), current, 1);
                 const month = date.getMonth();
                 const year = date.getFullYear();

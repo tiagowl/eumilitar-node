@@ -81,7 +81,7 @@ export default class ReviewCase {
         const { start = defaultStart, end = now } = period;
         const months = Math.round((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000));
         return Promise.all(Array.from({ length: months }, async (_, index) => {
-            const date = new Date(start.getFullYear(), start.getMonth() + index, 1);
+            const date = new Date(start.getFullYear(), start.getMonth() + index + 1, 1);
             const month = date.getMonth();
             const year = date.getFullYear();
             const { detractor, promoter, passive } = await this.score({
