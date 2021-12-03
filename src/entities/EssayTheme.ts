@@ -138,7 +138,7 @@ export default class EssayTheme implements EssayThemeInterface {
         this.#courses = data.courses || this.#courses;
         this.#deactivated = data.deactivated || this.#deactivated;
         this.#startDate = data.startDate || this.#startDate;
-        this.#videoUrl = data.videoUrl || this.#videoUrl;
+        this.#videoUrl = data.videoUrl;
         this.updateLastModified();
     }
 

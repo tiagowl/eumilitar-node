@@ -109,21 +109,23 @@ export default abstract class Repository<Model, Interface, Entity> {
     protected async search(service: Knex.QueryBuilder<Partial<Model>, Model[]>, search?: string, fields?: string[]) {
         if (!search) return;
         const searchFields = fields || this.searchFields;
-        await Promise.all(searchFields.map(async (field: string | keyof Model) => {
-            service.orWhere(field as string, 'like', `%${search}%`);
-        }));
-        const terms = search.split(' ');
-        if (terms.length > 1) {
-            service.orWhere(function () {
-                terms.forEach(val => {
-                    this.andWhere(async function () {
-                        await Promise.all(searchFields.map(async (field: string | keyof Model) => {
-                            this.orWhere(field as string, 'like', `%${val}%`);
-                        }));
+        service.andWhere(async query => {
+            await Promise.all(searchFields.map(async (field: string | keyof Model) => {
+                query.orWhere(field as string, 'like', `%${search}%`);
+            }));
+            const terms = search.split(' ');
+            if (terms.length > 1) {
+                query.orWhere(function () {
+                    terms.forEach(val => {
+                        this.andWhere(async function () {
+                            await Promise.all(searchFields.map(async (field: string | keyof Model) => {
+                                this.orWhere(field as string, 'like', `%${val}%`);
+                            }));
+                        });
                     });
                 });
-            });
-        }
+            }
+        });
     }
 
     protected async filtering(query: Knex.QueryBuilder<Partial<Model>, Model[]>, filter: Filter<Interface>) {
