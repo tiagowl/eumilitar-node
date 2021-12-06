@@ -8,6 +8,7 @@ export interface SettingsModel {
     lastModified: Date;
     reviewExpiration: number;
     reviewRecuseExpiration: number;
+    sellCorrections: boolean;
 }
 
 export const SettingsService = (db: Knex) => db<Partial<SettingsModel>, SettingsModel[]>('settings');
@@ -17,6 +18,7 @@ const fieldsMap: FieldsMap<SettingsModel, SettingsInterface> = [
     [['lastModified', prsr.dt], ['lastModified', prsr.dt]],
     [['reviewExpiration', prsr.nb], ['reviewExpiration', prsr.nb]],
     [['reviewRecuseExpiration', prsr.nb], ['reviewRecuseExpiration', prsr.nb]],
+    [['sellCorrections', prsr.bl], ['sellCorrections', prsr.bl]],
 ];
 
 export default class SettingsRepository extends Repository<SettingsModel, SettingsInterface, Settings> implements SettingsRepositoryInterface {

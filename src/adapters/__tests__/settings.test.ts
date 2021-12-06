@@ -10,6 +10,7 @@ describe('Configurações do sistema', () => {
         const settings = await controller.updateOrCreate({
             reviewExpiration: 5,
             reviewRecuseExpiration: faker.datatype.number(),
+            sellCorrections: true,
         });
         expect(typeof settings.id).toBe('number');
         expect(settings.reviewExpiration).toBe(5);

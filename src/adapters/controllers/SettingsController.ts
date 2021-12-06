@@ -8,6 +8,7 @@ import * as yup from 'yup';
 const schema = yup.object().shape({
     reviewExpiration: yup.number().required('O campo "Expiração da avaliação" é obrigatório').min(0),
     reviewRecuseExpiration: yup.number().required('Este campo é obrigatório'),
+    sellCorrections: yup.boolean().required('Este campo é obrigatório'),
 });
 
 export default class SettingsController extends Controller {

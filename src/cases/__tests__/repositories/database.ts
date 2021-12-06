@@ -135,6 +135,7 @@ export default function getDb() {
             lastModified: new Date(),
             reviewExpiration: 5,
             reviewRecuseExpiration: 10,
+            sellCorrections: false,
         }
     ]
     return {

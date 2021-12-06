@@ -9,6 +9,7 @@ export type Constructor<T> = new (...args: any[]) => T;
 
 export const prsr = {
     nb: (val: any) => !!val || val === 0 ? Number(val) : val,
+    bl: (val: any) => !!val || val === 0 ? Boolean(val) : val,
     dt: (val: any) => !!val || val === 0 ? new Date(val) : val,
     st: (val: any) => !!val || val === 0 || val === false ? String(val) : val,
 };

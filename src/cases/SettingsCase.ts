@@ -11,6 +11,7 @@ export interface SettingsRepositoryInterface {
 export interface SettingsCreation {
     reviewExpiration: number;
     reviewRecuseExpiration: number;
+    sellCorrections: boolean;
 }
 
 export interface SettingsInsertion extends SettingsCreation {

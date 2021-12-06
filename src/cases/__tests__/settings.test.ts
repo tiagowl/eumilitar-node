@@ -12,6 +12,7 @@ describe('Teste nas configurações', () => {
         const created = await useCase.updateOrCreate({
             reviewExpiration: 10,
             reviewRecuseExpiration: faker.datatype.number(),
+            sellCorrections: true,
         });
         expect(typeof created.id).toBe('number');
         expect(created.reviewExpiration).toBe(10);

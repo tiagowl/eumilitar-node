@@ -75,6 +75,7 @@ export default abstract class Controller {
         this.logger.error(error);
         if (error instanceof CaseError) {
             if (error.code === Errors.NOT_FOUND) return { message: error.message, status: 404 };
+            return { message: error.message, status: 400 };
         }
         return { message: error.message || 'Erro interno', status: 500 };
     }

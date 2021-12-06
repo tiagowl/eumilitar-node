@@ -8,6 +8,7 @@ test('Recuperação de senha', () => {
             lastModified: new Date(),
             reviewExpiration: faker.datatype.number(),
             reviewRecuseExpiration: faker.datatype.number(),
+            sellCorrections: false,
         });
     }).not.toThrowError();
 });

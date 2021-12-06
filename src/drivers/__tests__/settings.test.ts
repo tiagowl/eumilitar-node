@@ -29,6 +29,7 @@ describe('Alertas', () => {
         const data = {
             reviewExpiration: 12,
             reviewRecuseExpiration: faker.datatype.number(),
+            sellCorrections: true,
         };
         const response = await api.put('/settings/')
             .set('Authorization', header)
