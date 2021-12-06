@@ -17,6 +17,7 @@ describe('#8 Inscrições', () => {
     };
     afterAll(deleteAll);
     beforeAll(deleteAll);
+    const controller = new SubscriptionController(context);
     beforeAll(async done => {
         const productRepository = new ProductRepository(context);
         const product = await productRepository.get({ course: 'espcex' });
@@ -33,9 +34,6 @@ describe('#8 Inscrições', () => {
         done();
     }, 10000);
     test('#81 Criação', async done => {
-        const controller = new SubscriptionController(context);
-        const productRepository = new ProductRepository(context);
-        const product = await productRepository.get({ course: 'esa' });
         const created = await controller.createFromHotmart({
             hottok, email,
             'first_name': faker.name.firstName(),
@@ -62,7 +60,6 @@ describe('#8 Inscrições', () => {
             course_tag: 2,
         }).onConflict().merge();
         expect(inserted).toBeDefined();
-        const controller = new SubscriptionController(context);
         const canceleds = await controller.cancel({
             hottok,
             email,
@@ -80,7 +77,6 @@ describe('#8 Inscrições', () => {
     }, 10000);
     test('#83 Criação com produto inexistente', async done => {
         const mailsLength = mails.length;
-        const controller = new SubscriptionController(context);
         const productRepository = new ProductRepository(context);
         const product = await productRepository.get({ course: 'espcex' });
         await controller.createFromHotmart({
@@ -100,7 +96,6 @@ describe('#8 Inscrições', () => {
         done();
     }, 100000);
     test('#84 Listagem do usuário', async done => {
-        const controller = new SubscriptionController(context);
         expect(user).toBeDefined();
         const subscriptions = await controller.mySubscriptions(user?.user_id || 0);
         expect(subscriptions).toBeInstanceOf(Array);
@@ -111,7 +106,6 @@ describe('#8 Inscrições', () => {
         done();
     }, 10000);
     test('#85 Cancelamento com assinatura inexistente', async done => {
-        const controller = new SubscriptionController(context);
         const notCanceled = await controller.cancel({
             hottok,
             email: faker.internet.email(),
@@ -125,7 +119,6 @@ describe('#8 Inscrições', () => {
         done();
     }, 100000);
     test('#86 Listagem de todas', async done => {
-        const controller = new SubscriptionController(context);
         const list = await controller.list({ pagination: { 'ordering': 'id', 'page': 1, 'pageSize': 10 } }) as Paginated<any>;
         expect(list).not.toBeInstanceOf(Array);
         if (list instanceof Array) throw new Error();
@@ -135,7 +128,6 @@ describe('#8 Inscrições', () => {
         done();
     });
     test('#87 Criação manual', async done => {
-        const controller = new SubscriptionController(context);
         const productRepository = new ProductRepository(context);
         const product = await productRepository.get({ course: 'esa' });
         const created = await controller.create({
@@ -151,7 +143,6 @@ describe('#8 Inscrições', () => {
         const selected = await SubscriptionService(db).first();
         expect(selected).toBeDefined();
         if (!selected) throw new Error();
-        const controller = new SubscriptionController(context);
         const productRepository = new ProductRepository(context);
         const product = await productRepository.get({ course: 'esa' });
         const updated = await controller.update(selected?.id, {
@@ -164,7 +155,6 @@ describe('#8 Inscrições', () => {
         done();
     });
     test('#89 gráfico das ativas', async done => {
-        const controller = new SubscriptionController(context);
         const chart = await controller.activeChart({});
         expect(chart).toBeInstanceOf(Array);
         chart.forEach(item => {
@@ -174,5 +164,6 @@ describe('#8 Inscrições', () => {
         });
         done();
     });
+
 });
 

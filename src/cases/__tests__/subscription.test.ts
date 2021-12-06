@@ -5,12 +5,15 @@ import SubscriptionCase, { SubscriptionInsertionInterface, SubscriptionRepositor
 import { UserRepositoryInterface } from "../UserCase";
 import getDb from "./repositories/database";
 import SubscriptionTestRepository from "./repositories/SubscriptionTestRepository";
+import UserTestRepository from "./repositories/UserTestRepository";
 
 const db = getDb();
 
 describe('#7 Assinaturas', () => {
     const repository = new SubscriptionTestRepository(db);
     const useCase = new SubscriptionCase(repository);
+    const users = new UserTestRepository(db);
+    const email = faker.internet.email();
     test('Criação automática', async done => {
         const subscription = await useCase.autoCreate({
             email: faker.internet.email(),
@@ -69,4 +72,32 @@ describe('#7 Assinaturas', () => {
         });
         done();
     });
+    test('task 209 https://ubistart.atlassian.net/browse/EUMILIT-209?atlOrigin=eyJpIjoiNzAzZWQwNThhMTNhNDA5MmJiNzdkZjdlMDgzZjI4ZjgiLCJwIjoiaiJ9',
+        async done => {
+            const code = faker.datatype.number();
+            const created = await useCase.autoCreate({
+                email,
+                firstName: faker.name.firstName(),
+                lastName: faker.name.lastName(),
+                phone: faker.phone.phoneNumber('###########'),
+                product: 0,
+                code,
+            });
+            expect(created instanceof Subscription).toBeTruthy();
+            const canceled = await useCase.cancel(code);
+            expect(canceled instanceof Subscription).toBeTruthy();
+            const created2 = await useCase.autoCreate({
+                email,
+                firstName: faker.name.firstName(),
+                lastName: faker.name.lastName(),
+                phone: faker.phone.phoneNumber('###########'),
+                product: 0,
+                code: faker.datatype.number(),
+            });
+            expect(created2 instanceof Subscription).toBeTruthy();
+            const user = await users.get({ email });
+            if(!user) throw new Error();
+            expect(user.status).toBe('active');
+            done();
+        })
 });
