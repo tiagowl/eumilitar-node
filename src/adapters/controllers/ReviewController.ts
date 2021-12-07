@@ -1,14 +1,26 @@
 import ReviewCase, { ReviewChartFilter, ReviewCreation } from "../../cases/ReviewCase";
-import Review from "../../entities/Review";
+import Review, { ReviewInterface } from "../../entities/Review";
 import { Context } from "../interfaces";
 import ReviewRepository from "../models/ReviewRepository";
 import Controller from "./Controller";
 import * as yup from 'yup';
+import { Filter } from "../../cases/interfaces";
+import XLSX from 'xlsx';
 
 const schema = yup.object().shape({
     grade: yup.number().required('O campo "nota" é obrigatório').min(1).max(10),
     user: yup.number().required('O campo "usuário" é obrigatório'),
     description: yup.string(),
+});
+
+const filterSchema = yup.object().shape({
+    grade: yup.number().min(1).max(10).nullable(),
+    user: yup.number().nullable().positive(),
+    registrationDate: yup.date().nullable(),
+    period: yup.object({
+        start: yup.date().nullable(),
+        end: yup.date().nullable(),
+    }).nullable(),
 });
 
 const chartSchema = yup.object().shape({
@@ -70,6 +82,23 @@ export default class ReviewController extends Controller {
             const validated = await this.castFilter(filter, chartSchema);
             const score = await this.useCase.score(validated);
             return score;
+        } catch (error: any) {
+            throw await this.processError(error);
+        }
+    }
+
+    public async listAsXLXS(filter: Filter<ReviewInterface>) {
+        try {
+            const validated = await this.castFilter(filter, filterSchema);
+            const page = await this.useCase.filter(validated);
+            const list = page instanceof Array ? page : page.page;
+            const sheet = XLSX.utils.json_to_sheet(list);
+            const book = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(book, sheet, 'Avaliações');
+            const buffer: Buffer = XLSX.write(book, {
+                'bookType': 'xlsx', 'type': 'buffer', 'compression': true,
+            });
+            return buffer;
         } catch (error: any) {
             throw await this.processError(error);
         }

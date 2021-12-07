@@ -56,5 +56,11 @@ describe('Teste nas avaliações', () => {
             })
         })
         done();
+    });
+    test('Planilha', async done => {
+        const buffer = await controller.listAsXLXS({});
+        expect(buffer instanceof Buffer).toBeTruthy();
+        expect(buffer.length).toBeGreaterThan(0);
+        done();
     })
 });
