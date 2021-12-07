@@ -92,7 +92,14 @@ export default class ReviewController extends Controller {
             const validated = await this.castFilter(filter, filterSchema);
             const page = await this.useCase.filter(validated);
             const list = page instanceof Array ? page : page.page;
-            const sheet = XLSX.utils.json_to_sheet(list);
+            const parsedList = await Promise.all(list.map(async review => ({
+                '#ID': review.id,
+                'Ocorrência': review.registrationDate,
+                'Nota': review.grade,
+                'Descrição': review.description,
+            })));
+            const sheet = XLSX.utils.json_to_sheet(parsedList, { cellDates: true, header: ['#ID', 'Ocorrência', 'Nota', 'Descrição'] });
+            sheet['!autofilter'] = { ref: "A1:D1" };
             const book = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(book, sheet, 'Avaliações');
             const buffer: Buffer = XLSX.write(book, {

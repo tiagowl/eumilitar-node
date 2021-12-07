@@ -50,5 +50,18 @@ export default (context: Context) => {
             } finally {
                 res.end();
             }
+        })
+        .get('/reviews/', async (req, res) => {
+            try {
+                const buffer = await controller.listAsXLXS(req.query);
+                res.set('Content-Disposition: attachment; filename="filename.xlsx"')
+                    .status(200)
+                    .contentType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                res.end(buffer, 'binary');
+            } catch (error: any) {
+                res.json(error).status(error.status || 500);
+            } finally {
+                res.end();
+            }
         });
 };
