@@ -1,6 +1,6 @@
 import Review, { ReviewInterface } from "../entities/Review";
 import CaseError, { Errors } from "./ErrorCase";
-import { countMethod, createMethod, existsMethod, filterMethod, Operator } from "./interfaces";
+import { countMethod, createMethod, existsMethod, Filter, filterMethod, Operator } from "./interfaces";
 import SettingsCase, { SettingsRepositoryInterface } from "./SettingsCase";
 
 export interface ReviewCreation {
@@ -72,6 +72,10 @@ export default class ReviewCase {
             ...data,
             registrationDate: new Date(),
         });
+    }
+
+    public async filter(filter: Filter<ReviewInterface>) {
+        return this.repository.filter(filter);
     }
 
     public async resultChart(filter: ReviewChartFilter): Promise<ReviewResultChart[]> {

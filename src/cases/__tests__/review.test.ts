@@ -46,5 +46,12 @@ describe("Testes nas avaliações", () => {
             })
         })
         done();
+    });
+    test('listagem', async done => {
+        const list = await useCase.filter({});
+        expect(list instanceof Array).toBeTruthy();
+        if (!(list instanceof Array)) throw new Error();
+        expect(list.length).toBe(db.reviews.length);
+        done();
     })
 })
