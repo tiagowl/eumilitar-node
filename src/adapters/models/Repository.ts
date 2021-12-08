@@ -70,8 +70,6 @@ export default abstract class Repository<Model, Interface, Entity> {
                 'Authorization': `Basic ${this.context.settings.hotmart.token}`,
                 'Content-Type': 'application/json',
             };
-            // tslint:disable-next-line
-            console.log(params, headers);
             const response = await this.context.http({
                 url,
                 headers,
