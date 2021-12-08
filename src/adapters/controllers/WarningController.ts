@@ -13,14 +13,21 @@ interface WarningCreation {
 }
 
 const schema = yup.object().shape({
-    title: yup.string().required('O campo "Título" é obrigatório')
-        .max(200, 'Máximo de 200 caractéres no título'),
-    message: yup.string().when('image', {
-        is: (val: any) => !val,
-        then: yup.string().required('A mensagem é obrigatória'),
-    }).when('image', {
-        is: (val: any) => !!val,
-        then: yup.string().nullable().default(null).transform(() => null),
+    title: yup.string()
+        .max(200, 'Máximo de 200 caractéres no título')
+        .when('active', {
+            is: true,
+            then: yup.string().required('O campo "Título" é obrigatório'),
+            otherwise: yup.string().nullable().default(''),
+        }),
+    message: yup.string().when('active', {
+        is: true,
+        then: yup.string().when('image', {
+            is: (val: any) => !!val,
+            then: yup.string().nullable().default('').transform(() => ''),
+            otherwise: yup.string().required('A mensagem é obrigatória'),
+        }),
+        otherwise: yup.string().nullable().default(''),
     }),
     image: yup.string().max(300).nullable(true).default(null),
     active: yup.bool().required('É preciso informar se estará ativo ou não'),
@@ -49,9 +56,7 @@ export default class WarningController extends Controller {
             const created = await this.useCase.updateOrCreate(validated);
             return await this.parseEntity(created);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -61,9 +66,7 @@ export default class WarningController extends Controller {
             if (!recovered) return;
             return await this.parseEntity(recovered);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 }
