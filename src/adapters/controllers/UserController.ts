@@ -8,6 +8,7 @@ import { Paginated } from '../../cases/interfaces';
 import _ from 'lodash';
 import { Filter } from '../../cases/interfaces';
 import ReviewController from './ReviewController';
+import { Errors } from '../../cases/ErrorCase';
 
 export type UserResponse = {
     id: number;
@@ -135,7 +136,7 @@ export default class UserController extends Controller {
             return await this.parseEntity(user);
         } catch (error: any) {
             this.logger.error(error);
-            if (error.code === 'not_found') throw { message: 'Usuário não encontrado', status: 404 };
+            if (error.code === Errors.NOT_FOUND) throw { message: 'Usuário não encontrado', status: 404 };
             throw { message: error.message, status: 500 };
         }
     }

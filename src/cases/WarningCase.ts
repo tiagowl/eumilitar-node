@@ -31,7 +31,7 @@ export default class WarningCase {
     }
 
     public async updateOrCreate(data: WarningCreation) {
-        if (!data.image && !data.message) throw new CaseError('É preciso informar a mensagem ou uma imagem', Errors.INVALID);
+        if (!data.image && !data.message && data.active) throw new CaseError('É preciso informar a mensagem ou uma imagem', Errors.INVALID);
         if (data.image && data.message) throw new CaseError('Informe apenas uma mensagem ou uma imagem', Errors.INVALID);
         const exists = await this.repository.get({});
         const insertion = { ...data, lastModified: new Date(), };
