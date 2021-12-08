@@ -18,16 +18,16 @@ const schema = yup.object().shape({
         .when('active', {
             is: true,
             then: yup.string().required('O campo "Título" é obrigatório'),
-            otherwise: yup.string().nullable().default(''),
+            otherwise: yup.string().nullable().default(null),
         }),
     message: yup.string().when('active', {
         is: true,
         then: yup.string().when('image', {
             is: (val: any) => !!val,
-            then: yup.string().nullable().default('').transform(() => ''),
+            then: yup.string().nullable().default(null).transform(() => null),
             otherwise: yup.string().required('A mensagem é obrigatória'),
         }),
-        otherwise: yup.string().nullable().default(''),
+        otherwise: yup.string().nullable().default(null),
     }),
     image: yup.string().max(300).nullable(true).default(null),
     active: yup.bool().required('É preciso informar se estará ativo ou não'),
