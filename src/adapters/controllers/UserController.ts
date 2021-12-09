@@ -1,16 +1,15 @@
 import * as yup from 'yup';
-import UserUseCase, { UserCreation, UserFilter, UserUpdate } from '../../cases/UserCase';
-import User, { AccountPermission, accountPermissions, accountStatus, AccountStatus, UserInterface } from '../../entities/User';
+import UserUseCase, { UserCreation as DefaultUserCration, UserFilter, UserUpdate as DefaultUserUpdate } from '../../cases/UserCase';
+import User, { AccountPermission, accountPermissions, accountStatus, AccountStatus, Permissions, UserInterface } from '../../entities/User';
 import UserRepository from '../models/UserRepository';
 import Controller, { paginationSchema } from './Controller';
 import { Context } from '../interfaces';
 import { Paginated } from '../../cases/interfaces';
 import _ from 'lodash';
 import { Filter } from '../../cases/interfaces';
-import ReviewController from './ReviewController';
 import { Errors } from '../../cases/ErrorCase';
 
-export type UserResponse = {
+export interface UserResponse {
     id: number;
     firstName: string;
     lastName: string;
@@ -19,7 +18,29 @@ export type UserResponse = {
     permission: AccountPermission;
     creationDate: Date;
     lastModified: Date;
-};
+}
+
+export interface UserUpdate {
+    firstName: string;
+    lastName: string;
+    email?: string;
+    status?: AccountStatus;
+    permission?: AccountPermission;
+    permissions?: Permissions[];
+    password?: string;
+    phone?: string;
+}
+
+export interface UserCreation {
+    firstName: string;
+    lastName: string;
+    email: string;
+    status: AccountStatus;
+    permission: AccountPermission;
+    password: string;
+    phone?: string;
+    permissions: Permissions[];
+}
 
 const updateSchemaBase = {
     firstName: yup.string().required('O campo "Nome" é obrigatório'),
@@ -27,6 +48,13 @@ const updateSchemaBase = {
     email: yup.string().email('Email inválido').required('O campo "Email" é obrigatório'),
     status: yup.string().required('O campo "Status" é obrigatório').is(accountStatus, 'Status inválido'),
     permission: yup.string().required('O campo "Permissão" é obrigatório').is(accountPermissions, 'Permissão inválida'),
+    permissions: yup.mixed()
+        .when('permission', {
+            is: (val: any) => val === 'admin',
+            then: yup.array().required('É preciso informar as permissões')
+                .of(yup.string().is(Object.values(Permissions), 'Permissão inválida'))
+        })
+        .transform(val => !!val ? new Set(val) : val),
 };
 
 const updateSchema = yup.object().shape({
@@ -83,6 +111,7 @@ export default class UserController extends Controller {
             lastModified: entity.lastModified,
             fullName: entity.fullName,
             phone: entity.phone,
+            permissions: [...entity.permissions],
         };
     }
 
@@ -106,7 +135,7 @@ export default class UserController extends Controller {
 
     public async create(data: UserCreation) {
         try {
-            const validated = await this.validate(data, schema);
+            const validated = await this.validate(data, schema) as unknown as DefaultUserCration;
             const created = await this.useCase.create(validated);
             return await this.parseEntity(created);
         } catch (error: any) {
@@ -120,7 +149,7 @@ export default class UserController extends Controller {
         try {
             if (agent.id !== id && agent.permission !== 'admin') throw { message: 'Não autorizado', status: 403 };
             const validationSchema = agent.id === id ? updateProfileSchema : updateSchema;
-            const validated = await this.validate(data, validationSchema);
+            const validated = await this.validate(data, validationSchema) as unknown as DefaultUserUpdate;
             const updated = await this.useCase.update(id, validated);
             return await this.parseEntity(updated);
         } catch (error: any) {

@@ -67,6 +67,7 @@ export default abstract class Controller {
                     status: 400,
                 };
             }
+            this.logger.error(error);
             throw { message: 'Erro ao validar dados', status: 500 };
         }
     }
@@ -75,8 +76,8 @@ export default abstract class Controller {
         this.logger.error(error);
         if (error instanceof CaseError) {
             if (error.code === Errors.NOT_FOUND) return { message: error.message, status: 404 };
-                if (error.code === Errors.UNAUTHORIZED) throw { message: error.message, status: 401 };
-                return { message: error.message, status: 400 };
+            if (error.code === Errors.UNAUTHORIZED) throw { message: error.message, status: 401 };
+            return { message: error.message, status: 400 };
         }
         return { message: error.message || 'Erro interno', status: 500 };
     }

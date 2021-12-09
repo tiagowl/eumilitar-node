@@ -1,8 +1,7 @@
 import faker from "faker";
-import { userFactory, db, saveUser, deleteUser, contextFactory } from "../../../tests/shortcuts";
-import { UserUpdate } from "../../cases/UserCase";
-import User from "../../entities/User";
-import UserController from "../controllers/UserController";
+import { userFactory, db, saveUser, deleteUser, contextFactory, jp } from "../../../tests/shortcuts";
+import User, { Permissions } from "../../entities/User";
+import UserController, { UserUpdate } from "../controllers/UserController";
 import { EssayThemeService } from "../models/EssayThemeRepository";
 import UserRepository, { UserService } from "../models/UserRepository";
 
@@ -60,6 +59,7 @@ describe('#7 Testes no usuário', () => {
             password: faker.internet.password(),
             permission: 'admin',
             status: 'active',
+            permissions: [Permissions.CORRECT_ESSAYS],
         });
         expect(created).toBeDefined();
         expect(created.id).toBeDefined();
@@ -88,11 +88,12 @@ describe('#7 Testes no usuário', () => {
             lastName: faker.name.lastName(),
             permission: 'student',
             status: 'active',
+            permissions: [Permissions.MANAGE_PRODUCTS],
         };
         const updated = await controller.update(user.user_id, data, agentAdmin);
         Object.entries(data).forEach(([key, val]) => {
             if (key === 'password') expect(updated[key as keyof typeof updated]).toBeUndefined();
-            else expect(updated[(key as keyof typeof updated)]).toBe(val);
+            else expect(updated[(key as keyof typeof updated)], jp(data)).toStrictEqual(val);
         });
         done();
     });
