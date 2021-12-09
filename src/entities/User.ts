@@ -16,6 +16,7 @@ export interface UserInterface {
     creationDate: Date;
     lastModified: Date;
     phone?: string;
+    permissions: Set<Permissions>;
 }
 
 export interface UserData extends UserInterface {
@@ -30,6 +31,22 @@ export interface UserUpdateData {
     permission?: AccountPermission;
     password?: string;
     phone?: string;
+    permissions?: Set<Permissions>;
+}
+
+export enum Permissions {
+    SEE_USERS,
+    UPDATE_STUDENTS,
+    CREATE_STUDENTS,
+    CREATE_USERS,
+    CREATE_SINGLE_ESSAY,
+    UPDATE_USER_PASSWORD,
+    SEE_DASHBOARD,
+    MANAGE_THEMES,
+    MANAGE_PRODUCTS,
+    SEE_ESSAYS,
+    CORRECT_ESSAYS,
+    UPDATE_SETTINGS,
 }
 
 export default class User implements UserInterface {
@@ -43,6 +60,7 @@ export default class User implements UserInterface {
     #lastModified: Date;
     #permission: AccountPermission;
     #phone?: string;
+    #permissions: Set<Permissions>;
 
     constructor(data: UserData) {
         this.#id = data.id;
@@ -55,6 +73,7 @@ export default class User implements UserInterface {
         this.#lastModified = data.lastModified;
         this.#permission = data.permission;
         this.#phone = data.phone;
+        this.#permissions = data.permissions || new Set();
     }
 
     get data() {
@@ -69,6 +88,7 @@ export default class User implements UserInterface {
             lastModified: this.#lastModified,
             permission: this.#permission,
             phone: this.#phone,
+            permissions: this.#permissions,
         };
     }
 
@@ -121,6 +141,12 @@ export default class User implements UserInterface {
     }
     get phone() { return this.#phone; }
 
+    set permissions(value: Set<Permissions>) {
+        this.#permissions = value;
+        this.updateDate();
+    }
+    get permissions() { return this.#permissions; }
+
     public async checkPassword(password: string) {
         return compare(password, this.#password.replace(/^\$2y(.+)$/i, '$2a$1'));
     }
@@ -139,7 +165,7 @@ export default class User implements UserInterface {
         return this;
     }
 
-    private async updateDate() {
+    private updateDate() {
         this.#lastModified = new Date();
     }
 
