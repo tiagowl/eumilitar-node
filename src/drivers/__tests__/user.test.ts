@@ -5,9 +5,10 @@ import { userFactory, db, saveUser, deleteUser, appFactory, jp, generateConfirma
 import { EssayThemeService } from "../../adapters/models/EssayThemeRepository";
 import { RecoveryService } from "../../adapters/models/RecoveryRepository";
 import { UserService } from "../../adapters/models/UserRepository";
-import { UserUpdate } from "../../cases/UserCase";
+import { UserUpdate } from "../../adapters/controllers/UserController";
 import { authenticate } from "./tools";
 import crypto from "crypto";
+import { Permissions } from "../../entities/User";
 
 describe('#1 Teste na api do usuário', () => {
     const user = userFactory({ permission: 1 });
@@ -212,6 +213,7 @@ describe('#1 Teste na api do usuário', () => {
                 password: faker.internet.password(),
                 permission: 'admin',
                 status: 'active',
+                permissions: [Permissions.CREATE_USERS]
             });
         expect(status, jp({ body, error, header })).toBe(201);
         expect(body.email).toBeDefined();
@@ -240,6 +242,7 @@ describe('#1 Teste na api do usuário', () => {
             lastName: faker.name.lastName(),
             permission: 'admin',
             status: 'active',
+            permissions: [Permissions.CREATE_USERS],
         };
         const { body, status } = await api.put(`/users/${user.user_id}/`)
             .send(data)
@@ -249,7 +252,7 @@ describe('#1 Teste na api do usuário', () => {
         expect(body.password).toBeUndefined();
         Object.entries(data).forEach(([key, val]) => {
             if (key === 'password') expect(body[key as keyof typeof body]).toBeUndefined();
-            else expect(body[(key as keyof typeof body)]).toBe(val);
+            else expect(body[(key as keyof typeof body)]).toStrictEqual(val);
         });
         if (!data.email) throw new Error();
         user.email = data.email;
