@@ -52,6 +52,7 @@ export const userEntityFactory = (inject?: any): UserData => {
         permission: 'admin',
         password: hashPassword(faker.internet.password()),
         phone: faker.phone.phoneNumber(),
+        permissions: new Set(),
     }
     return Object.assign(data, inject);
 }

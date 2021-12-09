@@ -1,4 +1,4 @@
-import User, { AccountStatus, AccountPermission, UserInterface, UserData } from "../entities/User";
+import User, { AccountStatus, AccountPermission, UserInterface, UserData, Permissions } from "../entities/User";
 import bcrypt from 'bcrypt';
 import CaseError, { Errors } from "./ErrorCase";
 import { createMethod, Filter, filterMethod, getMethod, Paginated, Pagination, updateMethod } from "./interfaces";
@@ -28,6 +28,7 @@ export interface UserCreation {
     status: AccountStatus;
     permission: AccountPermission;
     password: string;
+    permissions?: Set<Permissions>;
     phone?: string;
 }
 
@@ -37,6 +38,7 @@ export type UserUpdate = {
     email?: string;
     status?: AccountStatus;
     permission?: AccountPermission;
+    permissions?: Set<Permissions>;
     password?: string;
     phone?: string
 };
@@ -117,6 +119,9 @@ export default class UserUseCase {
     }
 
     public async create(data: UserCreation) {
+        if (data.permission === 'admin' && !data.permissions) {
+            throw new CaseError('É preciso informar as permissões', Errors.INVALID);
+        }
         return this.repository.create({
             ...data,
             password: await this.hashPassword(data.password),
@@ -126,6 +131,9 @@ export default class UserUseCase {
     }
 
     public async update(id: number, data: UserUpdate) {
+        if (data.permission === 'admin' && 'permissions' in data && !data.permissions) {
+            throw new CaseError('É preciso informar as permissões', Errors.INVALID);
+        }
         const user = await this.get(id);
         const insertion = !!data.password ? {
             ...data,

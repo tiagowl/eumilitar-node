@@ -1,6 +1,5 @@
 import faker from "faker";
-import { hashPassword, userEntityFactory } from "../../../tests/shortcuts";
-import User from "../../entities/User";
+import User, { Permissions } from "../../entities/User";
 import UserUseCase, { UserFilter, UserRepositoryInterface, UserSavingData } from "../UserCase";
 import getDb, { defaultPassword } from "./repositories/database";
 import UserTestRepository from "./repositories/UserTestRepository";
@@ -54,7 +53,10 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
             password: faker.internet.password(),
             permission: 'admin',
             status: 'active',
+            permissions: new Set([Permissions.SEE_DASHBOARD, Permissions.MANAGE_PRODUCTS]),
         });
+        expect(created.permissions.has(Permissions.SEE_DASHBOARD)).toBeTruthy();
+        expect(created.permissions.has(Permissions.UPDATE_USER_PASSWORD)).toBeFalsy();
         expect(created).toBeInstanceOf(User);
         done();
     });
@@ -66,8 +68,11 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
             password: faker.internet.password(),
             permission: 'admin',
             status: 'active',
+            permissions: new Set([Permissions.CORRECT_ESSAYS, Permissions.MANAGE_PRODUCTS]),
         });
         expect(updated).toBeInstanceOf(User);
+        expect(updated.permissions.has(Permissions.CORRECT_ESSAYS)).toBeTruthy();
+        expect(updated.permissions.has(Permissions.UPDATE_USER_PASSWORD)).toBeFalsy();
         const recovered = await useCase.get(0);
         expect(updated).toMatchObject(recovered);
         done();

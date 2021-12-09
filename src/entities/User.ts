@@ -16,7 +16,7 @@ export interface UserInterface {
     creationDate: Date;
     lastModified: Date;
     phone?: string;
-    permissions: Set<Permissions>;
+    permissions?: Set<Permissions>;
 }
 
 export interface UserData extends UserInterface {
@@ -35,18 +35,18 @@ export interface UserUpdateData {
 }
 
 export enum Permissions {
-    SEE_USERS,
-    UPDATE_STUDENTS,
-    CREATE_STUDENTS,
-    CREATE_USERS,
-    CREATE_SINGLE_ESSAY,
-    UPDATE_USER_PASSWORD,
-    SEE_DASHBOARD,
-    MANAGE_THEMES,
-    MANAGE_PRODUCTS,
-    SEE_ESSAYS,
-    CORRECT_ESSAYS,
-    UPDATE_SETTINGS,
+    SEE_USERS = 'SEE_USERS',
+    UPDATE_STUDENTS = 'UPDATE_STUDENTS',
+    CREATE_STUDENTS = 'CREATE_STUDENTS,',
+    CREATE_USERS = 'CREATE_USERS',
+    CREATE_SINGLE_ESSAY = 'CREATE_SINGLE_ESSAY',
+    UPDATE_USER_PASSWORD = 'UPDATE_USER_PASSWORD',
+    SEE_DASHBOARD = 'SEE_DASHBOARD',
+    MANAGE_THEMES = 'MANAGE_THEMES',
+    MANAGE_PRODUCTS = 'MANAGE_PRODUCTS',
+    SEE_ESSAYS = 'SEE_ESSAYS',
+    CORRECT_ESSAYS = 'CORRECT_ESSAYS',
+    UPDATE_SETTINGS = 'UPDATE_SETTINGS',
 }
 
 export default class User implements UserInterface {
@@ -59,8 +59,8 @@ export default class User implements UserInterface {
     #creationDate: Date;
     #lastModified: Date;
     #permission: AccountPermission;
-    #phone?: string;
     #permissions: Set<Permissions>;
+    #phone?: string;
 
     constructor(data: UserData) {
         this.#id = data.id;
@@ -72,11 +72,11 @@ export default class User implements UserInterface {
         this.#creationDate = data.creationDate;
         this.#lastModified = data.lastModified;
         this.#permission = data.permission;
-        this.#phone = data.phone;
         this.#permissions = data.permissions || new Set();
+        this.#phone = data.phone;
     }
 
-    get data() {
+    get data(): UserData {
         return {
             id: this.#id,
             firstName: this.#firstName,
@@ -160,6 +160,7 @@ export default class User implements UserInterface {
             this.#permission = data.permission || this.#permission;
             this.#password = data.password || this.#password;
             this.#phone = data.phone || this.#phone;
+            this.#permissions = data.permissions || new Set();
             this.updateDate();
         }
         return this;

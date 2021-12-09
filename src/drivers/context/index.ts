@@ -1,12 +1,12 @@
-import { createLogger } from "winston";
+import { Context, Settings } from "../interfaces";
 import connect from "./database";
 import createHttpClient from "./httpClient";
-import { Context, Settings } from "../interfaces";
+import createLogger from "./logger";
 import createTransport from "./smtp";
 import createStorage from "./storage";
 import createSMS from "./sms";
 
-export default function createContext(settings: Settings): Context {
+export default function createContext(settings: Settings): Readonly<Context> {
     const logger = createLogger(settings.logger);
     return Object.freeze({
         logger,

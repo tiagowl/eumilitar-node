@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import faker from 'faker';
-import User from '../User';
+import User, { Permissions } from '../User';
 
 export function hashPassword(password: string) {
     const salt = bcrypt.genSaltSync(0);
@@ -21,8 +21,11 @@ test('Testes na entidade User', async (done) => {
         permission: 'admin',
         password: hashPassword(faker.internet.password()),
         phone: faker.phone.phoneNumber(),
+        permissions: new Set([Permissions.CORRECT_ESSAYS]),
     });
     expect(user.checkPassword(password)).toBeTruthy();
+    expect(user.permissions.has(Permissions.CORRECT_ESSAYS)).toBeTruthy();
+    expect(user.permissions.has(Permissions.CREATE_USERS)).toBeFalsy();
     user.update({
         firstName: 'Denis',
         lastName: 'Antonio',
