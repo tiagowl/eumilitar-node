@@ -2,6 +2,7 @@ import { Context } from "../../interfaces";
 import { Router } from 'express';
 import { checkAuth, checkPermission, isAuthenticated } from "./tools";
 import UserController from "../../../adapters/controllers/UserController";
+import { Permissions } from "../../../entities/User";
 
 export default (context: Context) => {
     const controller = new UserController(context);
@@ -28,7 +29,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/users/', checkPermission(context, ['admin']), async (req, res) => {
+        .get('/users/', checkPermission(context, ['admin'], [Permissions.SEE_USERS]), async (req, res) => {
             try {
                 const response = await controller.all(req.query || {});
                 res.status(200).json(response);
@@ -48,7 +49,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/users/:id/', checkPermission(context, ['admin']), async (req, res) => {
+        .get('/users/:id/', checkPermission(context, ['admin'], [Permissions.SEE_USERS]), async (req, res) => {
             try {
                 const { id } = req.params;
                 const user = await controller.get(Number(id));

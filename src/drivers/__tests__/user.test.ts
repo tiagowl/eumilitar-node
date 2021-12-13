@@ -259,7 +259,7 @@ describe('#1 Teste na api do usuário', () => {
         done();
     });
     test('#199 recuperação do usuário', async done => {
-        const header = await authenticate(user, api);
+        const header = await authenticate(admin, api);
         const { body, status } = await api.get(`/users/${user.user_id}/`)
             .set('Authorization', header);
         expect(body.message, jp({ header, body })).toBeUndefined();

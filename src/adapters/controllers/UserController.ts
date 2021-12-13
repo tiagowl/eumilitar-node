@@ -169,4 +169,16 @@ export default class UserController extends Controller {
             throw { message: error.message, status: 500 };
         }
     }
+
+    public async hasPermissions(userId: number, permissions: Permissions[]) {
+        try {
+            const user = await this.useCase.get(userId);
+            return await permissions.reduce(async (resultPromise, permission) => {
+                const result = await resultPromise;
+                return user.permissions.has(permission) && result;
+            }, Promise.resolve(true) as Promise<boolean>);
+        } catch (error: any) {
+            throw await this.processError(error);
+        }
+    }
 }
