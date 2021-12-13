@@ -1,12 +1,13 @@
 import { Router } from "express";
 import SettingsController from "../../../adapters/controllers/SettingsController";
+import { Permissions } from "../../../entities/User";
 import { Context } from "../../interfaces";
 import { checkPermission, isAuthenticated } from "./tools";
 
 export default (context: Context) => {
     const controller = new SettingsController(context);
     return Router()
-        .put('/settings/', checkPermission(context, ['admin']), async (req, res) => {
+        .put('/settings/', checkPermission(context, ['admin'], [Permissions.UPDATE_SETTINGS]), async (req, res) => {
             try {
                 const settings = await controller.updateOrCreate(req.body);
                 res.json(settings).status(200);
