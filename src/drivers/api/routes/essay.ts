@@ -75,7 +75,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/essays/charts/sent/', checkPermission(context, ['admin']), async (req, res) => {
+        .get('/essays/charts/sent/', checkPermission(context, ['admin'], [Permissions.SEE_DASHBOARD]), async (req, res) => {
             try {
                 const chart = await controller.sentChart(req.query);
                 res.status(200).json(chart);
@@ -85,7 +85,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/essays/charts/evaluated/', checkPermission(context, ['admin']), async (req, res) => {
+        .get('/essays/charts/evaluated/', checkPermission(context, ['admin'], [Permissions.SEE_DASHBOARD]), async (req, res) => {
             try {
                 const chart = await controller.evaluatedChart(req.query);
                 res.status(200).json(chart);
@@ -95,7 +95,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/essays/charts/avg-correction-time/', checkPermission(context, ['admin']), async (req, res) => {
+        .get('/essays/charts/avg-correction-time/', checkPermission(context, ['admin'], [Permissions.SEE_DASHBOARD]), async (req, res) => {
             try {
                 const chart = await controller.avgTimeCorrection(req.query);
                 res.status(200).json(chart);

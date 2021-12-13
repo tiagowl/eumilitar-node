@@ -1,5 +1,6 @@
 import { Router } from "express";
 import ReviewController from "../../../adapters/controllers/ReviewController";
+import { Permissions } from "../../../entities/User";
 import { Context } from "../../interfaces";
 import { checkPermission, isAuthenticated } from "./tools";
 
@@ -31,7 +32,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/reviews/charts/result/', checkPermission(context, ['admin']), async (req, res) => {
+        .get('/reviews/charts/result/', checkPermission(context, ['admin'], [Permissions.SEE_DASHBOARD]), async (req, res) => {
             try {
                 const chart = await controller.resultChart(req.query);
                 res.json(chart).status(200);
@@ -41,7 +42,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/reviews/score/', checkPermission(context, ['admin']), async (req, res) => {
+        .get('/reviews/score/', checkPermission(context, ['admin'], [Permissions.SEE_DASHBOARD]), async (req, res) => {
             try {
                 const score = await controller.score(req.query);
                 res.json(score).status(200);
@@ -51,7 +52,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/reviews/', checkPermission(context, ['admin']), async (req, res) => {
+        .get('/reviews/', checkPermission(context, ['admin'], [Permissions.SEE_DASHBOARD]), async (req, res) => {
             try {
                 const buffer = await controller.listAsXLXS(req.query);
                 res.setHeader('Content-Disposition', 'attachment; filename="filename.csv');

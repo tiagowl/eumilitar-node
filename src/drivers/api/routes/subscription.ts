@@ -3,6 +3,7 @@ import { Router } from 'express';
 import SubscriptionController, { OrderData } from "../../../adapters/controllers/SubscriptionController";
 import { checkAuth, checkPermission, isAuthenticated } from "./tools";
 import { SubscriptionCreation } from "../../../cases/SubscriptionCase";
+import { Permissions } from "../../../entities/User";
 
 export default (context: Context) => {
     const controller = new SubscriptionController(context);
@@ -83,7 +84,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/subscriptions/charts/actives/', checkPermission(context, ['admin']), async (req, res) => {
+        .get('/subscriptions/charts/actives/', checkPermission(context, ['admin'], [Permissions.SEE_DASHBOARD]), async (req, res) => {
             try {
                 const chart = await controller.activeChart(req.query);
                 res.status(200).json(chart);
