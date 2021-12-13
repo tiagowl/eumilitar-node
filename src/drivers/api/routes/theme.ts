@@ -2,13 +2,14 @@ import { Context } from "../../interfaces";
 import { Router } from 'express';
 import { checkPermission, isAuthenticated } from "./tools";
 import EssayThemeController from "../../../adapters/controllers/EssayThemeController";
+import { Permissions } from "../../../entities/User";
 
 export default (context: Context) => {
     const { storage } = context;
     const controller = new EssayThemeController(context);
     return Router({})
         .post('/themes/',
-            checkPermission(context, ['admin']),
+            checkPermission(context, ['admin'], [Permissions.MANAGE_THEMES]),
             storage.single('themeFile'),
             async (req, res) => {
                 try {
@@ -37,7 +38,7 @@ export default (context: Context) => {
             }
         })
         .put('/themes/:id/',
-            checkPermission(context, ['admin']),
+            checkPermission(context, ['admin'], [Permissions.MANAGE_THEMES]),
             storage.single('themeFile'),
             async (req, res) => {
                 try {
@@ -56,7 +57,7 @@ export default (context: Context) => {
                     res.end();
                 }
             })
-        .delete('/themes/:id/', checkPermission(context, ['admin']), async (req, res) => {
+        .delete('/themes/:id/', checkPermission(context, ['admin'], [Permissions.MANAGE_THEMES]), async (req, res) => {
             try {
                 const theme = await controller.deactivate(Number(req.params.id));
                 res.status(200).json(theme);
