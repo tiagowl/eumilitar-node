@@ -5,7 +5,7 @@ import settings from '../src/settings';
 import { Mail, MailData } from '../src/adapters/interfaces';
 import crypto from 'crypto';
 import { RecoveryService } from '../src/adapters/models/RecoveryRepository';
-import User, { UserData, UserInterface } from '../src/entities/User';
+import User, { Permissions, UserData, UserInterface } from '../src/entities/User';
 import createStorage from '../src/drivers/context/storage';
 import Application from '../src/drivers/api';
 import { UserModel } from '../src/adapters/models/UserRepository';
@@ -23,6 +23,8 @@ export const logger = createLogger(settings.logger);
 export const mails: MailData[] = [];
 export const sms: any[] = [];
 
+const fullPermissions = Object.keys(Permissions);
+
 export const userFactory = (inject?: Partial<UserModel>) => {
     const data = {
         email: faker.internet.email(),
@@ -37,6 +39,7 @@ export const userFactory = (inject?: Partial<UserModel>) => {
         phone: faker.phone.phoneNumber('1122344445555'),
     }
     Object.assign(data, inject);
+    if (data.permission === 1 && !('permissions' in data)) Object.assign(data, { permissions: JSON.stringify(fullPermissions) })
     return data;
 }
 
@@ -74,8 +77,9 @@ export function hashPassword(password: string) {
     return bcrypt.hashSync(password, salt);
 }
 
-export async function saveUser(user: any, service: Knex.QueryBuilder) {
-    const userDB = { ...user, passwd: hashPassword(user.passwd) };
+export async function saveUser(user: any | any[], service: Knex.QueryBuilder) {
+    const hasher = (val: any) => ({ ...val, passwd: hashPassword(val.passwd) });
+    const userDB = user instanceof Array ? user.map(hasher) : hasher(user);
     return service.insert(userDB);
 }
 

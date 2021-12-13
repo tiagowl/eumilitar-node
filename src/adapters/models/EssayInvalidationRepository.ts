@@ -18,12 +18,12 @@ export interface EssayInvalidationModel {
 export const EssayInvalidationService = (db: Knex) => db<Partial<EssayInvalidationModel>, EssayInvalidationModel[]>('essay_invalidations');
 
 const fieldsMap: FieldsMap<EssayInvalidationModel, EssayInvalidationInterface> = [
-    [['id', prsr.nb], ['id', prsr.nb]],
-    [['comment', prsr.st], ['comment', prsr.st]],
-    [['corrector', prsr.nb], ['corrector', prsr.nb]],
-    [['essay', prsr.nb], ['essay', prsr.nb]],
-    [['invalidationDate', prsr.dt], ['invalidationDate', prsr.dt]],
-    [['reason', prsr.st], ['reason', prsr.st]],
+    [['id', prsr.number], ['id', prsr.number]],
+    [['comment', prsr.string], ['comment', prsr.string]],
+    [['corrector', prsr.number], ['corrector', prsr.number]],
+    [['essay', prsr.number], ['essay', prsr.number]],
+    [['invalidationDate', prsr.date], ['invalidationDate', prsr.date]],
+    [['reason', prsr.string], ['reason', prsr.string]],
 ];
 
 export default class EssayInvalidationRepository extends Repository<EssayInvalidationModel, EssayInvalidationInterface, EssayInvalidation> implements EssayInvalidationRepositoryInterface {

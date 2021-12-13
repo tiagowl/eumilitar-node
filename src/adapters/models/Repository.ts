@@ -8,10 +8,12 @@ export type FieldsMap<Model, Interface> = [[keyof Model | null, (val: any) => an
 export type Constructor<T> = new (...args: any[]) => T;
 
 export const prsr = {
-    nb: (val: any) => !!val || val === 0 ? Number(val) : val,
-    bl: (val: any) => !!val || val === 0 ? Boolean(val) : val,
-    dt: (val: any) => !!val || val === 0 ? new Date(val) : val,
-    st: (val: any) => !!val || val === 0 || val === false ? String(val) : val,
+    number: (val: any) => !!val || val === 0 ? Number(val) : val,
+    bool: (val: any) => !!val || val === 0 ? Boolean(val) : val,
+    date: (val: any) => !!val || val === 0 ? new Date(val) : val,
+    string: (val: any) => !!val || val === 0 || val === false ? String(val) : val,
+    json: (val: any) => !!val ? typeof val === 'string' ? JSON.parse(val) : JSON.stringify(val) : val,
+    set: (val: any) => !!val ? typeof val === 'string' ? new Set(JSON.parse(val)) : JSON.stringify([...val]) : val,
 };
 
 export default abstract class Repository<Model, Interface, Entity> {

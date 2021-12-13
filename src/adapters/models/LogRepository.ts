@@ -19,14 +19,14 @@ export interface LogModel {
 export const LogService = (db: Knex) => db<Partial<LogModel>, LogModel[]>('logs');
 
 const fieldsMap: FieldsMap<LogModel, LogInterface> = [
-    [['id', prsr.nb], ['id', prsr.nb]],
-    [['user', prsr.nb], ['user', prsr.nb]],
-    [['registrationDate', prsr.dt], ['registrationDate', prsr.dt]],
-    [['event', prsr.st], ['event', prsr.st]],
-    [['userAgent', prsr.st], ['userAgent', prsr.st]],
-    [['ip', prsr.st], ['ip', prsr.st]],
-    [['error', prsr.st], ['error', prsr.st]],
-    [['details', prsr.st], ['details', prsr.st]],
+    [['id', prsr.number], ['id', prsr.number]],
+    [['user', prsr.number], ['user', prsr.number]],
+    [['registrationDate', prsr.date], ['registrationDate', prsr.date]],
+    [['event', prsr.string], ['event', prsr.string]],
+    [['userAgent', prsr.string], ['userAgent', prsr.string]],
+    [['ip', prsr.string], ['ip', prsr.string]],
+    [['error', prsr.string], ['error', prsr.string]],
+    [['details', prsr.string], ['details', prsr.string]],
 ];
 
 export default class LogRepository extends Repository<LogModel, LogInterface, Log> implements LogRepositoryInterface {

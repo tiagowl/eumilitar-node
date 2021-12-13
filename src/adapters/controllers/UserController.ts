@@ -39,7 +39,7 @@ export interface UserCreation {
     permission: AccountPermission;
     password: string;
     phone?: string;
-    permissions: Permissions[];
+    permissions?: Permissions[];
 }
 
 const updateSchemaBase = {
@@ -52,7 +52,7 @@ const updateSchemaBase = {
         .when('permission', {
             is: (val: any) => val === 'admin',
             then: yup.array().required('É preciso informar as permissões')
-                .of(yup.string().is(Object.values(Permissions), 'Permissão inválida'))
+                .of(yup.string().is(Object.keys(Permissions), 'Permissão inválida'))
         })
         .transform(val => !!val ? new Set(val) : val),
 };
@@ -111,7 +111,7 @@ export default class UserController extends Controller {
             lastModified: entity.lastModified,
             fullName: entity.fullName,
             phone: entity.phone,
-            permissions: [...entity.permissions],
+            permissions: !!entity.permissions ? [...entity.permissions] : null,
         };
     }
 
@@ -147,7 +147,7 @@ export default class UserController extends Controller {
 
     public async update(id: number, data: UserUpdate, agent: User) {
         try {
-            if (agent.id !== id && agent.permission !== 'admin') throw { message: 'Não autorizado', status: 403 };
+            if (!agent || (agent.id !== id && agent.permission !== 'admin')) throw { message: 'Não autorizado', status: 403 };
             const validationSchema = agent.id === id ? updateProfileSchema : updateSchema;
             const validated = await this.validate(data, validationSchema) as unknown as DefaultUserUpdate;
             const updated = await this.useCase.update(id, validated);

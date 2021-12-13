@@ -27,16 +27,16 @@ const divider = ', ';
 export const EssayThemeService = (db: Knex) => db<Partial<EssayThemeInsertion>, EssayThemeModel[]>('essay_themes');
 
 const fieldsMap: FieldsMap<EssayThemeModel, EssayThemeInterface> = [
-    [['id', prsr.nb], ['id', prsr.nb]],
-    [['title', prsr.st], ['title', prsr.st]],
-    [['helpText', prsr.st], ['helpText', prsr.st]],
-    [['file', prsr.st], ['file', prsr.st]],
+    [['id', prsr.number], ['id', prsr.number]],
+    [['title', prsr.string], ['title', prsr.string]],
+    [['helpText', prsr.string], ['helpText', prsr.string]],
+    [['file', prsr.string], ['file', prsr.string]],
     [['deactivated', Boolean], ['deactivated', Boolean]],
-    [['endDate', prsr.dt], ['endDate', prsr.dt]],
-    [['startDate', prsr.dt], ['startDate', prsr.dt]],
-    [['lastModified', prsr.dt], ['lastModified', prsr.dt]],
+    [['endDate', prsr.date], ['endDate', prsr.date]],
+    [['startDate', prsr.date], ['startDate', prsr.date]],
+    [['lastModified', prsr.date], ['lastModified', prsr.date]],
     [['courses', (val: Set<Course>) => [...val].join(divider)], ['courses', (val: string) => new Set(val.split(divider) as Course[])]],
-    [['videoUrl', prsr.st], ['videoUrl', prsr.st]],
+    [['videoUrl', prsr.string], ['videoUrl', prsr.string]],
 ];
 
 export default class EssayThemeRepository extends Repository<EssayThemeModel, EssayThemeInterface, EssayTheme> implements EssayThemeRepositoryInterface {

@@ -103,7 +103,7 @@ export default class ReviewController extends Controller {
             const book = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(book, sheet, 'Avaliações');
             const buffer: Buffer = XLSX.write(book, {
-                'bookType': 'csv', 'type': 'binary', 'compression': true,
+                'bookType': 'csv', 'type': 'buffer', 'compression': true,
             });
             return buffer;
         } catch (error: any) {

@@ -23,9 +23,7 @@ describe('#7 Testes no usuário', () => {
         await saveUser(user, service);
         const themeService = EssayThemeService(db);
         await themeService.delete().del();
-        await saveUser(student, service);
-        await saveUser(admin, service);
-        await saveUser(corrector, service);
+        await saveUser([student, admin, corrector], service);
         agentStudent = await repository.toEntity(student);
         agentAdmin = await repository.toEntity(admin);
         agentCorrector = await repository.toEntity(corrector);

@@ -17,11 +17,11 @@ export interface ReviewModel {
 const ReviewService = (db: Knex) => db<Partial<ReviewModel>, ReviewModel[]>('reviews');
 
 const fieldsMap: FieldsMap<ReviewModel, ReviewInterface> = [
-    [['id', prsr.nb], ['id', prsr.nb]],
-    [['description', prsr.st], ['description', prsr.st]],
-    [['grade', prsr.nb], ['grade', prsr.nb]],
-    [['registrationDate', prsr.dt], ['registrationDate', prsr.dt]],
-    [['user', prsr.nb], ['user', prsr.nb]],
+    [['id', prsr.number], ['id', prsr.number]],
+    [['description', prsr.string], ['description', prsr.string]],
+    [['grade', prsr.number], ['grade', prsr.number]],
+    [['registrationDate', prsr.date], ['registrationDate', prsr.date]],
+    [['user', prsr.number], ['user', prsr.number]],
 ];
 
 export default class ReviewRepository extends Repository<ReviewModel, ReviewInterface, Review> implements ReviewRepositoryInterface {

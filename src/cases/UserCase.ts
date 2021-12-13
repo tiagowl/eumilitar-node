@@ -80,20 +80,12 @@ export default class UserUseCase {
     }
 
     public async authenticate(email: string, password: string): Promise<[AuthResponse, User | null]> {
-        try {
-            const user = await this.repository.get({ email });
-            const exists = user instanceof User;
-            const auth = {
-                email: exists,
-                password: !!user && await user.checkPassword(password),
-            };
-            return [auth, auth.password && auth.email ? user || null : null];
-        } catch (error: any) {
-            return [{
-                email: false,
-                password: false,
-            }, null];
-        }
+        const user = await this.repository.get({ email });
+        const auth = {
+            email: !!user,
+            password: !!user && await user.checkPassword(password),
+        };
+        return [auth, auth.password && auth.email ? user || null : null];
     }
 
     public async updatePassword(id: number, password: string) {

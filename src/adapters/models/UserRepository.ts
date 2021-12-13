@@ -1,7 +1,7 @@
 import { Knex } from "knex";
 import { UserFilter, UserPaginated, UserRepositoryInterface, UserSavingData } from "../../cases/UserCase";
 import User, { AccountPermission, AccountStatus, UserData, UserInterface } from "../../entities/User";
-import Repository, { FieldsMap } from "./Repository";
+import Repository, { FieldsMap, prsr } from "./Repository";
 import { Context } from "../interfaces";
 import { SessionService } from "./SessionRepository";
 import UserCreation, { Props as UserCreationProps } from '../views/UserCreation';
@@ -47,21 +47,23 @@ export interface UserModel {
     date_created: Date;
     date_modified: Date;
     phone: string;
+    permissions?: string;
 }
 
 export const UserService = (db: Knex) => db<Partial<UserModel>, UserModel[]>('users');
 
 const fieldsMap: FieldsMap<UserModel, UserData> = [
-    [['user_id', Number], ['id', Number]],
-    [['first_name', String], ['firstName', String]],
-    [['last_name', String], ['lastName', String]],
-    [['email', String], ['email', String]],
-    [['passwd', String], ['password', String]],
+    [['user_id', prsr.number], ['id', prsr.number]],
+    [['first_name', prsr.string], ['firstName', prsr.string]],
+    [['last_name', prsr.string], ['lastName', prsr.string]],
+    [['email', prsr.string], ['email', prsr.string]],
+    [['passwd', prsr.string], ['password', prsr.string]],
     [['status', parseStatusToDB], ['status', parseStatus]],
     [['permission', parsePermissionToDB], ['permission', parsePermission]],
-    [['date_created', (value) => new Date(value)], ['creationDate', (value) => new Date(value)]],
-    [['date_modified', (value) => new Date(value)], ['lastModified', (value) => new Date(value)]],
-    [['phone', val => !!val ? String(val) : val], ['phone', val => !!val ? String(val) : val]],
+    [['date_created', prsr.date], ['creationDate', prsr.date]],
+    [['date_modified', prsr.date], ['lastModified', prsr.date]],
+    [['phone', prsr.string], ['phone', prsr.string]],
+    [['permissions', prsr.set], ['permissions', prsr.set]],
 ];
 
 export default class UserRepository extends Repository<UserModel, UserData, User> implements UserRepositoryInterface {
@@ -161,22 +163,6 @@ export default class UserRepository extends Repository<UserModel, UserData, User
         } catch (error: any) {
             this.logger.error(error);
             throw { message: 'Erro ao notificar aluno', status: 500 };
-        }
-    }
-
-
-
-    public async get(filter: UserFilter) {
-        try {
-            const parsedFilter = await this.toDb(filter);
-            const filtered = await this.query
-                .where(parsedFilter).first();
-            if (!filtered) return;
-            return await this.toEntity(filtered);
-        } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: 'Erro ao consultar usuário no banco de dados', status: 500 };
         }
     }
 
