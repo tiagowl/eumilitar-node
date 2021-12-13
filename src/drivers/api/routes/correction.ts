@@ -2,11 +2,12 @@ import { Context } from "../../interfaces";
 import { Router } from 'express';
 import { checkPermission, isAuthenticated } from "./tools";
 import CorrectionController from "../../../adapters/controllers/CorrectionController";
+import { Permissions } from "../../../entities/User";
 
 export default (context: Context) => {
     const controller = new CorrectionController(context);
     return Router({})
-        .post('/essays/:id/correction/', checkPermission(context, ['admin', 'corrector']), async (req, res) => {
+        .post('/essays/:id/correction/', checkPermission(context, ['admin', 'corrector'], [Permissions.CORRECT_ESSAYS]), async (req, res) => {
             try {
                 const { id } = req.params;
                 const { user } = req;

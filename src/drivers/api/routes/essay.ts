@@ -2,6 +2,7 @@ import { Context } from "../../interfaces";
 import { Router } from 'express';
 import { checkPermission, isAuthenticated } from "./tools";
 import EssayController from "../../../adapters/controllers/EssayController";
+import { Permissions } from "../../../entities/User";
 
 export default (context: Context) => {
     const { storage } = context;
@@ -22,7 +23,8 @@ export default (context: Context) => {
             try {
                 const { user, query } = req;
                 if (!user) throw { message: 'Não autenticado', status: 401 };
-                if (new Set(['admin', 'corrector']).has(user.permission) && !query.my) {
+                const hasPermission = user.permission === 'admin' ? user.permissions.has(Permissions.SEE_ESSAYS) : true;
+                if (new Set(['admin', 'corrector']).has(user.permission) && !query.my && hasPermission) {
                     const response = await controller.allEssays(query, user);
                     res.status(200).json(response);
                 } else {
