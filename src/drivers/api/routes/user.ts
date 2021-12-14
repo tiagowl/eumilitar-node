@@ -29,8 +29,11 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/users/', checkPermission(context, ['admin'], [Permissions.SEE_USERS]), async (req, res) => {
+        .get('/users/', checkPermission(context, ['admin']), async (req, res) => {
             try {
+                const searchStudents = req.query?.permission === 'student';
+                const hasPermission = !await controller.hasPermissions((req.user as User).id, [Permissions.SEE_USERS]);
+                if (searchStudents && !hasPermission) throw { message: 'Não autorizado', status: 401 };
                 const response = await controller.all(req.query || {});
                 res.status(200).json(response);
             } catch (error: any) {
