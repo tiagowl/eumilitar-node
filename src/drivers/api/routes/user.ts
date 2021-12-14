@@ -2,7 +2,7 @@ import { Context } from "../../interfaces";
 import { Router } from 'express';
 import { checkAuth, checkPermission, isAuthenticated } from "./tools";
 import UserController from "../../../adapters/controllers/UserController";
-import { Permissions } from "../../../entities/User";
+import User, { Permissions } from "../../../entities/User";
 
 export default (context: Context) => {
     const controller = new UserController(context);
@@ -41,7 +41,7 @@ export default (context: Context) => {
         })
         .post('/users/', checkPermission(context, ['admin']), async (req, res) => {
             try {
-                const created = await controller.create(req.body);
+                const created = await controller.create(req.body, req.user as User);
                 res.status(201).json(created);
             } catch (error: any) {
                 res.status(error.status || 500).json(error);

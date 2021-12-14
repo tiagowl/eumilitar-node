@@ -127,34 +127,44 @@ export default class UserController extends Controller {
                 page: await Promise.all(users.page.map(this.parseEntity))
             };
         } catch (error: any) {
-            this.logger.error(error);
-            throw { message: error.message || 'Erro ao consultar usuários', status: 500 };
+            throw await this.processError(error);
         }
     }
 
-    public async create(data: UserCreation) {
+    public async create(data: UserCreation, agent: User) {
         try {
+            const unalthorizedError = { message: 'Não autorizado', status: 403 };
+            const isAdmin = agent.permission !== 'admin';
+            if (isAdmin) {
+                if (!agent.permissions.has(Permissions.CREATE_STUDENTS) && data.permission === 'student') throw unalthorizedError;
+                if (!agent.permissions.has(Permissions.CREATE_USERS) && data.permission !== 'student') throw unalthorizedError;
+            }
             const validated = await this.validate(data, schema) as unknown as DefaultUserCration;
             const created = await this.useCase.create(validated);
             return await this.parseEntity(created);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 
     public async update(id: number, data: UserUpdate, agent: User) {
         try {
-            if (!agent || (agent.id !== id && agent.permission !== 'admin')) throw { message: 'Não autorizado', status: 403 };
-            const validationSchema = agent.id === id ? updateProfileSchema : updateSchema;
+            const unalthorizedError = { message: 'Não autorizado', status: 403 };
+            const isSelf = agent.id === id;
+            const isAdmin = agent.permission !== 'admin';
+            const usePermission = !isSelf && isAdmin;
+            if (!agent || (!isSelf && isAdmin)) throw unalthorizedError;
+            if (usePermission) {
+                if (!agent.permissions.has(Permissions.UPDATE_USER_PASSWORD) && data.password) throw unalthorizedError;
+                if (!agent.permissions.has(Permissions.UPDATE_STUDENTS) && data.permission === 'student') throw unalthorizedError;
+                if (!agent.permissions.has(Permissions.CREATE_USERS) && data.permission !== 'student') throw unalthorizedError;
+            }
+            const validationSchema = isSelf ? updateProfileSchema : updateSchema;
             const validated = await this.validate(data, validationSchema) as unknown as DefaultUserUpdate;
             const updated = await this.useCase.update(id, validated);
             return await this.parseEntity(updated);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -163,9 +173,7 @@ export default class UserController extends Controller {
             const user = await this.useCase.get(id);
             return await this.parseEntity(user);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.code === Errors.NOT_FOUND) throw { message: 'Usuário não encontrado', status: 404 };
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 

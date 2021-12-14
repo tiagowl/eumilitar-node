@@ -58,7 +58,7 @@ describe('#7 Testes no usuário', () => {
             permission: 'admin',
             status: 'active',
             permissions: [Permissions.CORRECT_ESSAYS],
-        });
+        }, agentAdmin);
         expect(created).toBeDefined();
         expect(created.id).toBeDefined();
         done();
