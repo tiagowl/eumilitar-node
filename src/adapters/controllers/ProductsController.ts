@@ -32,9 +32,7 @@ export default class ProductController extends Controller {
             const created = await this.useCase.create(validated);
             return await this.parseEntity(created);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message, status: 400 };
+            throw await this.processError(error);
         }
     }
 
@@ -43,9 +41,7 @@ export default class ProductController extends Controller {
             const products = await this.useCase.list({}) as Product[];
             return Promise.all(products.map(async product => this.parseEntity(product)));
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -55,9 +51,7 @@ export default class ProductController extends Controller {
             const product = await this.useCase.update(id, validated);
             return await this.parseEntity(product);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 }

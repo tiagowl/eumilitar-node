@@ -85,9 +85,7 @@ export default class EssayInvalidationController extends Controller {
             this.notify(created.essay);
             return await this.parseEntity(created);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message || 'Falha ao invalidar redação', status: 400 };
+            throw await this.processError(error);
         }
     }
 
@@ -97,9 +95,7 @@ export default class EssayInvalidationController extends Controller {
             if (!invalidation) throw { message: 'Redação não encontrada', status: 404 };
             return await this.parseEntity(invalidation);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message || 'Falha ao invalidar redação', status: 500 };
+            throw await this.processError(error);
         }
     }
 }

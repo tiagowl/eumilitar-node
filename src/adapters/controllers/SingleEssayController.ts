@@ -37,9 +37,7 @@ export default class SingleEssayController extends Controller {
             const created = await this.useCase.create(validated);
             return await this.parseEntity(created);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -49,10 +47,7 @@ export default class SingleEssayController extends Controller {
             const checked = await this.useCase.checkToken(validated);
             return await this.parseEntity(checked);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error instanceof CaseError) throw { message: error.message, status: 400 };
-            if (error.status) throw error;
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 }

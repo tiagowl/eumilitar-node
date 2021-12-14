@@ -55,9 +55,7 @@ export default class LogController extends Controller {
             const created = await this.useCase.create(validated);
             return await this.parseEntity(created);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -71,9 +69,7 @@ export default class LogController extends Controller {
                 page: await Promise.all(filtered.page.map(this.parseEntity)),
             };
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 }

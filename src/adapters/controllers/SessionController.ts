@@ -55,8 +55,7 @@ export default class SessionController extends Controller {
             const validated = await this.validate({ token }, logoutSchema);
             await this.useCase.delete(validated.token);
         } catch (error: any) {
-            if (error.status) throw error;
-            throw { message: 'Erro remover token', status: 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -67,11 +66,7 @@ export default class SessionController extends Controller {
             const users = new UserController(this.context);
             return await users.parseEntity(user);
         } catch (error: any) {
-            if (error instanceof CaseError) {
-                if (error.code === Errors.UNAUTHORIZED) throw { message: error.message, status: 401 };
-            }
-            if (error.status) throw error;
-            throw { message: 'Erro autenticar', status: 500 };
+            throw await this.processError(error);
         }
     }
 }

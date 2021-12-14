@@ -5,7 +5,6 @@ import UserRepository from '../models/UserRepository';
 import Controller, { paginationSchema } from './Controller';
 import { Context } from '../interfaces';
 import { Paginated } from '../../cases/interfaces';
-import _ from 'lodash';
 import { Filter } from '../../cases/interfaces';
 import { Errors } from '../../cases/ErrorCase';
 

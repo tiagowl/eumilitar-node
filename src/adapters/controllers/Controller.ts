@@ -17,6 +17,14 @@ export const paginationSchema = yup.object().shape({
     direction: yup.string().notRequired().is(['asc', 'desc']),
 }).noUnknown();
 
+const errorsStatus = {
+    [Errors.EXPIRED]: 403,
+    [Errors.INVALID]: 400,
+    [Errors.NOT_FOUND]: 404,
+    [Errors.UNAUTHORIZED]: 401,
+    [Errors.WRONG_PASSWORD]: 400,
+};
+
 export default abstract class Controller {
     protected readonly db: Knex;
     protected readonly logger: Logger;
@@ -75,10 +83,9 @@ export default abstract class Controller {
     protected async processError(error: any) {
         this.logger.error(error);
         if (error instanceof CaseError) {
-            if (error.code === Errors.NOT_FOUND) return { message: error.message, status: 404 };
-            if (error.code === Errors.UNAUTHORIZED) throw { message: error.message, status: 401 };
-            return { message: error.message, status: 400 };
+            return { message: error.message, status: errorsStatus[error.code || Errors.INVALID] };
         }
+        if (error.status) return error;
         return { message: error.message || 'Erro interno', status: 500 };
     }
 

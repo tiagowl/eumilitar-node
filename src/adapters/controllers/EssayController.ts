@@ -149,9 +149,7 @@ export default class EssayController extends Controller {
             const essays = await this.useCase.myEssays(agent.id);
             return Promise.all(essays.map((essay) => this.parseEntity(essay, agent)));
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message || 'Falha ao consultar redações', status: 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -165,9 +163,7 @@ export default class EssayController extends Controller {
                 page: await Promise.all(essays.page.map((essay) => this.parseEntity(essay, agent)))
             };
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message || 'Falha ao consultar redações', status: 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -178,9 +174,7 @@ export default class EssayController extends Controller {
             if (!essay) throw { message: 'Redação não encontrada', status: 404 };
             return await this.parseEntity(essay, agent);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message || 'Falha ao consultar redações', status: error.status || 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -190,9 +184,7 @@ export default class EssayController extends Controller {
             const updated = await this.useCase.partialUpdate(id, validated);
             return await this.parseEntity(updated, agent);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message || 'Falha ao atualizar', status: error.status || 400 };
+            throw await this.processError(error);
         }
     }
 
@@ -204,9 +196,7 @@ export default class EssayController extends Controller {
             const updated = await this.useCase.cancelCorrecting(id, corrector);
             return await this.parseEntity(updated, agent);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message || 'Falha ao atualizar', status: error.status || 400 };
+            throw await this.processError(error);
         }
     }
 

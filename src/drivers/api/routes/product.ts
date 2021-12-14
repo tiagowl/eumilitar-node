@@ -7,8 +7,7 @@ import { Permissions } from "../../../entities/User";
 export default (context: Context) => {
     const controller = new ProductController(context);
     return Router({})
-        .use(checkPermission(context, ['admin'], [Permissions.MANAGE_PRODUCTS]))
-        .post('/products/', async (req, res) => {
+        .post('/products/', checkPermission(context, ['admin'], [Permissions.MANAGE_PRODUCTS]), async (req, res) => {
             try {
                 const created = await controller.create(req.body);
                 res.status(201).json(created);
@@ -18,7 +17,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/products/', async (_req, res) => {
+        .get('/products/', checkPermission(context, ['admin'], [Permissions.MANAGE_PRODUCTS]), async (_req, res) => {
             try {
                 const products = await controller.list();
                 res.status(200).json(products);
@@ -28,7 +27,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .put('/products/:id/', async (req, res) => {
+        .put('/products/:id/', checkPermission(context, ['admin'], [Permissions.MANAGE_PRODUCTS]), async (req, res) => {
             try {
                 const { id } = req.params;
                 const product = await controller.fullUpdate(Number(id), req.body);

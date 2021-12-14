@@ -132,8 +132,7 @@ export default class EssayThemeController extends Controller {
                 courses: [...theme.courses]
             } as EssayThemeResponse;
         } catch (error: any) {
-            this.logger.error(error);
-            throw { message: error.message || 'Erro ao salvar o tema', status: 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -148,8 +147,7 @@ export default class EssayThemeController extends Controller {
                 pages: Math.ceil(amount / data.size),
             } as EssayThemeList;
         } catch (error: any) {
-            this.logger.error(error);
-            throw { message: 'Erro ao consultar temas' };
+            throw await this.processError(error);
         }
     }
 
@@ -165,8 +163,7 @@ export default class EssayThemeController extends Controller {
             });
             return await this.parseEntity(theme);
         } catch (error: any) {
-            this.logger.error(error);
-            throw { message: error.message || 'Erro ao atualizar tema' };
+            throw await this.processError(error);
         }
     }
 
@@ -175,8 +172,7 @@ export default class EssayThemeController extends Controller {
             const theme = await this.useCase.deactivate(id);
             return await this.parseEntity(theme);
         } catch (error: any) {
-            this.logger.error(error);
-            throw { message: error.message || 'Erro ao desativar tema' };
+            throw await this.processError(error);
         }
     }
 
@@ -188,8 +184,7 @@ export default class EssayThemeController extends Controller {
             const entity = new EssayTheme(theme);
             return await this.parseEntity(entity);
         } catch (error: any) {
-            this.logger.error(error);
-            throw { message: 'Erro ao consultar tema', status: error.status || 500 };
+            throw await this.processError(error);
         }
     }
 

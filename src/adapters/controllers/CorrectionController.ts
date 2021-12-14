@@ -113,9 +113,7 @@ export default class CorrectionController extends Controller {
             this.notify(created.essay).catch(this.logger.error);
             return await this.parseEntity(created);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message || "Falha ao salvar correção", status: 400 };
+            throw await this.processError(error);
         }
     }
 
@@ -124,9 +122,7 @@ export default class CorrectionController extends Controller {
             const data = await this.useCase.get(filter);
             return await this.parseEntity(data);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message || "Falha ao encontrar correção", status: 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -137,13 +133,7 @@ export default class CorrectionController extends Controller {
             const updated = await this.useCase.update(essayId, user, casted);
             return await this.parseEntity(updated);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error instanceof CaseError) {
-                if (error.code === Errors.NOT_FOUND) throw { message: error.message, status: 404 };
-                if (error.code === Errors.UNAUTHORIZED) throw { message: error.message, status: 401 };
-            }
-            if (error.status) throw error;
-            throw { message: error.message || "Falha ao atualizar correção", status: 500 };
+            throw await this.processError(error);
         }
     }
 

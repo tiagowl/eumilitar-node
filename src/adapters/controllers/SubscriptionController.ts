@@ -185,10 +185,8 @@ export default class SubscriptionController extends Controller {
             }
             return canceledList;
         } catch (error: any) {
-            this.logger.error(error);
             this.notifySupport(data, error).catch(this.logger.error);
-            if (error.status) throw error;
-            throw { message: 'Erro ao cancelar inscrição', status: 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -199,8 +197,7 @@ export default class SubscriptionController extends Controller {
             const subscriptions = (await this.useCase.filter({ user: userId })) as Subscription[];
             return Promise.all(subscriptions.map(async subscription => this.parseEntity(subscription)));
         } catch (error: any) {
-            this.logger.error(error);
-            throw { message: error.message, status: error.status || 400 };
+            throw await this.processError(error);
         }
     }
 
@@ -223,9 +220,7 @@ export default class SubscriptionController extends Controller {
                 page,
             };
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -235,9 +230,7 @@ export default class SubscriptionController extends Controller {
             const created = await this.useCase.create(validated);
             return await this.parseEntity(created);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -247,9 +240,7 @@ export default class SubscriptionController extends Controller {
             const updated = await this.useCase.update(id, validated);
             return await this.parseEntity(updated);
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 
@@ -259,9 +250,7 @@ export default class SubscriptionController extends Controller {
             const chart = await this.useCase.activeChart(parsed);
             return chart;
         } catch (error: any) {
-            this.logger.error(error);
-            if (error.status) throw error;
-            throw { message: error.message, status: 500 };
+            throw await this.processError(error);
         }
     }
 
