@@ -17,7 +17,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/products/', checkPermission(context, ['admin'], [Permissions.MANAGE_PRODUCTS]), async (_req, res) => {
+        .get('/products/', checkPermission(context, ['admin']), async (_req, res) => {
             try {
                 const products = await controller.list();
                 res.status(200).json(products);

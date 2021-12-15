@@ -4,9 +4,11 @@ import SubscriptionController, { OrderData } from "../../../adapters/controllers
 import { checkAuth, checkPermission, isAuthenticated } from "./tools";
 import { SubscriptionCreation } from "../../../cases/SubscriptionCase";
 import { Permissions } from "../../../entities/User";
+import UserController from "../../../adapters/controllers/UserController";
 
 export default (context: Context) => {
     const controller = new SubscriptionController(context);
+    const users = new UserController(context);
     return Router({})
         .get('/users/profile/subscriptions/', isAuthenticated(context), async (req, res) => {
             try {
@@ -35,6 +37,7 @@ export default (context: Context) => {
                     throw error;
                 });
                 if (user && user.permission === 'admin') {
+                    if (!await users.hasPermissions(user.id, [Permissions.UPDATE_STUDENTS])) throw { message: 'Não autorizado', status: 401 };
                     const body = {
                         ...req.body as SubscriptionCreation,
                         expiration: new Date((req.body as SubscriptionCreation).expiration)
@@ -70,7 +73,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .put('/subscriptions/:id/', checkPermission(context, ['admin']), async (req, res) => {
+        .put('/subscriptions/:id/', checkPermission(context, ['admin'], [Permissions.UPDATE_STUDENTS]), async (req, res) => {
             try {
                 const { id } = req.params;
                 const subscriptions = await controller.update(Number(id), {
