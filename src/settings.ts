@@ -66,7 +66,8 @@ const settings = Object.freeze<Settings>({
     },
     helmet: {},
     logging: {
-        format: 'common', options: NODE_ENV === 'test' ? {
+        format: ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms',
+        options: NODE_ENV === 'test' ? {
             stream: fs.createWriteStream(path.resolve(__dirname, '..', 'logs', NODE_ENV, 'access.log'))
         } : {},
     },

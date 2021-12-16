@@ -5,7 +5,8 @@
     ],
     "jsRules": {},
     "rules": {
-        "semicolon": true
+        "semicolon": true,
+        "no-consecutive-blank-lines": false
     },
     "rulesDirectory": [],
     "linterOptions": {

@@ -138,9 +138,11 @@ export default class SubscriptionCase {
     }
 
     public async activeChart(filter: ChartFilter): Promise<Chart> {
-        const { period, ...filterData } = filter;
-        const start = period?.start || new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000);
-        const end = period?.end || new Date();
+        const { period = {}, ...filterData } = filter;
+        const {
+            start = new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000),
+            end = new Date()
+        } = period;
         const months = Math.round((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000));
         const subscriptions = await this.repository.filter(filterData) as Subscription[];
         const data = new Array(months).fill(0)

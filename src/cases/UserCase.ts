@@ -1,7 +1,7 @@
 import User, { AccountStatus, AccountPermission, UserInterface, UserData, Permissions } from "../entities/User";
 import bcrypt from 'bcrypt';
 import CaseError, { Errors } from "./ErrorCase";
-import { createMethod, Filter, filterMethod, getMethod, Paginated, Pagination, updateMethod } from "./interfaces";
+import { ChartFilter, createMethod, Filter, filterMethod, getMethod, Paginated, Pagination, updateMethod } from "./interfaces";
 
 export type UserPagination = Pagination<User>;
 
@@ -64,6 +64,8 @@ export interface UserRepositoryInterface {
     readonly filter: filterMethod<User, UserInterface>;
     readonly update: updateMethod<User, UserData>;
     readonly create: createMethod<UserSavingData, User>;
+    readonly countActives: (filter: ChartFilter<UserInterface>) => Promise<number>;
+    readonly countSentEssays: (filter: ChartFilter<UserInterface>) => Promise<number>;
 }
 
 export default class UserUseCase {
@@ -134,6 +136,31 @@ export default class UserUseCase {
         await user.update(insertion);
         await this.repository.update(id, user.data);
         return user;
+    }
+
+    public async setEssaysChart(filter: ChartFilter<UserInterface>) {
+        const { period = {}, ...filterData } = filter;
+        const {
+            start = new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000),
+            end = new Date()
+        } = period;
+        const months = Math.round((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000));
+        const chartPromise = Array.from({ length: months }, async (_, index) => {
+            const current = start.getMonth() + index + 1;
+            const startMonth = new Date(start.getFullYear(), current, 1);
+            const endMonth = new Date(start.getFullYear(), current + 1, -1);
+            const currentFilter = {
+                period: { start: startMonth, end: endMonth },
+                ...filterData,
+            };
+            const sentEssays = await this.repository.countSentEssays(currentFilter);
+            const actives = await this.repository.countActives(currentFilter);
+            return {
+                key: `${startMonth.getMonth() + 1}-${startMonth.getFullYear()}`,
+                value: (sentEssays / actives) * 100,
+            };
+        });
+        return Promise.all(chartPromise);
     }
 
 }

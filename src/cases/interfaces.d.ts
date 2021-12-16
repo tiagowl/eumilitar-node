@@ -38,3 +38,10 @@ export type countMethod<Interface> = (filter: Filter<Interface>) => Promise<numb
 export type getMethod<Entity, Interface> = (filter: Partial<Interface>) => Promise<Entity | undefined>;
 export type updateMethod<Entity, Interface> = (id: number, data: Partial<Interface>) => Promise<Entity>;
 export type deleteMethod<Interface> = (filter: Partial<Interface>) => Promise<number>;
+
+export type ChartFilter<T> = Partial<T> & {
+    period?: {
+        start?: Date;
+        end?: Date;
+    }
+};
