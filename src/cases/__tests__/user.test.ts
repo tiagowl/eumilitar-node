@@ -77,4 +77,14 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         expect(updated).toMatchObject(recovered);
         done();
     });
+    test('Gráfico de redações enviadas', async done => {
+        const chart = await useCase.setEssaysChart({});
+        expect(chart).toBeInstanceOf(Array);
+        expect(chart.length).toBe(12);
+        chart.forEach(val => {
+            expect(typeof val.key).toBe('string');
+            expect(typeof val.value).toBe('number');
+        })
+        done();
+    })
 });

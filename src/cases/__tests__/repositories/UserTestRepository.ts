@@ -4,6 +4,7 @@ import { UserRepositoryInterface, UserFilter, UserSavingData } from "../../UserC
 import { FakeDB } from "./database";
 import TestRepository from "./TestRepository";
 import SubscriptionTestRepository from "./SubscriptionTestRepository";
+import EssayTestRepository from "./EssayTestRepository";
 
 export default class UserTestRepository extends TestRepository<User, UserInterface> implements UserRepositoryInterface {
     constructor(db: FakeDB) {
@@ -22,5 +23,17 @@ export default class UserTestRepository extends TestRepository<User, UserInterfa
             return subscriptions.count({ 'user': user.id });
         }));
         const actives = subscriptionsCount.filter(val => val > 0);
+        return actives.length;
+    }
+
+    public async countSentEssays(filter: ChartFilter<UserInterface>) {
+        const { period, ...filterData } = filter;
+        const essays = new EssayTestRepository(this.db);
+        const filtered = await this.filter(filterData);
+        const essaysCount = await Promise.all(filtered.map(async user => {
+            return essays.count({ 'student': user.id });
+        }));
+        const sent = essaysCount.filter(val => val > 0);
+        return sent.length;
     }
 }
