@@ -138,7 +138,7 @@ export default class UserUseCase {
         return user;
     }
 
-    public async setEssaysChart(filter: ChartFilter<UserInterface>) {
+    public async sentEssaysChart(filter: ChartFilter<UserInterface>) {
         const { period = {}, ...filterData } = filter;
         const {
             start = new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000),

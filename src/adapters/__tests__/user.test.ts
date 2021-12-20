@@ -16,6 +16,7 @@ describe('#7 Testes no usuário', () => {
     let agentStudent: User;
     let agentAdmin: User;
     let agentCorrector: User;
+    const controller = new UserController(context);
     beforeAll(async (done) => {
         const service = UserService(db)
             .onConflict(['email', 'user_id'])
@@ -37,7 +38,6 @@ describe('#7 Testes no usuário', () => {
         done();
     });
     test('#71 Listagem', async done => {
-        const controller = new UserController(context);
         const users = await controller.all({ status: 'active' });
         expect(users).toBeDefined();
         if (!(users instanceof Array)) throw new Error();
@@ -49,7 +49,6 @@ describe('#7 Testes no usuário', () => {
         done();
     });
     test('#71 Criação', async done => {
-        const controller = new UserController(context);
         const created = await controller.create({
             email: faker.internet.email(),
             firstName: faker.name.firstName(),
@@ -64,7 +63,6 @@ describe('#7 Testes no usuário', () => {
         done();
     });
     test('#71 Listagem', async done => {
-        const controller = new UserController(context);
         const page = await controller.all({ status: 'active', pagination: { 'page': 1, pageSize: 20, ordering: 'id', direction: 'desc' } });
         expect(page).toBeDefined();
         if ((page instanceof Array)) throw new Error();
@@ -79,7 +77,6 @@ describe('#7 Testes no usuário', () => {
         done();
     });
     test('#72 Atualização', async done => {
-        const controller = new UserController(context);
         const data: UserUpdate = {
             email: faker.internet.email(),
             firstName: faker.name.firstName(),
@@ -96,13 +93,11 @@ describe('#7 Testes no usuário', () => {
         done();
     });
     test('#73 recuperação', async done => {
-        const controller = new UserController(context);
         const recovered = await controller.get(user.user_id);
         expect(recovered).toBeDefined();
         done();
     });
     test('#74 atualizar o próprio perfil', async done => {
-        const controller = new UserController(context);
         const data = {
             firstName: faker.name.firstName(),
             lastName: faker.name.lastName(),
@@ -113,6 +108,16 @@ describe('#7 Testes no usuário', () => {
             if (key === 'phone') expect(updated[key as keyof typeof updated]).toBe(data.phone.replace(/[^0-9]/gm, ''));
             else expect(updated[(key as keyof typeof updated)]).toBe(val);
         });
+        done();
+    })
+    test('teste no gráfico de redações enviada', async done => {
+        const chart = await controller.sentEssaysChart();
+        expect(chart).toBeInstanceOf(Array);
+        expect(chart.length).toBe(12);
+        chart.forEach(val => {
+            expect(typeof val.key).toBe('string');
+            expect(typeof val.value).toBe('number');
+        })
         done();
     })
 });

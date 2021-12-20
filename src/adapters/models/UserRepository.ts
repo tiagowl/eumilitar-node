@@ -7,7 +7,9 @@ import { SessionService } from "./SessionRepository";
 import UserCreation, { Props as UserCreationProps } from '../views/UserCreation';
 import crypto from 'crypto';
 import { RecoveryService } from "./RecoveryRepository";
-import { Filter, Paginated, Pagination } from "../../cases/interfaces";
+import { ChartFilter, Filter, Paginated, Pagination } from "../../cases/interfaces";
+import { SubscriptionService } from "./SubscriptionRepository";
+import { EssayService } from "./EssayRepository";
 
 const statusMap: AccountStatus[] = ['inactive', 'active', 'pending'];
 const permissionMap: [number, AccountPermission][] = [
@@ -217,6 +219,46 @@ export default class UserRepository extends Repository<UserModel, UserData, User
         return await this.query
             .where('user_id', id)
             .update({ permission: 6 });
+    }
+
+    public async countActives(filter: ChartFilter<UserInterface>) {
+        try {
+            const { period = {}, ...filterData } = filter;
+            const {
+                start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+                end = new Date(),
+            } = period;
+            const subquery = SubscriptionService(this.db)
+                .where('expiration', '>', start)
+                .where('registrationDate', '<', end)
+                .select('user as user_id');
+            const [{ count }] = await this.query.whereIn('user_id', subquery)
+                .where(filterData)
+                .count({ count: '*' });
+            return Number(count);
+        } catch (error: any) {
+            throw await this.processError(error);
+        }
+    }
+
+    public async countSentEssays(filter: ChartFilter<UserInterface>) {
+        try {
+            const { period = {}, ...filterData } = filter;
+            const {
+                start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+                end = new Date(),
+            } = period;
+            const subquery = EssayService(this.db)
+                .where('sent_date', '>=', start)
+                .where('sent_date', '<', end)
+                .select('user_id');
+            const [{ count }] = await this.query.whereIn('user_id', subquery)
+                .where(filterData)
+                .count({ count: '*' });
+            return Number(count);
+        } catch (error: any) {
+            throw await this.processError(error);
+        }
     }
 }
 

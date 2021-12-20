@@ -78,7 +78,7 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
         done();
     });
     test('Gráfico de redações enviadas', async done => {
-        const chart = await useCase.setEssaysChart({});
+        const chart = await useCase.sentEssaysChart({});
         expect(chart).toBeInstanceOf(Array);
         expect(chart.length).toBe(12);
         chart.forEach(val => {

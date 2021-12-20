@@ -4,7 +4,7 @@ import User, { AccountPermission, accountPermissions, accountStatus, AccountStat
 import UserRepository from '../models/UserRepository';
 import Controller, { paginationSchema } from './Controller';
 import { Context } from '../interfaces';
-import { Paginated } from '../../cases/interfaces';
+import { ChartFilter, Paginated } from '../../cases/interfaces';
 import { Filter } from '../../cases/interfaces';
 import { Errors } from '../../cases/ErrorCase';
 
@@ -75,7 +75,7 @@ const updateProfileSchema = yup.object().shape({
         .transform((val: string) => val.replace(/[^0-9]/gm, '')),
 });
 
-const filterSchema = yup.object().shape({
+const baseFilterSchema = {
     id: yup.string(),
     firstName: yup.string(),
     lastName: yup.string(),
@@ -84,9 +84,21 @@ const filterSchema = yup.object().shape({
     permission: yup.string(),
     creationDate: yup.date(),
     lastModified: yup.date(),
+};
+
+const filterSchema = yup.object().shape({
+    ...baseFilterSchema,
     pagination: paginationSchema,
     search: yup.string(),
 }).noUnknown();
+
+const chartFilterSchema = yup.object().shape({
+    ...baseFilterSchema,
+    period: yup.object().shape({
+        start: yup.date(),
+        end: yup.date(),
+    }),
+});
 
 export default class UserController extends Controller {
     private readonly repository: UserRepository;
@@ -184,6 +196,16 @@ export default class UserController extends Controller {
                 const result = await resultPromise;
                 return user.permissions.has(permission) && result;
             }, Promise.resolve(true) as Promise<boolean>);
+        } catch (error: any) {
+            throw await this.processError(error);
+        }
+    }
+
+    public async sentEssaysChart(filter: ChartFilter<UserInterface> = {}) {
+        try {
+            const parsed = await this.castFilter(filter, chartFilterSchema);
+            const chart = await this.useCase.sentEssaysChart(parsed);
+            return chart;
         } catch (error: any) {
             throw await this.processError(error);
         }
