@@ -157,7 +157,7 @@ export default class UserUseCase {
             const actives = await this.repository.countActives(currentFilter);
             return {
                 key: `${startMonth.getMonth() + 1}-${startMonth.getFullYear()}`,
-                value: (sentEssays / actives) * 100,
+                value: (sentEssays / actives),
             };
         });
         return Promise.all(chartPromise);
