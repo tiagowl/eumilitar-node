@@ -235,7 +235,7 @@ export default class UserRepository extends Repository<UserModel, UserData, User
             const [{ count }] = await this.query.whereIn('user_id', subquery)
                 .where(filterData)
                 .count({ count: '*' });
-            return Number(count);
+            return Number(count || 0);
         } catch (error: any) {
             throw await this.processError(error);
         }
@@ -255,7 +255,7 @@ export default class UserRepository extends Repository<UserModel, UserData, User
             const [{ count }] = await this.query.whereIn('user_id', subquery)
                 .where(filterData)
                 .count({ count: '*' });
-            return Number(count);
+            return Number(count || 0);
         } catch (error: any) {
             throw await this.processError(error);
         }

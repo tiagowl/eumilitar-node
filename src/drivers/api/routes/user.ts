@@ -74,5 +74,15 @@ export default (context: Context) => {
             } finally {
                 res.end();
             }
+        })
+        .get('/users/charts/sent-essays/', checkPermission(context, ['admin'], [Permissions.SEE_DASHBOARD]), async (req, res) => {
+            try {
+                const chart = await controller.sentEssaysChart(req.query);
+                res.status(200).json(chart);
+            } catch (error: any) {
+                res.status(error.status || 500).json(error);
+            } finally {
+                res.end();
+            }
         });
 };

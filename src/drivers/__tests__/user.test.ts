@@ -303,4 +303,16 @@ describe('#1 Teste na api do usuário', () => {
         });
         done();
     });
+    test('gráfico de redações enviadas', async done => {
+        const header = await authenticate(admin, api);
+        const { body, status } = await api.get('/users/charts/sent-essays/')
+            .set('Authorization', header);
+        expect(status, jp(body)).toBe(200);
+        expect(body).toBeInstanceOf(Array);
+        expect(body.length).toBe(12);
+        body.forEach((val: any) => {
+            expect(typeof val.key, jp({ val, body })).toBe('string');
+        })
+        done();
+    })
 });
