@@ -260,5 +260,28 @@ export default class UserRepository extends Repository<UserModel, UserData, User
             throw await this.processError(error);
         }
     }
+
+    public async countEssaySentByUser(filter: ChartFilter<UserInterface>) {
+        try {
+            const { period = {}, ...filterData } = filter;
+            const {
+                start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+                end = new Date(),
+            } = period;
+            const sents = () => EssayService(this.db)
+                .where('sent_date', '>=', start)
+                .where('sent_date', '<', end);
+            const query = this.query.whereIn('user_id', sents().select('user_id'));
+            await this.filtering(query, { ...filterData });
+            const subquery = sents().count('*')
+                .whereRaw('`essays`.`user_id` = `users`.`user_id`')
+                .as('sentEssays');
+            const result = await query
+                .select('users.*', subquery).debug(true);
+            return result.map(val => ({ ...val }));
+        } catch (error: any) {
+            throw await this.processError(error);
+        }
+    }
 }
 

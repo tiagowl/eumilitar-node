@@ -110,7 +110,7 @@ describe('#7 Testes no usuário', () => {
         });
         done();
     })
-    test('teste no gráfico de redações enviada', async done => {
+    test('#75 teste no gráfico de redações enviada', async done => {
         const chart = await controller.sentEssaysChart();
         expect(chart).toBeInstanceOf(Array);
         expect(chart.length).toBe(12);
@@ -118,6 +118,15 @@ describe('#7 Testes no usuário', () => {
             expect(typeof val.key).toBe('string');
             expect(typeof val.value).toBe('number');
         })
+        done();
+    });
+    test('#76-adapt Teste na consulta do relatório de redações enviadas', async done => {
+        const report = await repository.countEssaySentByUser({});
+        expect(report).toBeInstanceOf(Array);
+        report.forEach(val => {
+            expect(typeof val.fullName).toBe('string');
+            expect(typeof val.sentEssays).toBe('number');
+        });
         done();
     })
 });

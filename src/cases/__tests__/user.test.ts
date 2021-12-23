@@ -86,5 +86,11 @@ describe('#1 Testes nos casos de uso da entidade User', () => {
             expect(typeof val.value).toBe('number');
         })
         done();
-    })
+    });
+    test('relatório de redações enviadas', async done => {
+        const report = await useCase.countEssaySentByUser({});
+        expect(report).toBeInstanceOf(Array);
+        expect(report.length).toBeGreaterThan(0);
+        done();
+    });
 });

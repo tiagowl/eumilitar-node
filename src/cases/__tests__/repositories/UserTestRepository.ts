@@ -36,4 +36,20 @@ export default class UserTestRepository extends TestRepository<User, UserInterfa
         const sent = essaysCount.filter(val => val > 0);
         return sent.length;
     }
+
+    public async countEssaySentByUser(filter: ChartFilter<UserInterface>) {
+        const { period, ...filterData } = filter;
+        const essays = new EssayTestRepository(this.db);
+        const filtered = await this.filter(filterData);
+        const counted = filtered.map(async (user) => {
+            const userEssays = await essays.filter({ period });
+            return {
+                fullName: user.fullName,
+                phone: user.phone,
+                email: user.email,
+                sentEssays: userEssays.length,
+            }
+        })
+        return await Promise.all(counted);
+    }
 }

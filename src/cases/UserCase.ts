@@ -66,9 +66,9 @@ export interface UserRepositoryInterface {
     readonly create: createMethod<UserSavingData, User>;
     readonly countActives: (filter: ChartFilter<UserInterface>) => Promise<number>;
     readonly countSentEssays: (filter: ChartFilter<UserInterface>) => Promise<number>;
-    readonly countEssaySentByUser: (filter: Partial<UserInterface>) => Promise<{
+    readonly countEssaySentByUser: (filter: ChartFilter<UserInterface>) => Promise<{
         fullName: string
-        phone: string;
+        phone?: string;
         email: string;
         sentEssays: number;
     }[]>;
@@ -169,8 +169,13 @@ export default class UserUseCase {
         return Promise.all(chartPromise);
     }
 
-    public async countEssaySentByUser(filter: Partial<UserInterface>) {
-        return this.repository.countEssaySentByUser(filter);
+    public async countEssaySentByUser(filter: ChartFilter<UserInterface>) {
+        const { period = {}, ...filterData } = filter;
+        const {
+            start = new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000),
+            end = new Date()
+        } = period;
+        return this.repository.countEssaySentByUser({ ...filterData, period: { start, end } });
     }
 
 }
