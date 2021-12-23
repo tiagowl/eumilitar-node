@@ -3,6 +3,7 @@ import * as yup from "yup";
 import { Logger } from "winston";
 import { Context } from "../interfaces";
 import _ from 'lodash';
+import XLSX from 'xlsx';
 import CaseError, { Errors } from "../../cases/ErrorCase";
 
 export interface ResponseError {
@@ -87,6 +88,17 @@ export default abstract class Controller {
         }
         if (error.status) return error;
         return { message: error.message || 'Erro interno', status: 500 };
+    }
+
+    protected async generateSheet(data: any[], title: string) {
+        const sheet = XLSX.utils.json_to_sheet(data, { cellDates: true });
+        sheet['!autofilter'] = { ref: "A1:D1" };
+        const book = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(book, sheet, title);
+        const buffer: Buffer = XLSX.write(book, {
+            'bookType': 'csv', 'type': 'buffer', 'compression': true,
+        });
+        return buffer;
     }
 
 }

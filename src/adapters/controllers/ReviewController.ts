@@ -98,14 +98,7 @@ export default class ReviewController extends Controller {
                 'Nota': review.grade,
                 'Descrição': review.description,
             })));
-            const sheet = XLSX.utils.json_to_sheet(parsedList, { cellDates: true, header: ['#ID', 'Ocorrência', 'Nota', 'Descrição'] });
-            sheet['!autofilter'] = { ref: "A1:D1" };
-            const book = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(book, sheet, 'Avaliações');
-            const buffer: Buffer = XLSX.write(book, {
-                'bookType': 'csv', 'type': 'buffer', 'compression': true,
-            });
-            return buffer;
+            return await this.generateSheet(parsedList, 'Avaliações');
         } catch (error: any) {
             throw await this.processError(error);
         }

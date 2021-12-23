@@ -210,4 +210,20 @@ export default class UserController extends Controller {
             throw await this.processError(error);
         }
     }
+
+    public async countEssaySentByUser(filter: ChartFilter<UserInterface> = {}) {
+        try {
+            const parsed = await this.castFilter(filter, chartFilterSchema);
+            const data = await this.useCase.countEssaySentByUser(parsed);
+            const parsedData = await Promise.all(data.map(async user => ({
+                fullName: user.fullName,
+                phone: user.phone,
+                email: user.email,
+                sentEssays: user.sentEssays,
+            })));
+            return await this.generateSheet(parsedData, 'Redações enviadas por aluno');
+        } catch (error: any) {
+            throw await this.processError(error);
+        }
+    }
 }

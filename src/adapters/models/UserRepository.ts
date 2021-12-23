@@ -277,7 +277,11 @@ export default class UserRepository extends Repository<UserModel, UserData, User
                 .whereRaw('`essays`.`user_id` = `users`.`user_id`')
                 .as('sentEssays');
             const result = await query
-                .select('users.*', subquery).debug(true);
+                .select(
+                    'users.*',
+                    subquery,
+                    this.db.raw('CONCAT(`users`.`first_name`, \' \', `users`.`last_name`) as fullName')
+                );
             return result.map(val => ({ ...val }));
         } catch (error: any) {
             throw await this.processError(error);

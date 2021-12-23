@@ -128,5 +128,10 @@ describe('#7 Testes no usuário', () => {
             expect(typeof val.sentEssays).toBe('number');
         });
         done();
-    })
+    });
+    test('#77 geração de planilha com as redações enviadas por aluno', async done => {
+        const sheet = await controller.countEssaySentByUser();
+        expect(sheet).toBeInstanceOf(Buffer);
+        done();
+    });
 });
