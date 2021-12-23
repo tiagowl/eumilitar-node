@@ -189,13 +189,9 @@ export default class UserController extends Controller {
         }
     }
 
-    public async hasPermissions(userId: number, permissions: Permissions[]) {
+    public async hasPermissions(user: User, permissions: Permissions[]) {
         try {
-            const user = await this.useCase.get(userId);
-            return await permissions.reduce(async (resultPromise, permission) => {
-                const result = await resultPromise;
-                return user.permissions.has(permission) && result;
-            }, Promise.resolve(true) as Promise<boolean>);
+            return await this.useCase.hasPermissions(user, permissions);
         } catch (error: any) {
             throw await this.processError(error);
         }
@@ -216,10 +212,10 @@ export default class UserController extends Controller {
             const parsed = await this.castFilter(filter, chartFilterSchema);
             const data = await this.useCase.countEssaySentByUser(parsed);
             const parsedData = await Promise.all(data.map(async user => ({
-                fullName: user.fullName,
-                phone: user.phone,
-                email: user.email,
-                sentEssays: user.sentEssays,
+                'Nome': user.fullName,
+                'Telefone': user.phone,
+                'Email': user.email,
+                'Redações Enviadas': user.sentEssays,
             })));
             return await this.generateSheet(parsedData, 'Redações enviadas por aluno');
         } catch (error: any) {

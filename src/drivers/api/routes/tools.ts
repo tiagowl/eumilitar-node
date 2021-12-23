@@ -10,22 +10,23 @@ export async function getToken(header: string | undefined) {
     return header.split(' ')[1];
 }
 
-export async function checkAuth(req: Request<any>, context: Context) {
+export async function checkAuth(req: Request<any>, context: Context, parse: boolean = true) {
     const token = await getToken(req.headers.authorization);
     const controller = new SessionController(context);
-    return controller.checkToken(token);
+    return controller.checkToken(token, parse);
 }
 
 export function checkPermission(context: Context, roles: AccountPermission[], permissions?: Permissions[]): RequestHandler {
-    const controller = new UserController(context);
+    const users = new UserController(context);
+    const sessions = new SessionController(context);
     return async (req, res, next) => {
         try {
-            const user = await checkAuth(req, context);
-            const userRepository = new UserRepository(context);
+            const token = await getToken(req.headers.authorization);
+            const user = await sessions.checkToken(token, false) as User;
             const isAdmin = new Set(roles).has('admin');
-            const hasPermission = (!!permissions && isAdmin) ? await controller.hasPermissions(user.id, permissions) : true;
+            const hasPermission = (!!permissions && isAdmin) ? await users.hasPermissions(user, permissions) : true;
             if (new Set(roles).has(user.permission) && hasPermission) {
-                req.user = await userRepository.get({ id: user.id });
+                req.user = user;
                 next();
             } else {
                 res.status(403).json({ message: 'Não autorizado', status: 403 });

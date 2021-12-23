@@ -178,4 +178,11 @@ export default class UserUseCase {
         return this.repository.countEssaySentByUser({ ...filterData, period: { start, end } });
     }
 
+    public async hasPermissions(user: User, permissions: Permissions[]) {
+        return await permissions.reduce(async (resultPromise, permission) => {
+            const result = await resultPromise;
+            return user.permissions.has(permission) && result;
+        }, Promise.resolve(true) as Promise<boolean>);
+    }
+
 }

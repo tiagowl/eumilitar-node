@@ -59,10 +59,11 @@ export default class SessionController extends Controller {
         }
     }
 
-    public async checkToken(token: string) {
+    public async checkToken(token: string, parse: boolean = true) {
         try {
             const validated = await this.validate({ token }, logoutSchema);
             const user = await this.useCase.checkToken(validated.token);
+            if (!parse) return user;
             const users = new UserController(this.context);
             return await users.parseEntity(user);
         } catch (error: any) {

@@ -303,7 +303,7 @@ describe('#1 Teste na api do usuário', () => {
         });
         done();
     });
-    test('gráfico de redações enviadas', async done => {
+    test('#1993 gráfico de redações enviadas', async done => {
         const header = await authenticate(admin, api);
         const { body, status } = await api.get('/users/charts/sent-essays/')
             .set('Authorization', header);
@@ -313,6 +313,15 @@ describe('#1 Teste na api do usuário', () => {
         body.forEach((val: any) => {
             expect(typeof val.key, jp({ val, body })).toBe('string');
         })
+        done();
+    })
+    test('#1994 relatório de redações enviadas', async done => {
+        const header = await authenticate(admin, api);
+        const { body, status } = await api.get('/users/sent-essays/')
+            .set('Authorization', header);
+        expect(status, jp(body)).toBe(200);
+        console.log(body)
+        expect(body, body).toBeInstanceOf(Buffer);
         done();
     })
 });

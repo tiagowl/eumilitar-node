@@ -55,7 +55,7 @@ export default (context: Context) => {
         .get('/reviews/', checkPermission(context, ['admin'], [Permissions.SEE_DASHBOARD]), async (req, res) => {
             try {
                 const buffer = await controller.listAsXLXS(req.query);
-                res.setHeader('Content-Disposition', 'attachment; filename="filename.csv');
+                res.setHeader('Content-Disposition', 'attachment; filename="reviews.csv');
                 res.status(200).contentType('text/csv; charset=utf-8');
                 res.end(buffer, 'binary');
             } catch (error: any) {

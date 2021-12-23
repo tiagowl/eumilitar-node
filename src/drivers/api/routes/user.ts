@@ -32,7 +32,7 @@ export default (context: Context) => {
         .get('/users/', checkPermission(context, ['admin']), async (req, res) => {
             try {
                 const searchStudents = req.query?.permission === 'student' || !req.query.permission;
-                const hasPermission = await controller.hasPermissions((req.user as User).id, [Permissions.SEE_USERS]);
+                const hasPermission = await controller.hasPermissions(req.user as User, [Permissions.SEE_USERS]);
                 if (searchStudents && !hasPermission) throw { message: 'Não autorizado', status: 401 };
                 const response = await controller.all(req.query || {});
                 res.status(200).json(response);
@@ -48,6 +48,18 @@ export default (context: Context) => {
                 res.status(201).json(created);
             } catch (error: any) {
                 res.status(error.status || 500).json(error);
+            } finally {
+                res.end();
+            }
+        })
+        .get('/users/sent-essays/', checkPermission(context, ['admin'], [Permissions.SEE_DASHBOARD]), async (req, res) => {
+            try {
+                const buffer = await controller.countEssaySentByUser(req.query);
+                res.setHeader('Content-Disposition', 'attachment; filename="sent-essays.csv');
+                res.status(200).contentType('text/csv; charset=utf-8');
+                res.end(buffer, 'binary');
+            } catch (error: any) {
+                res.json(error).status(error.status || 500);
             } finally {
                 res.end();
             }

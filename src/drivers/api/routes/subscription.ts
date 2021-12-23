@@ -3,7 +3,7 @@ import { Router } from 'express';
 import SubscriptionController, { OrderData } from "../../../adapters/controllers/SubscriptionController";
 import { checkAuth, checkPermission, isAuthenticated } from "./tools";
 import { SubscriptionCreation } from "../../../cases/SubscriptionCase";
-import { Permissions } from "../../../entities/User";
+import User, { Permissions } from "../../../entities/User";
 import UserController from "../../../adapters/controllers/UserController";
 
 export default (context: Context) => {
@@ -32,12 +32,12 @@ export default (context: Context) => {
         })
         .post('/subscriptions/', async (req, res) => {
             try {
-                const user = await checkAuth(req, context).catch(error => {
+                const user = await checkAuth(req, context, true).catch(error => {
                     if (error.status === 401) return;
                     throw error;
-                });
+                }) as User;
                 if (user && user.permission === 'admin') {
-                    if (!await users.hasPermissions(user.id, [Permissions.UPDATE_STUDENTS])) throw { message: 'Não autorizado', status: 401 };
+                    if (!await users.hasPermissions(user, [Permissions.UPDATE_STUDENTS])) throw { message: 'Não autorizado', status: 401 };
                     const body = {
                         ...req.body as SubscriptionCreation,
                         expiration: new Date((req.body as SubscriptionCreation).expiration)

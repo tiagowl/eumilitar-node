@@ -13,7 +13,6 @@ export async function up(knex: Knex): Promise<void> {
         await knex('users').where('permission', 1)
             .update('permissions', JSON.stringify(fullPermissions));
     } catch (error: any) {
-        console.error(error);
         await down(knex);
         throw error;
     }
