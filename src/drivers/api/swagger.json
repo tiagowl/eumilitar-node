@@ -1,0 +1,126 @@
+{
+    "openapi": "3.0.0",
+    "title": "API - Eu Militar",
+    "servers":[
+        {
+            "url": "http://0.0.0.0:80",
+            "description": "Porta da api para testes"
+        }
+    ],
+    "paths": {
+        "/tokens":{
+            "post":{
+                "summary": "Login de usuários",
+                "tags": ["Login"],
+                "requestBody": {
+                    "content":{
+                        "application/json":{
+                            "schema":{
+                                "properties":{
+                                    "email":{
+                                        "type": "string"
+                                    },
+                                    "password":{
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses":{
+                    "201": {
+                        "description": "created",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "properties":{
+                                        "token":{
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/password-recoveries":{
+            "post":{
+                "summary": "Recuperação de senha",
+                "tags": ["Recuperação de senha"],
+                "requestBody":{
+                    "content":{
+                        "application/json":{
+                            "schema":{
+                                "properties":{
+                                    "email":{
+                                        "type": "string"
+                                    },
+                                    "session":{
+                                        "type": "string"
+                                    },
+                                    "type":{
+                                        "type": "string",
+                                        "default": "email|sms"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "responses":{
+                "201": {
+                    "description": "created",
+                    "content": {
+                        "application/json":{
+                            "schema":{
+                                "properties":{
+                                    "message":{
+                                        "type": "string",
+                                        "default": "Email enviado! Verfique sua caixa de entrada"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400":{
+                    "description": "Bad Request",
+                    "content": {
+                        "application/json":{
+                            "schema":{
+                                "properties":{
+                                    "message":{
+                                        "type": "string",
+                                        "default": "['Email inválido', 'Código de Sessão inválido', 'Tipo de recuperação inválido']"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/password-recoveries/:token":{
+            "get":{
+                "summary": "Verfica token da sessão antes de redefinir senha",
+                "tags": ["Recuperação de senha"],
+                "parameters":{
+                    "in": "path",
+                    "name": "token",
+                    "schema":{
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "Token gerado ao clicar no link do email para redefinir senha"
+                }
+            }
+        }
+    },
+    "components":{
+        "schemas":{}
+    }
+}

@@ -2,6 +2,8 @@ import express, { Express, RequestHandler } from 'express';
 import { Context } from '../interfaces';
 import getMiddlewares from './middlewares';
 import getRouter from './routes';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocs from "./swagger.json";
 
 export default class Application {
     private readonly _server: Express;
@@ -25,6 +27,7 @@ export default class Application {
 
     private setUpMiddlewares() {
         this._server.use(...this.middlewares);
+        this._server.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
     }
 
     public serve() {

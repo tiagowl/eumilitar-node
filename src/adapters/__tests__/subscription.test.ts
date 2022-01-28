@@ -5,6 +5,8 @@ import SubscriptionController from "../controllers/SubscriptionController";
 import ProductRepository from "../models/ProductRepository";
 import { SubscriptionService } from "../models/SubscriptionRepository";
 import { UserService } from "../models/UserRepository";
+import SubscriptionCase from "../../cases/SubscriptionCase";
+import SubscriptionRepository from "../models/SubscriptionRepository";
 
 const context = contextFactory();
 
@@ -164,6 +166,21 @@ describe('#8 Inscrições', () => {
         });
         done();
     });
+    test('#90 adicionando um ano a data atual', async done=> {
+
+        const productRepository = new ProductRepository(context);
+        const product = await  productRepository.get({code: 5})
+        
+       
+            let atual = new Date();
+            let expiracaoProduto = new Date(Date.now() + product.expirationTime); 
+            expect(expiracaoProduto.getDay).toBe(atual.getDay);
+            expect(expiracaoProduto.getMonth).toBe(atual.getMonth);
+            expect(expiracaoProduto.getFullYear()).toBe(atual.getFullYear() + 1);
+        
+        
+        done();
+    })
 
 });
 

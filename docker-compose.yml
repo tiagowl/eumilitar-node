@@ -54,6 +54,7 @@ services:
             MYSQL_DATABASE: eumili89_portal_aluno
             MYSQL_ROOT_PASSWORD: passwd
             PMA_HOST: db
+            UPLOAD_LIMIT: 1G
 
     test_db:
         image: mysql:5.7

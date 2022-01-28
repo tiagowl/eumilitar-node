@@ -1,4 +1,4 @@
-FROM node:lts
+FROM node:14.16.0
 WORKDIR /usr/share/api
 RUN mkdir dist
 COPY . .
