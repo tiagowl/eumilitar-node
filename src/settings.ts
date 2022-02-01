@@ -149,6 +149,12 @@ const settings = Object.freeze<Settings>({
                 format: errorFormat,
                 dirname: path.resolve(__dirname, '..', '..', 'logs', NODE_ENV)
             }),
+            new transports.File({
+                filename: 'warning.log',
+                level: 'warning',
+                format: errorFormat,
+                dirname: path.resolve(__dirname, '..', '..', 'logs', NODE_ENV)
+            }),
             new transports.Console({ level: 'error', format: errorFormat }),
             new transports.Console({
                 level: 'info',

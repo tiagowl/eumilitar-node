@@ -103,7 +103,6 @@ export default class SubscriptionController extends Controller {
     private readonly useCase: SubscriptionCase;
 
     constructor(context: Context) {
-        const { settings: { hotmart: { hottok } } } = context;
         super(context);
         this.repository = new SubscriptionRepository(context);
         this.useCase = new SubscriptionCase(this.repository);
@@ -150,7 +149,7 @@ export default class SubscriptionController extends Controller {
                 if (!!created) {
                     const parsed = await this.parseEntity(created);
                     createdList.push(parsed);
-                }
+                } else this.logger.warning(`Inscrição não criada: ${JSON.stringify(subscription)}`);
             }
             return createdList;
         } catch (error: any) {
@@ -264,7 +263,6 @@ export default class SubscriptionController extends Controller {
             throw { message: error.message, status: 500 };
         }
     }
-
 
     public async sync() {
         const users = await this.repository.users.getUnsyncUsers();
