@@ -1,6 +1,6 @@
-FROM node:lts
+FROM node:14.16.0
 WORKDIR /usr/share/api
-RUN mkdir dist
+RUN mkdir dist; mkdir /usr/share/logs
 COPY . .
 RUN yarn install && \
     useradd api -ms /bin/bash && \

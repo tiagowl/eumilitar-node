@@ -151,7 +151,7 @@ const settings = Object.freeze<Settings>({
             }),
             new transports.File({
                 filename: 'warning.log',
-                level: 'warning',
+                level: 'warn',
                 format: errorFormat,
                 dirname: path.resolve(__dirname, '..', '..', 'logs', NODE_ENV)
             }),
@@ -160,6 +160,14 @@ const settings = Object.freeze<Settings>({
                 level: 'info',
                 format: format.combine(
                     format.colorize({ colors: { info: 'green' } }),
+                    format.timestamp(),
+                    format.printf(({ message }) => typeof message === 'string' ? message : JSON.stringify(message)),
+                ),
+            }),
+            new transports.Console({
+                level: 'warn',
+                format: format.combine(
+                    format.colorize({ colors: { info: 'yellow' } }),
                     format.timestamp(),
                     format.printf(({ message }) => typeof message === 'string' ? message : JSON.stringify(message)),
                 ),

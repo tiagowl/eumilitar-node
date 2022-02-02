@@ -224,7 +224,7 @@ export default class UserRepository extends Repository<UserModel, UserData, User
     }
 
     public async getUnsyncUsers() {
-        return await this.query.whereNotIn('permission', [1, 5, 6]);
+        return await this.query.whereNotIn('permission', [1, 5]);
     }
 
     public async fixPermission(id: number) {

@@ -112,17 +112,18 @@ export default class SubscriptionController extends Controller {
         return { ...entity, };
     }
 
-    private async writeNotification(data: OrderData | CancelOrderData, error: any) {
-        return `${JSON.stringify(data)}\n${error.stack || JSON.stringify(error)}`;
-    }
-
     private async notifySupport(data: OrderData | CancelOrderData, error: any) {
-        return this.context.smtp.sendMail({
-            subject: 'Erro ao criar usuário',
-            to: { email: this.context.settings.messageConfig.supportMail, name: 'Admin' },
-            from: this.context.settings.messageConfig.sender,
-            text: await this.writeNotification(data, error),
-        });
+        try {
+            return this.context.smtp.sendMail({
+                subject: 'Erro ao criar usuário',
+                to: { email: this.context.settings.messageConfig.supportMail, name: 'Admin' },
+                from: this.context.settings.messageConfig.sender,
+                text: `${JSON.stringify({ data, error })}\n${error.stack || JSON.stringify(error)}`,
+            });
+        } catch (error: any) {
+            this.logger.error(error);
+            throw error;
+        }
     }
 
     public async createFromHotmart(data: OrderData) {
@@ -138,6 +139,7 @@ export default class SubscriptionController extends Controller {
             const subscriptions = this.repository.getFromHotmart(payload);
             const createdList = [];
             for await (const subscription of subscriptions) {
+                this.logger.info(JSON.stringify(subscription));
                 const created = await this.useCase.autoCreate({
                     email: validated.email,
                     firstName: validated.first_name,
@@ -145,16 +147,17 @@ export default class SubscriptionController extends Controller {
                     product: validated.prod,
                     code: subscription.subscription_id,
                     phone: !!validated.phone_number ? `${validated.phone_local_code}${validated.phone_number}` : undefined,
+                    accessionDate: subscription.accession_date,
                 });
                 if (!!created) {
                     const parsed = await this.parseEntity(created);
                     createdList.push(parsed);
-                } else this.logger.warning(`Inscrição não criada: ${JSON.stringify(subscription)}`);
+                } else this.logger.warn(`Inscrição não criada: ${JSON.stringify(subscription)}`);
             }
             return createdList;
         } catch (error: any) {
             this.logger.error(error, { data: error?.response?.body });
-            this.notifySupport(data, error).catch(this.logger.error);
+            this.notifySupport(data, error);
             throw {
                 message: error.message,
                 status: error.status || 400
@@ -164,7 +167,8 @@ export default class SubscriptionController extends Controller {
 
     public async cancel(data: CancelOrderData) {
         try {
-            const validated = await this.validate(data, getCancelSchema(this.context.settings.hotmart.hottok));
+            const schema = getCancelSchema(this.context.settings.hotmart.hottok);
+            const validated = await this.validate(data, schema);
             const subscriptions = this.repository.getFromHotmart({
                 subscriber_email: validated.email,
                 status: ['INACTIVE', 'CANCELLED_BY_CUSTOMER', 'CANCELLED_BY_SELLER', 'CANCELLED_BY_ADMIN'],
@@ -185,7 +189,7 @@ export default class SubscriptionController extends Controller {
             return canceledList;
         } catch (error: any) {
             this.logger.error(error);
-            this.notifySupport(data, error).catch(this.logger.error);
+            this.notifySupport(data, error);
             if (error.status) throw error;
             throw { message: 'Erro ao cancelar inscrição', status: 500 };
         }
@@ -283,11 +287,12 @@ export default class SubscriptionController extends Controller {
                     lastName: user.last_name,
                     product: subscription.product.id,
                     code: subscription.subscription_id,
+                    accessionDate: subscription.accession_date,
                 });
                 if (!!created) {
                     const parsed = await this.parseEntity(created);
                     createdList.push(parsed);
-                }
+                } else this.logger.warn(`Inscrição não criada: ${JSON.stringify({ subscription })}`);
             }
             this.logger.info(`Synced ${createdList.length} subscriptions for user "${user.email}"`);
             return createdList;

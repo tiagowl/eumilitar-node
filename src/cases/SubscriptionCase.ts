@@ -27,6 +27,7 @@ export interface SubscriptionAutoCreationInterface {
     lastName: string;
     code: number;
     phone?: string;
+    accessionDate: number;
 }
 
 export interface SubscriptionCreation {
@@ -89,19 +90,22 @@ export default class SubscriptionCase {
     }
 
     public async autoCreate(data: SubscriptionAutoCreationInterface) {
-        if (await this.exists(data)) return;
+        const [subscription] = await this.repository.filter({ code: data.code }) as (Subscription | undefined)[];
         const user = await this.checkUser(data);
         const product = await this.repository.products.get({ code: data.product });
         if (!product) throw new CaseError('Produto não econtrado', Errors.NOT_FOUND);
-        return this.repository.create({
+        const payload = {
             user: user.id,
-            expiration: new Date(Date.now() + product.expirationTime),
-            registrationDate: new Date(),
+            expiration: new Date(data.accessionDate + product.expirationTime),
+            registrationDate: subscription?.registrationDate || new Date(),
             product: product.id,
             code: data.code,
             course: product.course,
             active: true,
-        });
+        };
+        return !!subscription
+            ? this.repository.update(subscription.id, payload)
+            : this.repository.create(payload);
     }
 
     public async cancel(code: number) {
