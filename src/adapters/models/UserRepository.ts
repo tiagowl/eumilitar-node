@@ -223,8 +223,19 @@ export default class UserRepository extends Repository<UserModel, UserData, User
         return await this.toEntity(user);
     }
 
-    public async getUnsyncUsers() {
-        return await this.query.whereNotIn('permission', [1, 5]);
+    public async *getUnsyncUsers() {
+        let page = 1;
+        while (true) {
+            const query = this.query.whereNotIn('permission', [1, 5]);
+            await this.paginate(query, {
+                pageSize: 100,
+                page,
+            });
+            const users = await query;
+            if (users.length === 0) break;
+            yield users;
+            page++;
+        }
     }
 
     public async fixPermission(id: number) {

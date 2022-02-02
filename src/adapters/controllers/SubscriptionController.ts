@@ -74,6 +74,12 @@ const chartFilterSchema = yup.object().shape({
     }),
 });
 
+function timeOut(val: number) {
+    return new Promise((accept) => {
+        setTimeout(accept, val);
+    });
+}
+
 const getSchema = (hottok: string) => yup.object().shape({
     hottok: yup.string()
         .required('O campo "hottok" é obrigatório')
@@ -269,34 +275,39 @@ export default class SubscriptionController extends Controller {
     }
 
     public async sync() {
-        const users = await this.repository.users.getUnsyncUsers();
-        this.logger.info(`Synchronizing ${users.length} users`);
-        const synced = await Promise.all(users.map(async (user, index) => {
-            this.logger.info(`User ${index + 1} of ${users.length} users`);
-            const payload: HotmartFilter = {
-                'subscriber_email': user.email,
-                'status': 'ACTIVE',
-            };
-            const createdList = [];
-            const subscriptions = this.repository.getFromHotmart(payload);
-            await this.repository.users.fixPermission(user.user_id);
-            for await (const subscription of subscriptions) {
-                const created = await this.useCase.autoCreate({
-                    email: user.email,
-                    firstName: user.first_name,
-                    lastName: user.last_name,
-                    product: subscription.product.id,
-                    code: subscription.subscription_id,
-                    accessionDate: subscription.accession_date,
-                });
-                if (!!created) {
-                    const parsed = await this.parseEntity(created);
-                    createdList.push(parsed);
-                } else this.logger.warn(`Inscrição não criada: ${JSON.stringify({ subscription })}`);
-            }
-            this.logger.info(`Synced ${createdList.length} subscriptions for user "${user.email}"`);
-            return createdList;
-        }));
-        return synced.flat().filter(item => !!item);
+        const usersGenerator = this.repository.users.getUnsyncUsers();
+        const synced = [];
+        for await (const users of usersGenerator) {
+            this.logger.info(`Synchronizing ${users.length} users`);
+            const currentSync = await Promise.all(users.map(async (user, index) => {
+                this.logger.info(`User ${index + 1} of ${users.length} users`);
+                const payload: HotmartFilter = {
+                    'subscriber_email': user.email,
+                    'status': 'ACTIVE',
+                };
+                const createdList = [];
+                const subscriptions = this.repository.getFromHotmart(payload);
+                await this.repository.users.fixPermission(user.user_id);
+                for await (const subscription of subscriptions) {
+                    const created = await this.useCase.autoCreate({
+                        email: user.email,
+                        firstName: user.first_name,
+                        lastName: user.last_name,
+                        product: subscription.product.id,
+                        code: subscription.subscription_id,
+                        accessionDate: subscription.accession_date,
+                    });
+                    if (!!created) {
+                        const parsed = await this.parseEntity(created);
+                        createdList.push(parsed);
+                    } else this.logger.warn(`Inscrição não criada: ${JSON.stringify({ subscription })}`);
+                }
+                this.logger.info(`Synced ${createdList.length} subscriptions for user "${user.email}"`);
+                return createdList;
+            }));
+            synced.push(currentSync.flat().filter(item => !!item));
+            await timeOut(2 * 60 * 1000);
+        }
+        return synced.flat();
     }
 }
