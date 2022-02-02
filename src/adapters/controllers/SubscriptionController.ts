@@ -276,10 +276,10 @@ export default class SubscriptionController extends Controller {
 
     public async sync() {
         const usersGenerator = this.repository.users.getUnsyncUsers();
-        const synced = [];
+        const synced: any[] = [];
         for await (const users of usersGenerator) {
             this.logger.info(`Synchronizing ${users.length} users`);
-            const currentSync = await Promise.all(users.map(async (user, index) => {
+            await Promise.all(users.map(async (user, index) => {
                 this.logger.info(`User ${index + 1} of ${users.length} users`);
                 const payload: HotmartFilter = {
                     'subscriber_email': user.email,
@@ -302,12 +302,13 @@ export default class SubscriptionController extends Controller {
                         createdList.push(parsed);
                     } else this.logger.warn(`Inscrição não criada: ${JSON.stringify({ subscription })}`);
                 }
+                if (createdList.length > 0) synced.push({ user, createdList });
                 this.logger.info(`Synced ${createdList.length} subscriptions for user "${user.email}"`);
                 return createdList;
             }));
-            synced.push(currentSync.flat().filter(item => !!item));
             await timeOut(2 * 60 * 1000);
         }
-        return synced.flat();
+        this.logger.info(`Sync: ${JSON.stringify(synced)}`);
+        return synced;
     }
 }
