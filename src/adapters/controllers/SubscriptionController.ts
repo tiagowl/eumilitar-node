@@ -289,18 +289,24 @@ export default class SubscriptionController extends Controller {
                 const subscriptions = this.repository.getFromHotmart(payload);
                 await this.repository.users.fixPermission(user.user_id);
                 for await (const subscription of subscriptions) {
-                    const created = await this.useCase.autoCreate({
-                        email: user.email,
-                        firstName: user.first_name,
-                        lastName: user.last_name,
-                        product: subscription.product.id,
-                        code: subscription.subscription_id,
-                        accessionDate: subscription.accession_date,
-                    });
-                    if (!!created) {
-                        const parsed = await this.parseEntity(created);
-                        createdList.push(parsed);
-                    } else this.logger.warn(`Inscrição não criada: ${JSON.stringify({ subscription })}`);
+                    try {
+                        const created = await this.useCase.autoCreate({
+                            email: user.email,
+                            firstName: user.first_name,
+                            lastName: user.last_name,
+                            product: subscription.product.id,
+                            code: subscription.subscription_id,
+                            accessionDate: subscription.accession_date,
+                        });
+                        if (!!created) {
+                            const parsed = await this.parseEntity(created);
+                            createdList.push(parsed);
+                        } else this.logger.warn(`Inscrição não criada: ${JSON.stringify({ subscription })}`);
+
+                    } catch (error: any) {
+                        this.logger.error(`${JSON.stringify({ error, subscription })}`);
+                        if (error instanceof CaseError) continue;
+                    }
                 }
                 if (createdList.length > 0) synced.push({ user, createdList });
                 this.logger.info(`Synced ${createdList.length} subscriptions for user "${user.email}"`);
