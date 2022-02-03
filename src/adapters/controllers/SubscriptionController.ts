@@ -276,34 +276,39 @@ export default class SubscriptionController extends Controller {
         const usersGenerator = this.repository.users.getUnsyncUsers();
         for await (const users of usersGenerator) {
             this.logger.info(`Synchronizing ${users.length} users`);
-            await Promise.all(users.map(async (user) => {
-                const payload: HotmartFilter = {
-                    'subscriber_email': user.email,
-                    'status': 'ACTIVE',
-                };
-                const createdList = [];
-                const subscriptions = this.repository.getFromHotmart(payload);
-                await this.repository.users.fixPermission(user.user_id);
-                listingSubscriptions: for await (const subscription of subscriptions) {
-                    try {
-                        const created = await this.useCase.autoCreate({
-                            email: user.email,
-                            firstName: user.first_name,
-                            lastName: user.last_name,
-                            product: subscription.product.id,
-                            code: subscription.subscription_id,
-                            accessionDate: subscription.accession_date,
-                        });
-                        if (!!created) {
-                            const parsed = await this.parseEntity(created);
-                            createdList.push(parsed);
-                        } else this.logger.warn(`Inscrição não criada: ${JSON.stringify({ subscription })}`);
-                    } catch (error: any) {
-                        if (error instanceof CaseError) continue listingSubscriptions;
-                        this.logger.error(`${JSON.stringify({ error, subscription })}`);
+            await Promise.allSettled(users.map(async (user) => {
+                try {
+                    const payload: HotmartFilter = {
+                        'subscriber_email': user.email,
+                        'status': 'ACTIVE',
+                    };
+                    const createdList = [];
+                    const subscriptions = this.repository.getFromHotmart(payload);
+                    await this.repository.users.fixPermission(user.user_id);
+                    listingSubscriptions: for await (const subscription of subscriptions) {
+                        try {
+                            const created = await this.useCase.autoCreate({
+                                email: user.email,
+                                firstName: user.first_name,
+                                lastName: user.last_name,
+                                product: subscription.product.id,
+                                code: subscription.subscription_id,
+                                accessionDate: subscription.accession_date,
+                            });
+                            if (!!created) {
+                                const parsed = await this.parseEntity(created);
+                                createdList.push(parsed);
+                            } else this.logger.warn(`Inscrição não criada: ${JSON.stringify({ subscription })}`);
+                        } catch (error: any) {
+                            if (error instanceof CaseError) continue listingSubscriptions;
+                            this.logger.error(`${JSON.stringify({ error, subscription })}`);
+                        }
                     }
+                    this.logger.info(`Synced ${createdList.length} subscriptions for user "${user.email}"`);
+                } catch (error: any) {
+                    this.logger.error(`Email: ${user.email} - ${JSON.stringify({ error })} ${error.stack}`);
+                    await timeOut(3 * 60 * 1000);
                 }
-                this.logger.info(`Synced ${createdList.length} subscriptions for user "${user.email}"`);
             }));
             await timeOut(2 * 60 * 1000);
         }
