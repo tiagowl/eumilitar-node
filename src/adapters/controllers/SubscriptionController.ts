@@ -75,9 +75,7 @@ const chartFilterSchema = yup.object().shape({
 });
 
 function timeOut(val: number) {
-    return new Promise((accept) => {
-        setTimeout(accept, val);
-    });
+    return new Promise((accept) => setTimeout(accept, val));
 }
 
 const getSchema = (hottok: string) => yup.object().shape({
@@ -276,11 +274,9 @@ export default class SubscriptionController extends Controller {
 
     public async sync() {
         const usersGenerator = this.repository.users.getUnsyncUsers();
-        const synced: any[] = [];
         for await (const users of usersGenerator) {
             this.logger.info(`Synchronizing ${users.length} users`);
-            await Promise.all(users.map(async (user, index) => {
-                this.logger.info(`User ${index + 1} of ${users.length} users`);
+            await Promise.all(users.map(async (user) => {
                 const payload: HotmartFilter = {
                     'subscriber_email': user.email,
                     'status': 'ACTIVE',
@@ -302,19 +298,14 @@ export default class SubscriptionController extends Controller {
                             const parsed = await this.parseEntity(created);
                             createdList.push(parsed);
                         } else this.logger.warn(`Inscrição não criada: ${JSON.stringify({ subscription })}`);
-
                     } catch (error: any) {
-                        this.logger.error(`${JSON.stringify({ error, subscription })}`);
                         if (error instanceof CaseError) continue;
+                        this.logger.error(`${JSON.stringify({ error, subscription })}`);
                     }
                 }
-                if (createdList.length > 0) synced.push({ user, createdList });
                 this.logger.info(`Synced ${createdList.length} subscriptions for user "${user.email}"`);
-                return createdList;
             }));
             await timeOut(2 * 60 * 1000);
         }
-        this.logger.info(`Sync: ${JSON.stringify(synced)}`);
-        return synced;
     }
 }
