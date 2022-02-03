@@ -310,7 +310,7 @@ export default class SubscriptionController extends Controller {
                     await timeOut(3 * 60 * 1000);
                 }
             }));
-            await timeOut(2 * 60 * 1000);
+            await timeOut(1.5 * 60 * 1000);
         }
     }
 }

@@ -227,7 +227,7 @@ export default class UserRepository extends Repository<UserModel, UserData, User
         let page = 1;
         paginating: while (true) {
             const query = this.query.whereNotIn('permission', [1, 5]);
-            await this.paginate(query, { pageSize: 99, page });
+            await this.paginate(query, { pageSize: 75, page });
             const users = await query;
             if (users.length === 0) break paginating;
             yield users;
