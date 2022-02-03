@@ -225,14 +225,14 @@ export default class UserRepository extends Repository<UserModel, UserData, User
 
     public async *getUnsyncUsers() {
         let page = 1;
-        while (true) {
+        paginating: while (true) {
             const query = this.query.whereNotIn('permission', [1, 5]);
             await this.paginate(query, {
                 pageSize: 100,
                 page,
             });
             const users = await query;
-            if (users.length === 0) break;
+            if (users.length === 0) break paginating;
             yield users;
             page++;
         }

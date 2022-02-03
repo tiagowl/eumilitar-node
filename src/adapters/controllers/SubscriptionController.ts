@@ -284,7 +284,7 @@ export default class SubscriptionController extends Controller {
                 const createdList = [];
                 const subscriptions = this.repository.getFromHotmart(payload);
                 await this.repository.users.fixPermission(user.user_id);
-                for await (const subscription of subscriptions) {
+                listingSubscriptions: for await (const subscription of subscriptions) {
                     try {
                         const created = await this.useCase.autoCreate({
                             email: user.email,
@@ -299,7 +299,7 @@ export default class SubscriptionController extends Controller {
                             createdList.push(parsed);
                         } else this.logger.warn(`Inscrição não criada: ${JSON.stringify({ subscription })}`);
                     } catch (error: any) {
-                        if (error instanceof CaseError) continue;
+                        if (error instanceof CaseError) continue listingSubscriptions;
                         this.logger.error(`${JSON.stringify({ error, subscription })}`);
                     }
                 }
