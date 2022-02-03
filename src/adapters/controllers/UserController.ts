@@ -143,6 +143,10 @@ export default class UserController extends Controller {
         }
     }
 
+    public async reSendMail(user: User){
+        this.repository.notify(user);
+    }
+
     public async create(data: UserCreation, agent: User) {
         try {
             const unalthorizedError = { message: 'Não autorizado', status: 403 };

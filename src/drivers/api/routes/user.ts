@@ -96,5 +96,13 @@ export default (context: Context) => {
             } finally {
                 res.end();
             }
+        })
+        .post('/users/resendEmail', checkPermission(context, ['admin']), async (req, res) => {
+            try{
+                await controller.reSendMail(req.body);
+                res.status(200).json({message: "Email enviado!"});
+            }catch(err){
+                res.status(500).json({message: "erro ao enviar email"});
+            }
         });
 };

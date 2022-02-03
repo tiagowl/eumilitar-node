@@ -146,7 +146,7 @@ export default class UserRepository extends Repository<UserModel, UserData, User
         if (typeof saved !== 'number') throw { message: 'Não foi possível salvar token', status: 500 };
     }
 
-    private async notify(user: User) {
+    public async notify(user: User) {
         try {
             const token = await this.generateConfirmationToken();
             await this.saveToken(token, user);
