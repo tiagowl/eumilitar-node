@@ -274,15 +274,17 @@ export default class SubscriptionController extends Controller {
 
     public async sync() {
         const usersGenerator = this.repository.users.getUnsyncUsers();
+        let page = 1;
         for await (const users of usersGenerator) {
-            this.logger.info(`Synchronizing ${users.length} users`);
+            this.logger.info(`[${new Date().toISOString()}]: Synchronizing ${users.length} users in page ${page}`);
+            page++;
             await Promise.allSettled(users.map(async (user) => {
                 try {
                     const payload: HotmartFilter = {
                         'subscriber_email': user.email,
                         'status': 'ACTIVE',
                     };
-                    const createdList = [];
+                    let createdList = 0;
                     const subscriptions = this.repository.getFromHotmart(payload);
                     await this.repository.users.fixPermission(user.user_id);
                     listingSubscriptions: for await (const subscription of subscriptions) {
@@ -296,17 +298,16 @@ export default class SubscriptionController extends Controller {
                                 accessionDate: subscription.accession_date,
                             });
                             if (!!created) {
-                                const parsed = await this.parseEntity(created);
-                                createdList.push(parsed);
+                                createdList++;
                             } else this.logger.warn(`Inscrição não criada: ${JSON.stringify({ subscription })}`);
                         } catch (error: any) {
                             if (error instanceof CaseError) continue listingSubscriptions;
                             this.logger.error(`${JSON.stringify({ error, subscription })}`);
                         }
                     }
-                    this.logger.info(`Synced ${createdList.length} subscriptions for user "${user.email}"`);
+                    this.logger.info(`[${new Date().toISOString()}]: Synced ${createdList} subscriptions for user "${user.email} #${user.user_id}"`);
                 } catch (error: any) {
-                    this.logger.error(`Email: ${user.email} - ${JSON.stringify({ error })} ${error.stack}`);
+                    this.logger.error(`[${new Date().toISOString()}]: Email: ${user.email} - ${JSON.stringify({ error })} ${error.stack}`);
                     await timeOut(3 * 60 * 1000);
                 }
             }));
