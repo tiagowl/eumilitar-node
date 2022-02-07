@@ -66,12 +66,13 @@ export default class SubscriptionCase {
     private async checkUser(data: SubscriptionAutoCreationInterface) {
         const user = await this.repository.users.get({ email: data.email });
         const userCase = new UserUseCase(this.repository.users);
-        if (!!user) return userCase.update(user.id, {
+        if (!!user) return this.repository.users.update(user.id, {
             ...user.data,
             firstName: data.firstName,
             lastName: data.lastName,
             phone: data.phone,
             status: 'active',
+            lastModified: new Date(),
         });
         return userCase.create({
             email: data.email,
