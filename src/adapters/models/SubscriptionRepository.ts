@@ -22,6 +22,12 @@ export interface SubscriptionModel {
     course_tag: 2 | 3;
 }
 
+interface EmailErrorReceivers {
+    name: string;
+    email: string;
+    erro: any;
+}
+
 export type HotmartStatus = 'ACTIVE' | 'INACTIVE' | 'DELAYED' | 'CANCELLED_BY_CUSTOMER' | 'CANCELLED_BY_SELLER' | 'CANCELLED_BY_ADMIN' | 'STARTED' | 'OVERDUE';
 
 export interface HotmartFilter {
@@ -136,6 +142,19 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
             this.logger.error(error);
             this.logger.error(error.response?.data);
             throw { message: 'Erro ao recuperar inscrições da Hotmart', status: 500 };
+        }
+    }
+
+    public errorMail(receiver: EmailErrorReceivers){
+        try{
+            this.context.smtp.sendMail({
+                from: this.context.settings.messageConfig.sender,
+                subject:'Erro na inscrição do usuário',
+                to:{email: receiver.email, name: receiver.name},
+                text:receiver.erro
+            });
+        }catch(error){
+            throw { message: 'Erro ao enviar email para administradores.', status: 500 };
         }
     }
 

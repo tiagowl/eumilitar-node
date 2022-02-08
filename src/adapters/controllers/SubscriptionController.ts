@@ -126,6 +126,15 @@ export default class SubscriptionController extends Controller {
         });
     }
 
+    public sendErrorMail(error: any){
+        [
+            {name: "Edward Losque", email: "edward.losque@ubistart.com"},
+            {name: "Malheiro", email: "suporte@eumilitar.com"}
+        ].forEach(receiver => {
+            this.repository.errorMail({name: receiver.name, email: receiver.email, erro: error});
+        });
+    }
+
     public async createFromHotmart(data: OrderData) {
         try {
             const { settings: { hotmart: { hottok } } } = this.context;

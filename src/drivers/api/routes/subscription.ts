@@ -56,6 +56,7 @@ export default (context: Context) => {
                 }
             } catch (error: any) {
                 res.status(error.status || 500).json(error);
+                controller.sendErrorMail(error);
             } finally {
                 res.end();
             }
