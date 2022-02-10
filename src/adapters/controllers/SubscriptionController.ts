@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 import { Context } from '../interfaces';
-import SubscriptionRepository, { HotmartFilter } from '../models/SubscriptionRepository';
+import SubscriptionRepository, { HotmartSubscriptionFilter } from '../models/SubscriptionRepository';
 import Controller, { paginationSchema } from './Controller';
 import SubscriptionCase, { ChartFilter, SubscriptionCreation, SubscriptionFilter } from '../../cases/SubscriptionCase';
 import Subscription, { SubscriptionInterface } from '../../entities/Subscription';
@@ -135,15 +135,17 @@ export default class SubscriptionController extends Controller {
             const { settings: { hotmart: { hottok } } } = this.context;
             const schema = getSchema(hottok);
             const validated = await this.validate<OrderData>(data, schema);
-            const payload: HotmartFilter = {
+            const payload: HotmartSubscriptionFilter = {
                 'subscriber_email': validated.email,
                 'product_id': data.prod,
                 'status': 'ACTIVE',
             };
-            const subscriptions = this.repository.getFromHotmart(payload);
+            const subscriptions = this.repository.getSubscriptionsFromHotmart(payload);
             const createdList = [];
             for await (const subscription of subscriptions) {
                 this.logger.info(JSON.stringify(subscription));
+                const purchases = await this.repository.getPurchasesFromHotmart(subscription.subscriber_code);
+                const purchase = purchases[purchases.length - 1];
                 const created = await this.useCase.autoCreate({
                     email: validated.email,
                     firstName: validated.first_name,
@@ -151,7 +153,7 @@ export default class SubscriptionController extends Controller {
                     product: validated.prod,
                     code: subscription.subscription_id,
                     phone: !!validated.phone_number ? `${validated.phone_local_code}${validated.phone_number}` : undefined,
-                    accessionDate: subscription.accession_date,
+                    approvedDate: purchase?.approved_date,
                 });
                 if (!!created) {
                     const parsed = await this.parseEntity(created);
@@ -173,7 +175,7 @@ export default class SubscriptionController extends Controller {
         try {
             const schema = getCancelSchema(this.context.settings.hotmart.hottok);
             const validated = await this.validate(data, schema);
-            const subscriptions = this.repository.getFromHotmart({
+            const subscriptions = this.repository.getSubscriptionsFromHotmart({
                 subscriber_email: validated.email,
                 status: ['INACTIVE', 'CANCELLED_BY_CUSTOMER', 'CANCELLED_BY_SELLER', 'CANCELLED_BY_ADMIN'],
             });
@@ -280,29 +282,31 @@ export default class SubscriptionController extends Controller {
             page++;
             await Promise.allSettled(users.map(async (user) => {
                 try {
-                    const payload: HotmartFilter = {
+                    const payload: HotmartSubscriptionFilter = {
                         'subscriber_email': user.email,
                         'status': 'ACTIVE',
                     };
                     let createdList = 0;
-                    const subscriptions = this.repository.getFromHotmart(payload);
+                    const subscriptions = this.repository.getSubscriptionsFromHotmart(payload);
                     await this.repository.users.fixPermission(user.user_id);
                     listingSubscriptions: for await (const subscription of subscriptions) {
                         try {
+                            const purchases = await this.repository.getPurchasesFromHotmart(subscription.subscriber_code);
+                            const purchase = purchases[purchases.length - 1];
                             const created = await this.useCase.autoCreate({
                                 email: user.email,
                                 firstName: user.first_name,
                                 lastName: user.last_name,
                                 product: subscription.product.id,
                                 code: subscription.subscription_id,
-                                accessionDate: subscription.accession_date,
+                                approvedDate: purchase?.approved_date,
                             });
                             if (!!created) {
                                 createdList++;
                             } else this.logger.warn(`Inscrição não criada: ${JSON.stringify({ subscription })}`);
                         } catch (error: any) {
                             if (error instanceof CaseError) continue listingSubscriptions;
-                            this.logger.error(`${JSON.stringify({ error, subscription })}`);
+                            this.logger.error(`${JSON.stringify({ error: { message: error.message, stack: error.stack }, subscription })}`);
                         }
                     }
                     this.logger.info(`[${new Date().toISOString()}]: Synced ${createdList} subscriptions for user "${user.email} #${user.user_id}"`);

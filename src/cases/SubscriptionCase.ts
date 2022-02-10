@@ -27,7 +27,7 @@ export interface SubscriptionAutoCreationInterface {
     lastName: string;
     code: number;
     phone?: string;
-    accessionDate: number;
+    approvedDate: number;
 }
 
 export interface SubscriptionCreation {
@@ -97,7 +97,7 @@ export default class SubscriptionCase {
         if (!product) throw new CaseError('Produto não econtrado', Errors.NOT_FOUND);
         const payload = {
             user: user.id,
-            expiration: new Date(data.accessionDate + product.expirationTime),
+            expiration: new Date(data.approvedDate + product.expirationTime),
             registrationDate: subscription?.registrationDate || new Date(),
             product: product.id,
             code: data.code,
