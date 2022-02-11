@@ -15,6 +15,9 @@ module.exports = {
       database: process.env.TEST_DB_NAME
     },
     pool: { min: 0, max: 5 },
-    acquireConnectionTimeout: 10000
+    acquireConnectionTimeout: 10000,
+    migrations: {
+      tableName: 'knex_migrations',
+    }
   }
 };

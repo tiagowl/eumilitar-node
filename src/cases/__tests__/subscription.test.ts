@@ -21,6 +21,7 @@ describe('#7 Assinaturas', () => {
             lastName: faker.name.lastName(),
             product: 10,
             code: faker.datatype.number(),
+            accessionDate: faker.datatype.number(),
         });
         expect(subscription).toBeInstanceOf(Subscription);
         done();
@@ -82,6 +83,7 @@ describe('#7 Assinaturas', () => {
                 phone: faker.phone.phoneNumber('###########'),
                 product: 0,
                 code,
+                accessionDate: faker.datatype.number(),
             });
             expect(created instanceof Subscription).toBeTruthy();
             const canceled = await useCase.cancel(code);
@@ -93,10 +95,11 @@ describe('#7 Assinaturas', () => {
                 phone: faker.phone.phoneNumber('###########'),
                 product: 0,
                 code: faker.datatype.number(),
+                accessionDate: faker.datatype.number(),
             });
             expect(created2 instanceof Subscription).toBeTruthy();
             const user = await users.get({ email });
-            if(!user) throw new Error();
+            if (!user) throw new Error();
             expect(user.status).toBe('active');
             done();
         })
