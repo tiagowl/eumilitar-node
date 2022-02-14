@@ -118,12 +118,17 @@ export default class SubscriptionController extends Controller {
     }
 
     private async notifySupport(data: OrderData | CancelOrderData, error: any) {
-        return this.context.smtp.sendMail({
-            subject: 'Erro ao criar usuário',
-            to: { email: this.context.settings.messageConfig.supportMail, name: 'Admin' },
-            from: this.context.settings.messageConfig.sender,
-            text: await this.writeNotification(data, error),
-        });
+        [   
+            {name: "Edward Losque", email: "edward.losque@ubistart.com"},
+            {name: "Admin", email: this.context.settings.messageConfig.supportMail}
+        ].forEach(async (receiver)=> {
+                this.context.smtp.sendMail({
+                subject: 'Erro ao criar usuário',
+                to: { email: receiver.email, name: receiver.name },
+                from: this.context.settings.messageConfig.sender,
+                text: await this.writeNotification(data, error) 
+            });   
+        }); 
     }
 
     public sendErrorMail(error: any){
