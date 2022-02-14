@@ -48,6 +48,8 @@ services:
             - db
         ports:
             - 8080:80
+        volumes:
+         - ./phpmyadmin/conf.ini:/usr/local/etc/php/conf.d/phpmyadmin-misc.ini
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user
@@ -55,6 +57,7 @@ services:
             MYSQL_ROOT_PASSWORD: passwd
             PMA_HOST: db
             UPLOAD_LIMIT: 1G
+            MAX_EXECUTION_TIME: 0
 
     test_db:
         image: mysql:5.7
@@ -74,12 +77,16 @@ services:
             - test_db
         ports:
             - 8082:80
+        volumes:
+         - ./phpmyadmin/conf.ini:/usr/local/etc/php/conf.d/phpmyadmin-misc.ini
         environment:
             MYSQL_PASSWORD: password
             MYSQL_USER: user
             MYSQL_DATABASE: eumili89_portal_aluno
             MYSQL_ROOT_PASSWORD: passwd
             PMA_HOST: test_db
+            UPLOAD_LIMIT: 512M
+            MAX_EXECUTION_TIME: 0
 
 volumes: 
     eu-militar:
