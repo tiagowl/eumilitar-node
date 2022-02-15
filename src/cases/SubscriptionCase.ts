@@ -27,6 +27,7 @@ export interface SubscriptionAutoCreationInterface {
     lastName: string;
     code: number;
     phone?: string;
+    approvedDate: number;
 }
 
 export interface SubscriptionCreation {
@@ -65,12 +66,13 @@ export default class SubscriptionCase {
     private async checkUser(data: SubscriptionAutoCreationInterface) {
         const user = await this.repository.users.get({ email: data.email });
         const userCase = new UserUseCase(this.repository.users);
-        if (!!user) return userCase.update(user.id, {
+        if (!!user) return this.repository.users.update(user.id, {
             ...user.data,
             firstName: data.firstName,
             lastName: data.lastName,
             phone: data.phone,
             status: 'active',
+            lastModified: new Date(),
         });
         return userCase.create({
             email: data.email,
@@ -89,19 +91,22 @@ export default class SubscriptionCase {
     }
 
     public async autoCreate(data: SubscriptionAutoCreationInterface) {
-        if (await this.exists(data)) return;
+        const [subscription] = await this.repository.filter({ code: data.code }) as (Subscription | undefined)[];
         const user = await this.checkUser(data);
         const product = await this.repository.products.get({ code: data.product });
         if (!product) throw new CaseError('Produto não econtrado', Errors.NOT_FOUND);
-        return this.repository.create({
+        const payload = {
             user: user.id,
-            expiration: new Date(Date.now() + product.expirationTime),
-            registrationDate: new Date(),
+            expiration: new Date(data.approvedDate + product.expirationTime),
+            registrationDate: subscription?.registrationDate || new Date(),
             product: product.id,
             code: data.code,
             course: product.course,
             active: true,
-        });
+        };
+        return !!subscription
+            ? this.repository.update(subscription.id, payload)
+            : this.repository.create(payload);
     }
 
     public async cancel(code: number) {

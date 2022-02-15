@@ -30,12 +30,21 @@ interface EmailErrorReceivers {
 
 export type HotmartStatus = 'ACTIVE' | 'INACTIVE' | 'DELAYED' | 'CANCELLED_BY_CUSTOMER' | 'CANCELLED_BY_SELLER' | 'CANCELLED_BY_ADMIN' | 'STARTED' | 'OVERDUE';
 
-export interface HotmartFilter {
+export interface HotmartSubscriptionFilter {
     max_results?: number | number[];
     product_id?: number | number[];
     plan?: string | string[];
     status?: HotmartStatus | HotmartStatus[];
     subscriber_email?: string | string[];
+}
+
+export interface HotmartSalesFilter {
+    max_results?: number | number[];
+    product_id?: number | number[];
+    plan?: string | string[];
+    status?: HotmartStatus | HotmartStatus[];
+    subscriber_email?: string | string[];
+    transaction?: string | string[];
 }
 
 export interface HotmartSubscription {
@@ -62,6 +71,22 @@ export interface HotmartSubscription {
         "email": string;
         "ucode": string
     };
+}
+
+export interface HotmartPurchase {
+    "transaction": string;
+    "approved_date": number;
+    "payment_engine": string;
+    "status": string;
+    "price": {
+        "value": number;
+        "currency_code": string
+    };
+    "payment_type": string;
+    "payment_method": string;
+    "recurrency_number": number;
+    "under_warranty": boolean;
+    "purchase_subscription": boolean;
 }
 
 const parseCode = (code?: number | null | string) => (!!code || code === 0) ? Number(code) : null;
@@ -119,7 +144,7 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
         return await this.toEntity(created);
     }
 
-    public async *getFromHotmart(filter: HotmartFilter): AsyncGenerator<HotmartSubscription> {
+    public async *getSubscriptionsFromHotmart(filter: HotmartSubscriptionFilter): AsyncGenerator<HotmartSubscription> {
         try {
             const authToken = await this.authHotmart();
             const url = `https://${this.context.settings.hotmart.env}.hotmart.com/payments/api/v1/subscriptions`;
@@ -139,22 +164,39 @@ export default class SubscriptionRepository extends Repository<SubscriptionModel
                 yield* response.data.items;
             } while (!!nextPage);
         } catch (error: any) {
-            this.logger.error(error);
+            this.logger.error({ message: error.message, stack: error.stack });
             this.logger.error(error.response?.data);
             throw { message: 'Erro ao recuperar inscrições da Hotmart', status: 500 };
         }
     }
 
-    public errorMail(receiver: EmailErrorReceivers){
-        try{
+    public errorMail(receiver: EmailErrorReceivers) {
+        try {
             this.context.smtp.sendMail({
                 from: this.context.settings.messageConfig.sender,
-                subject:'Erro na inscrição do usuário',
-                to:{email: receiver.email, name: receiver.name},
-                text:receiver.erro
+                subject: 'Erro na inscrição do usuário',
+                to: { email: receiver.email, name: receiver.name },
+                text: receiver.erro
             });
-        }catch(error){
+        } catch (error) {
             throw { message: 'Erro ao enviar email para administradores.', status: 500 };
+        }
+    }
+
+    public async getPurchasesFromHotmart(subscriberCode: string): Promise<HotmartPurchase[]> {
+        try {
+            const authToken = await this.authHotmart();
+            const url = `https://${this.context.settings.hotmart.env}.hotmart.com/payments/api/v1/subscriptions/${subscriberCode}/purchases`;
+            const response = await this.context.http.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`,
+                },
+                paramsSerializer: qs.stringify,
+            });
+            return response.data;
+        } catch (error: any) {
+            throw this.processError({ message: error.message, stack: error.stack });
         }
     }
 
