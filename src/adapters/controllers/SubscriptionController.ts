@@ -121,7 +121,7 @@ export default class SubscriptionController extends Controller {
             const receivers = [
                                {nome: "Edward Losque", email: "edward.losque@ubistart.com"},
                                {nome: "Admin", email: this.context.settings.messageConfig.supportMail }
-                              ]
+                              ];
             return receivers.forEach((receiver)=>{
                     this.context.smtp.sendMail({
                     subject: 'Erro ao criar usuário',
