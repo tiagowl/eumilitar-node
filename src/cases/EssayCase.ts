@@ -131,7 +131,7 @@ export default class EssayCase {
     }
 
     private async checkSubscriptions(userID: number, theme: EssayTheme) {
-        const subscriptions = (await this.repository.subscriptions.filter({ user: userID, active: true })) as Subscription[];
+        const subscriptions = (await this.repository.subscriptions.filter({ user: userID, active: true }, sort, value)) as Subscription[];
         const hasPermission = await subscriptions.reduce(async (value, subscription) => {
             const permitted = await value;
             const expired = subscription.expiration <= new Date();
@@ -207,8 +207,8 @@ export default class EssayCase {
         throw new CaseError('É preciso informar o token ou o curso', Errors.UNAUTHORIZED);
     }
 
-    public async myEssays(student: number) {
-        return this.repository.filter({ student }) as Promise<Essay[]>;
+    public async myEssays(student: number, sort: string, value: string) {
+        return this.repository.filter({ student }, sort, value) as Promise<Essay[]>;
     }
 
     public async allEssays(filter: Filter<EssayFilter>) {
@@ -254,7 +254,7 @@ export default class EssayCase {
         return this.partialUpdate(id, { status: 'pending', corrector: null }, corrector);
     }
 
-    public async sentChart(filter: EssayChartFilter) {
+    public async sentChart(filter: EssayChartFilter, sort: string, value: string) {
         const { period, ...filterData } = filter;
         const start = period?.start || new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000);
         const end = period?.end || new Date();

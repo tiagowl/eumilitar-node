@@ -144,9 +144,9 @@ export default class EssayController extends Controller {
         }
     }
 
-    public async myEssays(agent: User): Promise<EssayResponse[]> {
+    public async myEssays(agent: User, sort: string, value: string): Promise<EssayResponse[]> {
         try {
-            const essays = await this.useCase.myEssays(agent.id);
+            const essays = await this.useCase.myEssays(agent.id, sort, value);
             return Promise.all(essays.map((essay) => this.parseEntity(essay, agent)));
         } catch (error: any) {
             throw await this.processError(error);
