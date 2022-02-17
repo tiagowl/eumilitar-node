@@ -11,6 +11,7 @@ import User, { AccountPermission } from "../../entities/User";
 import { Context } from "../interfaces";
 import CaseError, { Errors } from "../../cases/ErrorCase";
 import { Paginated } from "../../cases/interfaces";
+import { Filter } from "../../cases/interfaces";
 
 export interface EssayInput {
     file: Express.MulterS3.File;
@@ -144,9 +145,9 @@ export default class EssayController extends Controller {
         }
     }
 
-    public async myEssays(agent: User, sort: string, value: string): Promise<EssayResponse[]> {
+    public async myEssays(agent: User, filter: Filter<EssayFilter>): Promise<EssayResponse[]> {
         try {
-            const essays = await this.useCase.myEssays(agent.id, sort, value);
+            const essays = await this.useCase.myEssays(agent.id, filter);
             return Promise.all(essays.map((essay) => this.parseEntity(essay, agent)));
         } catch (error: any) {
             throw await this.processError(error);

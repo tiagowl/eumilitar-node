@@ -160,7 +160,7 @@ export class EssayRepository extends Repository<EssayModel, EssayFilter, Essay> 
     }
 
 
-    public async filter(filterData: Filter<EssayFilter>, sort: string, value: string) {
+    public async filter(filterData: Filter<EssayFilter>) {
         try {
             const { search, period, status, correctionPeriod, pagination, ...filter } = filterData;
             const service = this.query;
@@ -170,7 +170,7 @@ export class EssayRepository extends Repository<EssayModel, EssayFilter, Essay> 
             this.filterByStatus(service, status);
             await this.search(service, search);
             const parsedFilter = await this.toDb(filter);
-            const essaysData = await service.where(parsedFilter).orderBy(value, sort);
+            const essaysData = await service.where(parsedFilter);
             const essays = await Promise.all(essaysData?.map(async (data) => await this.toEntity(data)) || []);
             if (!pagination) return essays;
             const counting = this.query;

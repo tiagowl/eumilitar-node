@@ -22,18 +22,13 @@ export default (context: Context) => {
         .get('/essays/', isAuthenticated(context), async (req, res) => {
             try {
                 const { user, query } = req;
-                const sort = query.sort?.toString();
-                const value = query.value?.toString();
                 if (!user) throw { message: 'Não autenticado', status: 401 };
                 const hasPermission = user.permission === 'admin' ? user.permissions.has(Permissions.SEE_ESSAYS) : true;
                 if (new Set(['admin', 'corrector']).has(user.permission) && !query.my && hasPermission) {
                     const response = await controller.allEssays(query, user);
                     res.status(200).json(response);
-                } else if(sort && value) {
-                    const response = await controller.myEssays(user, sort, value);
-                    res.status(200).json(response);
-                }else{
-                    const response = await controller.myEssays(user, "", "");
+                } else {
+                    const response = await controller.myEssays(user, req.query || {});
                     res.status(200).json(response);
                 }
             } catch (error: any) {
