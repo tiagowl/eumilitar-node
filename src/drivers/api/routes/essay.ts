@@ -22,6 +22,7 @@ export default (context: Context) => {
         .get('/essays/', isAuthenticated(context), async (req, res) => {
             try {
                 const { user, query } = req;
+                console.log(query);
                 if (!user) throw { message: 'Não autenticado', status: 401 };
                 const hasPermission = user.permission === 'admin' ? user.permissions.has(Permissions.SEE_ESSAYS) : true;
                 if (new Set(['admin', 'corrector']).has(user.permission) && !query.my && hasPermission) {

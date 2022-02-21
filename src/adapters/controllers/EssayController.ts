@@ -12,6 +12,10 @@ import { Context } from "../interfaces";
 import CaseError, { Errors } from "../../cases/ErrorCase";
 import { Paginated } from "../../cases/interfaces";
 import { Filter } from "../../cases/interfaces";
+import CorrectionController from "./CorrectionController";
+import CorrectionCase from "../../cases/CorrectionCase";
+import CorrectionRepository from "../models/CorrectionRepository";
+import { CorrectionInterface } from "../../entities/Correction";
 
 export interface EssayInput {
     file: Express.MulterS3.File;
@@ -111,6 +115,7 @@ export default class EssayController extends Controller {
         };
     }
 
+
     private parseEntity = async (essay: Essay, agent: User): Promise<EssayResponse> => {
         const themeController = new EssayThemeController(this.context);
         return {
@@ -122,7 +127,7 @@ export default class EssayController extends Controller {
             theme: await themeController.get({ id: essay.theme }),
             student: await this.getUser(essay.student),
             corrector: !!essay.corrector ? await this.getUser(essay.corrector) : null,
-            canResend: await this.useCase.canResend(essay.id, agent.id),
+            canResend: await this.useCase.canResend(essay.id, agent.id)
         };
     }
 
@@ -148,6 +153,7 @@ export default class EssayController extends Controller {
     public async myEssays(agent: User, filter: Filter<EssayFilter>): Promise<EssayResponse[]> {
         try {
             const essays = await this.useCase.myEssays(agent.id, filter);
+            console.log(essays);
             return Promise.all(essays.map((essay) => this.parseEntity(essay, agent)));
         } catch (error: any) {
             throw await this.processError(error);

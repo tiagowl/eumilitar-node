@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import knex, { Knex } from "knex";
 import { EssayChartFilter, EssayFilter, EssayInsertionData, EssayPagination, EssayRepositoryInterface } from "../../cases/EssayCase";
 import { EssayThemeRepositoryInterface } from "../../cases/EssayThemeCase";
 import { UserRepositoryInterface } from "../../cases/UserCase";
@@ -24,6 +24,7 @@ export interface EssayModel extends EssayInsertion {
     sent_date: Date;
     local: boolean;
     corrector?: number;
+    note: number | null;
 }
 
 export interface EssayInsertion {
@@ -158,7 +159,6 @@ export class EssayRepository extends Repository<EssayModel, EssayFilter, Essay> 
         }
         return service;
     }
-
 
     public async filter(filterData: Filter<EssayFilter>) {
         try {
