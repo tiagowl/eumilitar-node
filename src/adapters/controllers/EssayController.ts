@@ -48,6 +48,7 @@ export interface EssayResponse {
         permission: AccountPermission;
     };
     canResend: boolean;
+    note: number | null;
 }
 
 export interface EssayListResponse {
@@ -115,6 +116,17 @@ export default class EssayController extends Controller {
         };
     }
 
+    private async getCorrection(idEssay: number){
+        const repository = new CorrectionRepository(this.context);
+        const correctionCase = new CorrectionCase(repository);
+        try{
+            const correction = await correctionCase.get({essay: idEssay});
+            return correction.points;
+        }catch(err){
+            return null;
+        }
+    }
+
 
     private parseEntity = async (essay: Essay, agent: User): Promise<EssayResponse> => {
         const themeController = new EssayThemeController(this.context);
@@ -127,7 +139,8 @@ export default class EssayController extends Controller {
             theme: await themeController.get({ id: essay.theme }),
             student: await this.getUser(essay.student),
             corrector: !!essay.corrector ? await this.getUser(essay.corrector) : null,
-            canResend: await this.useCase.canResend(essay.id, agent.id)
+            canResend: await this.useCase.canResend(essay.id, agent.id),
+            note: await this.getCorrection(essay.id)
         };
     }
 
