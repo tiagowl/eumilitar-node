@@ -117,7 +117,7 @@ export default class RecoveryController extends Controller {
     private async recoveryByEmail(data: RecoveryData) {
         const { recovery, user } = await this.useCase.create(data);
         await this.sendRecoveryEmail(user.email, user.fullName, recovery.token);
-        return { message: "Email enviado! Verifique sua caixa de entrada." };
+        return { message: "Email enviado! Verifique sua caixa de entrada.Obs.: Verfique sua caixa de spam." };
     }
 
     private async writeSMS(recovery: Recovery) {
