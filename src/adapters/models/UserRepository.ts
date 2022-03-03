@@ -168,6 +168,25 @@ export default class UserRepository extends Repository<UserModel, UserData, User
         }
     }
 
+    public async availableSends(userId: number){
+        const sends = await this.sends(userId);
+        const availableSends = sends.filter((send)=>{
+            let today = new Date();
+            return send.sent_date === null && send.expiration > today;
+        });
+        return availableSends;
+    }
+
+    public async sends(userId: number){
+        try{
+            const sends = await this.query.select("*").from("single_essays").where("user_id", userId);
+            return sends;
+        }catch(error: any){
+            this.logger.error(error);
+            throw { message: 'Erro ao consultar usuários no banco de dados', status: 500 };
+        }
+    }
+
     public async all() {
         try {
             const users = await this.query.select('*') as UserModel[];

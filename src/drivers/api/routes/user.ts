@@ -104,5 +104,13 @@ export default (context: Context) => {
             }catch(err){
                 res.status(500).json({message: "erro ao enviar email"});
             }
-        });
+        })
+        .get('/users/sends/:id', isAuthenticated(context), async (req, res) => {
+            try{
+                const sends = await controller.getUserSends(parseInt(req.params.id));
+                res.status(200).json(sends);
+            }catch(err){
+                res.status(500).json({message: "Usuário não encontrado"});
+            }
+        })
 };

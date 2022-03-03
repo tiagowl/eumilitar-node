@@ -123,6 +123,7 @@ export default class UserController extends Controller {
             fullName: entity.fullName,
             phone: entity.phone,
             permissions: !!entity.permissions ? [...entity.permissions] : null,
+            availableSends: await this.repository.availableSends(entity.id)
         };
     }
 
@@ -209,6 +210,14 @@ export default class UserController extends Controller {
         } catch (error: any) {
             throw await this.processError(error);
         }
+    }
+
+    public async getUserSends(userId: number){
+        const sends = await this.repository.sends(userId);
+        if(!sends){
+            return []
+        }
+        return sends;
     }
 
     public async countEssaySentByUser(filter: ChartFilter<UserInterface> = {}) {

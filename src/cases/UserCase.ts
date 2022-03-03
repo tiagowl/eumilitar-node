@@ -82,6 +82,10 @@ export default class UserUseCase {
         this.repository = repository;
     }
 
+    public async availableSends(userId: number){
+        const sends = await this.repository
+    }
+
     private async hashPassword(password: string) {
         const salt = await bcrypt.genSalt(this.#saltRounds);
         return bcrypt.hash(password, salt);
