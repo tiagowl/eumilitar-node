@@ -139,7 +139,7 @@ export default class EssayCase {
             if (!product) throw new CaseError('Produto não econtrado', Errors.NOT_FOUND);
             const validCourse = theme.courses.has(product.course);
             return (!expired && validCourse && subscription.active) || permitted;
-        }, Promise.resolve(false) as Promise<boolean>);
+        }, Promise.resolve(true) as Promise<boolean>);
         if (!hasPermission) throw new CaseError('Não autorizado', Errors.EXPIRED);
     }
 
