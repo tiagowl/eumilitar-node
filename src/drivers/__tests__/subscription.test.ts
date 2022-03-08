@@ -2,11 +2,13 @@ import faker from "faker";
 import qs from "qs";
 import supertest from "supertest";
 import { userFactory, db, saveUser, appFactory, hottok, jp, contextFactory } from "../../../tests/shortcuts";
+import RecoveryController from "../../adapters/controllers/RecoveryController";
 import ProductRepository from "../../adapters/models/ProductRepository";
 import SubscriptionRepository, { SubscriptionService } from "../../adapters/models/SubscriptionRepository";
 import UserRepository, { UserModel, UserService } from "../../adapters/models/UserRepository";
 import Subscription from "../../entities/Subscription";
 import { authenticate } from "./tools";
+import {v4} from 'uuid';
 
 const context = contextFactory();
 
@@ -252,4 +254,11 @@ describe('#6 Inscrições', () => {
         });
         done();
     });
+    test("#63 - Envio de sms", async done => {
+        const controller = new RecoveryController(context);
+        const session = v4();
+        const response = await controller.recover({type: "sms", email: "tiago.landi@ubistart.com", session: session});
+        expect(response).toContain({message: "SMS enviado para..."});
+        done();
+    })
 });
