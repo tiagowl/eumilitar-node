@@ -38,7 +38,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/essays/:id/', checkPermission(context, ['admin', 'corrector']), async (req, res) => {
+        .get('/essays/:id/', isAuthenticated(context), async (req, res) => {
             try {
                 const { id } = req.params;
                 if (!req.user) throw { message: 'Não autenticado', status: 401 };
