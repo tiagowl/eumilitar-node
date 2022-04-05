@@ -78,7 +78,7 @@ export default class UserRepository extends Repository<UserModel, UserData, User
         super(context);
         this.service = UserService;
         this.entity = User;
-        this.searchFields = ['first_name', 'last_name', 'email'];
+        this.searchFields = ['first_name', 'last_name', 'email', 'permission'];
     }
 
     public async filter(filter: Filter<UserInterface>): Promise<Paginated<User> | User[]> {

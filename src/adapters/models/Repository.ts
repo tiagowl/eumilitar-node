@@ -1,5 +1,7 @@
+import { ServiceDiscovery } from "aws-sdk";
 import { Knex } from "knex";
 import { Logger } from "winston";
+import { number } from "yup/lib/locale";
 import { Filter, Paginated, Pagination } from "../../cases/interfaces";
 import { Context } from "../interfaces";
 
@@ -111,24 +113,37 @@ export default abstract class Repository<Model, Interface, Entity> {
 
     protected async search(service: Knex.QueryBuilder<Partial<Model>, Model[]>, search?: string, fields?: string[]) {
         if (!search) return;
+
+        console.log(`Search: ${search.length}`);
+        
         const searchFields = fields || this.searchFields;
+
+        if(search.length === 1){
+               await service.where("permission", "=", search);
+        }
+
+        if(typeof search === "string"){
         service.andWhere(async query => {
             await Promise.all(searchFields.map(async (field: string | keyof Model) => {
                 query.orWhere(field as string, 'like', `%${search}%`);
             }));
-            const terms = search.split(' ');
-            if (terms.length > 1) {
-                query.orWhere(function () {
-                    terms.forEach(val => {
-                        this.andWhere(async function () {
-                            await Promise.all(searchFields.map(async (field: string | keyof Model) => {
-                                this.orWhere(field as string, 'like', `%${val}%`);
-                            }));
+        
+                const terms = search.split(' ');
+                if (terms.length > 1) {
+                    query.orWhere(function () {
+                        terms.forEach(val => {
+                            this.andWhere(async function () {
+                                await Promise.all(searchFields.map(async (field: string | keyof Model) => {
+                                    this.orWhere(field as string, 'like', `%${val}%`);
+                                }));
+                            });
                         });
                     });
-                });
-            }
+                }
+            
         });
+
+        }
     }
 
     protected async filtering(query: Knex.QueryBuilder<Partial<Model>, Model[]>, filter: Filter<Interface>) {

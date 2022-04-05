@@ -20,6 +20,16 @@ export default (context: Context) => {
                 res.end();
             }
         })
+        .get('/user/subscriptions/:id', checkPermission(context, ['admin']), async (req, res) => {
+            try {
+                const subscriptions = await controller.mySubscriptions(parseInt(req.params.id) || 0);
+                res.status(200).json(subscriptions);
+            } catch (error: any) {
+                res.status(error.status || 500).json(error);
+            } finally {
+                res.end();
+            }
+        })
         .get('/subscriptions/', checkPermission(context, ['admin']), async (req, res) => {
             try {
                 const subscriptions = await controller.list(req.query);
