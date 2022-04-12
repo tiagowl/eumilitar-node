@@ -42,6 +42,7 @@ export interface EssayThemePagination {
     size?: string;
     order?: keyof EssayThemeModel;
     active?: 'true' | 'false';
+    title?: string;
 }
 
 export interface EssayThemeList {
@@ -91,7 +92,8 @@ export const querySchema = yup.object({
         .default('id'),
     active: yup.mixed<boolean>()
         .transform(data => data === '1' ? true : data === '0' ? false : undefined)
-        .default(undefined)
+        .default(undefined),
+    title: yup.string()
 }).noUnknown();
 
 export default class EssayThemeController extends Controller {
@@ -139,7 +141,7 @@ export default class EssayThemeController extends Controller {
     public async listAll(pagination?: EssayThemePagination): Promise<EssayThemeList> {
         try {
             const data = await querySchema.validate(pagination).catch(() => querySchema.cast(undefined));
-            const page = await this.useCase.findAll(data.page, data?.size || 10, data.order as keyof EssayThemeInterface, data.active);
+            const page = await this.useCase.findAll(data.page, data?.size || 10, data.order as keyof EssayThemeInterface, data.active,data.title);
             const amount = await this.useCase.count();
             return {
                 page: await Promise.all(page.map(this.parseEntity)),

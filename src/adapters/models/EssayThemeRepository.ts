@@ -68,6 +68,10 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
                 }) : service;
     }
 
+    private filterByTitle(service: Knex.QueryBuilder, title: string): Knex.QueryBuilder {
+        return service.where("title","like", `%${title}%`);
+    }
+
     public async exists(filter: EssayThemeFilter) {
         try {
             const service = this.query;
@@ -131,10 +135,13 @@ export default class EssayThemeRepository extends Repository<EssayThemeModel, Es
         }
     }
 
-    public async findAll(page?: number, pageSize?: number, ordering?: keyof EssayThemeModel, active?: boolean) {
+    public async findAll(page?: number, pageSize?: number, ordering?: keyof EssayThemeModel, active?: boolean, title?: string) {
         try {
+            console.log(`Título: ${title}`);
             const service = this.query;
-            const query = this.filterByActive(service, active);
+            console.log(`Query: ${service}`);
+            console.log(`ativo: ${active}`);
+            const query = title ? this.filterByTitle(service, title) : this.filterByActive(service, active);
             const themes = await query.orderBy(ordering || 'id', 'desc')
                 .offset(((page || 1) - 1) * (pageSize || 10))
                 .limit((pageSize || 10))

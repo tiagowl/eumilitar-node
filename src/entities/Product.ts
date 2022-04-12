@@ -1,3 +1,5 @@
+import { String } from "aws-sdk/clients/configservice";
+
 export type Course = 'esa' | 'espcex';
 
 export interface ProductInterface {
@@ -6,6 +8,7 @@ export interface ProductInterface {
     code: number;
     course: Course;
     expirationTime: number;
+    status: string;
 }
 
 export const courses: Course[] = ['esa', 'espcex'];
@@ -16,6 +19,7 @@ export default class Product implements ProductInterface {
     public code: number;
     public course: Course;
     public expirationTime: number;
+    public status: string;
 
     constructor(data: ProductInterface) {
         this.id = data.id;
@@ -23,5 +27,6 @@ export default class Product implements ProductInterface {
         this.code = data.code;
         this.course = data.course;
         this.expirationTime = data.expirationTime;
+        this.status = data.status;
     }
 }

@@ -10,6 +10,7 @@ export interface ProductModel {
     course_tag: number;
     id_hotmart: number;
     expiration_time: number;
+    status: string;
 }
 
 const courseMap: [Course, number][] = [
@@ -31,7 +32,8 @@ const fieldsMap: FieldsMap<ProductModel, ProductInterface> = [
     [['product_name', String], ['name', String]],
     [['course_tag', courseTagParser], ['course', courseParser]],
     [['id_hotmart', Number], ['code', Number]],
-    [['expiration_time', Number], ['expirationTime', Number]]
+    [['expiration_time', Number], ['expirationTime', Number]],
+    [['status', String], ['status', String]]
 ];
 
 export const ProductService = (db: Knex) => db<Partial<ProductModel>, ProductModel[]>('products');

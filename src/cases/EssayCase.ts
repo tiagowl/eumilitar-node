@@ -294,4 +294,16 @@ export default class EssayCase {
         }
     }
 
+    public async updateCorrector(idEssay: number, idCorrector: number) {
+        const essayData = await this.repository.get({ id: idEssay });
+        if(essayData){
+            const essay = new Essay(essayData);
+            essay.corrector = idCorrector;
+            console.log(`Entidade redação dados: ${essay.status}`);
+            return await this.repository.update(idEssay, {corrector: idCorrector});
+        }else{
+            throw new CaseError('Redação não encontrada');
+        }
+    }
+
 }

@@ -57,6 +57,11 @@ export interface EssayListResponse {
     page: EssayResponse[];
 }
 
+interface UpdateCorrectorInteface{
+    idEssay: number;
+    idCorrector: number;
+}
+
 export interface ListEssayParams extends EssayFilter, EssayPagination { }
 
 const schema = yup.object().shape({
@@ -203,6 +208,15 @@ export default class EssayController extends Controller {
             const validated = await this.validate({ ...data, corrector: agent.id }, partialUpdateSchema);
             const updated = await this.useCase.partialUpdate(id, validated);
             return await this.parseEntity(updated, agent);
+        } catch (error: any) {
+            throw await this.processError(error);
+        }
+    }
+
+    public async updateEssayCorrector(idEssay: number, idCorrector: number){
+        try {
+            const updated = await this.useCase.updateCorrector(idEssay, idCorrector);
+            return updated;
         } catch (error: any) {
             throw await this.processError(error);
         }

@@ -35,7 +35,7 @@ export interface EssayThemeRepositoryInterface {
     readonly exists: (filter: EssayThemeFilter) => Promise<boolean> | ((filter: EssayThemeFilter) => Promise<boolean>);
     readonly get: getMethod<EssayTheme, EssayThemeInterface & { active?: boolean }>;
     readonly hasActiveTheme: (data: EssayThemeData, notCheckId?: number) => Promise<boolean>;
-    readonly findAll: (page?: number, pageSize?: number, ordering?: keyof EssayThemeInterface, active?: boolean) => Promise<EssayTheme[]>;
+    readonly findAll: (page?: number, pageSize?: number, ordering?: keyof EssayThemeInterface, active?: boolean, title?:string) => Promise<EssayTheme[]>;
 }
 
 export default class EssayThemeCase {
@@ -52,8 +52,8 @@ export default class EssayThemeCase {
         return this.repository.create({ ...data, deactivated: false });
     }
 
-    public async findAll(page?: number, pageSize?: number, ordering?: keyof EssayThemeInterface, active?: boolean): Promise<EssayTheme[]> {
-        return this.repository.findAll(page, pageSize, ordering, active);
+    public async findAll(page?: number, pageSize?: number, ordering?: keyof EssayThemeInterface, active?: boolean, title?: string): Promise<EssayTheme[]> {
+        return this.repository.findAll(page, pageSize, ordering, active, title);
     }
 
     public async count() {

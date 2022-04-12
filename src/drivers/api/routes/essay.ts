@@ -105,5 +105,17 @@ export default (context: Context) => {
             } finally {
                 res.end();
             }
-        });
+        })
+        .put('/essays/:idEssay/:idCorrector/', checkPermission(context, ['admin']), async (req, res) => {
+            const {idEssay} = req.params;
+            const {idCorrector} = req.params;
+            try{
+                const update = await controller.updateEssayCorrector(parseInt(idEssay), parseInt(idCorrector));
+                res.status(200).json(update);
+            }catch(err: any){
+                res.status(err.status || 500).json(err);
+            }finally{
+                res.end();
+            }
+        })
 };

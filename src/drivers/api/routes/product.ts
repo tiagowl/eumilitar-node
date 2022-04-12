@@ -37,5 +37,15 @@ export default (context: Context) => {
             } finally {
                 res.end();
             }
+        })
+        .delete('/products/:id/', checkPermission(context, ['admin'], [Permissions.MANAGE_PRODUCTS]),async (req, res)=>{
+            try{
+                const product = await controller.deactivate(Number(req.params.id));
+                res.status(200).json(product);
+            }catch(error: any){
+                res.status(error.status || 500).json(error);
+            }finally {
+                res.end();
+            }
         });
 };
