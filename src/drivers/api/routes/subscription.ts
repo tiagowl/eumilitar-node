@@ -30,7 +30,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/subscriptions/', checkPermission(context, ['admin']), async (req, res) => {
+        .get('/subscriptions/', checkPermission(context, ['admin', 'student']), async (req, res) => {
             try {
                 const subscriptions = await controller.list(req.query);
                 res.status(200).json(subscriptions);

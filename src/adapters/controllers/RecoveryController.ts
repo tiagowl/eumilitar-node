@@ -120,6 +120,11 @@ export default class RecoveryController extends Controller {
         return { message: "Email enviado! Verifique sua caixa de entrada.Obs.: Verfique sua caixa de spam." };
     }
 
+    public async recoveryDirectToken(data: RecoveryData){
+        const {recovery} = await this.useCase.create(data);
+        return recovery.token;
+    }
+
     private async writeSMS(recovery: Recovery) {
         return `Seu código Eu Militar: ${recovery.token}. Não compartilhe este código com ninguém!`;
     }

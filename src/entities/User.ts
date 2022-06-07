@@ -17,6 +17,7 @@ export interface UserInterface {
     lastModified: Date;
     phone?: string;
     permissions?: Set<Permissions>;
+    avatar_url?:string | null;
 }
 
 export interface UserData extends UserInterface {
@@ -32,6 +33,7 @@ export interface UserUpdateData {
     password?: string;
     phone?: string;
     permissions?: Set<Permissions>;
+    avatar_url?: string;
 }
 
 export enum Permissions {
@@ -61,6 +63,7 @@ export default class User implements UserInterface {
     #permission: AccountPermission;
     #permissions: Set<Permissions>;
     #phone?: string;
+    #avatar_url?:string | null;
 
     constructor(data: UserData) {
         this.#id = data.id;
@@ -74,6 +77,7 @@ export default class User implements UserInterface {
         this.#permission = data.permission;
         this.#permissions = data.permissions || new Set();
         this.#phone = data.phone;
+        this.#avatar_url = data.avatar_url;
     }
 
     get data(): UserData {
@@ -89,6 +93,7 @@ export default class User implements UserInterface {
             permission: this.#permission,
             phone: this.#phone,
             permissions: this.#permissions,
+            avatar_url: this.#avatar_url
         };
     }
 
@@ -147,6 +152,8 @@ export default class User implements UserInterface {
     }
     get permissions() { return this.#permissions; }
 
+    get avatar_url() {return this.#avatar_url}
+
     public async checkPassword(password: string) {
         return compare(password, this.#password.replace(/^\$2y(.+)$/i, '$2a$1'));
     }
@@ -161,6 +168,7 @@ export default class User implements UserInterface {
             this.#password = data.password || this.#password;
             this.#phone = data.phone || this.#phone;
             this.#permissions = data.permissions || new Set();
+            this.#avatar_url = data.avatar_url;
             this.updateDate();
         }
         return this;

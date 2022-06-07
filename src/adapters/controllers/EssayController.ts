@@ -49,6 +49,7 @@ export interface EssayResponse {
     };
     canResend: boolean;
     note: number | null;
+    correctionDate: Date | null;
 }
 
 export interface EssayListResponse {
@@ -126,7 +127,8 @@ export default class EssayController extends Controller {
         const correctionCase = new CorrectionCase(repository);
         try{
             const correction = await correctionCase.get({essay: idEssay});
-            return correction.points;
+
+            return {points: correction.points, correctionDate: correction.correctionDate};
         }catch(err){
             return null;
         }
@@ -135,6 +137,7 @@ export default class EssayController extends Controller {
 
     private parseEntity = async (essay: Essay, agent: User): Promise<EssayResponse> => {
         const themeController = new EssayThemeController(this.context);
+        const correction = await this.getCorrection(essay.id);
         return {
             course: essay.course,
             file: essay.file,
@@ -145,7 +148,8 @@ export default class EssayController extends Controller {
             student: await this.getUser(essay.student),
             corrector: !!essay.corrector ? await this.getUser(essay.corrector) : null,
             canResend: await this.useCase.canResend(essay.id, agent.id),
-            note: await this.getCorrection(essay.id)
+            note: correction?.points ? correction?.points : null,
+            correctionDate: correction?.correctionDate ? correction?.correctionDate : null
         };
     }
 

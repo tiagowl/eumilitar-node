@@ -17,6 +17,7 @@ export async function up(knex: Knex): Promise<void> {
             table.integer('permission', 1).nullable().defaultTo(3).comment('1 = Administrador, 2 = Aluno ESA, 3 = Aluno EsPCEX');
             table.dateTime('date_created').notNullable().defaultTo(knex.fn.now());
             table.dateTime('date_modified').notNullable();
+            table.string('avatar_url', 255).defaultTo(null);
         });
     if (existsLoginSessions) return createUsers;
     const createLoginSessions = createUsers
@@ -26,6 +27,7 @@ export async function up(knex: Knex): Promise<void> {
             table.timestamp('login_time').notNullable().defaultTo(knex.fn.now());
         });
     return createLoginSessions;
+    
 }
 
 

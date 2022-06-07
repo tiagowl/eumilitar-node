@@ -51,6 +51,7 @@ export default class SessionCase {
         const { email, password, agent } = data;
         const user = await this.repository.users.get({ email });
         if (!user) throw new CaseError('Email inválido', Errors.NOT_FOUND);
+        if(user.status === "inactive") throw new CaseError("Usuário inativo.", Errors.INVALID);
         const validPassword = await user.checkPassword(password);
         if (!validPassword) throw new CaseError('Senha inválida', Errors.WRONG_PASSWORD);
         return this.create(user, agent);

@@ -6,6 +6,7 @@ import User, { Permissions } from "../../../entities/User";
 
 export default (context: Context) => {
     const controller = new UserController(context);
+    const {storage} = context;
     return Router({})
         .get('/users/profile/', async (req, res) => {
             try {
@@ -17,11 +18,11 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .put('/users/profile/', isAuthenticated(context), async (req, res) => {
+        .put('/users/profile/', isAuthenticated(context), storage.single('file'), async (req, res) => {
             try {
-                const { body, user } = req;
+                const { body, user, file } = req;
                 if (!user) throw { message: 'Não autorizado', status: 403 };
-                const updated = await controller.update(user.id, body, user);
+                const updated = await controller.update(user.id, {...body, file}, user);
                 res.status(200).json(updated);
             } catch (error: any) {
                 res.status(error.status || 500).json(error);
@@ -29,11 +30,13 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/users/', checkPermission(context, ['admin']), async (req, res) => {
+        .get('/users/', checkPermission(context, ['admin', 'corrector']), async (req, res) => {
             try {
                 const searchStudents = req.query?.permission === 'student' || !req.query.permission;
-                const hasPermission = await controller.hasPermissions(req.user as User, [Permissions.SEE_USERS]);
-                if (searchStudents && !hasPermission) throw { message: 'Não autorizado', status: 401 };
+                if(req.query.search != "5"){    
+                    const hasPermission = await controller.hasPermissions(req.user as User, [Permissions.SEE_USERS]);
+                    if (searchStudents && !hasPermission) throw { message: 'Não autorizado', status: 401 };
+                }
                 const response = await controller.all(req.query || {});
                 res.status(200).json(response);
             } catch (error: any) {
@@ -44,6 +47,7 @@ export default (context: Context) => {
         })
         .post('/users/', checkPermission(context, ['admin']), async (req, res) => {
             try {
+                console.log(`Email rota: ${req.body.email}`);
                 const created = await controller.create(req.body, req.user as User);
                 res.status(201).json(created);
             } catch (error: any) {

@@ -44,6 +44,7 @@ export default class SessionController extends Controller {
             if (error instanceof CaseError) {
                 if (error.code === Errors.NOT_FOUND) throw { errors: [['email', 'Email inválido']], status: 400 };
                 if (error.code === Errors.WRONG_PASSWORD) throw { errors: [['password', 'Senha inválida']], status: 400 };
+                if (error.code === Errors.INVALID) throw {errors: [['inactive','Usuário inativo']], status: 400};
             }
             if (error.status) throw error;
             throw { message: 'Erro autenticar', status: 500 };

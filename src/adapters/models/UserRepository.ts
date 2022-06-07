@@ -15,7 +15,9 @@ const statusMap: AccountStatus[] = ['inactive', 'active', 'pending'];
 const permissionMap: [number, AccountPermission][] = [
     [1, 'admin'],
     [5, 'corrector'],
-    [6, 'student'],
+    [3, 'student'],
+    [2, 'student'],
+    [6, 'student']
 ];
 
 function parseStatus(value: number): AccountStatus {
@@ -50,6 +52,7 @@ export interface UserModel {
     date_modified: Date;
     phone: string;
     permissions?: string;
+    avatar_url: string;
 }
 
 export const UserService = (db: Knex) => db<Partial<UserModel>, UserModel[]>('users');
@@ -66,6 +69,7 @@ const fieldsMap: FieldsMap<UserModel, UserData> = [
     [['date_modified', prsr.date], ['lastModified', prsr.date]],
     [['phone', prsr.string], ['phone', prsr.string]],
     [['permissions', prsr.set], ['permissions', prsr.set]],
+    [['avatar_url', prsr.string], ['avatar_url', prsr.string]]
 ];
 
 export default class UserRepository extends Repository<UserModel, UserData, User> implements UserRepositoryInterface {
@@ -135,7 +139,6 @@ export default class UserRepository extends Repository<UserModel, UserData, User
             });
         });
     }
-
     private async saveToken(token: string, user: User) {
         const [saved] = await RecoveryService(this.db).insert({
             token,

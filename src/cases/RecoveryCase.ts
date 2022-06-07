@@ -43,7 +43,7 @@ export default class RecoveryCase {
         this.defaultExpiration = defaultExpiration;
     }
 
-    private async generateLongToken(): Promise<string> {
+     public async generateLongToken(): Promise<string> {
         return new Promise((resolve, reject) => {
             crypto.randomBytes(32, (error, buffer) => {
                 if (error) reject(error);
@@ -52,7 +52,7 @@ export default class RecoveryCase {
         });
     }
 
-    private async generateShortToken(): Promise<string> {
+    public async generateShortToken(): Promise<string> {
         const list = new Array(6).fill(undefined);
         const numberList = await Promise.all(list.map(async () => {
             return Math.round(Math.random() * (9 - 0));

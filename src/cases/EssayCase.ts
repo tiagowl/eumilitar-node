@@ -174,7 +174,7 @@ export default class EssayCase {
         await this.checkPermission(theme, student, data.course);
         return this.repository.create({
             ...data, theme: theme.id, sendDate: new Date(), status: 'pending',
-            course: data.course,
+            course: data.course
         });
     }
 

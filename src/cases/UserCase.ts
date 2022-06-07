@@ -1,5 +1,6 @@
 import User, { AccountStatus, AccountPermission, UserInterface, UserData, Permissions } from "../entities/User";
 import bcrypt from 'bcrypt';
+import knex from "knex";
 import CaseError, { Errors } from "./ErrorCase";
 import { ChartFilter, createMethod, Filter, filterMethod, getMethod, Paginated, Pagination, updateMethod } from "./interfaces";
 
@@ -40,7 +41,8 @@ export type UserUpdate = {
     permission?: AccountPermission;
     permissions?: Set<Permissions>;
     password?: string;
-    phone?: string
+    phone?: string;
+    file?: string;
 };
 
 export interface UserSavingData {
@@ -126,6 +128,7 @@ export default class UserUseCase {
         if (data.permission === 'admin' && !data.permissions) {
             throw new CaseError('É preciso informar as permissões', Errors.INVALID);
         }
+        console.log(`Email criação: ${data.email}`);
         return this.repository.create({
             ...data,
             password: await this.hashPassword(data.password),
@@ -141,8 +144,14 @@ export default class UserUseCase {
         const user = await this.get(id);
         const insertion = !!data.password ? {
             ...data,
+            permissions: user.permissions,
+            avatar_url: data?.file,
             password: await this.hashPassword(data.password),
-        } : data;
+        } : {
+            ...data,
+            permissions: user.permissions,
+            avatar_url: data?.file
+        };
         await user.update(insertion);
         await this.repository.update(id, user.data);
         return user;

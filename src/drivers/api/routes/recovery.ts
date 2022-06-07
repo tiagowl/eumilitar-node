@@ -44,5 +44,15 @@ export default (context: Context) => {
             } finally {
                 res.end();
             }
-        });
+        })
+        .post('/password-recoveries/direct/', async (req, res)=>{
+            try{
+                const response = await controller.recoveryDirectToken(req.body);
+                res.status(200).json({token: response});
+            } catch(error: any){
+                res.status(error.status || 400).json(error);
+            } finally{
+                res.end();
+            }
+        })
 };

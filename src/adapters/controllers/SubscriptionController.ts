@@ -113,7 +113,7 @@ export default class SubscriptionController extends Controller {
     }
 
     private async parseEntity(entity: SubscriptionInterface) {
-        return { ...entity, };
+        return { ...entity, status: this.useCase.checkStatus(entity.expiration, entity.registrationDate)};
     }
 
     private async notifySupport(data: OrderData | CancelOrderData, error: any) {
@@ -212,7 +212,14 @@ export default class SubscriptionController extends Controller {
             await yup.number().required('É preciso informar o usuário')
                 .positive().min(0).validate(userId);
             const subscriptions = (await this.useCase.filter({ user: userId })) as Subscription[];
-            return Promise.all(subscriptions.map(async subscription => this.parseEntity(subscription)));
+            const productCase = new ProductCase(this.repository.products);
+            const products = await productCase.list({}) as Product[];
+            return Promise.all(subscriptions.map(async (subscription) =>{
+                const product = products.find(({ id }) => id === subscription.product);
+                if (!product) throw { message: `Produto "${subscription.product}" não encontrado`, status: 500 };
+                const data = await this.parseEntity(subscription);
+                return {...data, productName: product.name}  
+            }))
         } catch (error: any) {
             throw await this.processError(error);
         }

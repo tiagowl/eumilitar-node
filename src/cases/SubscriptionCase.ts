@@ -168,4 +168,16 @@ export default class SubscriptionCase {
             });
         return Promise.all(data);
     }
+
+    public checkStatus(expiration: Date, registration: Date){
+        const expirationDate = new Date(expiration);
+        const registrationDate = new Date(registration);
+        const today = new Date();
+
+        if(expirationDate > registrationDate && expirationDate > today){
+            return "registered";
+        }else{
+            return "complete"
+        }
+    }
 }

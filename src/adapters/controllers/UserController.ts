@@ -28,6 +28,7 @@ export interface UserUpdate {
     permissions?: Permissions[];
     password?: string;
     phone?: string;
+    file?: Express.MulterS3.File;
 }
 
 export interface UserCreation {
@@ -44,11 +45,12 @@ export interface UserCreation {
 const updateSchemaBase = {
     firstName: yup.string().required('O campo "Nome" é obrigatório'),
     lastName: yup.string().required('O campo "Sobrenome" é obrigatório'),
-    email: yup.string().email('Email inválido').required('O campo "Email" é obrigatório'),
+    file: yup.object(),
+    email: yup.string().email('Email inválido'),
     status: yup.string().required('O campo "Status" é obrigatório').is(accountStatus, 'Status inválido'),
     permission: yup.string().required('O campo "Permissão" é obrigatório').is(accountPermissions, 'Permissão inválida'),
     permissions: yup.mixed()
-        .when('permission', {
+      .when('permission', {
             is: (val: any) => val === 'admin',
             then: yup.array().required('É preciso informar as permissões')
                 .of(yup.string().is(Object.keys(Permissions), 'Permissão inválida'))
@@ -69,10 +71,7 @@ const schema = yup.object().shape({
 const updateProfileSchema = yup.object().shape({
     firstName: yup.string().required('O campo "Nome" é obrigatório'),
     lastName: yup.string().required('O campo "Sobrenome" é obrigatório'),
-    phone: yup.string().required('O campo "Telefone" é obrigatório')
-        .min(11, 'O telefone deve conter pelo menos 11 caracteres')
-        .max(13, 'O telefone deve conter até 13 caracteres')
-        .transform((val: string) => val.replace(/[^0-9]/gm, '')),
+    file: yup.object()
 });
 
 const baseFilterSchema = {
@@ -123,7 +122,8 @@ export default class UserController extends Controller {
             fullName: entity.fullName,
             phone: entity.phone,
             permissions: !!entity.permissions ? [...entity.permissions] : null,
-            availableSends: await this.repository.availableSends(entity.id)
+            availableSends: await this.repository.availableSends(entity.id),
+            avatar_url: entity.avatar_url
         };
     }
 
@@ -157,6 +157,7 @@ export default class UserController extends Controller {
                 if (!agent.permissions.has(Permissions.CREATE_USERS) && data.permission !== 'student') throw unalthorizedError;
             }
             const validated = await this.validate(data, schema) as unknown as DefaultUserCration;
+            console.log(`Email validado: ${validated.email}`);
             const created = await this.useCase.create(validated);
             return await this.parseEntity(created);
         } catch (error: any) {
@@ -165,6 +166,7 @@ export default class UserController extends Controller {
     }
 
     public async update(id: number, data: UserUpdate, agent: User) {
+        console.log(`Foto: ${data.file?.location}`);
         try {
             const unalthorizedError = { message: 'Não autorizado', status: 403 };
             const isSelf = agent.id === id;
@@ -178,7 +180,7 @@ export default class UserController extends Controller {
             }
             const validationSchema = isSelf ? updateProfileSchema : updateSchema;
             const validated = await this.validate(data, validationSchema) as unknown as DefaultUserUpdate;
-            const updated = await this.useCase.update(id, validated);
+            const updated = await this.useCase.update(id, {...validated, file: data.file?.location || data.file?.path});
             return await this.parseEntity(updated);
         } catch (error: any) {
             throw await this.processError(error);

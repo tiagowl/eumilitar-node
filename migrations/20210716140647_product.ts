@@ -10,6 +10,7 @@ export async function up(knex: Knex): Promise<void> {
             table.integer('course_tag', 1).notNullable();
             table.integer('id_hotmart').unique()
                 .notNullable().index('id_hotmart');
+            table.string('status', 11).defaultTo("active");
         });
     }
 }
