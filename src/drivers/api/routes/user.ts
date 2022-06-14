@@ -30,7 +30,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/users/', checkPermission(context, ['admin', 'corrector']), async (req, res) => {
+        .get('/users/', checkPermission(context, ['admin', 'corrector'], [Permissions.SEE_USERS]), async (req, res) => {
             try {
                 const searchStudents = req.query?.permission === 'student' || !req.query.permission;
                 if(req.query.search != "5"){    
@@ -45,7 +45,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .post('/users/', checkPermission(context, ['admin']), async (req, res) => {
+        .post('/users/', checkPermission(context, ['admin'], [Permissions.CREATE_USERS]), async (req, res) => {
             try {
                 console.log(`Email rota: ${req.body.email}`);
                 const created = await controller.create(req.body, req.user as User);
@@ -79,7 +79,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .put('/users/:id/', checkPermission(context, ['admin']), async (req, res) => {
+        .put('/users/:id/', checkPermission(context, ['admin'], [Permissions.UPDATE_STUDENTS]), async (req, res) => {
             try {
                 const { params: { id }, body, user } = req;
                 if (!user) throw { message: 'Não autorizado', status: 403 };

@@ -29,8 +29,19 @@ export default (context: Context) => {
             })
         .get('/themes/', checkPermission(context, ['admin', 'student']), async (req, res) => {
             try {
-                const themes = await controller.listAll(req.query);
-                res.status(200).json(themes);
+                const {user} = req;
+                if(user?.permission === "admin"){
+                    const hasPermissions = user?.permissions?.has(Permissions.MANAGE_THEMES) ? true : false;
+                    if(hasPermissions){
+                        const themes = await controller.listAll(req.query);
+                        res.status(200).json(themes);
+                    }else{
+                        res.status(401).json({message: "Não autorizado"})
+                    }
+                }else{
+                    const themes = await controller.listAll(req.query);
+                    res.status(200).json(themes);
+                }
             } catch (error: any) {
                 res.status(500).json(error);
             } finally {
@@ -67,7 +78,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/themes/:id/', isAuthenticated(context), async (req, res) => {
+        .get('/themes/:id/', checkPermission(context, ['admin'], [Permissions.MANAGE_THEMES]), async (req, res) => {
             try {
                 const { id } = req.params;
                 const theme = await controller.get({ id: Number(id) });
