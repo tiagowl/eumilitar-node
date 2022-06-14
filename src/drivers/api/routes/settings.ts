@@ -17,7 +17,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/settings/', isAuthenticated(context), async (_req, res) => {
+        .get('/settings/', checkPermission(context, ['admin']), async (_req, res) => {
             try {
                 const settings = await controller.get();
                 res.json(settings).status(200);

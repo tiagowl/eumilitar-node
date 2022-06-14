@@ -27,7 +27,7 @@ export default (context: Context) => {
                     res.end();
                 }
             })
-        .get('/themes/', isAuthenticated(context), async (req, res) => {
+        .get('/themes/', checkPermission(context, ['admin', 'student']), async (req, res) => {
             try {
                 const themes = await controller.listAll(req.query);
                 res.status(200).json(themes);

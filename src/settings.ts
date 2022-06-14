@@ -18,7 +18,7 @@ const {
     DB_NAME,
     PORT = 22000,
     HOST = '0.0.0.0',
-    CORS = '',
+    CORS = "*",
     KEYS,
     SMTP_HOST = '',
     SMTP_PORT,

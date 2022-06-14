@@ -20,7 +20,7 @@ export default (context: Context) => {
                 res.end();
             }
         })
-        .get('/warning/', isAuthenticated(context), async (_req, res) => {
+        .get('/warning/', checkPermission(context, ['admin', 'student']), async (_req, res) => {
             try {
                 const warning = await controller.get();
                 res.json(warning).status(200);
