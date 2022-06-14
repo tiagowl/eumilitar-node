@@ -104,6 +104,7 @@ export default class SubscriptionCase {
             course: product.course,
             active: true,
         };
+        
         return !!subscription
             ? this.repository.update(subscription.id, payload)
             : this.repository.create(payload);

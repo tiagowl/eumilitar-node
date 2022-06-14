@@ -144,12 +144,12 @@ export default class UserUseCase {
         const user = await this.get(id);
         const insertion = !!data.password ? {
             ...data,
-            permissions: user.permissions,
+            permissions: data?.permissions,
             avatar_url: data?.file,
             password: await this.hashPassword(data.password),
         } : {
             ...data,
-            permissions: user.permissions,
+            permissions: data?.permissions,
             avatar_url: data?.file
         };
         await user.update(insertion);

@@ -24,7 +24,7 @@ export default (context: Context) => {
                 const { user, query } = req;
                 console.log(query);
                 if (!user) throw { message: 'Não autenticado', status: 401 };
-                const hasPermission = user.permission === 'admin' || user.permissions.has(Permissions.SEE_ESSAYS) ? true : false;
+                const hasPermission = user.permission === 'admin' && user.permissions.has(Permissions.SEE_ESSAYS) || user.permission === "corrector" ? true : false;
                 if (new Set(['admin', 'corrector']).has(user.permission) && !query.my && hasPermission) {
                     const response = await controller.allEssays(query, user);
                     res.status(200).json(response);
